@@ -1,0 +1,17 @@
+{
+  "name": "sextant-api",
+  "private": true,
+  "version": "1.0.0",
+  "description": "api server for the sextant cluster creation service",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.6.0",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "express-pino-logger": "^3.0.2",
+    "jsonist": "^2.1.0",
+    "minimist": "^1.2.0",
+    "pino": "^4.17.6",
+    "request": "^2.81.0"
+  }
+}
