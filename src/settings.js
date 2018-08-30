@@ -1,3 +1,8 @@
+/*
+
+  the settings passed in via the command line or environment
+  
+*/
 const args = require('minimist')(process.argv, {
   default:{
     port: process.env.PORT || 80,

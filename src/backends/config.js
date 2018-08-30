@@ -1,3 +1,4 @@
+const awsRegions = require('aws-regions')
 const packageJSON = require('../../package.json')
 const pino = require('pino')({
   name: 'backend.config',
@@ -35,6 +36,7 @@ const ConfigBackend = () => {
   const values = (params, done) => {
     done(null, {
       version: packageJSON.version,
+      awsRegions: awsRegions.list({ public: true }),
     })
   }
 

@@ -6,6 +6,7 @@
   "main": "index.js",
   "dependencies": {
     "async": "^2.6.0",
+    "aws-regions": "^1.4.1",
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "express-pino-logger": "^3.0.2",
