@@ -8,12 +8,18 @@ const pino = require('pino')({
   name: 'app',
 })
 
+
+// NOTE - to switch the storage implmentation, import a different module here
+const Store = require('./store/file')
 const Backends = require('./backends')
 const Routes = require('./routes')
 
 const App = () => {
 
-  const backends = Backends()
+  const store = Store()
+  const backends = Backends({
+    store,
+  })
   const app = express()
 
   app.use(pinoExpress)

@@ -11,6 +11,7 @@
     "express-pino-logger": "^3.0.2",
     "jsonist": "^2.1.0",
     "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "pino": "^4.17.6",
     "request": "^2.81.0"
   }

@@ -1,5 +1,3 @@
-'use strict'
-
 const packageJSON = require('../../package.json')
 const pino = require('pino')({
   name: 'backend.config',

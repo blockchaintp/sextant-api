@@ -1,5 +1,3 @@
-'use strict'
-
 const ConfigRoutes = (backends) => {
 
   const { config } = backends
