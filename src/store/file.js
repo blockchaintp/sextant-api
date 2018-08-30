@@ -17,7 +17,7 @@ const FileStore = () => {
     params:
     
   */
-  const listClusters = (params, done) => {
+  const listClusterNames = (params, done) => {
     async.waterfall([
 
       // list all files in our base folder
@@ -30,6 +30,30 @@ const FileStore = () => {
           nextFile(null, stat.isDirectory())
         })
       }, next),
+
+    ], done)
+  }
+
+  /*
+  
+    list the names of all clusters and then map each name onto the data
+
+    params:
+    
+  */
+  const listClusters = (params, done) => {
+    async.waterfall([
+
+      // list all cluster names
+      (next) => listClusterNames({}, next),
+
+      (clusterNames, next) => {
+        async.map(clusterNames, (id, nextCluster) => {
+          getCluster({
+            id,
+          }, nextCluster)
+        }, next)
+      },
 
     ], done)
   }
@@ -61,7 +85,7 @@ const FileStore = () => {
           return next(e)
         }
         next(null, processedFile)
-      }
+      },
 
     ], done)
   }
@@ -110,7 +134,7 @@ const FileStore = () => {
       (next) => fs.stat(filePath, next),
 
       // load the contents
-      (stat, next) => fs.readFile(filePath, 'utf8', next)
+      (stat, next) => fs.readFile(filePath, 'utf8', next),
 
     ], done)
   }
@@ -141,12 +165,13 @@ const FileStore = () => {
       next => mkdirp(folderPath, next),
 
       // write the file contents
-      next => fs.writeFile(filePath, params.data, 'utf8', next)
+      next => fs.writeFile(filePath, params.data, 'utf8', next),
     ])
   }
 
 
   return {
+    listClusterNames,
     listClusters,
     getCluster,
     createCluster,
