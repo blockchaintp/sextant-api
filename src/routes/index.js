@@ -11,6 +11,7 @@ const Routes = (app, backends) => {
   
   app.get(basePath('/config/version'), config.version)
   app.get(basePath('/config/values'), config.values)
+  app.get(basePath('/config/aws'), config.aws)
 
   app.get(basePath('/cluster'), cluster.list)
   app.get(basePath('/cluster/:id'), cluster.get)

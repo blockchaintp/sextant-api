@@ -1,5 +1,8 @@
+const async = require('async')
 const awsRegions = require('aws-regions')
 const packageJSON = require('../../package.json')
+const instanceJSON = require('../data/aws-instances-minimal.json')
+const AWS = require('../utils/aws')
 const pino = require('pino')({
   name: 'backend.config',
 })
@@ -36,13 +39,32 @@ const ConfigBackend = () => {
   const values = (params, done) => {
     done(null, {
       version: packageJSON.version,
-      awsRegions: awsRegions.list({ public: true }),
+    })
+  }
+
+  /*
+  
+    get the backend aws values needed for a cluster config
+    
+  */
+  const aws = (params, done) => {
+    async.parallel({
+      route53Domains: next => AWS.listRoute53Domains(next),
+    }, (err, results) => {
+      if(err) return done(err)
+
+      done(null, {
+        regions: awsRegions.list({ public: true }),
+        instances: instanceJSON,
+        domains: results.route53Domains,
+      })
     })
   }
 
   return {
     version,
     values,
+    aws,
   }
 
 }

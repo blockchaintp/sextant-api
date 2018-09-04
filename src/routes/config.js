@@ -22,9 +22,19 @@ const ConfigRoutes = (backends) => {
     })
   }
 
+  const aws = (req, res, next) => {
+
+    config.aws({}, (err, result) => {
+      res
+        .status(200)
+        .json(result)
+    })
+  }
+
   return {
     version,
     values,
+    aws,
   }
 }
 
