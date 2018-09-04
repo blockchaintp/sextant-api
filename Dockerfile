@@ -1,5 +1,5 @@
 FROM mhart/alpine-node:8
-MAINTAINER kaiyadavenport@gmail.com
+MAINTAINER kai@blockchaintp.com
 
 # install aws cli
 RUN apk -v --update add \
