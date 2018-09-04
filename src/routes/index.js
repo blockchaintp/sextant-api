@@ -16,6 +16,8 @@ const Routes = (app, backends) => {
   app.get(basePath('/cluster'), cluster.list)
   app.get(basePath('/cluster/:id'), cluster.get)
   app.post(basePath('/cluster'), cluster.create)
+  
+  app.post(basePath('/cluster/keypair/create'), cluster.createKeypair)
 }
 
 module.exports = Routes
