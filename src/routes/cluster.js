@@ -4,6 +4,7 @@ const ClusterRoutes = (backends) => {
 
   const list = (req, res, next) => {
     cluster.list({}, (err, clusters) => {
+      if(err) return next(err)
       res
         .status(200)
         .json(clusters)
@@ -14,6 +15,7 @@ const ClusterRoutes = (backends) => {
     cluster.get({
       id: req.params.id,
     }, (err, cluster) => {
+      if(err) return next(err)
       res
         .status(200)
         .json(cluster)
@@ -22,6 +24,7 @@ const ClusterRoutes = (backends) => {
 
   const create = (req, res, next) => {
     cluster.create(req.body, (err, results) => {
+      if(err) return next(err)
       res
         .status(201)
         .json(results)
@@ -30,6 +33,7 @@ const ClusterRoutes = (backends) => {
 
   const createKeypair = (req, res, next) => {
     cluster.createKeypair({}, (err, results) => {
+      if(err) return next(err)
       res
         .status(200)
         .json(results)

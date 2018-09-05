@@ -10,6 +10,7 @@
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
     "express-pino-logger": "^3.0.2",
+    "joi": "^13.6.0",
     "jsonist": "^2.1.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
