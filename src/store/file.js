@@ -5,6 +5,10 @@ const settings = require('../settings')
 
 const BASE_FOLDER = settings.fileStoreFolder
 
+const FILENAMES = {
+  settings: 'settings.json'
+}
+
 const FileStore = () => {
 
   mkdirp.sync(BASE_FOLDER)
@@ -60,7 +64,7 @@ const FileStore = () => {
 
   /*
   
-    return the processed `index.json` file from a cluster folder
+    return the processed `settings.json` file from a cluster folder
 
     params:
 
@@ -70,17 +74,17 @@ const FileStore = () => {
   const getCluster = (params, done) => {
     async.waterfall([
 
-      // load the contents of the index.json file in the cluster folder
+      // load the contents of the settings.json file in the cluster folder
       (next) => readClusterFile({
         id: params.id,
-        filename: 'index.json',
+        filename: FILENAMES.settings,
       }, next),
 
       // process into an object
-      (indexFileContents, next) => {
+      (settingsFileContents, next) => {
         let processedFile = null
         try {
-          processedFile = JSON.parse(indexFileContents)
+          processedFile = JSON.parse(settingsFileContents)
         } catch(e) {
           return next(e)
         }
@@ -92,7 +96,7 @@ const FileStore = () => {
 
   /*
   
-    write the given data into `index.json` 
+    write the given data into `settings.json` 
 
     params:
 
@@ -106,7 +110,7 @@ const FileStore = () => {
 
     writeClusterFile({
       id: params.id,
-      filename: 'index.json',
+      filename: FILENAMES.settings,
       data: JSON.stringify(params.data),
     }, done)
   }
