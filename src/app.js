@@ -1,5 +1,6 @@
 'use strict'
 
+const EventEmitter = require('events')
 const express = require('express')
 const bodyParser = require('body-parser')
 const pinoExpress = require('express-pino-logger')()
@@ -13,18 +14,37 @@ const pino = require('pino')({
 const Store = require('./store/file')
 const Backends = require('./backends')
 const Routes = require('./routes')
+const JobDispatcher = require('./jobqueue/simple-dispatcher')
+const JobHandler = require('./jobqueue/simple-handler')
 
 const App = () => {
 
+  // the data store
   const store = Store()
+
+  // generic event emitter to communicate jobs between the dispatcher and handler
+  const jobEventEmitter = new EventEmitter()
+
+  // the job dispatcher and handlers
+  const jobDispatcher = JobDispatcher(jobEventEmitter)
+  const jobHandler = JobHandler(store, jobDispatcher)
+
+  // wire up the job dispatcher and handler using the event emitter
+  jobEventEmitter.on('job', jobHandler)
+
+  // the backend logic handlers invoked by the HTTP routes
   const backends = Backends({
     store,
+    jobDispatcher,
   })
+
+  // the HTTP server
   const app = express()
 
   app.use(pinoExpress)
   app.use(bodyParser.json())
 
+  // bind routes to the HTTP server
   Routes(app, backends)
 
   /*

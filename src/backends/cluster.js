@@ -6,7 +6,7 @@ const pino = require('pino')({
   name: 'backend.clusters',
 })
 
-const ClustersBackend = ({ store }) => {
+const ClustersBackend = ({ store, jobDispatcher }) => {
   
   /*
   
@@ -93,6 +93,17 @@ const ClustersBackend = ({ store }) => {
       // save the cluster settings in the store
       next => {
         store.createCluster(params, next)
+      },
+
+      // now that the cluster settings have been persisted
+      // dispatch the "create-cluster" job that will make the kops cluster
+      // it will then call the "wait-cluster-created" job that will update
+      // the status once the cluster is ready
+      next => {
+        jobDispatcher({
+          name: 'createCluster',
+          params,
+        }, next)
       },
 
     ], done)

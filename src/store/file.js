@@ -280,6 +280,26 @@ const FileStore = () => {
     ], done)
   }
 
+  /*
+  
+    write the given details into the 'status.json' file of the given cluster
+
+    params:
+
+     * clustername
+     * status - the data that will written into the 'status.json' file
+    
+  */
+  const updateClusterStatus = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for updateClusterStatus`)
+    if(!params.status) return done(`status param required for updateClusterStatus`)
+
+    writeClusterFile({
+      clustername: params.clustername,
+      filename: FILENAMES.status,
+      data: JSON.stringify(params.status),
+    })
+  }
 
   return {
     listClusterNames,
@@ -291,6 +311,7 @@ const FileStore = () => {
     getClusterFilePath,
     readClusterFile,
     writeClusterFile,
+    updateClusterStatus,
   }
 
 }
