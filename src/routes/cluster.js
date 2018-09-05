@@ -22,6 +22,17 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const status = (req, res, next) => {
+    cluster.status({
+      id: req.params.id,
+    }, (err, status) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json(status)
+    })
+  }
+
   const create = (req, res, next) => {
     cluster.create(req.body, (err, results) => {
       if(err) return next(err)
@@ -43,6 +54,7 @@ const ClusterRoutes = (backends) => {
   return {
     list,
     get,
+    status,
     create,
     createKeypair,
   }

@@ -31,7 +31,21 @@ const ClustersBackend = ({ store }) => {
     
   */
   const get = (params, done) => store.getCluster({
-    id: params.id,
+    clustername: params.id,
+  }, done)
+
+
+  /*
+  
+    get a cluster status given it's id
+
+    params:
+
+     * id - string
+    
+  */
+  const status = (params, done) => store.getClusterStatus({
+    clustername: params.id,
   }, done)
 
   /*
@@ -99,6 +113,7 @@ const ClustersBackend = ({ store }) => {
   return {
     list,
     get,
+    status,
     create,
     createKeypair,
   }

@@ -68,6 +68,40 @@ const FileStore = () => {
 
   /*
   
+    return the processed `settings.json` file from a cluster folder
+
+    params:
+
+     * clustername - string
+    
+  */
+  const getClusterSettings = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for getClusterSettings`)
+    readClusterFileAsJSON({
+      clustername: params.clustername,
+      filename: FILENAMES.settings,
+    }, done)
+  }
+
+  /*
+  
+    return the processed `status.json` file from a cluster folder
+
+    params:
+
+     * clustername - string
+    
+  */
+  const getClusterStatus = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for getClusterStatus`)
+    readClusterFileAsJSON({
+      clustername: params.clustername,
+      filename: FILENAMES.status,
+    }, done)
+  }
+
+  /*
+  
     return the processed `settings.json` and `status.json` files from a cluster folder
 
     params:
@@ -76,21 +110,10 @@ const FileStore = () => {
     
   */
   const getCluster = (params, done) => {
-
     if(!params.clustername) return done(`clustername param required for getCluster`)
-
     async.parallel({
-
-      settings: next => readClusterFileAsJSON({
-        clustername: params.clustername,
-        filename: FILENAMES.settings,
-      }, next),
-
-      status: next => readClusterFileAsJSON({
-        clustername: params.clustername,
-        filename: FILENAMES.status,
-      }, next),
-
+      settings: next => getClusterSettings(params, next),
+      status: next => getClusterStatus(params, next),
     }, done)
 
   }
@@ -262,6 +285,8 @@ const FileStore = () => {
     listClusterNames,
     listClusters,
     getCluster,
+    getClusterSettings,
+    getClusterStatus,
     createCluster,
     getClusterFilePath,
     readClusterFile,
