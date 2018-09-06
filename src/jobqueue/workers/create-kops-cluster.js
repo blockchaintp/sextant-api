@@ -3,7 +3,9 @@ const pino = require('pino')({
   name: 'worker.createCluster',
 })
 
+const settings = require('../../settings')
 const kops = require('../../utils/kops')
+const clusterUtils = require('../../utils/cluster')
 
 /*
 
@@ -57,9 +59,16 @@ const kops = require('../../utils/kops')
   
 */
 
-const CreateKopsCluster = (params, store, dispatcher) => {
+
+/*
+
+  create the cluster using kops
+  
+*/
+const createClusterTask = (params, store, dispatcher, done) => {
+
   pino.info({
-    action: 'handle',
+    action: 'createClusterTask',
     params,
   })
 
@@ -119,6 +128,232 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       ], nextw)
     },
     
+  ], done)
+}
+
+/*
+
+  wait for the cluster to be ready
+
+  params:
+
+   * name
+   * domain
+  
+*/
+
+const waitClusterReadyTask = (params, store, dispatcher, done) => {
+  pino.info({
+    action: 'waitClusterReadyTask',
+    params,
+  })
+
+  let lastExitCode = 1
+  let attempts = 0
+
+  async.whilst(
+
+    // keep looping until the 'validate' exit code is zero
+    () => lastExitCode > 0,
+
+    (next) => {
+      attempts++
+      if(attempts > settings.validateClusterAttempts) return next(`cluster has not validated after ${settings.validateClusterAttempts} attempts`)
+
+      pino.info({
+        action: 'validateCluster',
+        params,
+      })
+    
+      // validate the cluster and expect an error if the cluster is not ready
+      // the lack of an error means we got a zero exit code and the loop will end
+      kops.validateCluster(params, (err) => {
+        if(err) {
+          lastExitCode = err.code
+          setTimeout(next, settings.validateClusterDelay)
+        }
+        else {
+          lastExitCode = 0
+          next()
+        }
+      })
+    },
+
+    done
+  )
+}
+
+/*
+
+  deploy the core manifests
+
+  params:
+
+   * name
+   * domain
+  
+*/
+const deployCoreManifestsTask = (params, store, dispatcher, done) => {
+  pino.info({
+    action: 'deployCoreManifestsTask',
+    params,
+  })
+
+  async.waterfall([
+
+    // get a kubectl that is bound to the given cluster
+    (next) => clusterUtils.getKubectl(store, params.name, next),
+
+    (kubectl, next) => {
+
+      async.series([
+
+        // deploy the dashboard to the cluster
+        nexts => {
+          const dashboardParams = {
+            resource: settings.dashboardManifest
+          }
+          pino.info({
+            action: 'deploy-dashboard',
+            params: dashboardParams
+          })
+          kubectl.apply(dashboardParams, nexts)
+        },
+
+        // deploy the route53 mapper to the cluster
+        nexts => {
+          const route53MapperParams = {
+            resource: settings.route53MapperManifest
+          }
+          pino.info({
+            action: 'deploy-route53-mapper',
+            params: route53MapperParams
+          })
+          kubectl.apply(route53MapperParams, nexts)
+        },
+
+      ], next)
+      
+    },
+
+  ], done)
+}
+
+/*
+
+  export the cluster config files
+
+  params:
+
+   * name
+   * domain
+  
+*/
+const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
+  pino.info({
+    action: 'exportClusterConfigFilesTask',
+    params,
+  })
+
+  async.series([
+    
+    // export a kubeconfig file for this cluster
+    // this will be used anytime we run `kubectl` against this cluster
+    next => {
+
+      async.waterfall([
+        (wnext) => store.getClusterFilePath({
+          clustername: params.name,
+          filename: 'kubeConfig',
+        }, wnext),
+
+        (kubeConfigPath, wnext) => {
+          const exportKubeConfigParams = {
+            name: params.name,
+            domain: params.domain,
+            kubeConfigPath
+          }
+
+          pino.info({
+            action: 'exportKubeConfig',
+            params: exportKubeConfigParams,
+          })
+
+          kops.exportKubeConfig(exportKubeConfigParams, wnext)
+        },
+      ], next)
+
+    },
+
+    // export a kops config file for this cluster
+    // this can be downloaded as an export for the cluster
+    next => {
+
+      async.waterfall([
+        (wnext) => store.getClusterFilePath({
+          clustername: params.name,
+          filename: 'kopsConfig',
+        }, wnext),
+
+        (kopsConfigPath, wnext) => {
+          const exportKopsConfigParams = {
+            name: params.name,
+            domain: params.domain,
+            kopsConfigPath
+          }
+
+          pino.info({
+            action: 'exportKopsConfig',
+            params: exportKopsConfigParams,
+          })
+
+          kops.exportKopsConfig(exportKopsConfigParams, wnext)
+        },
+      ], next)
+
+    },
+
+  ], done)
+}
+
+const CreateKopsCluster = (params, store, dispatcher) => {
+  pino.info({
+    action: 'handle',
+    params,
+  })
+
+  async.series([
+
+    // first boot the cluster
+    next => {
+      createClusterTask(params, store, dispatcher, next)
+    },
+
+    // wait for the cluster to be ready
+    next => {
+      waitClusterReadyTask({
+        name: params.name,
+        domain: params.domain,
+      }, store, dispatcher, next)
+    },
+
+    // output the cluster config files
+    next => {
+      exportClusterConfigFilesTask({
+        name: params.name,
+        domain: params.domain,
+      }, store, dispatcher, next)
+    },
+
+
+    // deploy the core manifests
+    next => {
+      deployCoreManifestsTask({
+        name: params.name,
+        domain: params.domain,
+      }, store, dispatcher, next)
+    },
+
   ], (err) => {
     if(err) {
 
@@ -142,14 +377,12 @@ const CreateKopsCluster = (params, store, dispatcher) => {
         params,
       })
 
-      // the cluster has been created, trigger a waitClusterCreated job
-      // that will loop until the cluster is validated
-      dispatcher({
-        name: 'waitClusterCreated',
-        params: {
-          name: params.name,
-          domain: params.domain,
-        },
+      // everything is ready - put the cluster into a 'created' state
+      store.updateClusterStatus({
+        clustername: params.name,
+        status: {
+          phase: 'created',
+        }
       }, () => {})
     }
   })

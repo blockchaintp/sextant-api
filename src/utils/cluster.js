@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const Kubectl = require('./kubectl')
 
 /*
 
@@ -46,7 +47,19 @@ const processClusterSettings = (settings) => {
   return newSettings
 }
 
+const getKubectl = (store, clustername, done) => {
+  store.getClusterFilePath({
+    clustername,
+    filename: 'kubeConfig',
+  }, (err, kubeconfigPath) => {
+    if(err) return done(err)
+    const kubectl = Kubectl(kubeconfigPath)
+    done(null, kubectl)
+  })
+}
+
 module.exports = {
   validateClusterSettings,
   processClusterSettings,
+  getKubectl,
 }

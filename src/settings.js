@@ -15,6 +15,11 @@ const args = require('minimist')(process.argv, {
     // when creating a cluster - try 100 times waiting 10 seconds between each try
     validateClusterAttempts: 100,
     validateClusterDelay: 10000,
+
+    // core manifests
+    dashboardManifest: 'https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml',
+
+    route53MapperManifest: 'https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.3.0.yml',
   }
 })
 
