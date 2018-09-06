@@ -1,3 +1,5 @@
+const fs = require('fs')
+
 const ClusterRoutes = (backends) => {
 
   const { cluster } = backends
@@ -78,6 +80,39 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const kubeconfig = (req, res, next) => {
+    cluster.getClusterFilepath({
+      name: req.params.id,
+      filename: 'kubeConfig',
+    }, (err, filepath) => {
+      if(err) return next(err)
+
+      res.setHeader('Content-disposition', `attachment; filename=${req.params.id}-kubeconfig`)
+      res.setHeader('Content-type', 'text/plain')
+
+      fs
+        .createReadStream(filepath)
+        .pipe(res)
+    })
+  }
+
+
+  const kopsconfig = (req, res, next) => {
+    cluster.getClusterFilepath({
+      name: req.params.id,
+      filename: 'kopsConfig',
+    }, (err, filepath) => {
+      if(err) return next(err)
+
+      res.setHeader('Content-disposition', `attachment; filename=${req.params.id}-kopsconfig.yaml`)
+      res.setHeader('Content-type', 'text/yaml')
+
+      fs
+        .createReadStream(filepath)
+        .pipe(res)
+    })
+  }
+
   return {
     list,
     get,
@@ -86,6 +121,8 @@ const ClusterRoutes = (backends) => {
     destroy,
     cleanup,
     createKeypair,
+    kubeconfig,
+    kopsconfig,
   }
 }
 

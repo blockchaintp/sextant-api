@@ -35,23 +35,27 @@ const ExportClusterConfigFiles = (params, store, dispatcher) => {
     // this will be used anytime we run `kubectl` against this cluster
     next => {
 
-      const kubeConfigPath = store.getClusterFilePath({
-        clustername: params.name,
-        filename: 'kubeConfig',
-      })
+      async.waterfall([
+        (wnext) => store.getClusterFilePath({
+          clustername: params.name,
+          filename: 'kubeConfig',
+        }, wnext),
 
-      const exportKubeConfigParams = {
-        name: params.name,
-        domain: params.domain,
-        kubeConfigPath
-      }
+        (kubeConfigPath, wnext) => {
+          const exportKubeConfigParams = {
+            name: params.name,
+            domain: params.domain,
+            kubeConfigPath
+          }
 
-      pino.info({
-        action: 'exportKubeConfig',
-        params: exportKubeConfigParams,
-      })
+          pino.info({
+            action: 'exportKubeConfig',
+            params: exportKubeConfigParams,
+          })
 
-      kops.exportKubeConfig(exportKubeConfigParams, next)
+          kops.exportKubeConfig(exportKubeConfigParams, wnext)
+        },
+      ], next)
 
     },
 
@@ -59,23 +63,28 @@ const ExportClusterConfigFiles = (params, store, dispatcher) => {
     // this can be downloaded as an export for the cluster
     next => {
 
-      const kopsConfigPath = store.getClusterFilePath({
-        clustername: params.name,
-        filename: 'kopsConfig',
-      })
+      async.waterfall([
+        (wnext) => store.getClusterFilePath({
+          clustername: params.name,
+          filename: 'kopsConfig',
+        }, wnext),
 
-      const exportKopsConfigParams = {
-        name: params.name,
-        domain: params.domain,
-        kopsConfigPath
-      }
+        (kopsConfigPath, wnext) => {
+          const exportKopsConfigParams = {
+            name: params.name,
+            domain: params.domain,
+            kopsConfigPath
+          }
 
-      pino.info({
-        action: 'exportKopsConfig',
-        params: exportKopsConfigParams,
-      })
+          pino.info({
+            action: 'exportKopsConfig',
+            params: exportKopsConfigParams,
+          })
 
-      kops.exportKopsConfig(exportKopsConfigParams, next)
+          kops.exportKopsConfig(exportKopsConfigParams, wnext)
+        },
+      ], next)
+
     },
 
   ], (err) => {

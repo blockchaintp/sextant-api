@@ -1,7 +1,8 @@
 const fs = require('fs')
 const exec = require('child_process').exec
+const spawn = require('child_process').spawn
 const pino = require('pino')({
-  name: 'kops',
+  name: 'kubectl',
 })
 
 const settings = require('../settings')
@@ -18,12 +19,6 @@ const command = (cmd, options, done) => {
     //(which should not happen but some logs might be longer than 200kb which is the default)
     maxBuffer: 1024 * 1024 * 5,
   })
-
-  // inject the current process env into the passed environment because when an env option
-  // is given to exec it doesn't inherit by default
-  if(options.env) {
-    useOptions.env = Object.assign({}, process.env, options.env)
-  }
 
   const runCommand = `kops ${cmd}`
 
@@ -204,7 +199,7 @@ const exportKopsConfig = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.exportKopsConfig`)
   if(!params.kopsConfigPath) return done(`kopsConfigPath param required for kops.exportKopsConfig`)
 
-  command(`toolbox dump --name ${ params.name }.${ params.domain } \
+  command(`export kubecfg ${ params.name }.${ params.domain } \
     --state s3://clusters.${ params.domain }
 `, (err, stdout) => {
     if(err) return done(err)

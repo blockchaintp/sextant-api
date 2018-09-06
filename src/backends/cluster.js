@@ -286,6 +286,21 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     sshUtils.createKeypair(done)
   }
 
+  /*
+  
+    get a filepath for a cluster
+
+     * name
+     * filename
+    
+  */
+  const getClusterFilepath = (params, done) => {
+    store.getClusterFilePath({
+      clustername: params.name,
+      filename: params.filename,
+    }, done)
+  }
+
   return {
     list,
     get,
@@ -294,6 +309,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     destroy,
     cleanup,
     createKeypair,
+    getClusterFilepath,
   }
 
 }
