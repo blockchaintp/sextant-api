@@ -85,6 +85,27 @@ const createCluster = (params, done) => {
 
 /*
 
+  destroy a kops cluster
+
+  params:
+
+   * name
+   * domain
+  
+*/
+const destroyCluster = (params, done) => {
+
+  if(!params.name) return done(`name param required for kops.destroyCluster`)
+  if(!params.domain) return done(`domain param required for kops.destroyCluster`)
+
+  command(`delete cluster ${ params.name }.${ params.domain } \
+    --state s3://clusters.${ params.domain } \
+    --yes
+`, done)
+}
+
+/*
+
   params:
 
    * name
@@ -188,6 +209,7 @@ const exportKopsConfig = (params, done) => {
 module.exports = {
   command,
   createCluster,
+  destroyCluster,
   createSecret,
   updateCluster,
   validateCluster,

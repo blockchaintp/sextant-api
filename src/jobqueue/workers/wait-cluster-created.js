@@ -85,7 +85,7 @@ const WaitClusterCreated = (params, store, dispatcher) => {
         // so we have a KUBECONFIG and KOPSCONFIG file for the cluster in the store
         dispatcher({
           name: 'exportClusterConfigFiles',
-          {
+          params: {
             name: params.name,
             domain: params.domain,
           },

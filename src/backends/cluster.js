@@ -23,29 +23,29 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
   /*
   
-    get a cluster given it's id
+    get a cluster given it's name
 
     params:
 
-     * id - string
+     * name - string
     
   */
   const get = (params, done) => store.getCluster({
-    clustername: params.id,
+    clustername: params.name,
   }, done)
 
 
   /*
   
-    get a cluster status given it's id
+    get a cluster status given it's name
 
     params:
 
-     * id - string
+     * name - string
     
   */
   const status = (params, done) => store.getClusterStatus({
-    clustername: params.id,
+    clustername: params.name,
   }, done)
 
   /*
@@ -74,6 +74,11 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     // process the incoming settings
     const settings = clusterUtils.processClusterSettings(params)
   
+    pino.info({
+      action: 'create',
+      params,
+    })
+
     async.series([
 
       // validate the given settings
@@ -95,6 +100,12 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
       // save the cluster settings in the store
       next => {
+        pino.info({
+          action: 'store.createCluster',
+          params: {
+            settings
+          },
+        })
         store.createCluster(settings, next)
       },
 
@@ -103,10 +114,155 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
       // it will then call the "wait-cluster-created" job that will update
       // the status once the cluster is ready
       next => {
+        pino.info({
+          action: 'job.createCluster',
+          params: {
+            settings
+          },
+        })
         jobDispatcher({
           name: 'createCluster',
           params: settings,
         }, next)
+      },
+
+    ], done)
+  }
+
+  /*
+  
+    destroy a cluster
+
+    this will keep the state intact until the "cleanup" action is called
+
+    this is so they can see the "deleting" progress in the UI
+
+    params: 
+
+     * name
+    
+  */
+
+  const destroy = (params, done) => {
+
+    pino.info({
+      action: 'destroy',
+      params
+    })
+
+    async.series([
+
+      // check there is a cluster with that name
+      next => {
+        store.listClusterNames({}, (err, clusterNames) => {
+          if(err) return next(err)
+          const existingCluster = clusterNames.filter(clusterName => clusterName == params.name)[0]
+          if(!existingCluster) return next(`There is no cluster with the name ${params.name}`)
+          next()
+        })
+      },
+
+      // dispatch the delete cluster job
+      next => {
+
+        async.waterfall([
+
+          // load the cluster settings so we know the domain (needed by the kops job)
+          (nextw) => store.getClusterSettings({
+            clustername: params.name
+          }, nextw),
+
+          // dispatch the destroyCluster job
+          (clusterSettings, nextw) => {
+            const jobParams = {
+              name: clusterSettings.name,
+              domain: clusterSettings.domain,
+            }
+            pino.info({
+              action: 'job.destroyCluster',
+              params: jobParams,
+            })
+            jobDispatcher({
+              name: 'destroyCluster',
+              params: jobParams,
+            }, nextw)
+          }
+
+        ], next)
+        
+      },
+
+      // update the cluster status to deleting
+      next => {
+        const updateClusterStatusParams = {
+          clustername: params.name,
+          status: {
+            phase: 'deleting',
+          }
+        }
+        pino.info({
+          action: 'store.updateClusterStatus',
+          params: updateClusterStatusParams,
+        })
+        store.updateClusterStatus(updateClusterStatusParams, next)
+      },
+
+    ], done)
+  }
+
+  /*
+  
+    cleanup a cluster
+
+    can only be called in the "deleted" state
+
+    this will remove the cluster from the store so it can be re-created
+
+    params: 
+
+     * name
+    
+  */
+  const cleanup = (params, done) => {
+
+    pino.info({
+      action: 'cleanup',
+      params
+    })
+
+    async.series([
+
+      // check there is a cluster with that name
+      next => {
+        store.listClusterNames({}, (err, clusterNames) => {
+          if(err) return next(err)
+          const existingCluster = clusterNames.filter(clusterName => clusterName == params.name)[0]
+          if(!existingCluster) return next(`There is no cluster with the name ${params.name}`)
+          next()
+        })
+      },
+
+      // check the cluster is in the "deleted" phase
+      next => {
+        store.getClusterStatus({
+          clustername: params.name,
+        }, (err, status) => {
+          if(err) return next(err)
+          if(status.phase != 'deleted') return next(`The ${params.name} cluster is not in the "deleted" phase so it cannot be cleaned up`)
+          next()
+        })
+      },
+
+      // update the cluster status to deleting
+      next => {
+        const destroyClusterParams = {
+          clustername: params.name,
+        }
+        pino.info({
+          action: 'store.destroyCluster',
+          params: destroyClusterParams
+        })
+        store.destroyCluster(destroyClusterParams, next)
       },
 
     ], done)
@@ -122,13 +278,21 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     the keys do not remain on disk once created
     
   */
-  const createKeypair = (params, done) => sshUtils.createKeypair(done)
+  const createKeypair = (params, done) => {
+    pino.info({
+      action: 'createKeypair',
+      params
+    })
+    sshUtils.createKeypair(done)
+  }
 
   return {
     list,
     get,
     status,
     create,
+    destroy,
+    cleanup,
     createKeypair,
   }
 

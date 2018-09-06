@@ -13,7 +13,7 @@ const ClusterRoutes = (backends) => {
 
   const get = (req, res, next) => {
     cluster.get({
-      id: req.params.id,
+      name: req.params.id,
     }, (err, cluster) => {
       if(err) return next(err)
       res
@@ -24,7 +24,7 @@ const ClusterRoutes = (backends) => {
 
   const status = (req, res, next) => {
     cluster.status({
-      id: req.params.id,
+      name: req.params.id,
     }, (err, status) => {
       if(err) return next(err)
       res
@@ -51,11 +51,40 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const destroy = (req, res, next) => {
+    cluster.destroy({
+      name: req.params.id,
+    }, (err) => {
+      if(err) return next(err)
+
+      res
+        .status(200)
+        .json({
+          ok: true
+        })
+    })
+  }
+
+  const cleanup = (req, res, next) => {
+    cluster.cleanup({
+      name: req.params.id,
+    }, (err) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json({
+          ok: true
+        })
+    })
+  }
+
   return {
     list,
     get,
     status,
     create,
+    destroy,
+    cleanup,
     createKeypair,
   }
 }

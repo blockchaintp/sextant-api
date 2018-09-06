@@ -1,8 +1,13 @@
 const mkdirp = require('mkdirp')
+const rmdir = require('rmdir')
 const fs = require('fs')
 const path = require('path')
 const async = require('async')
 const settings = require('../settings')
+
+const pino = require('pino')({
+  name: 'filestore',
+})
 
 const BASE_FOLDER = settings.fileStoreFolder
 const CLUSTER_FOLDER = path.join(BASE_FOLDER, 'clusters')
@@ -120,6 +125,30 @@ const FileStore = () => {
 
   }
 
+
+  /*
+  
+    delete the state for a given cluster
+
+    params:
+
+     * clustername - string
+    
+  */
+  const destroyCluster = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for destroyCluster`)
+
+    pino.info({
+      action: 'destroyCluster',
+      params,
+    })
+
+    async.waterfall([
+      (next) => getClusterDirectoryPath(params, next),
+      (directoryPath, next) => rmdir(directoryPath, next),
+    ], done)
+  }
+
   /*
   
     write the given data into `settings.json` 
@@ -145,6 +174,11 @@ const FileStore = () => {
   */
   const createCluster = (params, done) => {
     if(!params.name) return done(`name param required for createCluster`)
+
+    pino.info({
+      action: 'createCluster',
+      params,
+    })
 
     async.parallel({
 
@@ -174,6 +208,21 @@ const FileStore = () => {
 
   /*
   
+    return the directory path for where the files for a given cluster are stored
+
+    params:
+
+     * clustername - string
+    
+  */
+  const getClusterDirectoryPath = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for getClusterDirectoryPath`)
+    const directoryPath = path.join(CLUSTER_FOLDER, params.clustername)
+    done(null, directoryPath)
+  }
+
+  /*
+  
     return the filepath for a single file belonging to a cluster
 
     params:
@@ -183,8 +232,8 @@ const FileStore = () => {
     
   */
   const getClusterFilePath = (params, done) => {
-    if(!params.clustername) return done(`clustername param required for readClusterFile`)
-    if(!params.filename) return done(`filename param required for readClusterFile`)
+    if(!params.clustername) return done(`clustername param required for getClusterFilePath`)
+    if(!params.filename) return done(`filename param required for getClusterFilePath`)
 
     const filename = FILENAMES[params.filename] ? FILENAMES[params.filename] : params.filename
     const filePath = path.join(CLUSTER_FOLDER, params.clustername, filename)
@@ -269,6 +318,11 @@ const FileStore = () => {
     if(!params.filename) return done(`filename param required for writeClusterFile`)
     if(!params.data) return done(`data param required for writeClusterFile`)
 
+    pino.info({
+      action: 'writeClusterFile',
+      params,
+    })
+
     const folderPath = path.join(CLUSTER_FOLDER, params.clustername)
     const filePath = path.join(folderPath, params.filename)
 
@@ -297,11 +351,16 @@ const FileStore = () => {
     if(!params.clustername) return done(`clustername param required for updateClusterStatus`)
     if(!params.status) return done(`status param required for updateClusterStatus`)
 
+    pino.info({
+      action: 'updateClusterStatus',
+      params,
+    })
+
     writeClusterFile({
       clustername: params.clustername,
       filename: FILENAMES.status,
       data: JSON.stringify(params.status),
-    })
+    }, done)
   }
 
   /*
@@ -317,6 +376,12 @@ const FileStore = () => {
   const setClusterError = (params, done) => {
     if(!params.clustername) return done(`clustername param required for setClusterError`)
     if(!params.error) return done(`error param required for setClusterError`)
+
+    pino.info({
+      action: 'setClusterError',
+      params,
+    })
+  
     updateClusterStatus({
       clustername: params.clustername,
       status: {
@@ -326,6 +391,7 @@ const FileStore = () => {
     }, done)
   }
 
+
   return {
     listClusterNames,
     listClusters,
@@ -333,6 +399,8 @@ const FileStore = () => {
     getClusterSettings,
     getClusterStatus,
     createCluster,
+    destroyCluster,
+    getClusterDirectoryPath,
     getClusterFilePath,
     readClusterFile,
     writeClusterFile,

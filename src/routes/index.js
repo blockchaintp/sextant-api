@@ -15,8 +15,10 @@ const Routes = (app, backends) => {
 
   app.get(basePath('/cluster'), cluster.list)
   app.get(basePath('/cluster/:id'), cluster.get)
-  app.get(basePath('/cluster/status/:id'), cluster.status)
   app.post(basePath('/cluster'), cluster.create)
+  app.delete(basePath('/cluster/:id'), cluster.destroy)
+  app.put(basePath('/cluster/cleanup/:id'), cluster.cleanup)
+  app.get(basePath('/cluster/status/:id'), cluster.status)
   
   app.post(basePath('/cluster/keypair/create'), cluster.createKeypair)
 }

@@ -83,10 +83,10 @@ const CreateKopsCluster = (params, store, dispatcher) => {
             publicKeyFilePath,
           }
           pino.info({
-            action: 'createCluster',
+            action: 'kops.createCluster',
             params: createClusterParams,
           })
-          kops.createCluster(createClusterParams, nexts),
+          kops.createCluster(createClusterParams, nexts)
         },
 
         // create the cluster secret
@@ -97,10 +97,10 @@ const CreateKopsCluster = (params, store, dispatcher) => {
             publicKeyFilePath,
           }
           pino.info({
-            action: 'createSecret',
+            action: 'kops.createSecret',
             params: createSecretParams,
           })
-          kops.createSecret(createSecretParams, nexts),
+          kops.createSecret(createSecretParams, nexts)
         },
 
         // update the cluster
@@ -110,10 +110,10 @@ const CreateKopsCluster = (params, store, dispatcher) => {
             domain: params.domain,
           }
           pino.info({
-            action: 'updateCluster',
+            action: 'kops.updateCluster',
             params: updateClusterParams,
           })
-          kops.updateCluster(updateClusterParams, nexts),
+          kops.updateCluster(updateClusterParams, nexts)
         }
 
       ], nextw)
@@ -146,7 +146,7 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       // that will loop until the cluster is validated
       dispatcher({
         name: 'waitClusterCreated',
-        {
+        params: {
           name: params.name,
           domain: params.domain,
         },

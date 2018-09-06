@@ -2,6 +2,7 @@ const workers = {
   createCluster: require('./workers/create-kops-cluster'),
   waitClusterCreated: require('./workers/wait-cluster-created'),
   exportClusterConfigFiles: require('./workers/export-cluster-config-files'),
+  destroyCluster: require('./workers/destroy-kops-cluster'),
 }
 
 const SimpleHandler = (store, dispatcher) => (job) => {
