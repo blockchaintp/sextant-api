@@ -56,12 +56,12 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
     {
       domain: "dev.catenasys.com.",
-      master_size: 1,
-      master_type: "m1.medium",
+      master_count: 1,
+      master_size: "m1.medium",
       master_zones: ["eu-west-2a"],
       name: "apples",
-      node_size: 3,
-      node_type: "m1.medium",
+      node_count: 3,
+      node_size: "m1.medium",
       node_zones: ["eu-west-2a"],
       region: "eu-west-2",
       topology: "public",
@@ -71,11 +71,14 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
   */
   const create = (params, done) => {
 
+    // process the incoming settings
+    const settings = clusterUtils.processClusterSettings(params)
+  
     async.series([
 
-      // validate the given params
+      // validate the given settings
       next => {
-        const errors = clusterUtils.validateClusterSettings(params)
+        const errors = clusterUtils.validateClusterSettings(settings)
         if(errors) return next(errors)
         next()
       },
@@ -84,15 +87,15 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
       next => {
         store.listClusterNames({}, (err, clusterNames) => {
           if(err) return next(err)
-          const existingCluster = clusterNames.filter(clusterName => clusterName == params.name)[0]
-          if(existingCluster) return next(`There is already a cluster with the name ${params.name}`)
+          const existingCluster = clusterNames.filter(clusterName => clusterName == settings.name)[0]
+          if(existingCluster) return next(`There is already a cluster with the name ${settings.name}`)
           next()
         })
       },
 
       // save the cluster settings in the store
       next => {
-        store.createCluster(params, next)
+        store.createCluster(settings, next)
       },
 
       // now that the cluster settings have been persisted
@@ -102,7 +105,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
       next => {
         jobDispatcher({
           name: 'createCluster',
-          params,
+          params: settings,
         }, next)
       },
 

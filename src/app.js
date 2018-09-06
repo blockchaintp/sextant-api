@@ -41,7 +41,7 @@ const App = () => {
   // the HTTP server
   const app = express()
 
-  app.use(pinoExpress)
+  //app.use(pinoExpress)
   app.use(bodyParser.json())
 
   // bind routes to the HTTP server

@@ -128,12 +128,12 @@ const FileStore = () => {
 
     {
       domain: "dev.catenasys.com.",
-      master_size: 1,
-      master_type: "m1.medium",
+      master_count: 1,
+      master_size: "m1.medium",
       master_zones: ["eu-west-2a"],
       name: "apples",
-      node_size: 3,
-      node_type: "m1.medium",
+      node_count: 3,
+      node_size: "m1.medium",
       node_zones: ["eu-west-2a"],
       region: "eu-west-2",
       topology: "public",
@@ -184,7 +184,8 @@ const FileStore = () => {
     if(!params.clustername) return done(`clustername param required for readClusterFile`)
     if(!params.filename) return done(`filename param required for readClusterFile`)
 
-    const filePath = path.join(CLUSTER_FOLDER, params.clustername, params.filename)
+    const filename = FILENAMES[params.filename] ? FILENAMES[params.filename] : params.filename
+    const filePath = path.join(CLUSTER_FOLDER, params.clustername, filename)
 
     done(null, filePath)
   }
@@ -301,6 +302,28 @@ const FileStore = () => {
     })
   }
 
+  /*
+  
+    set the cluster into error state by writing 'phase: error' to the status.json
+
+    params:
+
+     * clustername
+     * error
+    
+  */
+  const setClusterError = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for setClusterError`)
+    if(!params.error) return done(`error param required for setClusterError`)
+    updateClusterStatus({
+      clustername: params.clustername,
+      status: {
+        phase: 'error',
+        error: params.error,
+      }
+    }, done)
+  }
+
   return {
     listClusterNames,
     listClusters,
@@ -312,6 +335,7 @@ const FileStore = () => {
     readClusterFile,
     writeClusterFile,
     updateClusterStatus,
+    setClusterError,
   }
 
 }

@@ -28,18 +28,25 @@ const clusterSettingsSchema = Joi.object().keys({
   topology: Joi.string().valid(['public', 'private']).required(),
   public_key: Joi.string().regex(/^ssh-rsa AAAA/).required(),
   
-  master_size: Joi.number().integer().valid([1,3,5]).required(),
-  master_type: Joi.string().regex(/^\w+\.\w+$/).required(),
+  master_count: Joi.number().integer().valid([1,3,5]).required(),
+  master_size: Joi.string().regex(/^\w+\.\w+$/).required(),
   master_zones: Joi.array().items(Joi.string().regex(/^\w+-\w+-\d+\w+$/)).required(),
   
-  node_size: Joi.number().integer().min(2).max(128).required(),
-  node_type: Joi.string().regex(/^\w+\.\w+$/).required(),
+  node_count: Joi.number().integer().min(2).max(128).required(),
+  node_size: Joi.string().regex(/^\w+\.\w+$/).required(),
   node_zones: Joi.array().items(Joi.string().regex(/^\w+-\w+-\d+\w+$/)).required(),
 
 })
 
 const validateClusterSettings = (settings) => Joi.validate(settings, clusterSettingsSchema).error
 
+const processClusterSettings = (settings) => {
+  const newSettings = Object.assign({}, settings)
+  newSettings.domain = newSettings.domain.replace(/\.$/, '')
+  return newSettings
+}
+
 module.exports = {
   validateClusterSettings,
+  processClusterSettings,
 }
