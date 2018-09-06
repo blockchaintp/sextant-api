@@ -73,17 +73,48 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       }, nextw)
     },
 
-    (publicKeyPath, nextw) => {
+    (publicKeyFilePath, nextw) => {
       async.series([
 
         // call the create cluster command
-        nexts => kops.createCluster(params, publicKeyPath, nexts),
+        nexts => {
+          const createClusterParams = {
+            clusterSettings: params,
+            publicKeyFilePath,
+          }
+          pino.info({
+            action: 'createCluster',
+            params: createClusterParams,
+          })
+          kops.createCluster(createClusterParams, nexts),
+        },
 
         // create the cluster secret
-        nexts => kops.createSecret(params, publicKeyPath, nexts),
+        nexts => {
+          const createSecretParams = {
+            name: params.name,
+            domain: params.domain,
+            publicKeyFilePath,
+          }
+          pino.info({
+            action: 'createSecret',
+            params: createSecretParams,
+          })
+          kops.createSecret(createSecretParams, nexts),
+        },
 
         // update the cluster
-        nexts => kops.updateCluster(params, nexts),
+        nexts => {
+          const updateClusterParams = {
+            name: params.name,
+            domain: params.domain,
+          }
+          pino.info({
+            action: 'updateCluster',
+            params: updateClusterParams,
+          })
+          kops.updateCluster(updateClusterParams, nexts),
+        }
 
       ], nextw)
     },
@@ -115,7 +146,10 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       // that will loop until the cluster is validated
       dispatcher({
         name: 'waitClusterCreated',
-        params,
+        {
+          name: params.name,
+          domain: params.domain,
+        },
       }, () => {})
     }
   })

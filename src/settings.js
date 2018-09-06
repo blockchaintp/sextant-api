@@ -9,6 +9,9 @@ const args = require('minimist')(process.argv, {
     baseUrl: process.env.BASE_URL || '/api/v1',
     fileStoreFolder: process.env.SEXTANT_FILE_STORE_FOLDER || '/var/lib/sextant-api/filestore',
 
+    // which type of networking we use for kops clusters
+    kopsNetworking: 'weave',
+    
     // when creating a cluster - try 100 times waiting 10 seconds between each try
     validateClusterAttempts: 100,
     validateClusterDelay: 10000,

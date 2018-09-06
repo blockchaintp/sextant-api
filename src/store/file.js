@@ -11,6 +11,8 @@ const FILENAMES = {
   settings: 'settings.json',
   status: 'status.json',
   publicKey: 'id_rsa.pub',
+  kubeConfig: 'kubeconfig',
+  kopsConfig: 'kopsconfig',
 }
 
 const FileStore = () => {

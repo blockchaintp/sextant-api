@@ -40,6 +40,7 @@ const WaitClusterCreated = (params, store, dispatcher) => {
 
       pino.info({
         action: 'validateCluster',
+        params,
       })
     
       // validate the cluster and expect an error if the cluster is not ready
@@ -80,12 +81,14 @@ const WaitClusterCreated = (params, store, dispatcher) => {
           params,
         })
 
-        // put the cluster into a 'created' state
-        store.updateClusterStatus({
-          clustername: params.name,
-          status: {
-            phase: 'created',
-          }
+        // the cluster is ready - trigger the export-cluster-config-files job
+        // so we have a KUBECONFIG and KOPSCONFIG file for the cluster in the store
+        dispatcher({
+          name: 'exportClusterConfigFiles',
+          {
+            name: params.name,
+            domain: params.domain,
+          },
         }, () => {})
 
       }
