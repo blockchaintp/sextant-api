@@ -74,17 +74,17 @@ const createCluster = (params, done) => {
 
   const { clusterSettings, publicKeyFilePath } = params
 
-  command(`create cluster ${ clusterSettings.name }.${ clusterSettings.domain } \
-    --node-count ${ clusterSettings.node_count } \
-    --zones ${ clusterSettings.node_zones.join(',') } \
-    --node-size ${ clusterSettings.node_size } \
-    --master-count ${ clusterSettings.master_count } \
-    --master-size ${ clusterSettings.master_size } \
-    --master-zones ${ clusterSettings.master_zones.join(',') } \
-    --networking ${ settings.kopsNetworking } \
-    --state s3://clusters.${ clusterSettings.domain } \
-    --topology ${ clusterSettings.topology } ${ clusterSettings.topology == 'private' ? '--bastion=true' : '' } \
-    --ssh-public-key ${ publicKeyFilePath } \
+  command(`create cluster ${ clusterSettings.name }.${ clusterSettings.domain } \\
+    --node-count ${ clusterSettings.node_count } \\
+    --zones ${ clusterSettings.node_zones.join(',') } \\
+    --node-size ${ clusterSettings.node_size } \\
+    --master-count ${ clusterSettings.master_count } \\
+    --master-size ${ clusterSettings.master_size } \\
+    --master-zones ${ clusterSettings.master_zones.join(',') } \\
+    --networking ${ settings.kopsNetworking } \\
+    --state s3://clusters.${ clusterSettings.domain } \\
+    --topology ${ clusterSettings.topology } ${ clusterSettings.topology == 'private' ? '--bastion=true' : '' } \\
+    --ssh-public-key ${ publicKeyFilePath } \\
     --yes
 `, done)
 }
@@ -104,8 +104,8 @@ const destroyCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.destroyCluster`)
   if(!params.domain) return done(`domain param required for kops.destroyCluster`)
 
-  command(`delete cluster ${ params.name }.${ params.domain } \
-    --state s3://clusters.${ params.domain } \
+  command(`delete cluster ${ params.name }.${ params.domain } \\
+    --state s3://clusters.${ params.domain } \\
     --yes
 `, done)
 }
@@ -124,8 +124,8 @@ const createSecret = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.createSecret`)
   if(!params.publicKeyFilePath) return done(`keyFilePath param required for kops.createSecret`)
 
-  command(`create secret --name ${ params.name }.${ params.domain } \
-    --state s3://clusters.${ params.domain } \
+  command(`create secret --name ${ params.name }.${ params.domain } \\
+    --state s3://clusters.${ params.domain } \\
     sshpublickey admin -i ${ params.publicKeyFilePath }
 `, done)
 }
@@ -142,8 +142,8 @@ const updateCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.updateCluster`)
   if(!params.domain) return done(`domain param required for kops.updateCluster`)
 
-  command(`update cluster ${ params.name }.${ params.domain } \
-    --state s3://clusters.${ params.domain } \
+  command(`update cluster ${ params.name }.${ params.domain } \\
+    --state s3://clusters.${ params.domain } \\
     --yes
 `, done)
 }
@@ -160,7 +160,7 @@ const validateCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.validateCluster`)
   if(!params.domain) return done(`domain param required for kops.validateCluster`)
 
-  command(`validate cluster ${ params.name }.${ params.domain } \
+  command(`validate cluster ${ params.name }.${ params.domain } \\
     --state s3://clusters.${ params.domain }
 `, done)
 }
@@ -179,7 +179,7 @@ const exportKubeConfig = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.exportKubeConfig`)
   if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
 
-  command(`export kubecfg ${ params.name }.${ params.domain } \
+  command(`export kubecfg ${ params.name }.${ params.domain } \\
     --state s3://clusters.${ params.domain }
 `, 
   {
@@ -204,7 +204,7 @@ const exportKopsConfig = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.exportKopsConfig`)
   if(!params.kopsConfigPath) return done(`kopsConfigPath param required for kops.exportKopsConfig`)
 
-  command(`toolbox dump --name ${ params.name }.${ params.domain } \
+  command(`toolbox dump --name ${ params.name }.${ params.domain } \\
     --state s3://clusters.${ params.domain }
 `, (err, stdout) => {
     if(err) return done(err)

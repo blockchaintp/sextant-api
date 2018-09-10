@@ -301,6 +301,62 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     }, done)
   }
 
+  /*
+  
+    deploy the sawtooth manifests onto a cluster
+
+    params: 
+
+     * name
+    
+  */
+  const deploy = (params, done) => {
+    pino.info({
+      action: 'deploy',
+      params
+    })
+
+    async.series([
+
+      // check there is a cluster with that name
+      next => {
+        store.listClusterNames({}, (err, clusterNames) => {
+          if(err) return next(err)
+          const existingCluster = clusterNames.filter(clusterName => clusterName == params.name)[0]
+          if(!existingCluster) return next(`There is no cluster with the name ${params.name}`)
+          next()
+        })
+      },
+
+      // check the cluster is in the "created" phase
+      next => {
+        store.getClusterStatus({
+          clustername: params.name,
+        }, (err, status) => {
+          if(err) return next(err)
+          if(status.phase != 'created') return next(`The ${params.name} cluster is not in the "created" phase so it cannot be deployed`)
+          next()
+        })
+      },
+
+      // dispatch the deploy manifests job
+      next => {
+        const jobParams = {
+          name: params.name,
+        }
+        pino.info({
+          action: 'job.deploySawtoothManifests',
+          params: jobParams,
+        })
+        jobDispatcher({
+          name: 'deploySawtoothManifests',
+          params: jobParams,
+        }, next)
+      },
+
+    ], done)
+  }
+
   return {
     list,
     get,
@@ -310,6 +366,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     cleanup,
     createKeypair,
     getClusterFilepath,
+    deploy,
   }
 
 }

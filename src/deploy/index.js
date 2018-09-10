@@ -14,11 +14,13 @@
 */
 
 const path = require('path')
+const fs = require('fs')
 const pino = require('pino')({
   name: 'deploy',
 })
 
 const settings = require('../settings')
+const SawtoothManifests = require('./manifests/sawtooth')
 
 const Deploy = ({ kubectl }) => {
 
@@ -76,11 +78,38 @@ const Deploy = ({ kubectl }) => {
     })
     kubectl.apply(route53MapperParams, done)
   }
+
+  /*
+  
+    deploy the manifests for a sawtooth cluster
+
+    params:
+
+     * clusterSettings - the settings used to create the cluster
+    
+  */
+  const sawtoothManifests = (params, done) => {
+    if(!params.clusterSettings) return done(`clusterSettings param needed for deploy.sawtoothManifests`)
+
+    const manifestYaml = SawtoothManifests({
+      clusterSettings: params.clusterSettings,
+    })
+
+    fs.writeFileSync('/app/api/src/manifests.yaml', manifestYaml, 'utf8')
+
+    console.log('-------------------------------------------');
+    console.log('-------------------------------------------');
+    console.log('-------------------------------------------');
+    console.log(manifestYaml)
+
+    done()
+  }
   
   return {
     createClusterAdminServiceAccount,
     dashboard,
     route53Mapper,
+    sawtoothManifests,
   }
 }
 

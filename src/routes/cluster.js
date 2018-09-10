@@ -113,6 +113,19 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const deploy = (req, res, next) => {
+    cluster.deploy({
+      name: req.params.id,
+    }, (err) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json({
+          ok: true
+        })
+    })
+  }
+
   return {
     list,
     get,
@@ -123,6 +136,7 @@ const ClusterRoutes = (backends) => {
     createKeypair,
     kubeconfig,
     kopsconfig,
+    deploy,
   }
 }
 

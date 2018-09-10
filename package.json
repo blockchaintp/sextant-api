@@ -15,6 +15,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "pino": "^4.17.6",
+    "randomstring": "^1.1.5",
     "request": "^2.81.0",
     "rmdir": "^1.2.0",
     "tmp": "^0.0.33"
