@@ -6,6 +6,7 @@ const pino = require('pino')({
 const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
+const Deploy = require('../../deploy')
 
 /*
 
@@ -185,62 +186,6 @@ const waitClusterReadyTask = (params, store, dispatcher, done) => {
 
 /*
 
-  deploy the core manifests
-
-  params:
-
-   * name
-   * domain
-  
-*/
-const deployCoreManifestsTask = (params, store, dispatcher, done) => {
-  pino.info({
-    action: 'deployCoreManifestsTask',
-    params,
-  })
-
-  async.waterfall([
-
-    // get a kubectl that is bound to the given cluster
-    (next) => clusterUtils.getKubectl(store, params.name, next),
-
-    (kubectl, next) => {
-
-      async.series([
-
-        // deploy the dashboard to the cluster
-        nexts => {
-          const dashboardParams = {
-            resource: settings.dashboardManifest
-          }
-          pino.info({
-            action: 'deploy-dashboard',
-            params: dashboardParams
-          })
-          kubectl.apply(dashboardParams, nexts)
-        },
-
-        // deploy the route53 mapper to the cluster
-        nexts => {
-          const route53MapperParams = {
-            resource: settings.route53MapperManifest
-          }
-          pino.info({
-            action: 'deploy-route53-mapper',
-            params: route53MapperParams
-          })
-          kubectl.apply(route53MapperParams, nexts)
-        },
-
-      ], next)
-      
-    },
-
-  ], done)
-}
-
-/*
-
   export the cluster config files
 
   params:
@@ -311,6 +256,52 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
         },
       ], next)
 
+    },
+
+  ], done)
+}
+
+
+/*
+
+  deploy the core manifests
+
+  params:
+
+   * name
+   * domain
+  
+*/
+const deployCoreManifestsTask = (params, store, dispatcher, done) => {
+  pino.info({
+    action: 'deployCoreManifestsTask',
+    params,
+  })
+
+  async.waterfall([
+
+    // get a kubectl that is bound to the given cluster
+    (next) => clusterUtils.getKubectl(store, params.name, next),
+
+    (kubectl, next) => {
+
+      const deploy = Deploy({
+        kubectl
+      })
+
+      async.series([
+
+        // create the cluster admin service account
+        nexts => deploy.createClusterAdminServiceAccount({}, nexts),
+        
+        // deploy the dashboard
+        nexts => deploy.dashboard({}, nexts),
+
+        // deploy the route53 mapper
+        nexts => deploy.route53Mapper({}, nexts),
+
+      ], next)
+      
     },
 
   ], done)

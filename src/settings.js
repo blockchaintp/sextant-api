@@ -16,10 +16,8 @@ const args = require('minimist')(process.argv, {
     validateClusterAttempts: 100,
     validateClusterDelay: 10000,
 
-    // core manifests
+    // core manifest urls
     dashboardManifest: 'https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml',
-
-    route53MapperManifest: 'https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.3.0.yml',
   }
 })
 

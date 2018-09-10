@@ -47,6 +47,8 @@ const processClusterSettings = (settings) => {
   return newSettings
 }
 
+// return a kubectl instance that is bound to a certain cluster via it's
+// kubeconfig file
 const getKubectl = (store, clustername, done) => {
   store.getClusterFilePath({
     clustername,
