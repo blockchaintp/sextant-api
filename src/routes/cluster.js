@@ -126,6 +126,17 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const test = (req, res, next) => {
+    cluster.test({
+      name: req.params.id,
+    }, (err, data) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json(data)
+    })
+  }
+
   return {
     list,
     get,
@@ -137,6 +148,7 @@ const ClusterRoutes = (backends) => {
     kubeconfig,
     kopsconfig,
     deploy,
+    test,
   }
 }
 

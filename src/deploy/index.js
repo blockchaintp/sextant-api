@@ -49,7 +49,7 @@ const Deploy = ({ kubectl }) => {
   const createDashboardServiceAccount = (params, done) => {
     kubectl.command(`create clusterrolebinding \
       --user system:serviceaccount:kube-system:kubernetes-dashboard \
-      kube-system-cluster-admin --clusterrole cluster-admin`, 
+      kube-dashboard-cluster-admin --clusterrole cluster-admin`, 
     done)
   }
 
@@ -109,14 +109,16 @@ const Deploy = ({ kubectl }) => {
       clusterSettings: params.clusterSettings,
     })
 
-    fs.writeFileSync('/app/api/src/manifests.yaml', manifestYaml, 'utf8')
+    pino.info({
+      action: 'deploy-sawtooth',
+      params: {
+        yaml: manifestYaml
+      }
+    })
 
-    console.log('-------------------------------------------');
-    console.log('-------------------------------------------');
-    console.log('-------------------------------------------');
-    console.log(manifestYaml)
-
-    done()
+    kubectl.applyInline({
+      data: manifestYaml,
+    }, done)
   }
   
   return {

@@ -1,6 +1,7 @@
 const async = require('async')
 const sshUtils = require('../utils/ssh')
 const clusterUtils = require('../utils/cluster')
+const kops = require('../utils/kops')
 
 const pino = require('pino')({
   name: 'backend.clusters',
@@ -357,6 +358,32 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     ], done)
   }
 
+  // route used for testing
+  const test = (p, done) => {
+
+    const params = {
+      name: 'oranges5',
+      domain: 'dev.catenasys.com',
+    }
+
+    async.waterfall([
+      (wnext) => store.getClusterFilePath({
+        clustername: params.name,
+        filename: 'kubeConfig',
+      }, wnext),
+
+      (kubeConfigPath, wnext) => {
+        const extractKubeConfigAuthDetailsParams = {
+          name: params.name,
+          domain: params.domain,
+          kubeConfigPath
+        }
+
+        kops.extractKubeConfigAuthDetails(extractKubeConfigAuthDetailsParams, wnext)
+      },
+    ], done)
+  }
+
   return {
     list,
     get,
@@ -367,6 +394,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     createKeypair,
     getClusterFilepath,
     deploy,
+    test,
   }
 
 }

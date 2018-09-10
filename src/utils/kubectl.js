@@ -6,6 +6,7 @@
   variable to any call which connects the kubectl command to the given cluster
   
 */
+const tmp = require('tmp')
 const fs = require('fs')
 const exec = require('child_process').exec
 const pino = require('pino')({
@@ -83,10 +84,41 @@ const Kubectl = (kubeconfigPath) => {
     command(`apply -f ${ params.resource }`, done)
   }
 
+  /*
+
+    apply a manifest that is given as is
+
+    write to a temp file before using normal apply
+
+    params:
+
+     * data - yaml manifest data
+    
+  */
+  const applyInline = (params, done) => {
+    if(!params.data) return done(`data param required for kubectl.applyInline`)
+    async.waterfall([
+
+      (next) => {
+        tmp.file({
+          postfix: '.yaml',
+        }, next)
+      },
+
+      (filepath, next) => {
+        apply({
+          resource: filepath
+        }, next)
+      },
+
+    ], done)
+  }
+
   return {
     command,
     jsonCommand,
     apply,
+    applyInline,
   }
 }
 

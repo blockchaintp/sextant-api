@@ -22,6 +22,7 @@ const Routes = (app, backends) => {
   app.get(basePath('/cluster/status/:id'), cluster.status)
   app.get(basePath('/cluster/kubeconfig/:id'), cluster.kubeconfig)
   app.get(basePath('/cluster/kopsconfig/:id'), cluster.kopsconfig)
+  app.get(basePath('/test'), cluster.test)
   
   app.post(basePath('/cluster/keypair/create'), cluster.createKeypair)
 }

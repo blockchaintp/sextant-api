@@ -1,6 +1,7 @@
 const fs = require('fs')
 const exec = require('child_process').exec
 const yaml = require('js-yaml')
+const async = require('async')
 const pino = require('pino')({
   name: 'kops',
 })
@@ -185,95 +186,63 @@ const exportKubeConfig = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.exportKubeConfig`)
   if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
 
-  const clusterName = `${ params.name }.${ params.domain }`
-
-  async.series([
-    next => {
-      command(`export kubecfg ${ params.name }.${ params.domain } \\
+  command(`export kubecfg ${ params.name }.${ params.domain } \\
     --state s3://clusters.${ params.domain }
 `, 
-      {
-        env: {
-          KUBECONFIG: params.kubeConfigPath,
-        }
-      },
-      next)
-    },
+  {
+    env: {
+      KUBECONFIG: params.kubeConfigPath,
+    }
+  },
+  done)  
+}
 
-    // extract the ca, key and cert from the kubeconfig file
-    next => {
-      
-      async.waterfall([
-        (nextw) => fs.readFile(params.kubeConfigPath, 'utf8', next),
+/*
 
-        (kubeconfig, nextw) => {
-          let parsedKubeconfig = null
-          try {
-            parsedKubeconfig = yaml.safeLoad(kubeconfig)
-          } catch (e) {
-            return nextw(e.toString())
-          }
+  process the kubeconfig and extra the ca, cert, key, username and password
 
-          const cluster = parsedKubeconfig.clusters.filter(cluster => cluster.name == clusterName)[0]
-          const user = parsedKubeconfig.users.filter(user => user.name == clusterName)[0]
+  params:
 
-          if(!cluster) return nextw(`no cluster in kubeconfig found for ${ clusterName } `)
-          if(!user) return nextw(`no user in kubeconfig found for ${ clusterName } `)
-
-          async.parallel([
-
-            // write the ca.pem
-            nextp => {
-              store.writeClusterFile({
-                clustername: params.name,
-                filename: 'ca.pem',
-                data: Buffer.from(cluster['certificate-authority-data'], 'base64').toString(),
-              }, nextp)
-            },
-
-            // write the admin-key.pem
-            nextp => {
-              store.writeClusterFile({
-                clustername: params.name,
-                filename: 'admin-key.pem',
-                data: Buffer.from(user['client-key-data'], 'base64').toString(),
-              }, nextp)
-            },
-
-            // write the admin.pem
-            nextp => {
-              store.writeClusterFile({
-                clustername: params.name,
-                filename: 'admin.pem',
-                data: Buffer.from(user['client-certificate-data'], 'base64').toString(),
-              }, nextp)
-            },
-
-            // write the username
-            nextp => {
-              store.writeClusterFile({
-                clustername: params.name,
-                filename: 'username',
-                data: user.username,
-              }, nextp)
-            },
-
-            // write the password
-            nextp => {
-              store.writeClusterFile({
-                clustername: params.name,
-                filename: 'password',
-                data: user.password,
-              }, nextp)
-            },
-
-          ], nextw)
-        }
-      ], next)
-    },
-
-  ], done)
+   * name 
+   * domain
+   * kubeConfigPath
   
+*/
+const extractKubeConfigAuthDetails = (params, done) => {
+  if(!params.name) return done(`name param required for kops.exportKubeConfig`)
+  if(!params.domain) return done(`domain param required for kops.exportKubeConfig`)
+  if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
+
+  const clusterName = `${ params.name }.${ params.domain }`
+
+  async.waterfall([
+    (next) => fs.readFile(params.kubeConfigPath, 'utf8', next),
+
+    (kubeconfig, next) => {
+      let parsedKubeconfig = null
+      try {
+        parsedKubeconfig = yaml.safeLoad(kubeconfig)
+      } catch (e) {
+        return next(e.toString())
+      }
+
+      const cluster = parsedKubeconfig.clusters.filter(cluster => cluster.name == clusterName)[0]
+      const user = parsedKubeconfig.users.filter(user => user.name == clusterName)[0]
+
+      if(!cluster) return next(`no cluster in kubeconfig found for ${ clusterName } `)
+      if(!user) return next(`no user in kubeconfig found for ${ clusterName } `)
+
+      const authDetails = {
+        ca: Buffer.from(cluster.cluster['certificate-authority-data'], 'base64').toString(),
+        key: Buffer.from(user.user['client-key-data'], 'base64').toString(),
+        cert: Buffer.from(user.user['client-certificate-data'], 'base64').toString(),
+        username: user.user.username,
+        password: user.user.password,
+      }
+
+      next(null, authDetails)
+    }
+  ], done)
 }
 
 /*
@@ -307,4 +276,5 @@ module.exports = {
   validateCluster,
   exportKubeConfig,
   exportKopsConfig,
+  extractKubeConfigAuthDetails,
 }

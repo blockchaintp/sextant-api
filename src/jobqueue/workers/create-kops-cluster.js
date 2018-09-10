@@ -232,6 +232,86 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
 
     },
 
+    // extract the various auth details from the kubeconfig
+    // we write these as files so the proxy can use them
+    next => {
+
+      async.waterfall([
+        (wnext) => store.getClusterFilePath({
+          clustername: params.name,
+          filename: 'kubeConfig',
+        }, wnext),
+
+        (kubeConfigPath, wnext) => {
+          const extractKubeConfigAuthDetailsParams = {
+            name: params.name,
+            domain: params.domain,
+            kubeConfigPath
+          }
+
+          pino.info({
+            action: 'extractKubeConfigAuthDetails',
+            params: extractKubeConfigAuthDetailsParams,
+          })
+
+          kops.extractKubeConfigAuthDetails(extractKubeConfigAuthDetailsParams, wnext)
+        },
+
+        (authDetails, wnext) => {
+
+          async.parallel([
+
+            // write the ca.pem
+            nextp => {
+              store.writeClusterFile({
+                clustername: params.name,
+                filename: 'ca.pem',
+                data: authDetails.ca,
+              }, nextp)
+            },
+
+            // write the admin-key.pem
+            nextp => {
+              store.writeClusterFile({
+                clustername: params.name,
+                filename: 'admin-key.pem',
+                data: authDetails.key,
+              }, nextp)
+            },
+
+            // write the admin.pem
+            nextp => {
+              store.writeClusterFile({
+                clustername: params.name,
+                filename: 'admin.pem',
+                data: authDetails.cert,
+              }, nextp)
+            },
+
+            // write the username
+            nextp => {
+              store.writeClusterFile({
+                clustername: params.name,
+                filename: 'username',
+                data: authDetails.username,
+              }, nextp)
+            },
+
+            // write the password
+            nextp => {
+              store.writeClusterFile({
+                clustername: params.name,
+                filename: 'password',
+                data: authDetails.password,
+              }, nextp)
+            },
+
+          ], wnext)
+        }
+      ], next)
+
+    },
+
     // export a kops config file for this cluster
     // this can be downloaded as an export for the cluster
     next => {

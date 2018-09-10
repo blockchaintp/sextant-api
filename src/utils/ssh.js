@@ -21,7 +21,7 @@ const createKeypair = (done) => {
 
     // create a temporary directory to work in
     next => {
-      tmp.dir({ 
+      tmp.dir({
         mode: 0750, 
         prefix: 'sshkeygen_',
         unsafeCleanup: true,
