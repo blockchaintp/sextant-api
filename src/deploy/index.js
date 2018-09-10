@@ -41,6 +41,20 @@ const Deploy = ({ kubectl }) => {
 
   /*
   
+    creates a cluster-admin clusterrole for the "system:serviceaccount:kube-system:kubernetes-dashboard"
+
+    this is so the user can skip authentication for the dashboard
+    
+  */
+  const createDashboardServiceAccount = (params, done) => {
+    kubectl.command(`create clusterrolebinding \
+      --user system:serviceaccount:kube-system:kubernetes-dashboard \
+      kube-system-cluster-admin --clusterrole cluster-admin`, 
+    done)
+  }
+
+  /*
+  
     dashboard
 
     deploy the k8s dashboard from a remote url (configured in settings.js)
@@ -107,6 +121,7 @@ const Deploy = ({ kubectl }) => {
   
   return {
     createClusterAdminServiceAccount,
+    createDashboardServiceAccount,
     dashboard,
     route53Mapper,
     sawtoothManifests,

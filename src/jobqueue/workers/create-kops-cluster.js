@@ -204,6 +204,8 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
     
     // export a kubeconfig file for this cluster
     // this will be used anytime we run `kubectl` against this cluster
+    // this will also extract the ca, key and cert from the config
+    // so we can use those files to access services via the api server proxy
     next => {
 
       async.waterfall([
@@ -293,6 +295,9 @@ const deployCoreManifestsTask = (params, store, dispatcher, done) => {
 
         // create the cluster admin service account
         nexts => deploy.createClusterAdminServiceAccount({}, nexts),
+
+        // create the dashboard service account
+        nexts => deploy.createDashboardServiceAccount({}, nexts),
         
         // deploy the dashboard
         nexts => deploy.dashboard({}, nexts),
