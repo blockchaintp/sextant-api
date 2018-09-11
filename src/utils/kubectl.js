@@ -7,6 +7,7 @@
   
 */
 const tmp = require('tmp')
+const async = require('async')
 const fs = require('fs')
 const exec = require('child_process').exec
 const pino = require('pino')({
@@ -56,7 +57,7 @@ const Kubectl = (kubeconfigPath) => {
   */
   const jsonCommand = (params, done) => {
     if(!params.command) return done(`command param required for kubectl.jsonCommand`)
-    const runCommand = `${ command } --output json`
+    const runCommand = `${ params.command } --output json`
 
     command(runCommand, (err, stdout) => {
       if(err) return done(err)
@@ -102,7 +103,17 @@ const Kubectl = (kubeconfigPath) => {
       (next) => {
         tmp.file({
           postfix: '.yaml',
-        }, next)
+        }, (err, filepath) => {
+          if(err) return next(err)
+          next(null, filepath)
+        })
+      },
+
+      (filepath, next) => {
+        fs.writeFile(filepath, params.data, 'utf8', (err) => {
+          if(err) return next(err)
+          next(null, filepath)
+        })
       },
 
       (filepath, next) => {

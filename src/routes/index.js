@@ -18,11 +18,10 @@ const Routes = (app, backends) => {
   app.post(basePath('/cluster'), cluster.create)
   app.delete(basePath('/cluster/:id'), cluster.destroy)
   app.put(basePath('/cluster/cleanup/:id'), cluster.cleanup)
-  app.put(basePath('/cluster/deploy/:id'), cluster.deploy)
   app.get(basePath('/cluster/status/:id'), cluster.status)
+  app.get(basePath('/cluster/info/:id'), cluster.info)
   app.get(basePath('/cluster/kubeconfig/:id'), cluster.kubeconfig)
   app.get(basePath('/cluster/kopsconfig/:id'), cluster.kopsconfig)
-  app.get(basePath('/test'), cluster.test)
   
   app.post(basePath('/cluster/keypair/create'), cluster.createKeypair)
 }

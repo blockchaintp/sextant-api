@@ -392,6 +392,57 @@ const deployCoreManifestsTask = (params, store, dispatcher, done) => {
   ], done)
 }
 
+/*
+
+  deploy the core manifests
+
+  params:
+
+   * name
+   * domain
+  
+*/
+const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
+  pino.info({
+    action: 'deploySawtoothManifestsTask',
+    params,
+  })
+
+  async.waterfall([
+
+    // first - load the cluster settings
+    (next) => {
+      store.getClusterSettings({
+        clustername: params.name,
+      }, next)
+    },
+
+    // get a kubectl that is bound to the given cluster
+    // also get a deploy object bound to that kubectl instance
+    (clusterSettings, next) => {
+      clusterUtils.getKubectl(store, params.name, (err, kubectl) => {
+        if(err) return next(err)
+        const deploy = Deploy({
+          kubectl
+        })
+        next(null, {
+          clusterSettings,
+          deploy,
+          kubectl,
+        })
+      })
+    },
+
+    // generate the YAML template and deploy it
+    (context, next) => {
+      context.deploy.sawtoothManifests({
+        clusterSettings: context.clusterSettings,
+      }, next)
+    }
+
+  ], done)
+}
+
 const CreateKopsCluster = (params, store, dispatcher) => {
   pino.info({
     action: 'handle',
@@ -421,10 +472,17 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       }, store, dispatcher, next)
     },
 
-
     // deploy the core manifests
     next => {
       deployCoreManifestsTask({
+        name: params.name,
+        domain: params.domain,
+      }, store, dispatcher, next)
+    },
+
+    // deploy the sawtooth manifests
+    next => {
+      deploySawtoothManifestsTask({
         name: params.name,
         domain: params.domain,
       }, store, dispatcher, next)

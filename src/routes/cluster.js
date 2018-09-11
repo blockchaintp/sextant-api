@@ -35,6 +35,17 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const info = (req, res, next) => {
+    cluster.info({
+      name: req.params.id,
+    }, (err, info) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json(info)
+    })
+  }
+
   const create = (req, res, next) => {
     cluster.create(req.body, (err, results) => {
       if(err) return next(err)
@@ -113,42 +124,17 @@ const ClusterRoutes = (backends) => {
     })
   }
 
-  const deploy = (req, res, next) => {
-    cluster.deploy({
-      name: req.params.id,
-    }, (err) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json({
-          ok: true
-        })
-    })
-  }
-
-  const test = (req, res, next) => {
-    cluster.test({
-      name: req.params.id,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(data)
-    })
-  }
-
   return {
     list,
     get,
     status,
+    info,
     create,
     destroy,
     cleanup,
     createKeypair,
     kubeconfig,
     kopsconfig,
-    deploy,
-    test,
   }
 }
 
