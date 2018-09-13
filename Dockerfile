@@ -22,7 +22,7 @@ RUN apt-get update -y && \
        curl -L -o kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl  && \
        chmod +x ./kubectl && \
        mv ./kubectl /usr/local/bin/kubectl && \
-       apt-get remove -y python-pip && apt-get autoremove -y && apt-get clean -y
+       apt-get autoremove -y && apt-get clean -y
 
 # install api server
 WORKDIR /app/api
