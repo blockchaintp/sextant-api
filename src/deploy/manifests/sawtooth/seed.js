@@ -141,6 +141,11 @@ spec:
         command: [ "bash", "-c"]
         args: 
           - "smallbank-tp-go -v --connect tcp://localhost:4004"
+      - name: xo-tp
+        image: blockchaintp/sawtooth-xo-tp-go:1.0.5
+        command: [ "bash", "-c"]
+        args: 
+          - "xo-tp-go -v --connect tcp://localhost:4004"
       - name: rbac-tp
         image: blockchaintp/rbac-tp-production:develop
         command: [ "bash", "-c"]
