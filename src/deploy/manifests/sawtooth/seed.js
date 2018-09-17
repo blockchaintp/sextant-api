@@ -190,24 +190,10 @@ spec:
                 curl https://raw.githubusercontent.com/hyperledger/sawtooth-core/5094a9a1a7d086c14704e7055cfad9de77d1e6aa/consensus/poet/simulator/packaging/simulator_rk_pub.pem > /etc/sawtooth/keys/simulator_rk_pub.pem
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;
                 sawset proposal create -k /etc/sawtooth/keys/validator.priv \\
-                  sawtooth.consensus.algorithm=poet \\
-                  sawtooth.poet.report_public_key_pem="$(cat /etc/sawtooth/keys/simulator_rk_pub.pem)" \\
-                  sawtooth.poet.valid_enclave_measurements=$(poet enclave --enclave-module simulator measurement) \\
-                  sawtooth.poet.valid_enclave_basenames=$(poet enclave --enclave-module \${MODULE:-simulator} basename) \\
                   sawtooth.validator.batch_injectors=block_info \\
                   -o /etc/sawtooth/genesis/config.batch;
-                poet registration create -k /etc/sawtooth/keys/validator.priv \\
-                  --enclave-module simulator \\
-                  -o /etc/sawtooth/genesis/poet.batch
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \\
-                  sawtooth.poet.target_wait_time=30 \\
-                  sawtooth.poet.initial_wait_time=25 \\
-                  sawtooth.publisher.max_batches_per_block=100 \\
-                  -o /etc/sawtooth/genesis/poet-settings.batch
                 sawadm genesis /etc/sawtooth/genesis/genesis.batch \\
-                  /etc/sawtooth/genesis/config.batch \\
-                  /etc/sawtooth/genesis/poet.batch \\
-                  /etc/sawtooth/genesis/poet-settings.batch
+                  /etc/sawtooth/genesis/config.batch 
               fi
               echo 'data_dir = "/etc/sawtooth/data"' > /etc/sawtooth/path.toml
               touch /etc/sawtooth/initialized;
