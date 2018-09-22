@@ -7,6 +7,7 @@ const kopsValuesFixture = require('./fixtures/kopsValues.json')
 
 tape('test cluster settings -> kops values', (t) => {
   const kopsValues = clusterUtils.getKopsValues(clusterSettings)
+  const kopsYaml = clusterUtils.getKopsYaml(clusterSettings)
   t.deepEqual(kopsValues, kopsValuesFixture, `the kops values are correct`)
   t.end()
 })

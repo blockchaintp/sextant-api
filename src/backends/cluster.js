@@ -129,15 +129,6 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
         })
       },
 
-      next => {
-        console.log('-------------------------------------------')
-        console.log('-------------------------------------------')
-
-        const kopsValues = clusterUtils.getKopsValues(settings)
-        console.log(JSON.stringify(kopsValues, null, 4))
-        process.exit()
-      },
-
       // save the cluster settings in the store
       next => {
         pino.info({
