@@ -43,6 +43,7 @@ const clusterSettingsSchema = Joi.object().keys({
   node_zones: Joi.array().items(Joi.string().regex(/^\w+-\w+-\d+\w+$/)).required(),
 
   network_cidr: Joi.string().regex(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{2}$/).required(),
+  subnet_mask: Joi.number().integer().min(1).max(32).required(),
 
 })
 

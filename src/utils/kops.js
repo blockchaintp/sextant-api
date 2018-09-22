@@ -43,51 +43,26 @@ const command = (cmd, options, done) => {
 
 /*
 
-  create the kops cluster using the cluster settings.json
+  create the kops cluster using a pre-created kops.yaml file
 
   /*
 
   params:
 
-   * clusterSettings
-   * publicKeyFilePath
-
-  clusterSettings:
-
-  {
-    domain: "dev.catenasys.com.",
-    master_count: 1,
-    master_size: "m4.large",
-    master_zones: ["eu-west-2a"],
-    name: "apples",
-    node_count: 3,
-    node_size: "m4.large",
-    node_zones: ["eu-west-2a"],
-    region: "eu-west-2",
-    topology: "public",
-    public_key: "XXX",
-  }
+   * domain
+   * yamlPath
 
 */
 const createCluster = (params, done) => {
 
-  if(!params.clusterSettings) return done(`clusterSettings param required for kops.createCluster`)
-  if(!params.publicKeyFilePath) return done(`publicKeyFilePath param required for kops.createCluster`)
+  if(!params.domain) return done(`domain param required for kops.createCluster`)
+  if(!params.yamlPath) return done(`yamlPath param required for kops.createCluster`)
 
-  const { clusterSettings, publicKeyFilePath } = params
+  const { domain, yamlPath } = params
 
-  command(`create cluster ${ clusterSettings.name }.${ clusterSettings.domain } \\
-    --node-count ${ clusterSettings.node_count } \\
-    --zones ${ clusterSettings.node_zones.join(',') } \\
-    --node-size ${ clusterSettings.node_size } \\
-    --master-count ${ clusterSettings.master_count } \\
-    --master-size ${ clusterSettings.master_size } \\
-    --master-zones ${ clusterSettings.master_zones.join(',') } \\
-    --networking ${ settings.kopsNetworking } \\
-    --state s3://clusters.${ clusterSettings.domain } \\
-    --topology ${ clusterSettings.topology } ${ clusterSettings.topology == 'private' ? '--bastion=true' : '' } \\
-    --ssh-public-key ${ publicKeyFilePath } \\
-    --yes
+  command(`create \\
+    --state s3://clusters.${ domain } \\
+    -f ${ yamlPath }
 `, done)
 }
 
@@ -106,8 +81,10 @@ const destroyCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.destroyCluster`)
   if(!params.domain) return done(`domain param required for kops.destroyCluster`)
 
-  command(`delete cluster ${ params.name }.${ params.domain } \\
-    --state s3://clusters.${ params.domain } \\
+  const { name, domain } = params
+
+  command(`delete cluster ${ name }.${ domain } \\
+    --state s3://clusters.${ domain } \\
     --yes
 `, done)
 }
@@ -126,9 +103,11 @@ const createSecret = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.createSecret`)
   if(!params.publicKeyFilePath) return done(`keyFilePath param required for kops.createSecret`)
 
-  command(`create secret --name ${ params.name }.${ params.domain } \\
-    --state s3://clusters.${ params.domain } \\
-    sshpublickey admin -i ${ params.publicKeyFilePath }
+  const { name, domain, publicKeyFilePath } = params
+
+  command(`create secret --name ${ name }.${ domain } \\
+    --state s3://clusters.${ domain } \\
+    sshpublickey admin -i ${ publicKeyFilePath }
 `, done)
 }
 
@@ -144,8 +123,10 @@ const updateCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.updateCluster`)
   if(!params.domain) return done(`domain param required for kops.updateCluster`)
 
-  command(`update cluster ${ params.name }.${ params.domain } \\
-    --state s3://clusters.${ params.domain } \\
+  const { name, domain } = params
+
+  command(`update cluster ${ name }.${ domain } \\
+    --state s3://clusters.${ domain } \\
     --yes
 `, done)
 }
@@ -162,8 +143,10 @@ const validateCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.validateCluster`)
   if(!params.domain) return done(`domain param required for kops.validateCluster`)
 
-  command(`validate cluster ${ params.name }.${ params.domain } \\
-    --state s3://clusters.${ params.domain }
+  const { name, domain } = params
+
+  command(`validate cluster ${ name }.${ domain } \\
+    --state s3://clusters.${ domain }
 `, done)
 }
 
@@ -186,12 +169,14 @@ const exportKubeConfig = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.exportKubeConfig`)
   if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
 
-  command(`export kubecfg ${ params.name }.${ params.domain } \\
-    --state s3://clusters.${ params.domain }
+  const { name, domain, kubeConfigPath } = params
+
+  command(`export kubecfg ${ name }.${ domain } \\
+    --state s3://clusters.${ domain }
 `, 
   {
     env: {
-      KUBECONFIG: params.kubeConfigPath,
+      KUBECONFIG: kubeConfigPath,
     }
   },
   done)  
@@ -213,10 +198,12 @@ const extractKubeConfigAuthDetails = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.exportKubeConfig`)
   if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
 
-  const clusterName = `${ params.name }.${ params.domain }`
+  const { name, domain, kubeConfigPath } = params
+
+  const clusterName = `${ name }.${ domain }`
 
   async.waterfall([
-    (next) => fs.readFile(params.kubeConfigPath, 'utf8', next),
+    (next) => fs.readFile(kubeConfigPath, 'utf8', next),
 
     (kubeconfig, next) => {
       let parsedKubeconfig = null
@@ -245,28 +232,6 @@ const extractKubeConfigAuthDetails = (params, done) => {
   ], done)
 }
 
-/*
-
-  params:
-
-   * name
-   * domain
-   * kopsConfigPath
-  
-*/
-const exportKopsConfig = (params, done) => {
-  if(!params.name) return done(`name param required for kops.exportKopsConfig`)
-  if(!params.domain) return done(`domain param required for kops.exportKopsConfig`)
-  if(!params.kopsConfigPath) return done(`kopsConfigPath param required for kops.exportKopsConfig`)
-
-  command(`toolbox dump --name ${ params.name }.${ params.domain } \\
-    --state s3://clusters.${ params.domain }
-`, (err, stdout) => {
-    if(err) return done(err)
-    fs.writeFile(params.kopsConfigPath, stdout.toString(), 'utf8', done)
-  })
-}
-
 module.exports = {
   command,
   createCluster,
@@ -275,6 +240,5 @@ module.exports = {
   updateCluster,
   validateCluster,
   exportKubeConfig,
-  exportKopsConfig,
   extractKubeConfigAuthDetails,
 }

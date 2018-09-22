@@ -17,7 +17,8 @@ const FILENAMES = {
   status: 'status.json',
   publicKey: 'id_rsa.pub',
   kubeConfig: 'kubeconfig',
-  kopsConfig: 'kopsconfig',
+  kopsValues: 'kopsvalues.yaml',
+  kopsConfig: 'kopsconfig.yaml',
 }
 
 const FileStore = () => {
@@ -235,10 +236,16 @@ const FileStore = () => {
     if(!params.clustername) return done(`clustername param required for getClusterFilePath`)
     if(!params.filename) return done(`filename param required for getClusterFilePath`)
 
-    const filename = FILENAMES[params.filename] ? FILENAMES[params.filename] : params.filename
-    const filePath = path.join(CLUSTER_FOLDER, params.clustername, filename)
-
-    done(null, filePath)
+    async.waterfall([
+      (next) => getClusterDirectoryPath({
+        clustername: params.clustername,
+      }, next),
+      (folderpath, next) => {
+        const filename = FILENAMES[params.filename] ? FILENAMES[params.filename] : params.filename
+        const filePath = path.join(folderpath, filename)
+        next(null, filePath)
+      }
+    ], done)
   }
 
   /*
@@ -323,17 +330,34 @@ const FileStore = () => {
       params,
     })
 
-    const folderPath = path.join(CLUSTER_FOLDER, params.clustername)
-    const filePath = path.join(folderPath, params.filename)
+    async.waterfall([
+      (next) => {
+        async.parallel({
+          folder: nextp => getClusterDirectoryPath({
+            clustername: params.clustername,
+          }, nextp),
+          file: nextp => getClusterFilePath({
+            clustername: params.clustername,
+            filename: params.filename,
+          }, nextp),
+        }, next)
+      },
 
-    async.series([
+      (paths, next) => {
+        async.series([
 
-      // ensure the cluster folder exists
-      next => mkdirp(folderPath, next),
+          // ensure the cluster folder exists
+          nexts => mkdirp(paths.folder, nexts),
 
-      // write the file contents
-      next => fs.writeFile(filePath, params.data, 'utf8', next),
-      
+          // write the file contents
+          nexts => fs.writeFile(paths.file, params.data, 'utf8', nexts),
+          
+        ], (err) => {
+          if(err) return done(err)
+          next(null, paths.file)
+        })
+      }
+
     ], done)
   }
 

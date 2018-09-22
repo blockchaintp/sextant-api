@@ -6,13 +6,14 @@ const pino = require('pino')({
 const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
+const templateUtils = require('../../utils/template')
 const Deploy = require('../../deploy')
 
 /*
 
   create a new kops cluster given the cluster settings
 
-  params:
+  clusterSettings:
 
     {
       domain: "dev.catenasys.com.",
@@ -28,29 +29,31 @@ const Deploy = require('../../deploy')
       public_key: "XXX",
     }
 
+   * generate the values.yaml in the cluster store (from the settings.json)
+   * generate the kops.yaml in the cluster store using kubetpl
+   * use "kops create -f my-cluster.yaml" to create the cluster
+   * create a kops secret from the public key
+   * update the cluster
+
   it will put the cluster into "error" state if there is any kind of error
   loading the cluster
 
   example commands:
 
-  kops create cluster apples.dev.catenasys.com \
-    --node-count 3 \
-    --zones eu-west-2a \
-    --node-size m4.large \
-    --master-count 1 \
-    --master-size m4.large \
-    --master-zones eu-west-2a \
-    --networking weave \
+  kops create \
     --state s3://clusters.dev.catenasys.com \
-    --topology public \
-    --yes
+    -f /filestore-data/clusters/apples/kopsconfig.yaml
 
-  kops create secret --name apples.dev.catenasys.com \
-    --state s3://clusters.dev.catenasys.com  \
+
+  kops create secret \
+    --name apples.dev.catenasys.com \
+    --state s3://clusters.dev.catenasys.com \
     sshpublickey admin -i /filestore-data/clusters/apples/id_rsa.pub
 
-  kops update cluster apples.dev.catenasys.com --yes \
-    --state s3://clusters.dev.catenasys.com
+  kops update cluster \
+    apples.dev.catenasys.com \
+    --state s3://clusters.dev.catenasys.com \
+    --yes
 
   kops validate cluster --name apples.dev.catenasys.com \
      --state s3://clusters.dev.catenasys.com
@@ -64,6 +67,10 @@ const Deploy = require('../../deploy')
 /*
 
   create the cluster using kops
+
+  params: 
+
+   * name
   
 */
 const createClusterTask = (params, store, dispatcher, done) => {
@@ -75,22 +82,63 @@ const createClusterTask = (params, store, dispatcher, done) => {
 
   async.waterfall([
 
-    // load the path to the public key file
+    // load the path to the public key file and the cluster settings
     (nextw) => {
-      store.getClusterFilePath({
-        clustername: params.name,
-        filename: 'publicKey'
+      async.parallel({
+        publicKeyFilePath: nextp => store.getClusterFilePath({
+          clustername: params.name,
+          filename: 'publicKey'
+        }, nextp),
+
+        settings: nextp => store.getClusterSettings({
+          clustername: params.name
+        }, nextp)
       }, nextw)
     },
 
-    (publicKeyFilePath, nextw) => {
+    // generate the kops values and kops.yaml using kubetpl
+    (cluster, nextw) => {
+      async.waterfall([
+
+        // output the kopsvalues.yaml into the cluster store
+        (nextw1) => {
+          store.writeClusterFile({
+            clustername: params.name,
+            filename: 'kopsValues',
+            data: clusterUtils.getKopsYaml(cluster.settings),
+          }, nextw1)
+        },
+
+        // generate the kopsconfig.yaml into the cluster store
+        // use kubetpl to generate it
+        (kopsValuesPath, nextw1) => {
+          templateUtils.render(kopsValuesPath, 'kops/cluster.yaml', nextw1)
+        },
+
+        // write out the kopsconfig.yaml file into the cluster store
+        (kopsConfigYaml, nextw1) => {
+          store.writeClusterFile({
+            clustername: params.name,
+            filename: 'kopsConfig',
+            data: kopsConfigYaml,
+          }, nextw1)
+        }
+      ], (err, kopsConfigPath) => {
+        if(err) return nextw(err)
+        cluster.kopsConfigPath = kopsConfigPath
+        nextw(null, cluster)
+      })
+    },
+
+    (cluster, nextw) => {
       async.series([
 
         // call the create cluster command
         nexts => {
           const createClusterParams = {
-            clusterSettings: params,
-            publicKeyFilePath,
+            domain: cluster.settings.domain,
+            yamlPath: cluster.kopsConfigPath,
+            publicKeyFilePath: cluster.publicKeyFilePath,
           }
           pino.info({
             action: 'kops.createCluster',
@@ -103,8 +151,8 @@ const createClusterTask = (params, store, dispatcher, done) => {
         nexts => {
           const createSecretParams = {
             name: params.name,
-            domain: params.domain,
-            publicKeyFilePath,
+            domain: cluster.settings.domain,
+            publicKeyFilePath: cluster.publicKeyFilePath,
           }
           pino.info({
             action: 'kops.createSecret',
@@ -117,7 +165,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
         nexts => {
           const updateClusterParams = {
             name: params.name,
-            domain: params.domain,
+            domain: cluster.settings.domain,
           }
           pino.info({
             action: 'kops.updateCluster',
@@ -312,34 +360,6 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
 
     },
 
-    // export a kops config file for this cluster
-    // this can be downloaded as an export for the cluster
-    next => {
-
-      async.waterfall([
-        (wnext) => store.getClusterFilePath({
-          clustername: params.name,
-          filename: 'kopsConfig',
-        }, wnext),
-
-        (kopsConfigPath, wnext) => {
-          const exportKopsConfigParams = {
-            name: params.name,
-            domain: params.domain,
-            kopsConfigPath
-          }
-
-          pino.info({
-            action: 'exportKopsConfig',
-            params: exportKopsConfigParams,
-          })
-
-          kops.exportKopsConfig(exportKopsConfigParams, wnext)
-        },
-      ], next)
-
-    },
-
   ], done)
 }
 
@@ -392,57 +412,6 @@ const deployCoreManifestsTask = (params, store, dispatcher, done) => {
   ], done)
 }
 
-/*
-
-  deploy the core manifests
-
-  params:
-
-   * name
-   * domain
-  
-*/
-const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
-  pino.info({
-    action: 'deploySawtoothManifestsTask',
-    params,
-  })
-
-  async.waterfall([
-
-    // first - load the cluster settings
-    (next) => {
-      store.getClusterSettings({
-        clustername: params.name,
-      }, next)
-    },
-
-    // get a kubectl that is bound to the given cluster
-    // also get a deploy object bound to that kubectl instance
-    (clusterSettings, next) => {
-      clusterUtils.getKubectl(store, params.name, (err, kubectl) => {
-        if(err) return next(err)
-        const deploy = Deploy({
-          kubectl
-        })
-        next(null, {
-          clusterSettings,
-          deploy,
-          kubectl,
-        })
-      })
-    },
-
-    // generate the YAML template and deploy it
-    (context, next) => {
-      context.deploy.sawtoothManifests({
-        clusterSettings: context.clusterSettings,
-      }, next)
-    }
-
-  ], done)
-}
-
 const CreateKopsCluster = (params, store, dispatcher) => {
   pino.info({
     action: 'handle',
@@ -475,14 +444,6 @@ const CreateKopsCluster = (params, store, dispatcher) => {
     // deploy the core manifests
     next => {
       deployCoreManifestsTask({
-        name: params.name,
-        domain: params.domain,
-      }, store, dispatcher, next)
-    },
-
-    // deploy the sawtooth manifests
-    next => {
-      deploySawtoothManifestsTask({
         name: params.name,
         domain: params.domain,
       }, store, dispatcher, next)
