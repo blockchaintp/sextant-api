@@ -86,7 +86,7 @@ const getInstanceCountZones = (zones, instanceCount, maxPrice) => {
       
     */
     if(maxPrice) {
-      ret.maxPrice = `"\n\"${maxPrice}\""`
+      ret.maxPrice = `\n"${maxPrice}"`
     }
     return ret
   })
@@ -123,12 +123,12 @@ const getKopsValues = (settings) => {
       domainName: settings.domain,
       master: {
         machineType: settings.master_size,
-        zones: getInstanceCountZones(settings.master_zones, settings.master_count),
+        zones: getInstanceCountZones(settings.master_zones, settings.master_count, DEFAULT_MAX_PRICE),
 
       },
       node: {
         machineType: settings.node_size,
-        zones: getInstanceCountZones(settings.node_zones, settings.node_count),
+        zones: getInstanceCountZones(settings.node_zones, settings.node_count, DEFAULT_MAX_PRICE),
       }
     },
     topology: {
@@ -138,7 +138,7 @@ const getKopsValues = (settings) => {
       masters: 'public',
       nodes: 'public',
     },
-    networkCIDR: settings.node_size,
+    networkCIDR: settings.network_cidr,
     subnets: getSubnets(mergeZones(settings.master_zones, settings.node_zones), settings.network_cidr, settings.subnet_mask),
   }
 }
