@@ -1,0 +1,109 @@
+# kubetpl:syntax:go-template
+{{$dnsType := .cluster.topology.dns.type}}
+{{$clusterName := .cluster.name}}
+{{$clusterDomainName := .cluster.domainName}}
+{{$clusterMasterMachineType := .cluster.master.machineType}}
+{{$clusterNodeMachineType := .cluster.node.machineType}}
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  name: {{$clusterName}}.{{$clusterDomainName}}
+spec:
+  api:
+    dns: {}
+  authorization:
+    rbac: {}
+  additionalPolicies:
+    master: |
+      [
+        {
+          "Effect":"Allow",
+          "Action": [ "route53:ListHostedZonesByName" ],
+          "Resource": ["*"]
+        }
+      ]
+  channel: stable
+  cloudProvider: {{.cloud.provider}}
+  configBase: {{.kops.stateStore}}/{{$clusterName}}.{{$clusterDomainName}}
+  etcdClusters:
+  - etcdMembers:
+    {{ range .cluster.master.zones }}
+    - instanceGroup: master-{{.subnet}}
+      name: {{.subnet}}
+    {{end}}
+    name: main
+  - etcdMembers:
+    {{ range .cluster.master.zones }}
+    - instanceGroup: master-{{.subnet}}
+      name: {{.subnet}}
+    {{end}}
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.9.8
+  masterPublicName: api.{{$clusterName}}.{{$clusterDomainName}}
+  networkCIDR: {{.cluster.networkCIDR}}
+  networking:
+    weave:
+      mtu: 8912
+  nonMasqueradeCIDR: 100.64.0.0/10
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  {{ range .cluster.subnets }}
+  - cidr: {{.cidr}}
+    name: {{.name}}
+    type: {{$dnsType}}
+    zone: {{.name}}
+  {{ end }}
+  topology:
+    dns:
+      type: {{$dnsType}}
+    masters: {{.cluster.topology.masters}}
+    nodes: {{.cluster.topology.nodes}}
+
+---
+
+{{ range .cluster.master.zones }}
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{$clusterName}}.{{$clusterDomainName}}
+  name: master-{{.subnet}}
+spec:
+  image: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11
+  machineType: {{$clusterMasterMachineType}}
+  maxSize: 1
+  minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-{{.subnet}}
+  role: Master
+  subnets:
+  - {{.subnet}}
+---
+{{end}}
+
+{{range .cluster.node.zones}}
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels:
+    kops.k8s.io/cluster: {{$clusterName}}.{{$clusterDomainName}}
+  name: nodes-{{.subnet}}
+spec:
+  image: kope.io/k8s-1.9-debian-jessie-amd64-hvm-ebs-2018-03-11
+  machineType: {{$clusterNodeMachineType}}
+  {{range $index, $elem := . }}
+  {{$index}}: {{$elem}}
+  {{end}}
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes-{{.subnet}}
+  role: Node
+  subnets:
+  - {{.subnet}}
+---
+{{end}}

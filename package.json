@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "api server for the sextant cluster creation service",
   "main": "index.js",
+  "scripts": {
+    "test": "tape test/*.test.js"
+  },
   "dependencies": {
     "async": "^2.6.0",
     "aws-regions": "^1.4.1",
@@ -16,10 +19,14 @@
     "jsonist": "^2.1.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "node-cidr": "^1.0.0",
     "pino": "^4.17.6",
     "randomstring": "^1.1.5",
     "request": "^2.81.0",
     "rmdir": "^1.2.0",
     "tmp": "^0.0.33"
+  },
+  "devDependencies": {
+    "tape": "^4.9.1"
   }
 }

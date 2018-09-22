@@ -1,0 +1,59 @@
+# note this is an example values file and should not be actually used
+kops:
+  stateStore: s3://clusters.dev.catenasys.com
+
+cloud:
+  provider: aws
+  
+cluster:
+  name: scealiontach
+  domainName: dev.catenasys.com
+  master:
+    machineType: m4.large
+    zones:
+      - subnet: us-east-1a
+      - subnet: us-east-1b
+      - subnet: us-east-1c
+  node:
+    machineType: m4.large
+    zones:
+      - subnet: us-east-1c
+        minSize: 1
+        maxSize: 2
+      - subnet: us-east-1d
+        minSize: 1
+        maxSize: 2
+        maxPrice: | 
+          "0.314"
+      - subnet: us-east-1e
+        minSize: 1
+        maxSize: 2
+        maxPrice: | 
+          "0.314"
+      - subnet: us-east-1f
+        minSize: 0
+        maxSize: 2
+        maxPrice: | 
+          "0.314"
+
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+  networkCIDR: 172.20.0.0/16
+  subnets:
+    - name: us-east-1a
+      cidr: 172.20.32.0/19
+    - name: us-east-1b
+      cidr: 172.20.64.0/19
+    - name: us-east-1c
+      cidr: 172.20.96.0/19
+    - name: us-east-1d
+      cidr: 172.20.128.0/19
+    - name: us-east-1e
+      cidr: 172.20.160.0/19
+    - name: us-east-1f
+      cidr: 172.20.192.0/19
+    

@@ -1,0 +1,81 @@
+# kubetpl:syntax:go-template
+{{ if .sawtooth.rbac.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-next
+  labels:
+    app: {{.sawtooth.networkName}}-next
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 8080
+    name: rethinkdb-admin
+  - port: 4200
+    protocol: TCP
+    targetPort: 4200
+    name: rbac-ui
+  selector:
+    app: {{.sawtooth.networkName}}-next
+---
+
+apiVersion: apps/v1
+kind: StatefulSet 
+metadata:
+  name: {{.sawtooth.networkName}}-next
+  labels:
+    app: {{.sawtooth.networkName}}-next
+spec:
+  selector:
+    matchLabels:
+      app: {{.sawtooth.networkName}}-next
+  serviceName: "{{.sawtooth.networkName}}-next"
+  template:
+    metadata:
+      labels:
+        app: {{.sawtooth.networkName}}-next
+    spec:
+      containers:
+      - name: rethinkdb 
+        image: library/rethinkdb:2.3
+        command: [ "rethinkdb", "--bind", "all" ]
+        ports:
+          - containerPort: 8080
+            name: rethinkdb-admin
+          - containerPort: 28015
+            name: rethinkdb
+      - name: rbac-server
+        image: {{.sources.imageRepository}}/rbac-server-production:{{.sources.rbacVersion}}
+        command: [ "bash", "-c" ]
+        args:
+          - |
+            ln -s /project/tmobile-rbac/etc/config.py /project/tmobile-rbac/server/config.py;
+            bin/rbac-server
+        volumeMounts:
+        - name: rbac-config-volume
+          mountPath: /project/tmobile-rbac/server/config.py
+          subPath: config.py
+      - name: rbac-ledger-sync
+        image: {{.sources.imageRepository}}/rbac-ledger-sync-production:{{.sources.rbacVersion}}
+        command: [ "bash", "-c" ]
+        args:
+          - |
+            bin/setup_db --host localhost &&
+            bin/rbac-ledger-sync -v \
+              --db-host localhost \
+              --validator tcp://{{.sawtooth.networkName}}-validator:4004
+      - name: rbac-ui
+        image: {{.sources.imageRepository}}/rbac-ui-production:{{.sources.rbacVersion}}
+        ports:
+          - containerPort: 4200
+            name: rbac-ui
+        env:
+          - name: RBAC_SERVER
+            value: "localhost" 
+      volumes:
+        - name: rbac-config-volume
+          configMap:
+            name: rbac-config
+---
+{{ end }}
