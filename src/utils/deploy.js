@@ -15,12 +15,13 @@
 
 const path = require('path')
 const fs = require('fs')
+const async = require('async')
 const pino = require('pino')({
   name: 'deploy',
 })
 
+const template = require('./template')
 const settings = require('../settings')
-const SawtoothManifests = require('./manifests/sawtooth')
 
 const Deploy = ({ kubectl }) => {
 
@@ -84,7 +85,7 @@ const Deploy = ({ kubectl }) => {
     
   */
   const route53Mapper = (params, done) => {
-    const resource = path.join(__dirname, 'manifests', 'route53-mapper', 'v1.3.0.yml')
+    const resource = path.join(__dirname, '..', 'templates', 'route53-mapper', 'v1.3.0.yml')
     const route53MapperParams = { resource }
     pino.info({
       action: 'deploy-route53-mapper',
@@ -99,26 +100,31 @@ const Deploy = ({ kubectl }) => {
 
     params:
 
-     * clusterSettings - the settings used to create the cluster
+     * deploymentYamlPath - the settings used to create the cluster
     
   */
   const sawtoothManifests = (params, done) => {
-    if(!params.clusterSettings) return done(`clusterSettings param needed for deploy.sawtoothManifests`)
+    if(!params.deploymentYamlPath) return done(`deploymentYamlPath param needed for deploy.sawtoothManifests`)
 
-    const manifestYaml = SawtoothManifests({
-      clusterSettings: params.clusterSettings,
-    })
+    async.eachSeries(settings.sawtoothManifests, (manifest, next) => {
 
-    pino.info({
-      action: 'deploy-sawtooth',
-      params: {
-        yaml: manifestYaml
-      }
-    })
+      async.waterfall([
+        (nextw) => template.render(params.deploymentYamlPath, manifest, nextw),
 
-    kubectl.applyInline({
-      data: manifestYaml,
-    }, done)
+        (manifestYaml, nextw) => {
+          pino.info({
+            action: 'deploy-sawtooth',
+            params: {
+              manifest,
+              yaml: manifestYaml
+            }
+          })
+          kubectl.applyInline({
+            data: manifestYaml,
+          }, nextw)
+        }
+      ], next)
+    }, done)    
   }
   
   return {

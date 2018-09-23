@@ -33,10 +33,13 @@ const Kubectl = (kubeconfigPath) => {
 
     const runCommand = `kubectl ${cmd}`
 
+    const logOptions = Object.assign({}, useOptions)
+    delete(logOptions.env)
+
     pino.info({
       action: 'command',
       command: runCommand,
-      options: useOptions,
+      options: logOptions,
     })
 
     exec(runCommand, useOptions, (err, stdout, stderr) => {

@@ -68,7 +68,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
       (kubectl, next) => {
 
         async.parallel({
-          pods: nextp => kubectl.command('get pods', nextp),
+          pods: nextp => kubectl.command('get all -o wide', nextp),
           grafana: nextp => kubectl.jsonCommand({
             command: 'get services grafana'
           }, nextp),
@@ -142,7 +142,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
       // now that the cluster settings have been persisted
       // dispatch the "create-cluster" job that will make the kops cluster
-      // it will then call the "wait-cluster-created" job that will update
+      // it will then wait by calling "kops validate" that will update
       // the status once the cluster is ready
       next => {
         pino.info({
@@ -162,6 +162,108 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
   /*
   
+    deploy a cluster
+
+    params:
+
+     * name
+     * settings
+
+        {
+          network_name: 'sawtooth',
+          poet_enabled: 'false',
+          rbac_enabled: 'true',
+          rbac_secret_key: 'g7op0ioXPdw7jFTf4aY2',
+          rbac_aes_key: '37960e8f0337b90131acfb30b8817d17',
+          rbac_batcher_key: 'a8fbe6bb38fb6ae5cc1abbfee9068f734b4c023cc5ffc193a8c9d83793d0ee02',
+          xo_enabled: 'true',
+          smallbank_enabled: 'true',
+          simple_enabled: 'true',
+        }
+    
+  */
+  const deploy = (params, done) => {
+
+    // process the incoming settings
+    const settings = clusterUtils.processDeploymentSettings(params.settings)
+  
+    pino.info({
+      action: 'deploy',
+      params,
+    })
+
+    async.series([
+
+      // validate the given settings
+      next => {
+        const errors = clusterUtils.validateDeploymentSettings(settings)
+        if(errors) return next(errors)
+        next()
+      },
+
+      // check there is a cluster with that name
+      next => {
+        store.listClusterNames({}, (err, clusterNames) => {
+          if(err) return next(err)
+          const existingCluster = clusterNames.filter(clusterName => clusterName == params.name)[0]
+          if(!existingCluster) return next(`There is no cluster with the name ${params.name}`)
+          next()
+        })
+      },
+
+      // save the deployment settings in the store
+      next => {
+        pino.info({
+          action: 'store.saveDeploymentSettings',
+          params: {
+            settings
+          },
+        })
+        store.writeClusterFile({
+          clustername: params.name,
+          filename: 'deploymentSettings',
+          data: JSON.stringify(settings),
+        }, next)
+      },
+
+      // update the cluster status as deploying
+      next => {
+        const updateClusterStatusParams = {
+          clustername: params.name,
+          status: {
+            phase: 'deploying'
+          },
+        }
+        pino.info({
+          action: 'store.updateClusterStatus',
+          params: updateClusterStatusParams,
+        })
+        store.updateClusterStatus(updateClusterStatusParams, next)
+      },
+
+      // dispatch the "deploy-cluster" job that will kubectl apply the manifests
+      // it will then check the status of the manifests and update
+      // the status once the pods are ready
+      next => {
+        const deployClusterParams = {
+          name: params.name,
+          settings,
+        }
+        pino.info({
+          action: 'job.deploySawtooth',
+          params: deployClusterParams
+        })
+        jobDispatcher({
+          name: 'deploySawtooth',
+          params: deployClusterParams,
+        }, next)
+      },
+
+    ], done)
+  }
+
+  /*
+  
     destroy a cluster
 
     this will keep the state intact until the "cleanup" action is called
@@ -173,7 +275,6 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
      * name
     
   */
-
   const destroy = (params, done) => {
 
     pino.info({
@@ -339,6 +440,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     status,
     info,
     create,
+    deploy,
     destroy,
     cleanup,
     createKeypair,

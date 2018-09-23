@@ -14,11 +14,13 @@ const CLUSTER_FOLDER = path.join(BASE_FOLDER, 'clusters')
 
 const FILENAMES = {
   settings: 'settings.json',
+  deploymentSettings: 'deploymentSettings.json',
   status: 'status.json',
   publicKey: 'id_rsa.pub',
   kubeConfig: 'kubeconfig',
   kopsValues: 'kopsvalues.yaml',
   kopsConfig: 'kopsconfig.yaml',
+  deploymentValues: 'deploymentvalues.yaml',
 }
 
 const FileStore = () => {
@@ -88,6 +90,23 @@ const FileStore = () => {
     readClusterFileAsJSON({
       clustername: params.clustername,
       filename: FILENAMES.settings,
+    }, done)
+  }
+
+  /*
+  
+    return the processed `deploymentSettings.json` file from a cluster folder
+
+    params:
+
+     * clustername - string
+    
+  */
+  const getDeploymentSettings = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for getDeploymentSettings`)
+    readClusterFileAsJSON({
+      clustername: params.clustername,
+      filename: FILENAMES.deploymentSettings,
     }, done)
   }
 
@@ -421,6 +440,7 @@ const FileStore = () => {
     listClusters,
     getCluster,
     getClusterSettings,
+    getDeploymentSettings,
     getClusterStatus,
     createCluster,
     destroyCluster,

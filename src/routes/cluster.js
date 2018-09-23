@@ -55,6 +55,18 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const deploy = (req, res, next) => {
+    cluster.deploy({
+      name: req.params.id,
+      settings: req.body
+    }, (err, results) => {
+      if(err) return next(err)
+      res
+        .status(201)
+        .json(results)
+    })
+  }
+
   const createKeypair = (req, res, next) => {
     cluster.createKeypair({}, (err, results) => {
       if(err) return next(err)
@@ -130,6 +142,7 @@ const ClusterRoutes = (backends) => {
     status,
     info,
     create,
+    deploy,
     destroy,
     cleanup,
     createKeypair,

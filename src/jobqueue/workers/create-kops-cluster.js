@@ -7,7 +7,7 @@ const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
 const templateUtils = require('../../utils/template')
-const Deploy = require('../../deploy')
+const Deploy = require('../../utils/deploy')
 
 /*
 

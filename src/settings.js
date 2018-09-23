@@ -18,6 +18,15 @@ const args = require('minimist')(process.argv, {
 
     // core manifest urls
     dashboardManifest: 'https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.8.3.yaml',
+
+    // a list of the sawtooth template manifests that will be rendered and applied in order
+    sawtoothManifests: [
+      'sawtooth/config-maps.yaml',
+      'sawtooth/storage-class.yaml',
+      'sawtooth/monitoring.yaml',
+      'sawtooth/rbac-main.yaml',
+      'sawtooth/validators.yaml',
+    ],
   }
 })
 

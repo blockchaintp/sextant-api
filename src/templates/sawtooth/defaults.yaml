@@ -34,7 +34,9 @@ sawtooth:
   simple:
     enabled: true
     
-    
+dns:
+  domain: dev.catenasys.com
+
 sources:
   imageRepository: blockchaintp
   version: 1.0.5

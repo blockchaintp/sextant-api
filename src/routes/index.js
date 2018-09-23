@@ -22,8 +22,8 @@ const Routes = (app, backends) => {
   app.get(basePath('/cluster/info/:id'), cluster.info)
   app.get(basePath('/cluster/kubeconfig/:id'), cluster.kubeconfig)
   app.get(basePath('/cluster/kopsconfig/:id'), cluster.kopsconfig)
-  
   app.post(basePath('/cluster/keypair/create'), cluster.createKeypair)
+  app.post(basePath('/cluster/deploy/:id'), cluster.deploy)
 }
 
 module.exports = Routes

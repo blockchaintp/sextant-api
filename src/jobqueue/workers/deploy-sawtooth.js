@@ -1,12 +1,12 @@
 const async = require('async')
 const pino = require('pino')({
-  name: 'worker.createCluster',
+  name: 'worker.deploySawtooth',
 })
 
 const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
-const Deploy = require('../../deploy')
+const Deploy = require('../../utils/deploy')
 
 /*
 
@@ -22,7 +22,6 @@ const Deploy = require('../../deploy')
   params:
 
    * name
-   * domain
   
 */
 const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
@@ -35,37 +34,75 @@ const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
 
     // first - load the cluster settings
     (next) => {
-      store.getClusterSettings({
-        clustername: params.name,
+      async.parallel({
+        clusterSettings: nextp => store.getClusterSettings({
+          clustername: params.name,
+        }, nextp),
+        deploymentSettings: nextp => store.getDeploymentSettings({
+          clustername: params.name,
+        }, nextp),
       }, next)
+      
+    },
+
+    // output the deploymentValues.yaml file and get a path to it
+    (context, next) => {
+      store.writeClusterFile({
+        clustername: params.name,
+        filename: 'deploymentValues',
+        data: clusterUtils.getDeploymentYaml(context.clusterSettings, context.deploymentSettings),
+      }, (err, deploymentYamlPath) => {
+        if(err) return next(err)
+        context.deploymentYamlPath = deploymentYamlPath
+        next(null, context)
+      })
     },
 
     // get a kubectl that is bound to the given cluster
     // also get a deploy object bound to that kubectl instance
-    (clusterSettings, next) => {
+    (context, next) => {
       clusterUtils.getKubectl(store, params.name, (err, kubectl) => {
         if(err) return next(err)
-        const deploy = Deploy({
+        context.deploy = Deploy({
           kubectl
         })
-        next(null, {
-          clusterSettings,
-          deploy,
-          kubectl,
-        })
+        context.kubectl = kubectl
+        next(null, context)
       })
     },
 
-    // generate the YAML template and deploy it
+    // generate the YAML templates and deploy them
     (context, next) => {
       context.deploy.sawtoothManifests({
-        clusterSettings: context.clusterSettings,
+        deploymentYamlPath: context.deploymentYamlPath,
       }, next)
     }
 
   ], done)
 }
 
+/*
+
+  wait for the sawtooth pods to be up and running
+
+  params:
+
+   * name
+  
+*/
+const waitForSawtoothPodsTask = (params, store, dispatcher, done) => {
+  done()
+}
+
+/*
+
+  deploy the sawtooth manifests based on the saved deployment settings
+
+  params:
+
+   * name
+  
+*/
 const DeploySawtoothManifests = (params, store, dispatcher) => {
   pino.info({
     action: 'handle',
@@ -78,7 +115,13 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
     next => {
       deploySawtoothManifestsTask({
         name: params.name,
-        domain: params.domain,
+      }, store, dispatcher, next)
+    },
+
+    // wait for the manifests to be ready
+    next => {
+      waitForSawtoothPodsTask({
+        name: params.name,
       }, store, dispatcher, next)
     },
 
@@ -105,13 +148,19 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
         params,
       })
 
-      // everything is ready - put the cluster into a 'created' state
-      store.updateClusterStatus({
-        clustername: params.name,
-        status: {
-          phase: 'created',
-        }
-      }, () => {})
+      // wait for 10 seconds until saying we have deployed
+      // TODO: implement a check to wait for the pods to actually be ready
+
+      setTimeout(() => {
+        // everything is ready - put the cluster into a 'created' state
+        store.updateClusterStatus({
+          clustername: params.name,
+          status: {
+            phase: 'deployed',
+          }
+        }, () => {})
+      }, 10 * 1000)
+      
     }
   })
 }
