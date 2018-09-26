@@ -20,7 +20,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.sawtooth.networkName}}-influxdb
+  name: influxdb
   labels:
     app: {{.sawtooth.networkName}}-monitoring
 spec:

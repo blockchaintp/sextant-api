@@ -70,7 +70,7 @@ spec:
               --network-auth trust \
               --minimum-peer-connectivity 3 \
               --maximum-peer-connectivity 255 \
-              --opentsdb-url http://{{.sawtooth.networkName}}-influxdb:8086 \
+              --opentsdb-url http://influxdb:8086 \
               --opentsdb-db metrics \
               ${SEEDS} ;
         volumeMounts:
