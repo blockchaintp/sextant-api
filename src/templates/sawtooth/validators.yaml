@@ -177,13 +177,11 @@ spec:
                 apt install curl -y
                 curl https://raw.githubusercontent.com/hyperledger/sawtooth-core/5094a9a1a7d086c14704e7055cfad9de77d1e6aa/consensus/poet/simulator/packaging/simulator_rk_pub.pem > /etc/sawtooth/keys/simulator_rk_pub.pem
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
-                  {{ if .sawtooth.poet.enabled }}
+                sawset proposal create -k /etc/sawtooth/keys/validator.priv \ {{ if .sawtooth.poet.enabled }}
                   sawtooth.consensus.algorithm=poet \
                   sawtooth.poet.report_public_key_pem="$(cat /etc/sawtooth/keys/simulator_rk_pub.pem)" \
                   sawtooth.poet.valid_enclave_measurements=$(poet enclave --enclave-module {{.sawtooth.poet.enclaveModule}} measurement) \
-                  sawtooth.poet.valid_enclave_basenames=$(poet enclave --enclave-module {{.sawtooth.poet.enclaveModule}} basename) \
-                  {{ end }}
+                  sawtooth.poet.valid_enclave_basenames=$(poet enclave --enclave-module {{.sawtooth.poet.enclaveModule}} basename) \ {{ end }}
                   sawtooth.validator.batch_injectors=block_info \
                   -o /etc/sawtooth/genesis/config.batch;
                 {{ if .sawtooth.poet.enabled }}
