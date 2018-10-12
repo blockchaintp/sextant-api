@@ -135,6 +135,12 @@ spec:
         args: 
           - "xo-tp-go -v --connect tcp://localhost:4004"
       {{ end }}
+      {{range .sawtooth.customTPs}}
+      - name: {{.name}}
+        image: {{.image}}
+        {{if .command}}command: [ {{ range .command }}"{{.}}",{{end}} ]{{end}}
+        {{if .args}}args: [ {{ range .args}}"{{.}}", {{end}} ]{{end}}
+      {{end}}
       {{ if .sawtooth.simple.enabled }}
       - name: simple-tp-python
         image: {{.sources.imageRepository}}/simple-tp-python:{{.sources.simpleVersion}}
