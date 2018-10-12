@@ -1,4 +1,5 @@
 # kubetpl:syntax:go-template
+{{$peering:= .sawtooth.dynamicPeering}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -60,19 +61,22 @@ spec:
             sleep 30;
             apt update; apt install host -y;
             for ip in `host {{.sawtooth.networkName}}-validator|awk '{print $NF}'`; do
-              export SEEDS="-s tcp://$ip:8800 $SEEDS";
+              if [ "${ENDPOINT_ADDRESS}" != "${ip}" ]; then
+                export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:8800 $SEEDS";
+              fi
             done;
             sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
               --endpoint tcp://${ENDPOINT_ADDRESS}:8800 \
               --bind component:tcp://0.0.0.0:4004 \
               --bind network:tcp://0.0.0.0:8800 \
-              -P dynamic \
+              -P {{if ($peering)}}dynamic{{else}}static{{end}} \
+              {{ range .sawtooth.externalSeeds }}{{if ($peering) }}-s{{else}}-p{{end}} tcp://{{.}} {{end}} \
+              ${SEEDS} \
               --network-auth trust \
-              --minimum-peer-connectivity 3 \
-              --maximum-peer-connectivity 255 \
+              --minimum-peer-connectivity 5 \
+              --maximum-peer-connectivity 64 \
               --opentsdb-url http://influxdb:8086 \
-              --opentsdb-db metrics \
-              ${SEEDS} ;
+              --opentsdb-db metrics ;
         volumeMounts:
         - mountPath: "/etc/sawtooth"
           name: sawtooth

@@ -22,6 +22,8 @@ sawtooth:
     enclaveModule: simulator
   genesis:
     enabled: true
+  dynamicPeering: false
+  externalSeeds: []
   rbac:
     enabled: true
     secretKey: 'g7op0ioXPdw7jFTf4aY2'
