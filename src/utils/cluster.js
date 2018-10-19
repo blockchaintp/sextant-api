@@ -200,12 +200,12 @@ const getKopsValues = (settings) => {
       domainName: settings.domain,
       master: {
         machineType: settings.master_size,
-        zones: getInstanceCountZones(settings.master_zones, settings.master_count, DEFAULT_MAX_PRICE),
+        zones: getInstanceCountZones(settings.master_zones, settings.master_count/*, DEFAULT_MAX_PRICE*/),
 
       },
       node: {
         machineType: settings.node_size,
-        zones: getInstanceCountZones(settings.node_zones, settings.node_count, DEFAULT_MAX_PRICE),
+        zones: getInstanceCountZones(settings.node_zones, settings.node_count/*, DEFAULT_MAX_PRICE*/),
       },
       topology: {
         dns: {
