@@ -63,14 +63,26 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
     async.waterfall([
 
-      (next) => clusterUtils.getKubectl(store, params.name, next),
+      (next) => {
+        async.parallel({
+          kubectl: nextp => clusterUtils.getKubectl(store, params.name, nextp),
+          deploymentSettings: nextp => store.getDeploymentSettings({
+            clustername: params.name,
+          }, nextp)
+        }, next)
+      },
 
-      (kubectl, next) => {
+      (resources, next) => {
+
+        const { kubectl, deploymentSettings } = resources
 
         async.parallel({
           pods: nextp => kubectl.command('get all -o wide', nextp),
           grafana: nextp => kubectl.jsonCommand({
             command: 'get services grafana'
+          }, nextp),
+          xodemo: nextp => kubectl.jsonCommand({
+            command: `get services ${deploymentSettings.sawtooth.networkName}-xo-demo`
           }, nextp),
         }, next)
 

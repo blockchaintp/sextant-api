@@ -33,6 +33,7 @@ const DEFAULT_IMAGE_REPO = 'blockchaintp'
 const DEFAULT_VERSION = '1.0.5'
 const DEFAULT_RBAC_VERSION = 'develop'
 const DEFAULT_SIMPLE_VERSION = 'latest'
+const DEFAULT_XO_DEMO_VERSION = 'latest'
 
 /*
 
@@ -277,6 +278,7 @@ const getDeploymentValues = (clusterSettings, deploymentSettings) => {
       version: DEFAULT_VERSION,
       rbacVersion: DEFAULT_RBAC_VERSION,
       simpleVersion: DEFAULT_SIMPLE_VERSION,
+      xoDemoVersion: DEFAULT_XO_DEMO_VERSION,
     }
   }
 }
