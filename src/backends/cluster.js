@@ -79,15 +79,14 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
         const { kubectl, deploymentSettings } = resources
 
         async.parallel({
-          pods: nextp => kubectl.command('get all -o wide', nextp),
           podJson: nextp => kubectl.jsonCommand({
             command: 'get po'
           }, nextp),
           serviceJson: nextp => kubectl.jsonCommand({
             command: 'get svc'
           }, nextp),
-          statefulSetJson: nextp => kubectl.jsonCommand({
-            command: 'get statefulset'
+          pvJson: nextp => kubectl.jsonCommand({
+            command: 'get pv'
           }, nextp),
           grafana: nextp => kubectl.jsonCommand({
             command: 'get services grafana',
