@@ -8,6 +8,7 @@ const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
 const sawtoothSettings = require('../../templates/sawtooth_settings')
 const Deploy = require('../../utils/deploy')
+const Pods = require('../../utils/pods')
 
 /*
 
@@ -81,7 +82,41 @@ const undeploySawtoothManifestsTask = (params, store, dispatcher, done) => {
   
 */
 const waitForSawtoothPodsTask = (params, store, dispatcher, done) => {
-  done()
+  
+  async.waterfall([
+
+    // get a kubectl that is bound to the given cluster
+    // also get a deploy object bound to that kubectl instance
+    (next) => {
+      clusterUtils.getKubectl(store, params.name, (err, kubectl) => {
+        if(err) return next(err)
+        next(null, kubectl)
+      })
+    },
+
+    // wait for the pods to be ready
+    (kubectl, next) => {
+      let waitingForPods = true
+
+      const pods = Pods(kubectl)
+      async.whilst(
+        () => waitingForPods,
+        (nextw) => {
+          pods.isUndeployed((err, status) => {
+            if(err) return nextw(err)
+            if(status == 'terminated') {
+              waitingForPods = false
+              return nextw()
+            }
+            else {
+              setTimeout(nextw, 1000)
+            }
+          })
+        },
+        next,
+      )
+    }
+  ], done)
 }
 
 /*
@@ -139,19 +174,13 @@ const UndeploySawtoothManifests = (params, store, dispatcher) => {
         params,
       })
 
-      // wait for 10 seconds until saying we have deployed
-      // TODO: implement a check to wait for the pods to actually be deleted
-
-      setTimeout(() => {
-        // everything is undeployed - put the cluster into a 'created' state
-        store.updateClusterStatus({
-          clustername: params.name,
-          status: {
-            phase: 'created',
-          }
-        }, () => {})
-      }, 100 * 1000)
-      
+      // everything is undeployed - put the cluster into a 'created' state
+      store.updateClusterStatus({
+        clustername: params.name,
+        status: {
+          phase: 'created',
+        }
+      }, () => {})      
     }
   })
 }
