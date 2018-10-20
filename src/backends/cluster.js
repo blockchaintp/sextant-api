@@ -13,6 +13,79 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
   
   /*
   
+    called once upon boot
+
+    this loops over current clusters and for any in the following state
+    will call the respective resume job:
+
+     * creating -> create-kops-cluster-resume
+     * deploying -> deploy-sawtooth-resume
+     * undeploying -> undeploy-sawtooth-resume
+    
+  */
+  const initialize = () => {
+
+    async.waterfall([
+      (next) => store.listClusters({}, next),
+
+      (clusters, next) => {
+
+        clusters.forEach(cluster => {
+
+          const clusterParams = {
+            name: cluster.settings.name,
+          }
+
+          if(cluster.status.phase == 'creating') {
+            pino.info({
+              action: 'job.createClusterResume',
+              params: {
+                clusterParams
+              },
+            })
+            jobDispatcher({
+              name: 'createClusterResume',
+              params: clusterParams,
+            }, () => {})
+          }
+          else if(cluster.status.phase == 'deploying') {
+            pino.info({
+              action: 'job.deploySawtoothResume',
+              params: {
+                clusterParams
+              },
+            })
+            jobDispatcher({
+              name: 'deploySawtoothResume',
+              params: clusterParams,
+            }, () => {})
+          }
+          else if(cluster.status.phase == 'undeploying') {
+            pino.info({
+              action: 'job.undeploySawtoothResume',
+              params: {
+                clusterParams
+              },
+            })
+            jobDispatcher({
+              name: 'undeploySawtoothResume',
+              params: clusterParams,
+            }, () => {})
+          }
+        })
+      }
+    ], () => {
+
+    })
+
+
+  }
+
+  // pause a few seconds before we trigger any resume jobs
+  setTimeout(initialize, 5 * 1000)
+
+  /*
+  
     list the current clusters
 
     params:

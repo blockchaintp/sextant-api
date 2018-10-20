@@ -20,7 +20,7 @@ const CreateKopsClusterResume = (params, store, dispatcher) => {
 
     // wait for the cluster to be ready
     next => {
-      shared.waitClusterReadyTask({
+      shared.waitClusterReadyTask(pino, {
         name: params.name,
         domain: params.domain,
       }, store, dispatcher, next)
@@ -28,7 +28,7 @@ const CreateKopsClusterResume = (params, store, dispatcher) => {
 
     // deploy the core manifests
     next => {
-      shared.deployCoreManifestsTask({
+      shared.deployCoreManifestsTask(pino, {
         name: params.name,
         domain: params.domain,
       }, store, dispatcher, next)

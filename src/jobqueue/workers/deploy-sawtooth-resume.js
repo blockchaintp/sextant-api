@@ -1,6 +1,6 @@
 const async = require('async')
 const pino = require('pino')({
-  name: 'worker.deploySawtooth',
+  name: 'worker.deploySawtoothResume',
 })
 const shared = require('./deploy-sawtooth-shared')
 
@@ -20,7 +20,7 @@ const DeploySawtoothManifestsResume = (params, store, dispatcher) => {
 
     // wait for the manifests to be ready
     next => {
-      shared.waitForSawtoothPodsTask({
+      shared.waitForSawtoothPodsTask(pino, {
         name: params.name,
       }, store, dispatcher, next)
     },
