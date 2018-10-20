@@ -515,7 +515,20 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
           clustername: params.name,
         }, (err, status) => {
           if(err) return next(err)
-          if(status.phase != 'deleted') return next(`The ${params.name} cluster is not in the "deleted" phase so it cannot be cleaned up`)
+
+          let canCleanup = false
+
+          if(status.phase == 'deleted') {
+            canCleanup = true
+          }
+          else if(status.phase == 'error' && status.errorPhase == 'create') {
+            canCleanup = true
+          }
+
+          if(!canCleanup) {
+            return next(`The ${params.name} cluster cannot be cleaned up because it is not in the correct phase`)
+          }
+          
           next()
         })
       },
