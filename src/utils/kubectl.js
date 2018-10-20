@@ -128,11 +128,68 @@ const Kubectl = (kubeconfigPath) => {
     ], done)
   }
 
+
+  /*
+
+    delete a manifest that is a filepath or url
+
+    params:
+
+     * resource - a filepath or url of a manifest
+    
+  */
+  const del = (params, done) => {
+    if(!params.resource) return done(`resource param required for kubectl.del`)
+    command(`delete -f ${ params.resource }`, done)
+  }
+
+  /*
+
+    delete a manifest that is given as is
+
+    write to a temp file before using normal delete
+
+    params:
+
+     * data - yaml manifest data
+    
+  */
+  const delInline = (params, done) => {
+    if(!params.data) return done(`data param required for kubectl.delInline`)
+    async.waterfall([
+
+      (next) => {
+        tmp.file({
+          postfix: '.yaml',
+        }, (err, filepath) => {
+          if(err) return next(err)
+          next(null, filepath)
+        })
+      },
+
+      (filepath, next) => {
+        fs.writeFile(filepath, params.data, 'utf8', (err) => {
+          if(err) return next(err)
+          next(null, filepath)
+        })
+      },
+
+      (filepath, next) => {
+        del({
+          resource: filepath
+        }, next)
+      },
+
+    ], done)
+  }
+
   return {
     command,
     jsonCommand,
     apply,
     applyInline,
+    del,
+    delInline,
   }
 }
 

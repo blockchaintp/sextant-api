@@ -1,6 +1,6 @@
 const async = require('async')
 const pino = require('pino')({
-  name: 'worker.deploySawtooth',
+  name: 'worker.undeploySawtooth',
 })
 
 const settings = require('../../settings')
@@ -11,53 +11,39 @@ const Deploy = require('../../utils/deploy')
 
 /*
 
-  depoloy the sawtootbh manifests based on the input from the GUI
+  undepoloy the sawtootbh manifests based on the input from the GUI
   
 */
 
 
 /*
 
-  deploy the core manifests
+  undeploy the core manifests
 
   params:
 
    * name
   
 */
-const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
+const undeploySawtoothManifestsTask = (params, store, dispatcher, done) => {
   pino.info({
-    action: 'deploySawtoothManifestsTask',
+    action: 'undeploySawtoothManifestsTask',
     params,
   })
 
   async.waterfall([
 
-    // first - load the cluster settings
+    // get the path to the deploymentValues.yaml file
     (next) => {
-      async.parallel({
-        clusterSettings: nextp => store.getClusterSettings({
-          clustername: params.name,
-        }, nextp),
-        deploymentSettings: nextp => store.getDeploymentSettings({
-          clustername: params.name,
-        }, nextp),
-      }, next)
-      
-    },
 
-    // output the deploymentValues.yaml file and get a path to it
-    (context, next) => {
-
-      const yaml = sawtoothSettings.getYaml(context.clusterSettings, context.deploymentSettings)
-
-      store.writeClusterFile({
+      store.getClusterFilePath({
         clustername: params.name,
         filename: 'deploymentValues',
-        data: sawtoothSettings.getYaml(context.clusterSettings, context.deploymentSettings),
       }, (err, deploymentYamlPath) => {
         if(err) return next(err)
-        context.deploymentYamlPath = deploymentYamlPath
+        const context = {
+          deploymentYamlPath
+        }
         next(null, context)
       })
     },
@@ -77,7 +63,7 @@ const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
 
     // generate the YAML templates and deploy them
     (context, next) => {
-      context.deploy.sawtoothManifestsApply({
+      context.deploy.sawtoothManifestsDelete({
         deploymentYamlPath: context.deploymentYamlPath,
       }, next)
     }
@@ -107,7 +93,7 @@ const waitForSawtoothPodsTask = (params, store, dispatcher, done) => {
    * name
   
 */
-const DeploySawtoothManifests = (params, store, dispatcher) => {
+const UndeploySawtoothManifests = (params, store, dispatcher) => {
   pino.info({
     action: 'handle',
     params,
@@ -115,14 +101,14 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
 
   async.series([
 
-    // deploy the sawtooth manifests
+    // undeploy the sawtooth manifests
     next => {
-      deploySawtoothManifestsTask({
+      undeploySawtoothManifestsTask({
         name: params.name,
       }, store, dispatcher, next)
     },
 
-    // wait for the manifests to be ready
+    // wait for the manifests to be terminated
     next => {
       waitForSawtoothPodsTask({
         name: params.name,
@@ -143,7 +129,7 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
       store.setClusterError({
         clustername: params.name,
         error: err.toString(),
-        errorPhase: 'deploy',
+        errorPhase: 'undeploy',
       }, () => {})
     }
     else {
@@ -154,20 +140,20 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
       })
 
       // wait for 10 seconds until saying we have deployed
-      // TODO: implement a check to wait for the pods to actually be ready
+      // TODO: implement a check to wait for the pods to actually be deleted
 
       setTimeout(() => {
-        // everything is ready - put the cluster into a 'deployed' state
+        // everything is undeployed - put the cluster into a 'created' state
         store.updateClusterStatus({
           clustername: params.name,
           status: {
-            phase: 'deployed',
+            phase: 'created',
           }
         }, () => {})
-      }, 10 * 1000)
+      }, 100 * 1000)
       
     }
   })
 }
 
-module.exports = DeploySawtoothManifests
+module.exports = UndeploySawtoothManifests

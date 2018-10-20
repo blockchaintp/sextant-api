@@ -2,6 +2,7 @@ const workers = {
   createCluster: require('./workers/create-kops-cluster'),
   destroyCluster: require('./workers/destroy-kops-cluster'),
   deploySawtooth: require('./workers/deploy-sawtooth'),
+  undeploySawtooth: require('./workers/undeploy-sawtooth'),
 }
 
 const SimpleHandler = (store, dispatcher) => (job) => {

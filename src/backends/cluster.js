@@ -278,6 +278,71 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
   /*
   
+    undeploy a cluster
+
+    this means remove the k8s resources but leave the cluster intact
+
+    params:
+
+     * name
+    
+  */
+  const undeploy = (params, done) => {
+
+    pino.info({
+      action: 'deploy',
+      params,
+    })
+
+    async.series([
+
+      // check there is a cluster with that name
+      next => {
+        store.listClusterNames({}, (err, clusterNames) => {
+          if(err) return next(err)
+          const existingCluster = clusterNames.filter(clusterName => clusterName == params.name)[0]
+          if(!existingCluster) return next(`There is no cluster with the name ${params.name}`)
+          next()
+        })
+      },
+
+      // update the cluster status as undeploying
+      next => {
+        const updateClusterStatusParams = {
+          clustername: params.name,
+          status: {
+            phase: 'undeploying'
+          },
+        }
+        pino.info({
+          action: 'store.updateClusterStatus',
+          params: updateClusterStatusParams,
+        })
+        store.updateClusterStatus(updateClusterStatusParams, next)
+      },
+
+      // dispatch the "deploy-cluster" job that will kubectl apply the manifests
+      // it will then check the status of the manifests and update
+      // the status once the pods are ready
+      next => {
+        const undeployClusterParams = {
+          name: params.name,
+        }
+        pino.info({
+          action: 'job.undeploySawtooth',
+          params: undeployClusterParams
+        })
+        jobDispatcher({
+          name: 'undeploySawtooth',
+          params: undeployClusterParams,
+        }, next)
+      },
+
+    ], done)
+  }
+
+  /*
+  
     destroy a cluster
 
     this will keep the state intact until the "cleanup" action is called
@@ -455,6 +520,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     info,
     create,
     deploy,
+    undeploy,
     destroy,
     cleanup,
     createKeypair,

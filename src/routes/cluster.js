@@ -90,6 +90,20 @@ const ClusterRoutes = (backends) => {
     })
   }
 
+  const undeploy = (req, res, next) => {
+    cluster.undeploy({
+      name: req.params.id,
+    }, (err) => {
+      if(err) return next(err)
+
+      res
+        .status(200)
+        .json({
+          ok: true
+        })
+    })
+  }
+
   const cleanup = (req, res, next) => {
     cluster.cleanup({
       name: req.params.id,
@@ -143,6 +157,7 @@ const ClusterRoutes = (backends) => {
     info,
     create,
     deploy,
+    undeploy,
     destroy,
     cleanup,
     createKeypair,

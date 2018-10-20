@@ -104,8 +104,8 @@ const Deploy = ({ kubectl }) => {
      * deploymentYamlPath - the settings used to create the cluster
     
   */
-  const sawtoothManifests = (params, done) => {
-    if(!params.deploymentYamlPath) return done(`deploymentYamlPath param needed for deploy.sawtoothManifests`)
+  const sawtoothManifestsApply = (params, done) => {
+    if(!params.deploymentYamlPath) return done(`deploymentYamlPath param needed for deploy.sawtoothManifestsApply`)
 
     async.eachSeries(settings.sawtoothManifests, (manifest, next) => {
 
@@ -127,13 +127,47 @@ const Deploy = ({ kubectl }) => {
       ], next)
     }, done)    
   }
+
+  /*
+  
+    delete the manifests for a sawtooth cluster
+
+    params:
+
+     * deploymentYamlPath - the settings used to create the cluster
+    
+  */
+  const sawtoothManifestsDelete = (params, done) => {
+    if(!params.deploymentYamlPath) return done(`deploymentYamlPath param needed for deploy.sawtoothManifestsDelete`)
+
+    async.eachSeries(settings.sawtoothManifests, (manifest, next) => {
+
+      async.waterfall([
+        (nextw) => templateRender(params.deploymentYamlPath, manifest, nextw),
+
+        (manifestYaml, nextw) => {
+          pino.info({
+            action: 'undeploy-sawtooth',
+            params: {
+              manifest,
+              yaml: manifestYaml
+            }
+          })
+          kubectl.delInline({
+            data: manifestYaml,
+          }, nextw)
+        }
+      ], next)
+    }, done)    
+  }
   
   return {
     createClusterAdminServiceAccount,
     createDashboardServiceAccount,
     dashboard,
     route53Mapper,
-    sawtoothManifests,
+    sawtoothManifestsApply,
+    sawtoothManifestsDelete,
   }
 }
 
