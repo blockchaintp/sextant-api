@@ -426,17 +426,17 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       createClusterTask(params, store, dispatcher, next)
     },
 
-    // wait for the cluster to be ready
+    // output the cluster config files
     next => {
-      waitClusterReadyTask({
+      exportClusterConfigFilesTask({
         name: params.name,
         domain: params.domain,
       }, store, dispatcher, next)
     },
 
-    // output the cluster config files
+    // wait for the cluster to be ready
     next => {
-      exportClusterConfigFilesTask({
+      waitClusterReadyTask({
         name: params.name,
         domain: params.domain,
       }, store, dispatcher, next)
