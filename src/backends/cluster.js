@@ -81,10 +81,12 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
         async.parallel({
           pods: nextp => kubectl.command('get all -o wide', nextp),
           grafana: nextp => kubectl.jsonCommand({
-            command: 'get services grafana'
+            command: 'get services grafana',
+            allowFail: true,
           }, nextp),
           xodemo: nextp => kubectl.jsonCommand({
-            command: `get services ${deploymentSettings.network_name}-xo-demo`
+            command: `get services ${deploymentSettings.network_name}-xo-demo`,
+            allowFail: true,
           }, nextp),
         }, next)
 

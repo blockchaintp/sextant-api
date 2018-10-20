@@ -56,6 +56,7 @@ const Kubectl = (kubeconfigPath) => {
     params:
 
      * command
+     * allowFail
     
   */
   const jsonCommand = (params, done) => {
@@ -63,7 +64,14 @@ const Kubectl = (kubeconfigPath) => {
     const runCommand = `${ params.command } --output json`
 
     command(runCommand, (err, stdout) => {
-      if(err) return done(err)
+      if(err) {
+        if(params.allowFail) {
+          return done()
+        }
+        else {
+          return done(err)  
+        }
+      }
       let processedResult = null
       try {
         processedResult = JSON.parse(stdout)
