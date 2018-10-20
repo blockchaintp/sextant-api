@@ -33,6 +33,23 @@ spec:
     app: {{.sawtooth.networkName}}-validator
 ---
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-xo-demo
+  labels:
+    app: {{.sawtooth.networkName}}-xo-demo
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP 
+    targetPort: 80
+    name: xo-demo
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -134,6 +151,11 @@ spec:
         command: [ "bash", "-c"]
         args: 
           - "xo-tp-go -v --connect tcp://localhost:4004"
+      - name: xo-demo
+        image: {{.sources.imageRepository}}/xo-demo:{{.sources.xoDemoVersion}}
+        ports:
+          - containerPort: 80
+            name: xo-demo
       {{ end }}
       {{range .sawtooth.customTPs}}
       - name: {{.name}}
