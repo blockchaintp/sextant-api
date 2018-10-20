@@ -16,6 +16,7 @@
 const path = require('path')
 const fs = require('fs')
 const async = require('async')
+const yaml = require('js-yaml')
 const pino = require('pino')({
   name: 'deploy',
 })
@@ -113,6 +114,15 @@ const Deploy = ({ kubectl }) => {
         (nextw) => templateRender(params.deploymentYamlPath, manifest, nextw),
 
         (manifestYaml, nextw) => {
+
+          // check we actually got some content out of the template before
+          // trying to apply it
+          // don't error though - it just means an entire template has been
+          // disabled
+          if(!manifestYaml.match(/\w/)) {
+            return nextw()
+          }
+
           pino.info({
             action: 'deploy-sawtooth',
             params: {

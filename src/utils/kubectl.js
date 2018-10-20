@@ -194,9 +194,8 @@ const Kubectl = (kubeconfigPath) => {
             else {
               return next(err)
             }
-            next(null, result)
           }
-
+          next(null, result)
         })
       },
 
