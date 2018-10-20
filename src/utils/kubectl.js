@@ -160,6 +160,7 @@ const Kubectl = (kubeconfigPath) => {
     params:
 
      * data - yaml manifest data
+     * allowFail
     
   */
   const delInline = (params, done) => {
@@ -185,7 +186,18 @@ const Kubectl = (kubeconfigPath) => {
       (filepath, next) => {
         del({
           resource: filepath
-        }, next)
+        }, (err, result) => {
+          if(err) {
+            if(params.allowFail) {
+              return next()
+            }
+            else {
+              return next(err)
+            }
+            next(null, result)
+          }
+
+        })
       },
 
     ], done)

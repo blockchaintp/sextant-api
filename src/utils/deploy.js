@@ -155,6 +155,7 @@ const Deploy = ({ kubectl }) => {
           })
           kubectl.delInline({
             data: manifestYaml,
+            allowFail: true,
           }, nextw)
         }
       ], next)
