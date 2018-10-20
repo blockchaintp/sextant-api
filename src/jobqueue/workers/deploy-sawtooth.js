@@ -164,7 +164,7 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
             phase: 'deployed',
           }
         }, () => {})
-      }, 10 * 1000)
+      }, 100 * 1000)
       
     }
   })
