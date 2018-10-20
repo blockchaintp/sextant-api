@@ -82,7 +82,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
             command: 'get services grafana'
           }, nextp),
           xodemo: nextp => kubectl.jsonCommand({
-            command: `get services ${deploymentSettings.sawtooth.networkName}-xo-demo`
+            command: `get services ${deploymentSettings.network_name}-xo-demo`
           }, nextp),
         }, next)
 

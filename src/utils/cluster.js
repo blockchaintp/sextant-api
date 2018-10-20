@@ -33,7 +33,7 @@ const DEFAULT_IMAGE_REPO = 'blockchaintp'
 const DEFAULT_VERSION = '1.0.5'
 const DEFAULT_RBAC_VERSION = 'develop'
 const DEFAULT_SIMPLE_VERSION = 'latest'
-const DEFAULT_XO_DEMO_VERSION = 'latest'
+const DEFAULT_XO_DEMO_VERSION = 'master'
 
 /*
 
@@ -254,6 +254,8 @@ const getDeploymentValues = (clusterSettings, deploymentSettings) => {
       genesis: {
         enabled: true,
       },
+      dynamicPeering: false,
+      externalSeeds: [],
       rbac: {
         enabled: deploymentSettings.rbac_enabled,
         secretKey: deploymentSettings.rbac_secret_key,
@@ -269,6 +271,12 @@ const getDeploymentValues = (clusterSettings, deploymentSettings) => {
       simple: {
         enabled: deploymentSettings.simple_enabled,
       },
+      customTPs: [{
+        name: 'intkey-tp',
+        image: "blockchaintp/sawtooth-intkey-tp-go:1.0.5",
+        command: [ "bash", "-c" ],
+        args: [ "intkey-tp-go -v --connect tcp://localhost:4004" ],
+      }]
     },
     dns: {
       domain: [clusterSettings.name, clusterSettings.domain].join('.'),
