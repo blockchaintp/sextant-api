@@ -414,6 +414,7 @@ const FileStore = () => {
 
      * clustername
      * error
+     * errorPhase - what was the thing we were trying to do when the error happened?
     
   */
   const setClusterError = (params, done) => {
@@ -430,6 +431,7 @@ const FileStore = () => {
       status: {
         phase: 'error',
         error: params.error,
+        errorPhase: params.errorPhase,
       }
     }, done)
   }

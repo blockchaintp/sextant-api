@@ -20,7 +20,8 @@ const pino = require('pino')({
   name: 'deploy',
 })
 
-const template = require('./template')
+const templateUtils = require('../templates/utils')
+const templateRender = require('../templates/render')
 const settings = require('../settings')
 
 const Deploy = ({ kubectl }) => {
@@ -85,7 +86,7 @@ const Deploy = ({ kubectl }) => {
     
   */
   const route53Mapper = (params, done) => {
-    const resource = path.join(__dirname, '..', 'templates', 'route53-mapper', 'v1.3.0.yml')
+    const resource = templateUtils.fullTemplatePath('route53-mapper/v1.3.0.yml')
     const route53MapperParams = { resource }
     pino.info({
       action: 'deploy-route53-mapper',
@@ -109,7 +110,7 @@ const Deploy = ({ kubectl }) => {
     async.eachSeries(settings.sawtoothManifests, (manifest, next) => {
 
       async.waterfall([
-        (nextw) => template.render(params.deploymentYamlPath, manifest, nextw),
+        (nextw) => templateRender(params.deploymentYamlPath, manifest, nextw),
 
         (manifestYaml, nextw) => {
           pino.info({

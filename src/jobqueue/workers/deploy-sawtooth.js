@@ -6,6 +6,7 @@ const pino = require('pino')({
 const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
+const sawtoothSettings = require('../../templates/sawtooth_settings')
 const Deploy = require('../../utils/deploy')
 
 /*
@@ -47,10 +48,13 @@ const deploySawtoothManifestsTask = (params, store, dispatcher, done) => {
 
     // output the deploymentValues.yaml file and get a path to it
     (context, next) => {
+
+      const yaml = sawtoothSettings.getYaml(context.clusterSettings, context.deploymentSettings)
+
       store.writeClusterFile({
         clustername: params.name,
         filename: 'deploymentValues',
-        data: clusterUtils.getDeploymentYaml(context.clusterSettings, context.deploymentSettings),
+        data: sawtoothSettings.getYaml(context.clusterSettings, context.deploymentSettings),
       }, (err, deploymentYamlPath) => {
         if(err) return next(err)
         context.deploymentYamlPath = deploymentYamlPath
@@ -138,7 +142,8 @@ const DeploySawtoothManifests = (params, store, dispatcher) => {
       // to put the cluster into an error state
       store.setClusterError({
         clustername: params.name,
-        error: err.toString()
+        error: err.toString(),
+        errorPhase: 'deploy',
       }, () => {})
     }
     else {

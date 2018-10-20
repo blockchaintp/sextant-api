@@ -49,5 +49,5 @@ sources:
   version: 1.0.5
   rbacVersion: develop
   simpleVersion: latest
-  xoDemoVersion: latest
+  xoDemoVersion: master
   

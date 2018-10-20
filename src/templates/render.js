@@ -10,13 +10,12 @@ const exec = require('child_process').exec
 const pino = require('pino')({
   name: 'template',
 })
-
-const fullTemplatePath = (name) => path.resolve(path.join(__dirname, '..', 'templates', name))
+const utils = require('./utils')
 
 // render a template given a values file and a template path
 const render = (valuesPath, templatePath, done) => {
 
-  templatePath = templatePath.indexOf('/') == 0 ? templatePath : fullTemplatePath(templatePath)
+  templatePath = utils.fullTemplatePath(templatePath)
 
   const runCommand = `kubetpl render -i ${valuesPath} ${templatePath}`
 
@@ -31,6 +30,4 @@ const render = (valuesPath, templatePath, done) => {
   })
 }
 
-module.exports = {
-  render,
-}
+module.exports = render

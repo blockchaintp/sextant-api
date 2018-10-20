@@ -6,7 +6,8 @@ const pino = require('pino')({
 const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
-const templateUtils = require('../../utils/template')
+const kopsSettings = require('../../templates/kops_settings')
+const templateRender = require('../../templates/render')
 const Deploy = require('../../utils/deploy')
 
 /*
@@ -105,14 +106,14 @@ const createClusterTask = (params, store, dispatcher, done) => {
           store.writeClusterFile({
             clustername: params.name,
             filename: 'kopsValues',
-            data: clusterUtils.getKopsYaml(cluster.settings),
+            data: kopsSettings.getYaml(cluster.settings),
           }, nextw1)
         },
 
         // generate the kopsconfig.yaml into the cluster store
         // use kubetpl to generate it
         (kopsValuesPath, nextw1) => {
-          templateUtils.render(kopsValuesPath, 'kops/cluster.yaml', nextw1)
+          templateRender(kopsValuesPath, 'kops/cluster.yaml', nextw1)
         },
 
         // write out the kopsconfig.yaml file into the cluster store
@@ -462,7 +463,8 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       // to put the cluster into an error state
       store.setClusterError({
         clustername: params.name,
-        error: err.toString()
+        error: err.toString(),
+        errorPhase: 'create',
       }, () => {})
     }
     else {

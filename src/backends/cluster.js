@@ -1,6 +1,8 @@
 const async = require('async')
 const sshUtils = require('../utils/ssh')
 const clusterUtils = require('../utils/cluster')
+const kopsSettings = require('../templates/kops_settings')
+const sawtoothSettings = require('../templates/sawtooth_settings')
 const kops = require('../utils/kops')
 
 const pino = require('pino')({
@@ -115,7 +117,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
   const create = (params, done) => {
 
     // process the incoming settings
-    const settings = clusterUtils.processClusterSettings(params)
+    const settings = kopsSettings.processSettings(params)
   
     pino.info({
       action: 'create',
@@ -126,7 +128,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
       // validate the given settings
       next => {
-        const errors = clusterUtils.validateClusterSettings(settings)
+        const errors = kopsSettings.validateSettings(settings)
         if(errors) return next(errors)
         next()
       },
@@ -197,7 +199,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
   const deploy = (params, done) => {
 
     // process the incoming settings
-    const settings = clusterUtils.processDeploymentSettings(params.settings)
+    const settings = sawtoothSettings.processSettings(params.settings)
   
     pino.info({
       action: 'deploy',
@@ -208,7 +210,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
       // validate the given settings
       next => {
-        const errors = clusterUtils.validateDeploymentSettings(settings)
+        const errors = sawtoothSettings.validateSettings(settings)
         if(errors) return next(errors)
         next()
       },
