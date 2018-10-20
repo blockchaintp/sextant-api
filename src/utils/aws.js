@@ -1,4 +1,11 @@
+const awsRegions = require('aws-regions')
 const exec = require('child_process').exec
+
+const FILTER_AWS_ZONES = [
+  'us-west-1c',
+  'ap-northeast-1d',
+  'sa-east-1c',
+]
 
 /*
 
@@ -32,6 +39,7 @@ const command = (cmd, done) => {
   })
 }
 
+
 /*
 
   helper wrappers
@@ -40,7 +48,23 @@ const command = (cmd, done) => {
 
 const listRoute53Domains = (done) => command(`route53 list-hosted-zones`, done)
 
+/*
+
+  get the aws regions and filter out any known problem zones
+  
+*/
+const regions = () => {
+  return awsRegions
+    .list({ public: true })
+    .map(region => {
+      return Object.assign({}, region, {
+        zones: region.zones.filter(zone => FILTER_AWS_ZONES.indexOf(zone) >= 0 ? false : true)
+      })
+    })
+}
+
 module.exports = {
   command,
   listRoute53Domains,
+  regions,
 }

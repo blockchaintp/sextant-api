@@ -1,5 +1,4 @@
 const async = require('async')
-const awsRegions = require('aws-regions')
 const packageJSON = require('../../package.json')
 const instanceJSON = require('../data/aws-instances-minimal.json')
 const AWS = require('../utils/aws')
@@ -54,7 +53,7 @@ const ConfigBackend = () => {
       if(err) return done(err)
 
       done(null, {
-        regions: awsRegions.list({ public: true }),
+        regions: AWS.regions(),
         instances: instanceJSON,
         domains: results.route53Domains,
       })
