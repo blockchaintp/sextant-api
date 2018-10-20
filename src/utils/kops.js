@@ -68,6 +68,30 @@ const createCluster = (params, done) => {
 
 /*
 
+  does a cluster exist as far as kops knows?
+
+  params:
+
+   * name
+   * domain
+  
+*/
+const clusterExists = (params, done) => {
+
+  if(!params.name) return done(`name param required for kops.clusterExists`)
+  if(!params.domain) return done(`domain param required for kops.clusterExists`)
+
+  const { name, domain } = params
+
+  command(`get clusters --state s3://clusters.${ domain }`, (err, results) => {
+    if(err) return done(err)
+    const exists = results.indexOf(`${ name }.${ domain }`) >= 0
+    done(null, exists)
+  })
+}
+
+/*
+
   destroy a kops cluster
 
   params:
@@ -235,6 +259,7 @@ const extractKubeConfigAuthDetails = (params, done) => {
 module.exports = {
   command,
   createCluster,
+  clusterExists,
   destroyCluster,
   createSecret,
   updateCluster,

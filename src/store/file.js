@@ -329,6 +329,35 @@ const FileStore = () => {
 
   /*
   
+    return the stat object for a given cluster file
+    can be used to check if a file exists or get it's size / modified date
+
+    params:
+
+     * clustername - string
+     * filename - string
+    
+  */
+  const statClusterFile = (params, done) => {
+
+    async.waterfall([
+
+      // get the filepath
+      (next) => getClusterFilePath(params, next),
+
+      // check the file exists
+      (filePath, next) => {
+        fs.stat(filePath, (err, stat) => {
+          if(err) return next()
+          next(null, stat)
+        })
+      },
+
+    ], done)
+  }
+
+  /*
+  
     write a file associated with a cluster - assuming text(utf8)
     create the cluster folder if it doesn't exist
 
@@ -449,6 +478,7 @@ const FileStore = () => {
     getClusterDirectoryPath,
     getClusterFilePath,
     readClusterFile,
+    statClusterFile,
     writeClusterFile,
     updateClusterStatus,
     setClusterError,

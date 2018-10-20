@@ -33,23 +33,69 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
      * name - string
     
   */
-  const get = (params, done) => store.getCluster({
-    clustername: params.name,
-  }, done)
+  const get = (params, done) => {
+
+    async.parallel({
+      settings: next => store.getClusterSettings({
+        clustername: params.name,
+      }, next),
+      status: next => status(params, next),
+    }, done)
+
+  }
 
 
   /*
   
     get a cluster status given it's name
 
+    merge into the status object:
+
+     * clusterExists - whether kops knows about this cluster
+     * kubeConfigExists - whether the kubeConfig file exists
+     * kopsConfigExists - whether the kopsConfig file exists
+
     params:
 
      * name - string
     
   */
-  const status = (params, done) => store.getClusterStatus({
-    clustername: params.name,
-  }, done)
+  const status = (params, done) => {
+
+    async.waterfall([
+      nextw => store.getClusterSettings({
+        clustername: params.name,
+      }, nextw),
+
+      (clusterSettings, nextw) => {
+        async.parallel({
+          clusterStatus: nextp => store.getClusterStatus({
+            clustername: params.name,
+          }, nextp),
+          clusterExists: nextp => kops.clusterExists({
+            domain: clusterSettings.domain,
+            name: params.name,
+          }, nextp),
+          kubeConfigStat: nextp => store.statClusterFile({
+            clustername: params.name,
+            filename: 'kubeConfig'
+          }, nextp),
+          kopsConfigStat: nextp => store.statClusterFile({
+            clustername: params.name,
+            filename: 'kopsConfig'
+          }, nextp),
+        }, (err, results) => {
+          if(err) return nextw(err)
+          const status = Object.assign({}, results.clusterStatus, {
+            clusterExists: results.clusterExists,
+            kubeConfigExists: results.kubeConfigStat ? true : false,
+            kopsConfigExists: results.kopsConfigStat ? true : false,
+          })
+          nextw(null, status)
+        })
+      }
+    ], done)
+  }
 
 
   /*
