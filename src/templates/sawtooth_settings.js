@@ -33,6 +33,7 @@ const schema = Joi.object().keys({
   simple_enabled: Joi.boolean().required(),
   dynamic_peering: Joi.boolean().required(),
   external_seeds: Joi.array().items(Joi.string().regex(/^[\w\.]+:\d+$/)).required(),
+  custom_tps: Joi.array().required(),
 })
 
 const validateSettings = (settings) => Joi.validate(settings, schema).error
@@ -95,8 +96,7 @@ const getValues = (clusterSettings, deploymentSettings) => {
   sawtooth.simple.enabled = deploymentSettings.simple_enabled
 
   // loop over the user submitted custom tps and populate the customTPs array
-  // TODO - implement the frontend for this
-  sawtooth.customTPs = []
+  sawtooth.customTPs = deploymentSettings.custom_tps
 
   // dns settings
   dns.domain = [clusterSettings.name, clusterSettings.domain].join('.')
