@@ -31,7 +31,8 @@ const schema = Joi.object().keys({
   xo_enabled: Joi.boolean().required(),
   smallbank_enabled: Joi.boolean().required(),
   simple_enabled: Joi.boolean().required(),
-
+  dynamic_peering: Joi.boolean().required(),
+  external_seeds: Joi.array().items(Joi.string().regex(/^[\w\.]+:\d+$/)).required(),
 })
 
 const validateSettings = (settings) => Joi.validate(settings, schema).error
@@ -46,6 +47,7 @@ const processSettings = (settings) => {
     xo_enabled: processStringBoolean(settings.xo_enabled),
     smallbank_enabled: processStringBoolean(settings.smallbank_enabled),
     simple_enabled: processStringBoolean(settings.simple_enabled),
+    dynamic_peering: processStringBoolean(settings.dynamic_peering),
   })
 }
 
@@ -71,6 +73,8 @@ const getValues = (clusterSettings, deploymentSettings) => {
   // general sawtooth settings
   sawtooth.networkName = deploymentSettings.network_name
   sawtooth.replicas = clusterSettings.node_count
+  sawtooth.dynamicPeering = deploymentSettings.dynamic_peering
+  sawtooth.externalSeeds = deploymentSettings.external_seeds
 
   // sawtooth poet settings
   sawtooth.poet.enabled = deploymentSettings.poet_enabled

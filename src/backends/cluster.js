@@ -314,6 +314,8 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
         {
           network_name: 'sawtooth',
+          dynamic_peering: 'true',
+          external_seeds: [],
           poet_enabled: 'false',
           rbac_enabled: 'true',
           rbac_secret_key: 'g7op0ioXPdw7jFTf4aY2',
