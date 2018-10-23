@@ -12,6 +12,11 @@ spec:
   - port: 8080
     protocol: TCP 
     targetPort: 8080
+    name: rest-api
+  - port: 3030
+    protocol: TCP 
+    targetPort: 3030
+    name: seth-rpc
   selector:
     app: {{.sawtooth.networkName}}-validator
 ---
@@ -97,6 +102,20 @@ spec:
         volumeMounts:
         - mountPath: "/etc/sawtooth"
           name: sawtooth
+        livenessProbe:
+          exec:
+            command:
+              - bash
+              - -c
+              - |
+                grep -v "Cannot create wait certificate because timer has timed out" /var/log/sawtooth/validator-error.log|grep ERROR
+                if [ $? -eq 0 ]; then 
+                  exit 1
+                else
+                  exit 0
+                fi
+          initialDelaySeconds: 20
+          periodSeconds: 20
         env:
           - name: ENDPOINT_ADDRESS
             valueFrom:
@@ -114,22 +133,78 @@ spec:
         command: [ "bash", "-c"]
         args: 
           - "settings-tp -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       - name: identity-tp
         image: {{.sources.imageRepository}}/sawtooth-identity-tp:{{.sources.version}}
         command: [ "bash", "-c"]
         args: 
           - "identity-tp -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       - name: block-info-tp
         image: {{.sources.imageRepository}}/sawtooth-block-info-tp:{{.sources.version}}
         command: [ "bash", "-c"]
         args: 
           - "block-info-tp -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
+      - name: intkey-tp
+        image: {{.sources.imageRepository}}/sawtooth-intkey-tp-go:{{.sources.version}}
+        command: [ "bash", "-c"]
+        args: 
+          - "intkey-tp-go -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
+      - name: seth-tp
+        image: {{.sources.imageRepository}}/sawtooth-seth-tp:{{.sources.version}}
+        command: [ "bash", "-c"]
+        args: 
+          - "seth-tp -v --connect tcp://localhost:4004 --listen tcp://0.0.0.0:4005"
+        ports:
+          - containerPort: 4005
+            name: seth
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
+      - name: seth-rpc
+        image: {{.sources.imageRepository}}/sawtooth-seth-rpc:{{.sources.version}}
+        command: [ "bash", "-c"]
+        args: 
+          - "seth-rpc -vv --bind 0.0.0.0:3030 --connect tcp://localhost:4004 --process tcp://0.0.0.0:4005"
+        ports:
+          - containerPort: 3030
+            name: seth-rpc
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       {{ if .sawtooth.poet.enabled }}
       - name: poet-validator-registry-tp
         image: {{.sources.imageRepository}}/sawtooth-poet-validator-registry-tp:{{.sources.version}}
         command: [ "bash", "-c"]
         args: 
           - "poet-validator-registry-tp -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       {{ end }}
       {{ if .sawtooth.smallbank.enabled }}
       - name: smallbank-tp
@@ -137,6 +212,11 @@ spec:
         command: [ "bash", "-c"]
         args: 
           - "smallbank-tp-go -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       {{ end }}
       {{ if .sawtooth.rbac.enabled }} 
       - name: rbac-tp
@@ -144,6 +224,11 @@ spec:
         command: [ "bash", "-c"]
         args: 
           - "bin/rbac-tp -v tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       {{ end }}
       {{ if .sawtooth.xo.enabled }}
       - name: xo-tp
@@ -151,11 +236,21 @@ spec:
         command: [ "bash", "-c"]
         args: 
           - "xo-tp-go -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       - name: xo-demo
         image: {{.sources.imageRepository}}/xo-demo:{{.sources.xoDemoVersion}}
         ports:
           - containerPort: 80
             name: xo-demo
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       {{ end }}
       {{range .sawtooth.customTPs}}
       - name: {{.name}}
@@ -179,15 +274,58 @@ spec:
             cd /; 
             mv caliper project; 
             /project/caliper/src/contract/sawtooth/simple/simple_python/simple-tp-python -vv -C tcp://localhost:4004 )
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
       {{ end }}
       - name: rest-api
         image: {{.sources.imageRepository}}/sawtooth-rest-api:{{.sources.version}}
         command: [ "bash", "-c"]
         args: 
-          - "sawtooth-rest-api -v --bind 0.0.0.0:8080 --connect tcp://localhost:4004"
+          - "sawtooth-rest-api -v --bind 0.0.0.0:8080 --connect tcp://localhost:4004 --opentsdb-url http://influxdb:8086  --opentsdb-db metrics "
         ports:
           - containerPort: 8080
             name: sawrest
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
+      - name: keepalive
+        image: blockchaintp/sawtooth-shell:master
+        command:
+          - bash
+          - -c
+        args:
+          - |
+            set -x
+            sawtooth keygen; 
+            touch iam.healthy
+            intkey set --url http://localhost:8080 ${POD_NAME} 0 ; 
+            THEN=0
+            while /bin/true; do 
+              intkey inc --url http://localhost:8080 ${POD_NAME} 1;
+              sleep 2;
+              NOW=`intkey show --url http://localhost:8080 ${POD_NAME}`;
+              if [ "$NOW" = "$THEN" ]; then
+                rm -f iam.healthy
+              else
+                touch iam.healthy
+              fi
+              THEN=$NOW
+            done
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        resources:
+          limits:
+            cpu: "50m"
+          requests:
+            cpu: "50m"
       initContainers:
       - name: install
         image: {{.sources.imageRepository}}/sawtooth-validator:{{.sources.version}}

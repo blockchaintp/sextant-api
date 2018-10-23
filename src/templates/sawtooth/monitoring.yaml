@@ -55,10 +55,20 @@ spec:
         ports:
           - containerPort: 8086
             name: influxdb
+        resources:
+          limits:
+            cpu: "100m"
+          requests: 
+            cpu: "50m"
       - name: sawtooth-stats-grafana
         image: {{.sources.imageRepository}}/sawtooth-stats-grafana:{{.sources.version}}
         ports:
           - containerPort: 3000
             name: grafana
+        resources:
+          limits:
+            cpu: "100m"
+          requests: 
+            cpu: "50m"
 ---
 
