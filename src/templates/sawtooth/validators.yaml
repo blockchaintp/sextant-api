@@ -24,14 +24,42 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  name: {{.sawtooth.networkName}}-nodeport
+  labels:
+    app: {{.sawtooth.networkName}}-validator
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 30080
+    port: 8080
+    protocol: TCP 
+    targetPort: 8080
+    name: rest-api
+  - nodePort: 30030
+    port: 3030
+    protocol: TCP 
+    targetPort: 3030
+    name: seth-rpc
+  - nodePort: 30800
+    port: 30800
+    protocol: TCP 
+    targetPort: 30800
+    name: sawnet
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
+apiVersion: v1
+kind: Service
+metadata:
   name: {{.sawtooth.networkName}}-validator
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
   ports:
-  - port: 8800
+  - port: 30800
     protocol: TCP 
-    targetPort: 8800
+    targetPort: 30800
     name: sawnet
   clusterIP: None
   selector:
@@ -84,13 +112,13 @@ spec:
             apt update; apt install host -y;
             for ip in `host {{.sawtooth.networkName}}-validator|awk '{print $NF}'`; do
               if [ "${ENDPOINT_ADDRESS}" != "${ip}" ]; then
-                export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:8800 $SEEDS";
+                export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:30800 $SEEDS";
               fi
             done;
             sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
-              --endpoint tcp://${ENDPOINT_ADDRESS}:8800 \
+              --endpoint tcp://${ENDPOINT_ADDRESS}:30800 \
               --bind component:tcp://0.0.0.0:4004 \
-              --bind network:tcp://0.0.0.0:8800 \
+              --bind network:tcp://0.0.0.0:30800 \
               -P {{if ($peering)}}dynamic{{else}}static{{end}} \
               {{ range .sawtooth.externalSeeds }}{{if ($peering) }}-s{{else}}-p{{end}} tcp://{{.}} {{end}} \
               ${SEEDS} \
@@ -124,7 +152,7 @@ spec:
         ports:
           - containerPort: 4004
             name: sawcomp
-          - containerPort: 8800
+          - containerPort: 30800
             name: sawnet
           - containerPort: 5050
             name: consensus
