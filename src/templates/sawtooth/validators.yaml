@@ -169,12 +169,12 @@ spec:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
       containers:
-      - name: {{.sawtooth.networkName}}-validator
+      - name: sawtooth-validator
         image: {{.sources.imageRepository}}/sawtooth-validator:{{.sources.version}}
         command: ["bash", "-c" ]
         args:
           - |
-            apt update; apt install curl host -y;
+            apt update; apt install curl -y;
             MY_IP=`curl -s http://169.254.169.254/latest/meta-data/public-ipv4`
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod a+x kubectl; mv kubectl /usr/local/bin
