@@ -23,6 +23,7 @@ const templateUtils = require('./utils')
 const schema = Joi.object().keys({
 
   network_name: Joi.string().regex(/^[a-zA-Z0-9]+$/).required(),
+  genesis_enabled: Joi.boolean().required(),
   poet_enabled: Joi.boolean().required(),
   rbac_enabled: Joi.boolean().required(),
   rbac_secret_key: Joi.string().regex(/^[a-zA-Z0-9]{20}$/).required(),
@@ -44,6 +45,7 @@ const processStringBoolean = (value) => value == 'true' ? true : false
 const processSettings = (settings) => {
   return Object.assign({}, settings, {
     poet_enabled: processStringBoolean(settings.poet_enabled),
+    genesis_enabled: processStringBoolean(settings.genesis_enabled),
     rbac_enabled: processStringBoolean(settings.rbac_enabled),
     xo_enabled: processStringBoolean(settings.xo_enabled),
     smallbank_enabled: processStringBoolean(settings.smallbank_enabled),
@@ -75,6 +77,7 @@ const getValues = (clusterSettings, deploymentSettings) => {
   sawtooth.networkName = deploymentSettings.network_name
   sawtooth.replicas = clusterSettings.node_count
   sawtooth.dynamicPeering = deploymentSettings.dynamic_peering
+  sawtooth.genesis.enabled = deploymentSettings.genesis_enabled
   sawtooth.externalSeeds = deploymentSettings.external_seeds
 
   // sawtooth poet settings
