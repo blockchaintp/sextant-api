@@ -1,4 +1,64 @@
 # kubetpl:syntax:go-template
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{.sawtooth.networkName}}-sa
+  namespace: default
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{.sawtooth.networkName}}-role
+  namespace: default
+rules:
+  - apiGroups: ["","apps/v1"] # "" refers to the core API group
+    resources: ["services", "statefulsets.apps","endpoints", "nodes", "pods"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{.sawtooth.networkName}}-clusterrole
+  namespace: default
+rules:
+  - apiGroups: ["","apps/v1"] # "" refers to the core API group
+    resources: ["statefulsets.apps", "nodes",]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: {{.sawtooth.networkName}}-rb
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{.sawtooth.networkName}}-role
+subjects:
+- kind: ServiceAccount
+  name: {{.sawtooth.networkName}}-sa
+  namespace: default
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{.sawtooth.networkName}}-crb
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{.sawtooth.networkName}}-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: {{.sawtooth.networkName}}-sa
+  namespace: default
+
+---
 {{$peering:= .sawtooth.dynamicPeering}}
 apiVersion: v1
 kind: Service
@@ -99,6 +159,7 @@ spec:
       labels:
         app: {{.sawtooth.networkName}}-validator
     spec:
+      serviceAccountName: {{.sawtooth.networkName}}-sa
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -108,15 +169,19 @@ spec:
         command: ["bash", "-c" ]
         args:
           - |
-            sleep 30;
-            apt update; apt install host -y;
-            for ip in `host {{.sawtooth.networkName}}-validator|awk '{print $NF}'`; do
-              if [ "${ENDPOINT_ADDRESS}" != "${ip}" ]; then
+            apt update; apt install curl host -y;
+            MY_IP=`curl -s http://169.254.169.254/latest/meta-data/public-ipv4`
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod a+x kubectl; mv kubectl /usr/local/bin
+            echo External IP Address is $MY_IP 
+            for node in `kubectl get pod -l app=sawtooth-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
+              ip=`kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' -l kubernetes.io/role=node -l kubernetes.io/hostname=${node}`
+              if [ "${MY_IP}" != "${ip}" ]; then
                 export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:30800 $SEEDS";
               fi
             done;
             sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
-              --endpoint tcp://${ENDPOINT_ADDRESS}:30800 \
+            --endpoint tcp://${MY_IP}:30800 \
               --bind component:tcp://0.0.0.0:4004 \
               --bind network:tcp://0.0.0.0:30800 \
               -P {{if ($peering)}}dynamic{{else}}static{{end}} \
@@ -136,14 +201,44 @@ spec:
               - bash
               - -c
               - |
-                grep -v "Cannot create wait certificate because timer has timed out" /var/log/sawtooth/validator-error.log|grep ERROR
+                mkdir -p /var/run/liveness
+                cat /var/log/validator-debug.log| \
+                  grep block_validator|grep "Finished block validation"| \
+                  grep block_num| awk -F'block_num:' '{print $2}'| awk -F, '{print $1}'| tail -1 > /var/run/liveness.probe
+                grep -v "Cannot create wait certificate because timer has timed out" /var/log/sawtooth/validator-error.log| \
+                grep -v "claiming blocks too frequently." /var/log/sawtooth/validator-error.log| \
+                  grep -v "Create new registration" | \
+                  grep ERROR
                 if [ $? -eq 0 ]; then 
+                  echo "Found significant errors in the runtime log"
                   exit 1
                 else
-                  exit 0
+                  LAST_PROBE=`cat /var/run/liveness/probe.last`
+                  mkdir -p /var/run/liveness
+                  cat /var/log/sawtooth/validator-debug.log| \
+                    grep block_validator|grep "Finished block validation"| \
+                    grep block_num| awk -F'block_num:' '{print $2}'| awk -F, '{print $1}'| tail -1 > /var/run/liveness/probe.new
+                  THIS_PROBE=`cat /var/run/liveness/probe.new`
+                  if [ -r /var/run/liveness/probe.count ]; then
+                    FAIL_COUNT=`cat /var/run/liveness/probe.count`
+                  else
+                    FAIL_COUNT=0
+                  fi
+                  if [ "$THIS_PROBE" = "$LAST_PROBE" ]; then
+                    FAIL_COUNT=$(( $FAIL_COUNT + 1 ))
+                    if [ $FAIL_COUNT -ge 10 ]; then
+                      echo "Current probe status FAIL_COUNT=$FAIL_COUNT LAST_PROBE=$LAST_PROBE THIS_PROBE=$THIS_PROBE"
+                      echo "Exceeded FAIL_COUNT threshold=10"
+                      exit 1
+                    fi
+                  fi
+                  echo "Current probe status FAIL_COUNT=$FAIL_COUNT LAST_PROBE=$LAST_PROBE THIS_PROBE=$THIS_PROBE"
+                  echo $FAIL_COUNT > /var/run/liveness/probe.count
+                  echo $THIS_PROBE > /var/run/liveness/probe.last
                 fi
-          initialDelaySeconds: 20
-          periodSeconds: 20
+                exit 0
+          initialDelaySeconds: 120
+          periodSeconds: 60
         env:
           - name: ENDPOINT_ADDRESS
             valueFrom:
@@ -321,7 +416,7 @@ spec:
             cpu: "250m"
           requests:
             cpu: "50m"
-      - name: keepalive
+      - name: utility-shell
         image: blockchaintp/sawtooth-shell:master
         command:
           - bash
@@ -351,17 +446,22 @@ spec:
               fieldPath: metadata.name
         resources:
           limits:
-            cpu: "50m"
+            cpu: "100m"
           requests:
-            cpu: "50m"
+            cpu: "100m"
       initContainers:
       - name: install
         image: {{.sources.imageRepository}}/sawtooth-validator:{{.sources.version}}
         command: [ "bash", "-xc" ]
         args: 
           - |
+            set -x
+            apt-get update -y
+            apt-get install curl -y
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
+            chmod a+x kubectl 
+            mv kubectl /usr/local/bin/
             if [ ! -r /etc/sawtooth/initialized ]; then
-              set -x
               mkdir -p /etc/sawtooth/keys;
               mkdir -p /etc/sawtooth/data;
               rm -rf /var/lib/sawtooth;
@@ -371,8 +471,6 @@ spec:
               {{ if .sawtooth.genesis.enabled }}
               if [ "${POD_NAME}" = "{{.sawtooth.networkName}}-validator-0" ]; then
                 mkdir -p /etc/sawtooth/genesis;
-                apt update
-                apt install curl -y
                 curl https://raw.githubusercontent.com/hyperledger/sawtooth-core/5094a9a1a7d086c14704e7055cfad9de77d1e6aa/consensus/poet/simulator/packaging/simulator_rk_pub.pem > /etc/sawtooth/keys/simulator_rk_pub.pem
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;
                 sawset proposal create -k /etc/sawtooth/keys/validator.priv {{ if .sawtooth.poet.enabled }} \
