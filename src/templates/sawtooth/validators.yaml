@@ -64,6 +64,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-rest-api
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
@@ -85,6 +86,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-nodeport
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
@@ -113,6 +115,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-validator
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
@@ -130,6 +133,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-xo-demo
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-xo-demo
 spec:
@@ -147,6 +151,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{.sawtooth.networkName}}-validator
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -174,7 +179,7 @@ spec:
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod a+x kubectl; mv kubectl /usr/local/bin
             echo External IP Address is $MY_IP 
-            for node in `kubectl get pod -l app=sawtooth-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
+            for node in `kubectl get pod -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
               ip=`kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' -l kubernetes.io/role=node -l kubernetes.io/hostname=${node}`
               if [ "${MY_IP}" != "${ip}" ]; then
                 export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:30800 $SEEDS";

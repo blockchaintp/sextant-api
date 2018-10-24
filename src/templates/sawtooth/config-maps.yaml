@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: rbac-config
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-next
 data:

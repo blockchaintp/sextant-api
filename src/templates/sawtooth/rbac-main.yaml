@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-next
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-next
 spec:
@@ -24,6 +25,7 @@ apiVersion: apps/v1
 kind: StatefulSet 
 metadata:
   name: {{.sawtooth.networkName}}-next
+  namespace: default
   labels:
     app: {{.sawtooth.networkName}}-next
 spec:
