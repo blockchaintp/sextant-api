@@ -202,7 +202,7 @@ spec:
               - -c
               - |
                 mkdir -p /var/run/liveness
-                cat /var/log/validator-debug.log| \
+                cat /var/log/sawtooth/validator-debug.log| \
                   grep block_validator|grep "Finished block validation"| \
                   grep block_num| awk -F'block_num:' '{print $2}'| awk -F, '{print $1}'| tail -1 > /var/run/liveness.probe
                 grep -v "Cannot create wait certificate because timer has timed out" /var/log/sawtooth/validator-error.log| \
