@@ -231,14 +231,16 @@ spec:
                   fi
                   if [ "$THIS_PROBE" = "$LAST_PROBE" ]; then
                     FAIL_COUNT=$(( $FAIL_COUNT + 1 ))
+                    echo "Current probe status FAIL_COUNT=$FAIL_COUNT LAST_PROBE=$LAST_PROBE THIS_PROBE=$THIS_PROBE"
                     if [ $FAIL_COUNT -ge 10 ]; then
-                      echo "Current probe status FAIL_COUNT=$FAIL_COUNT LAST_PROBE=$LAST_PROBE THIS_PROBE=$THIS_PROBE"
                       echo "Exceeded FAIL_COUNT threshold=10"
                       exit 1
+                    else
+                      echo $FAIL_COUNT > /var/run/liveness/probe.count
                     fi
+                  else
+                    echo 0 > /var/run/liveness/probe.count
                   fi
-                  echo "Current probe status FAIL_COUNT=$FAIL_COUNT LAST_PROBE=$LAST_PROBE THIS_PROBE=$THIS_PROBE"
-                  echo $FAIL_COUNT > /var/run/liveness/probe.count
                   echo $THIS_PROBE > /var/run/liveness/probe.last
                 fi
                 exit 0
