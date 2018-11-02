@@ -1,0 +1,77 @@
+# kubetpl:syntax:go-template
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: default
+  labels:
+    app: {{.sawtooth.networkName}}-monitoring
+    dns: route53
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 3000
+    name: grafana
+  selector:
+    app: {{.sawtooth.networkName}}-monitoring
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: default
+  labels:
+    app: {{.sawtooth.networkName}}-monitoring
+spec:
+  ports:
+  - port: 8086
+    protocol: TCP
+    targetPort: 8086
+    name: influxdb
+  selector:
+    app: {{.sawtooth.networkName}}-monitoring
+---
+
+apiVersion: apps/v1
+kind: StatefulSet 
+metadata:
+  name: {{.sawtooth.networkName}}-monitoring
+  namespace: default
+  labels:
+    app: {{.sawtooth.networkName}}-monitoring
+spec:
+  selector:
+    matchLabels:
+      app: {{.sawtooth.networkName}}-monitoring
+  serviceName: "{{.sawtooth.networkName}}-monitoring"
+  template:
+    metadata:
+      labels:
+        app: {{.sawtooth.networkName}}-monitoring
+    spec:
+      containers:
+      - name: sawtooth-stats-influxdb
+        image: {{.sources.imageRepository}}/sawtooth-stats-influxdb:{{.sources.version}}
+        ports:
+          - containerPort: 8086
+            name: influxdb
+        resources:
+          limits:
+            cpu: "100m"
+          requests: 
+            cpu: "50m"
+      - name: sawtooth-stats-grafana
+        image: {{.sources.imageRepository}}/sawtooth-stats-grafana:{{.sources.version}}
+        ports:
+          - containerPort: 3000
+            name: grafana
+        resources:
+          limits:
+            cpu: "100m"
+          requests: 
+            cpu: "50m"
+---
+
