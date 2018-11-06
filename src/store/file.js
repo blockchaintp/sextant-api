@@ -4,12 +4,14 @@ const fs = require('fs')
 const path = require('path')
 const async = require('async')
 const settings = require('../settings')
+const bcrypt = require('bcrypt')
 
 const pino = require('pino')({
   name: 'filestore',
 })
 
 const BASE_FOLDER = settings.fileStoreFolder
+const USERS_FILE = path.join(BASE_FOLDER, 'users.json')
 const CLUSTER_FOLDER = path.join(BASE_FOLDER, 'clusters')
 
 const FILENAMES = {
@@ -465,6 +467,267 @@ const FileStore = () => {
     }, done)
   }
 
+  /*
+  
+    list the current users
+
+    params:
+    
+  */
+  const listUsers = (params, done) => {
+    async.series([
+      // if the users file does not exist - return empty list
+      next => {
+        fs.stat(USERS_FILE, (err, stat) => {
+          if(err) return done(null, [])
+          next()
+        })
+      },
+
+      next => {
+        fs.readFile(USERS_FILE, (err, data) => {
+          if(err) return next(err)
+          let users = null
+          try {
+            users = JSON.parse(data)
+          } catch(e) {
+            return next(e.toString())
+          }
+          return done(null, users)
+        })
+      }
+    ])
+  }
+
+  /*
+  
+    get a user with a given username
+
+    params:
+
+     * username
+    
+  */
+  const getUser = (params, done) => {
+    if(!params.username) return done(`username param required for getUser`)
+
+    async.waterfall([
+      (next) => listUsers({}, next),
+      (users, next) => {
+        const foundUser = users.filter(user => user.username == params.username)[0]
+        next(null, foundUser)
+      }
+    ], done)
+  }
+
+  /*
+  
+    check the password for a given user
+
+    params:
+
+     * username
+     * password
+    
+  */
+  const checkUserPassword = (params, done) => {
+    if(!params.username) return done(`username param required for checkUserPassword`)
+    if(!params.password) return done(`password param required for checkUserPassword`)
+
+    async.series([
+
+      // check a user with that username exists
+      next => {
+        getUser({
+          username: params.username
+        }, (err, user) => {
+          if(err) return next(err)
+          if(!user) return next(`there is no user with the username ${params.username}`)
+          next()
+        })
+      },
+
+      next => {
+        async.waterfall([
+
+          (nextw) => getUser({
+            username: params.username,
+          }, nextw),
+            
+          (existingUser, nextw) => {
+            bcrypt.compare(params.password, existingUser.hashedPassword, (err, res) => {
+              if(err) return done(err)
+              done(null, res)
+            })
+          }  
+        ], next)
+      }
+    ], done)
+  }
+
+  /*
+  
+    add a new user
+
+    parans:
+
+     * username
+     * password
+     * type (admin | normal)
+    
+  */
+  const addUser = (params, done) => {
+    if(!params.username) return done(`username param required for addUser`)
+    if(!params.password) return done(`password param required for addUser`)
+    if(!params.type) return done(`type param required for addUser`)
+
+    async.series([
+
+      // check that a user with that username does not exist already
+      next => {
+        getUser({
+          username: params.username
+        }, (err, user) => {
+          if(err) return next(err)
+          if(user) return next(`a user with the username ${params.username} already exists`)
+          next()
+        })
+      },
+
+      // create the user with the password hashed
+      next => {
+        async.waterfall([
+
+          (nextw) => {
+            async.parallel({
+              hashedPassword: nextp => bcrypt.hash(params.password, 10, nextp),
+              currentUsers: nextp => listUsers({}, nextp),
+            }, nextw)
+          },
+
+          (results, nextw) => {
+            const newUser = {
+              username: params.username,
+              type: params.type,
+              hashedPassword: results.hashedPassword,
+            }
+
+            const newUsers = results.currentUsers.concat([newUser])
+
+            fs.writeFile(USERS_FILE, JSON.stringify(newUsers), 'utf8', nextw)
+          }  
+        ], next)
+      }
+    ], done)
+  }
+
+  /*
+  
+    update an existing user
+
+    params:
+
+      * username
+      * password (optional)
+      * type (admin | normal) (optional)
+    
+  */
+  const updateUser = (params, done) => {
+    if(!params.username) return done(`username param required for addUser`)
+
+    async.series([
+
+      // check a user with that username exists
+      next => {
+        getUser({
+          username: params.username
+        }, (err, user) => {
+          if(err) return next(err)
+          if(!user) return next(`there is no user with the username ${params.username}`)
+          next()
+        })
+      },
+
+      // update the given user
+      next => {
+        async.waterfall([
+
+          (nextw) => {
+            async.parallel({
+              hashedPassword: nextp => {
+                if(!params.password) return nextp()
+                bcrypt.hash(params.password, 10, nextp)
+              },
+              currentUsers: nextp => listUsers({}, nextp),
+            }, nextw)
+          },
+
+          (results, nextw) => {
+
+            const existingUser = users.filter(user => user.username == params.username)[0]
+
+            if(results.hashedPassword) {
+              existingUser.hashedPassword = results.hashedPassword
+            }
+
+            if(params.type) {
+              existingUser.type = params.type
+            }
+
+            const newUsers = results.currentUsers.map(user => {
+              if(user.username != params.username) return user
+              return existingUser
+            })
+
+            fs.writeFile(USERS_FILE, JSON.stringify(newUsers), 'utf8', nextw)
+          }  
+        ], next)
+      }
+    ], done)
+  }
+
+  /*
+  
+    delete an existing user
+
+    params:
+
+      * username
+    
+  */
+  const deleteUser = (params, done) => {
+    if(!params.username) return done(`username param required for addUser`)
+
+    async.series([
+
+      // check a user with that username exists
+      next => {
+        getUser({
+          username: params.username
+        }, (err, user) => {
+          if(err) return next(err)
+          if(!user) return next(`there is no user with the username ${params.username}`)
+          next()
+        })
+      },
+
+      // update the given user
+      next => {
+        async.waterfall([
+
+          (nextw) => listUsers({}, nextw),
+
+          (currentUsers, nextw) => {
+
+            const newUsers = currentUsers.filter(user => user.username != params.username)
+
+            fs.writeFile(USERS_FILE, JSON.stringify(newUsers), 'utf8', nextw)
+          }  
+        ], next)
+      }
+    ], done)
+  }
+
 
   return {
     listClusterNames,
@@ -482,6 +745,12 @@ const FileStore = () => {
     writeClusterFile,
     updateClusterStatus,
     setClusterError,
+    listUsers,
+    getUser,
+    checkUserPassword,
+    addUser,
+    updateUser,
+    deleteUser,
   }
 
 }
