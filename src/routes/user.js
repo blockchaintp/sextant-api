@@ -10,8 +10,8 @@ const UserRoutes = (backends) => {
       res
         .status(200)
         .json({
-          userCount,
-          user: req.user,
+          count: userCount,
+          data: req.user,
         })
     })
   }
