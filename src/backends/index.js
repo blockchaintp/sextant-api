@@ -1,5 +1,6 @@
 const ConfigBackend = require('./config')
 const ClusterBackend = require('./cluster')
+const UserBackend = require('./user')
 
 const Backends = ({ store, jobDispatcher }) => {
 
@@ -12,10 +13,16 @@ const Backends = ({ store, jobDispatcher }) => {
     store,
     jobDispatcher,
   })
+
+  const user = UserBackend({
+    store,
+    jobDispatcher,
+  })
   
   return {
     config,
     cluster,
+    user,
   }
 }
 
