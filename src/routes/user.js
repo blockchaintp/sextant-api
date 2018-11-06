@@ -26,9 +26,21 @@ const UserRoutes = (backends) => {
     })
   }
 
+  const create = (req, res, next) => {
+    user.add(req.body, (err) => {
+      if(err) return next(err)
+      res
+        .status(201)
+        .json({
+          ok: true,
+        })
+    })
+  }
+
   return {
     status,
     list,
+    create,
   }
 }
 
