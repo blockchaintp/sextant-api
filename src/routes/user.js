@@ -78,6 +78,22 @@ const UserRoutes = (backends) => {
     })
   }
 
+  const update = (req, res, next) => {
+    user.update({
+      existingUsername: req.params.username,
+      username: req.body.username,
+      type: req.body.type,
+      password: req.body.password,
+    }, (err, user) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json({
+          ok: true,
+        })
+    })
+  }
+
   const create = (req, res, next) => {
     user.add(req.body, (err) => {
       if(err) return next(err)
@@ -95,6 +111,7 @@ const UserRoutes = (backends) => {
     logout,
     list,
     get,
+    update,
     create,
   }
 }

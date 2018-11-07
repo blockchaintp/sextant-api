@@ -88,6 +88,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
 
     params:
 
+     * existingUsername - string
      * username - string
      * password - string
      * type - string
@@ -95,6 +96,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
   */
   const update = (params, done) => {
     store.updateUser({
+      existingUsername: params.existingUsername,
       username: params.username,
       password: params.password,
       type: params.type,

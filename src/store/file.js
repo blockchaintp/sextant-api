@@ -629,12 +629,15 @@ const FileStore = () => {
 
     params:
 
+      * existingUsername
       * username
       * password (optional)
       * type (admin | normal) (optional)
     
   */
   const updateUser = (params, done) => {
+
+    if(!params.existingUsername) return done(`existingUsername param required for addUser`)
     if(!params.username) return done(`username param required for addUser`)
 
     async.series([
@@ -642,10 +645,10 @@ const FileStore = () => {
       // check a user with that username exists
       next => {
         getUser({
-          username: params.username
+          username: params.existingUsername
         }, (err, user) => {
           if(err) return next(err)
-          if(!user) return next(`there is no user with the username ${params.username}`)
+          if(!user) return next(`there is no user with the username ${params.existingUsername}`)
           next()
         })
       },
@@ -666,18 +669,20 @@ const FileStore = () => {
 
           (results, nextw) => {
 
-            const existingUser = users.filter(user => user.username == params.username)[0]
+            const existingUser = results.currentUsers.filter(user => user.username == params.existingUsername)[0]
 
             if(results.hashedPassword) {
               existingUser.hashedPassword = results.hashedPassword
             }
+
+            existingUser.username = params.username
 
             if(params.type) {
               existingUser.type = params.type
             }
 
             const newUsers = results.currentUsers.map(user => {
-              if(user.username != params.username) return user
+              if(user.username != params.existingUsername) return user
               return existingUser
             })
 
