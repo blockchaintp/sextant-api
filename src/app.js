@@ -81,7 +81,24 @@ const App = () => {
   passport.deserializeUser((username, done) => {
     store.getUser({
       username
-    }, done)
+    }, (err, user) => {
+      // 
+      if(err) {
+        return done({
+          type: 'deserializeUser',
+          error: err
+        })
+      }
+      else if(!user) {
+        return done({
+          type: 'deserializeUser',
+          error: `no user found`
+        })
+      }
+      else {
+        return done(null, user)
+      }
+    })
   })
 /*
   // passport local login handler
@@ -197,6 +214,10 @@ const App = () => {
       error: err.toString(),
       code: res._code
     })
+    // if the error was with the deserializer then logout to clear the cookie
+    if(err.type == 'deserializeUser') {
+      req.logout()
+    }
     res.status(res._code || 500)
     res.json({ error: err.toString() })
   })
