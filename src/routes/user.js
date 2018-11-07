@@ -48,6 +48,15 @@ const UserRoutes = (backends) => {
     })
   }
 
+  const logout = (req, res, next) => {
+    req.logout()
+    res
+      .status(200)
+      .json({
+        ok: true,
+      })
+  }
+
   const list = (req, res, next) => {
     user.list({}, (err, users) => {
       if(err) return next(err)
@@ -72,6 +81,7 @@ const UserRoutes = (backends) => {
   return {
     status,
     login,
+    logout,
     list,
     create,
   }

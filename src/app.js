@@ -75,8 +75,14 @@ const App = () => {
   app.use(passport.session())
 
   // passport user serializer/deserializer
-  passport.serializeUser((user, done) => done(null, user.username))
-  passport.deserializeUser((username, done) => store.getUser(username, done))
+  passport.serializeUser((user, done) => {
+    done(null, user.username)
+  })
+  passport.deserializeUser((username, done) => {
+    store.getUser({
+      username
+    }, done)
+  })
 /*
   // passport local login handler
   passport.use(new LocalStrategy(
