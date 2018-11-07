@@ -52,6 +52,7 @@ const Routes = (app, backends) => {
   app.post(basePath('/user/login'), user.login)
   app.get(basePath('/user/logout'), requireUser(), user.logout)
   app.post(basePath('/user'), addUserAuthHandler(backends.user), user.create)
+  app.get(basePath('/user/:username'), requireUser('admin'), user.get)
 
   app.get(basePath('/cluster'), requireUser(), cluster.list)
   app.get(basePath('/cluster/:id'), requireUser(), cluster.get)

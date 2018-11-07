@@ -67,6 +67,17 @@ const UserRoutes = (backends) => {
     })
   }
 
+  const get = (req, res, next) => {
+    user.get({
+      username: req.params.username,
+    }, (err, user) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json(userUtils.safe(user))
+    })
+  }
+
   const create = (req, res, next) => {
     user.add(req.body, (err) => {
       if(err) return next(err)
@@ -83,6 +94,7 @@ const UserRoutes = (backends) => {
     login,
     logout,
     list,
+    get,
     create,
   }
 }
