@@ -105,6 +105,19 @@ const UserRoutes = (backends) => {
     })
   }
 
+  const del = (req, res, next) => {
+    user.del({
+      username: req.params.username,
+    }, (err) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json({
+          ok: true,
+        })
+    })
+  }
+
   return {
     status,
     login,
@@ -113,6 +126,7 @@ const UserRoutes = (backends) => {
     get,
     update,
     create,
+    del,
   }
 }
 
