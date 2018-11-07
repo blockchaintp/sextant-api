@@ -17,6 +17,7 @@ const Routes = (app, backends) => {
 
   app.get(basePath('/user'), user.list)
   app.get(basePath('/user/status'), user.status)
+  app.post(basePath('/user/login'), user.login)
   app.post(basePath('/user'), user.create)
 
   app.get(basePath('/cluster'), cluster.list)

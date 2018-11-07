@@ -5,7 +5,10 @@ const express = require('express')
 const async = require('async')
 const url = require('url')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const httpProxy = require('http-proxy')
+const passport = require('passport')
+//const LocalStrategy = require('passport-local').Strategy
 const pinoExpress = require('express-pino-logger')()
 
 const pino = require('pino')({
@@ -56,7 +59,32 @@ const App = () => {
 
   //app.use(pinoExpress)
   app.use(bodyParser.json())
+  app.use(cookieParser())
+  app.use(passport.initialize())
+  app.use(passport.session())
 
+  // passport user serializer/deserializer
+  passport.serializeUser((user, done) => done(null, user.username))
+  passport.deserializeUser((username, done) => store.getUser(username, done))
+/*
+  // passport local login handler
+  passport.use(new LocalStrategy(
+    (username, password, done) => {
+      store.getUser(username, (err, user) => {
+        if(err) return done(err)
+        if(!user) return done(null, false, { message: 'Incorrect username.' })
+        store.checkUserPassword({
+          username,
+          password,
+        }, (err, ok) => {
+          if(err) return done(err)
+          if(!ok) return done(null, false, { message: 'Incorrect password.' })
+          reutrn done(null, user)
+        })
+      })
+    }
+  ))
+*/
   // bind routes to the HTTP server
   Routes(app, backends)
 

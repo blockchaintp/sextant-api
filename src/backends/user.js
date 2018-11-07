@@ -41,8 +41,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
     
   */
   const get = (params, done) => {
-
-    store.listUsers({
+    store.getUser({
       username: params.username,
     }, done)
   }

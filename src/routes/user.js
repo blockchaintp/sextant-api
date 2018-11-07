@@ -16,6 +16,38 @@ const UserRoutes = (backends) => {
     })
   }
 
+  const login = (req, res, next) => {
+    const { username, password } = req.body
+
+    user.checkPassword({
+      username,
+      password,
+    }, (err, ok) => {
+      if(err) return next(err)
+      if(!ok) {
+        res.status(403)
+        res.json({
+          error: `incorrect login details`
+        })
+      }
+      else {
+
+        user.get({
+          username,
+        }, (err, user) => {
+          if(err) return next(err)
+          req.login(userUtils.safe(user), (err) => {
+            if(err) return next(err)
+            res.status(200)
+            res.json({
+              ok: true,
+            })
+          })
+        })
+      }
+    })
+  }
+
   const list = (req, res, next) => {
     user.list({}, (err, users) => {
       if(err) return next(err)
@@ -39,6 +71,7 @@ const UserRoutes = (backends) => {
 
   return {
     status,
+    login,
     list,
     create,
   }
