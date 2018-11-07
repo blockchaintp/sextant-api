@@ -12,6 +12,7 @@ const pino = require('pino')({
 
 const BASE_FOLDER = settings.fileStoreFolder
 const USERS_FILE = path.join(BASE_FOLDER, 'users.json')
+const SESSIONS_FOLDER = path.join(BASE_FOLDER, 'sessions') 
 const CLUSTER_FOLDER = path.join(BASE_FOLDER, 'clusters')
 
 const FILENAMES = {
@@ -28,6 +29,7 @@ const FILENAMES = {
 const FileStore = () => {
 
   mkdirp.sync(CLUSTER_FOLDER)
+  mkdirp.sync(SESSIONS_FOLDER)
 
   /*
   
@@ -751,6 +753,7 @@ const FileStore = () => {
     addUser,
     updateUser,
     deleteUser,
+    SESSIONS_FOLDER,
   }
 
 }

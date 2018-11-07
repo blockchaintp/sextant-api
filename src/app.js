@@ -6,6 +6,8 @@ const async = require('async')
 const url = require('url')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const session = require('express-session')
+const FileStore = require('session-file-store')(session)
 const httpProxy = require('http-proxy')
 const passport = require('passport')
 //const LocalStrategy = require('passport-local').Strategy
@@ -20,6 +22,7 @@ const pino = require('pino')({
 const Store = require('./store/file')
 const Backends = require('./backends')
 const Routes = require('./routes')
+const settings = require('./settings')
 const JobDispatcher = require('./jobqueue/simple-dispatcher')
 const JobHandler = require('./jobqueue/simple-handler')
 
@@ -60,6 +63,14 @@ const App = () => {
   //app.use(pinoExpress)
   app.use(bodyParser.json())
   app.use(cookieParser())
+  app.use(session({ 
+    secret: settings.sessionSecret,
+    resave: false,
+    saveUninitialized: true,
+    store: new FileStore({
+      path: store.SESSIONS_FOLDER,
+    }),
+  }))
   app.use(passport.initialize())
   app.use(passport.session())
 

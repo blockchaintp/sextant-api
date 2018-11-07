@@ -8,6 +8,7 @@ const args = require('minimist')(process.argv, {
     port: process.env.PORT || 80,
     baseUrl: process.env.BASE_URL || '/api/v1',
     fileStoreFolder: process.env.SEXTANT_FILE_STORE_FOLDER || '/var/lib/sextant-api/filestore',
+    sessionSecret: process.env.SESSION_SECRET || 'sextant-blockchain',
 
     // which type of networking we use for kops clusters
     kopsNetworking: 'weave',

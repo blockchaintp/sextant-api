@@ -15,6 +15,7 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.15.3",
     "express-pino-logger": "^3.0.2",
+    "express-session": "^1.15.6",
     "http-proxy": "^1.17.0",
     "joi": "^13.6.0",
     "js-yaml": "^3.12.0",
@@ -28,6 +29,7 @@
     "randomstring": "^1.1.5",
     "request": "^2.81.0",
     "rmdir": "^1.2.0",
+    "session-file-store": "^1.2.0",
     "tmp": "^0.0.33"
   },
   "devDependencies": {
