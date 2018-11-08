@@ -20,14 +20,21 @@ const S3Remote = () => {
   let initialized = false
 
   // ensure an existing bucket is ok to use
-  const setupExisting = (temps3, done) => {
+  const setupExisting = (temps3, localBucketName, done) => {
     async.series([
 
       // check the bucket is a pre-allocated sextant storage bucket
       next => {
         temps3.statFile('clusters/sextantVersion', (err, exists) => {
           if(err) return next(err)
-          if(!exists) return next(`A bucket called ${name} already exists but it's not a sextant storage bucket`)
+          if(!exists) {
+            const errorMessage = `A bucket called ${localBucketName} already exists but it's not a sextant storage bucket`
+            pino.error({
+              type: 'bucketExistsNotSextant',
+              error: errorMessage,
+            })
+            return next(errorMessage)
+          }
           next()
         })
       },
@@ -40,7 +47,7 @@ const S3Remote = () => {
   }
 
   // create a new bucket
-  const setupNew = (temps3, done) => {
+  const setupNew = (temps3, localBucketName, done) => {
     async.series([
 
       // create the bucket
@@ -85,10 +92,18 @@ const S3Remote = () => {
       // either create the new bucket or check the status of the existing one
       (exists, next) => {
         if(exists) {
-          setupExisting(temps3, next)
+          pino.info({
+            type: 'bucketExists',
+            name: localBucketName,
+          })
+          setupExisting(temps3, localBucketName, next)
         }
         else {
-          setupNew(temps3, next)
+          pino.info({
+            type: 'bucketDoesNotExist',
+            name: localBucketName,
+          })
+          setupNew(temps3, localBucketName, next)
         }
       },
 

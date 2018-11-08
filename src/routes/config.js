@@ -33,6 +33,7 @@ const ConfigRoutes = (backends) => {
 
   const setupRemote = (req, res, next) => {
     config.setupRemote(req.body, (err, result) => {
+      if(err) return next(err)
       res
         .status(201)
         .json(result)
