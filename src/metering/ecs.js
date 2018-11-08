@@ -27,7 +27,7 @@ const registerUsage = () => {
       })
     }
     else {
-      pino.error({
+      pino.info({
         type: 'registerUsage',
         result,
       })
