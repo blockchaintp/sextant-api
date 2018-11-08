@@ -136,11 +136,20 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
   const status = (params, done) => {
 
     async.waterfall([
-      nextw => store.getClusterSettings({
-        clustername: params.name,
-      }, nextw),
+      nextw => {
+        async.parallel({
+          clusterSettings: nextp => store.getClusterSettings({
+            clustername: params.name,
+          }, nextp),
+          bucket: nextp => store.readObjectStoreName(nextp),
+        }, nextw)
+      },
 
-      (clusterSettings, nextw) => {
+      (results, nextw) => {
+        const {
+          clusterSettings,
+          bucket,
+        } = results
         async.parallel({
           clusterStatus: nextp => store.getClusterStatus({
             clustername: params.name,
@@ -148,6 +157,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
           clusterExists: nextp => kops.clusterExists({
             domain: clusterSettings.domain,
             name: params.name,
+            bucket,
           }, nextp),
           kubeConfigStat: nextp => store.statClusterFile({
             clustername: params.name,

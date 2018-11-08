@@ -94,11 +94,12 @@ const getSubnets = (zones, network_cidr, subnet_mask) => {
 
 // load the default kops values from kops/defaults.yaml
 const getDefaults = () => templateUtils.getTemplateYaml('kops/defaults.yaml')
+const getStateStore = (bucket) => `s3://${ bucket }/kopsState`
 
 // turn the base settings.json into a kops values.yaml structure ready
 // for kubetpl
 // first load the default values and then populate it with the cluster settings
-const getValues = (settings) => {
+const getValues = (settings, bucket) => {
 
   // first load the default yaml into a new object
   const finalSettings = getDefaults()
@@ -109,7 +110,7 @@ const getValues = (settings) => {
   } = finalSettings
 
   // statestore
-  kops.stateStore = `s3://clusters.${ settings.domain }`
+  kops.stateStore = getStateStore(bucket)
 
   // cluster settings
   cluster.name = settings.name
@@ -143,7 +144,7 @@ const getValues = (settings) => {
 }
 
 // get a string that is the values.yaml ready for kubetpl
-const getYaml = (settings) => yaml.safeDump(getValues(settings))
+const getYaml = (settings, bucket) => yaml.safeDump(getValues(settings, bucket))
 
 module.exports = {
   validateSettings,

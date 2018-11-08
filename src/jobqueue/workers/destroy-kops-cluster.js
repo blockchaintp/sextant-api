@@ -24,15 +24,27 @@ const DestroyKopsCluster = (params, store, dispatcher) => {
     params,
   })
 
+  let bucket = null
+
   async.series([
 
+    next => store.readObjectStoreName((err, b) => {
+      if(err) return next(err)
+      bucket = b
+      next()
+    }),
+    
     // call kops to destroy the cluster
     next => {
       pino.info({
         action: 'kops.destroyCluster',
         params,
       })
-      kops.destroyCluster(params, next)
+      kops.destroyCluster({
+        name: params.name,
+        domain: params.domain,
+        bucket,
+      }, next)
     },
 
   ], (err) => {

@@ -1,6 +1,5 @@
 const async = require('async')
 const settings = require('../../settings')
-const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
 const sawtoothSettings = require('../../templates/sawtooth_settings')
 const Deploy = require('../../utils/deploy')

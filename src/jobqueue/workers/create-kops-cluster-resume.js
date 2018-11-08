@@ -16,13 +16,22 @@ const CreateKopsClusterResume = (params, store, dispatcher) => {
     params,
   })
 
+  let bucket = null
+
   async.series([
+
+    next => store.readObjectStoreName((err, b) => {
+      if(err) return next(err)
+      bucket = b
+      next()
+    }),
 
     // wait for the cluster to be ready
     next => {
       shared.waitClusterReadyTask(pino, {
         name: params.name,
         domain: params.domain,
+        bucket,
       }, store, dispatcher, next)
     },
 
@@ -31,6 +40,7 @@ const CreateKopsClusterResume = (params, store, dispatcher) => {
       shared.deployCoreManifestsTask(pino, {
         name: params.name,
         domain: params.domain,
+        bucket,
       }, store, dispatcher, next)
     },
 

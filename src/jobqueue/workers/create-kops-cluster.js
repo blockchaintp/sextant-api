@@ -73,6 +73,7 @@ const shared = require('./create-kops-cluster-shared')
   params: 
 
    * name
+   * bucket
   
 */
 const createClusterTask = (params, store, dispatcher, done) => {
@@ -81,6 +82,8 @@ const createClusterTask = (params, store, dispatcher, done) => {
     action: 'createClusterTask',
     params,
   })
+
+  const bucket = params.bucket
 
   async.waterfall([
 
@@ -103,7 +106,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
           store.writeClusterFile({
             clustername: params.name,
             filename: 'kopsValues',
-            data: kopsSettings.getYaml(cluster.settings),
+            data: kopsSettings.getYaml(cluster.settings, bucket),
           }, nextw1)
         },
 
@@ -137,6 +140,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
             domain: cluster.settings.domain,
             yamlPath: cluster.kopsConfigPath,
             publicKeyFilePath: cluster.publicKeyFilePath,
+            bucket,
           }
           pino.info({
             action: 'kops.createCluster',
@@ -151,6 +155,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
             name: params.name,
             domain: cluster.settings.domain,
             publicKeyFilePath: cluster.publicKeyFilePath,
+            bucket,
           }
           pino.info({
             action: 'kops.createSecret',
@@ -164,6 +169,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
           const updateClusterParams = {
             name: params.name,
             domain: cluster.settings.domain,
+            bucket,
           }
           pino.info({
             action: 'kops.updateCluster',
@@ -186,6 +192,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
 
    * name
    * domain
+   * bucket
   
 */
 const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
@@ -193,6 +200,8 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
     action: 'exportClusterConfigFilesTask',
     params,
   })
+
+  const bucket = params.bucket
 
   async.series([
     
@@ -210,7 +219,8 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
           const exportKubeConfigParams = {
             name: params.name,
             domain: params.domain,
-            kubeConfigPath
+            kubeConfigPath,
+            bucket,
           }
 
           pino.info({
@@ -236,7 +246,8 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
           const extractKubeConfigAuthDetailsParams = {
             name: params.name,
             domain: params.domain,
-            kubeConfigPath
+            kubeConfigPath,
+            bucket,
           }
 
           pino.info({
@@ -311,11 +322,22 @@ const CreateKopsCluster = (params, store, dispatcher) => {
     params,
   })
 
+  let bucket = null
+
   async.series([
+
+    next => store.readObjectStoreName((err, b) => {
+      if(err) return next(err)
+      bucket = b
+      next()
+    }),
 
     // first boot the cluster
     next => {
-      createClusterTask(params, store, dispatcher, next)
+      createClusterTask({
+        name: params.name,
+        bucket,
+      }, store, dispatcher, next)
     },
 
     // output the cluster config files
@@ -323,6 +345,7 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       exportClusterConfigFilesTask({
         name: params.name,
         domain: params.domain,
+        bucket,
       }, store, dispatcher, next)
     },
 
@@ -331,6 +354,7 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       shared.waitClusterReadyTask(pino, {
         name: params.name,
         domain: params.domain,
+        bucket,
       }, store, dispatcher, next)
     },
 
@@ -339,6 +363,7 @@ const CreateKopsCluster = (params, store, dispatcher) => {
       shared.deployCoreManifestsTask(pino, {
         name: params.name,
         domain: params.domain,
+        bucket,
       }, store, dispatcher, next)
     },
 

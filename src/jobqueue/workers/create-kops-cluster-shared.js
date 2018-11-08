@@ -13,6 +13,7 @@ const Pods = require('../../utils/pods')
 
    * name
    * domain
+   * bucket
   
 */
 
