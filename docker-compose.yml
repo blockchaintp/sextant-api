@@ -7,5 +7,5 @@ services:
       context: .
       dockerfile: Dockerfile
       args: 
-        - METERING_MODULE: ${METERING_MODULE}
+        METERING_MODULE: ${METERING_MODULE}
     image: sextant-api:${ISOLATION_ID}
