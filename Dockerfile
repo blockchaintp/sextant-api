@@ -4,6 +4,9 @@ ENV NODEJS_MAJOR_VERSION=8
 ENV AWS_CLI_VERSION=1.14.5 S3_CMD_VERSION=2.0.1
 ENV KUBETPL_VERSION=0.7.1
 
+# this is the default noop metering module
+# override this with --build-arg METERING_MODULE=./src/metering/ecs.js
+ARG METERING_MODULE=./src/metering/dev
 # install aws cli
 
 #RUN apt-get install apt-utils -y
@@ -32,6 +35,9 @@ COPY ./package.json /app/api/package.json
 COPY ./yarn.lock /app/api/yarn.lock
 RUN yarn install
 COPY . /app/api
+
+# overwrite the imported metering module with the one we want to use for this image
+COPY ${METERING_MODULE} /app/api/src/metering/index.js
 
 ENTRYPOINT ["bash", "run.sh"]
 
