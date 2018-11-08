@@ -87,11 +87,7 @@ const createClusterTask = (params, store, dispatcher, done) => {
     // load the path to the public key file and the cluster settings
     (nextw) => {
       async.parallel({
-        publicKeyFilePath: nextp => store.getClusterFilePath({
-          clustername: params.name,
-          filename: 'publicKey'
-        }, nextp),
-
+        publicKeyFilePath: nextp => nextp(null, store.getLocalClusterFilePath(params.name, 'publicKey')),
         settings: nextp => store.getClusterSettings({
           clustername: params.name
         }, nextp)
@@ -207,12 +203,10 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
     next => {
 
       async.waterfall([
-        (wnext) => store.getClusterFilePath({
-          clustername: params.name,
-          filename: 'kubeConfig',
-        }, wnext),
+        (wnext) => wnext(null, store.getLocalClusterFilePath(params.name, 'kubeConfig')),
 
         (kubeConfigPath, wnext) => {
+
           const exportKubeConfigParams = {
             name: params.name,
             domain: params.domain,
@@ -235,11 +229,9 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
     next => {
 
       async.waterfall([
-        (wnext) => store.getClusterFilePath({
-          clustername: params.name,
-          filename: 'kubeConfig',
-        }, wnext),
 
+        (wnext) => wnext(null, store.getLocalClusterFilePath(params.name, 'kubeConfig')),
+        
         (kubeConfigPath, wnext) => {
           const extractKubeConfigAuthDetailsParams = {
             name: params.name,

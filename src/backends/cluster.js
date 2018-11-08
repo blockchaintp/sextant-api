@@ -645,17 +645,8 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
   
     get a filepath for a cluster
 
-     * name
-     * filename
-    
   */
-  const getClusterFilepath = (params, done) => {
-    store.getClusterFilePath({
-      clustername: params.name,
-      filename: params.filename,
-    }, done)
-  }
-
+  const getClusterFilepath = (clustername, filename) => store.getLocalClusterFilePath(clustername, filename)
 
   return {
     list,

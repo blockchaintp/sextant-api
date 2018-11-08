@@ -39,7 +39,11 @@ const App = () => {
   })
 
   // the data store
-  const store = Store()
+  const store = Store({
+
+  })
+
+  store.initialize()
 
   // generic event emitter to communicate jobs between the dispatcher and handler
   const jobEventEmitter = new EventEmitter()
@@ -137,18 +141,9 @@ const App = () => {
         // read the various auth details needed for this cluster proxy
         async.parallel({
           settings: nextp => store.getClusterSettings({clustername}, nextp),
-          ca: nextp => store.getClusterFilePath({
-            clustername,
-            filename: 'ca.pem'
-          }, nextp),
-          cert: nextp => store.getClusterFilePath({
-            clustername,
-            filename: 'admin.pem'
-          }, nextp),
-          key: nextp => store.getClusterFilePath({
-            clustername,
-            filename: 'admin-key.pem'
-          }, nextp),
+          ca: nextp => nextp(null, store.getLocalClusterFilePath(clustername, 'ca.pem')),
+          cert: nextp => nextp(null, store.getLocalClusterFilePath(clustername, 'admin.pem')),
+          key: nextp => nextp(null, store.getLocalClusterFilePath(clustername, 'admin-key.pem')),
           username: nextp => store.readClusterFile({
             clustername,
             filename: 'username'

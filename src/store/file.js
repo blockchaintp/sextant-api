@@ -10,12 +10,10 @@ const pino = require('pino')({
   name: 'filestore',
 })
 
-const BASE_FOLDER = settings.fileStoreFolder
-const USERS_FILE = path.join(BASE_FOLDER, 'users.json')
-const SESSIONS_FOLDER = path.join(BASE_FOLDER, 'sessions') 
-const CLUSTER_FOLDER = path.join(BASE_FOLDER, 'clusters')
-
 const FILENAMES = {
+  clusters: 'clusters',
+  users: 'users.json',
+  s3BucketName: 's3BucketName',
   settings: 'settings.json',
   deploymentSettings: 'deploymentSettings.json',
   status: 'status.json',
@@ -26,10 +24,204 @@ const FILENAMES = {
   deploymentValues: 'deploymentvalues.yaml',
 }
 
+// this is temp storage local to the instance
+const SESSIONS_FOLDER = '/tmp/sextant-sessions'
+
+const BASE_FOLDER = settings.fileStoreFolder
+//const USERS_FILE = path.join(BASE_FOLDER, FILENAMES.users)
+//const CLUSTER_FOLDER = path.join(BASE_FOLDER, FILENAMES.clusters)
+
+/*
+
+  remote is an implementation of a remote object storage
+
+  it should present the following methods:
+
+   * createFolder
+   * deleteFolder
+   * writeFile
+   * exists (does a file or folder exist)
+   * download (download the entire store locally)
+  
+*/
 const FileStore = () => {
 
-  mkdirp.sync(CLUSTER_FOLDER)
-  mkdirp.sync(SESSIONS_FOLDER)
+  /*
+  
+    the session store is always local - if the node dies,
+    the users will have to login again
+    
+  */
+  const initialize = () => {
+    mkdirp.sync(SESSIONS_FOLDER)
+
+    createFolder(resolveFilename('clusters'), () => {
+      pino.info({
+        action: 'cluster folder created'
+      })
+    })
+  }
+  
+
+  /*
+  
+    low level file methods - these are always passed relative paths
+    they will operate on the local filesystem (expanding the local path)
+    into an absolute path
+
+    they will also trigger the remote storage synchronizer with the relative path
+    
+  */
+
+  /*
+  
+    paths
+    
+  */
+
+  // check to see if the filename is in the database and resolve it if yes
+  // otherwise return what is given
+  const resolveFilename = (fileName) => FILENAMES[fileName] ? FILENAMES[fileName] : fileName
+
+  // turn a fileName into a full local filepath
+  const localPath = (fileName) => path.join(BASE_FOLDER, resolveFilename(fileName))
+
+  // return the relative directory path for where the files for a given cluster are stored
+  const getClusterDirectoryPath = (clustername) => path.join(resolveFilename('clusters'), clustername)
+
+  // return the relative path to a file within a cluster folder
+  const getClusterFilePath = (clustername, filename) => path.join(getClusterDirectoryPath(clustername), resolveFilename(filename))
+  const getLocalClusterFilePath = (clustername, filename) => localPath(getClusterFilePath(clustername, filename))
+
+  /*
+  
+    read filesystem
+    
+  */
+
+  const listFolder = (folderPath, done) => fs.readdir(localPath(folderPath), done)
+  const readFile = (filePath, done) => fs.readFile(localPath(filePath), 'utf8', done)
+  const statFile = (filePath, done) => fs.stat(localPath(filePath), (err, stat) => {
+    if(err) return done(null)
+    done(null, stat)
+  })
+  const readFileAsJSON = (filePath, done) => readFile(filePath, (err, fileContents) => {
+    let processedFile = null
+    try {
+      processedFile = JSON.parse(fileContents)
+    } catch(e) {
+      return done(e)
+    }
+    done(null, processedFile)
+  })
+
+  
+  /*
+  
+    write filesystem
+    
+  */
+
+  const createFolder = (folderPath, done) => {
+    mkdirp(localPath(folderPath), done)
+
+    // trigger the remote here
+  }
+
+  const writeFile = (filePath, data, done) => {
+    const LOCAL_PATH = localPath(filePath)
+    fs.writeFile(LOCAL_PATH, data, 'utf8', (err) => {
+      if(err) return done(err)
+      done(null, LOCAL_PATH)
+    })
+
+    // trigger the remote here
+  }
+
+  const deleteFolder = (folderPath, done) => {
+    rmdir(localPath(folderPath), done)
+
+    // trigger the remote here
+  }
+
+  
+    
+
+  /*
+  
+    return the stat object for a given cluster file
+    can be used to check if a file exists or get it's size / modified date
+
+    params:
+
+     * clustername - string
+     * filename - string
+    
+  */
+  const statClusterFile = (params, done) => statFile(getClusterFilePath(params.clustername, params.filename), done)
+
+  /*
+  
+    return the contents of a file associated with a cluster
+
+    params:
+
+     * clustername - string
+     * filename - string
+    
+  */
+  const readClusterFile = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for readClusterFile`)
+    if(!params.filename) return done(`filename param required for readClusterFile`)
+    const CLUSTER_FILE = getClusterFilePath(params.clustername, params.filename)
+    readFile(CLUSTER_FILE, done)
+  }
+
+  /*
+  
+    return the contents of a file associated with a cluster
+    and process it as JSON
+
+    params:
+
+     * clustername - string
+     * filename - string
+    
+  */
+  const readClusterFileAsJSON = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for readClusterFile`)
+    if(!params.filename) return done(`filename param required for readClusterFile`)
+    const CLUSTER_FILE = getClusterFilePath(params.clustername, params.filename)
+    readFileAsJSON(CLUSTER_FILE, done)
+  }
+
+  /*
+  
+    write a file associated with a cluster - assuming text(utf8)
+    create the cluster folder if it doesn't exist
+
+    params:
+
+     * clustername - string
+     * filename - string
+     * data - string
+    
+  */
+  const writeClusterFile = (params, done) => {
+    if(!params.clustername) return done(`clustername param required for writeClusterFile`)
+    if(!params.filename) return done(`filename param required for writeClusterFile`)
+    if(!params.data) return done(`data param required for writeClusterFile`)
+
+    pino.info({
+      action: 'writeClusterFile',
+      params,
+    })
+
+    const CLUSTER_FILE = getClusterFilePath(params.clustername, params.filename)
+
+    writeFile(CLUSTER_FILE, params.data, done)
+  }
+
 
   /*
   
@@ -40,14 +232,15 @@ const FileStore = () => {
     
   */
   const listClusterNames = (params, done) => {
+    const CLUSTER_FOLDER = resolveFilename('clusters')
     async.waterfall([
 
       // list all files in our base folder
-      (next) => fs.readdir(CLUSTER_FOLDER, next),
+      (next) => listFolder(CLUSTER_FOLDER, next),
 
       // filter down to only directories
       (files, next) => async.filter(files, (file, nextFile) => {
-        fs.stat(path.join(CLUSTER_FOLDER, file), (err, stat) => {
+        statFile(path.join(CLUSTER_FOLDER, file), (err, stat) => {
           if(err) return nextFile(null, false)
           nextFile(null, stat.isDirectory())
         })
@@ -93,7 +286,7 @@ const FileStore = () => {
     if(!params.clustername) return done(`clustername param required for getClusterSettings`)
     readClusterFileAsJSON({
       clustername: params.clustername,
-      filename: FILENAMES.settings,
+      filename: 'settings',
     }, done)
   }
 
@@ -110,7 +303,7 @@ const FileStore = () => {
     if(!params.clustername) return done(`clustername param required for getDeploymentSettings`)
     readClusterFileAsJSON({
       clustername: params.clustername,
-      filename: FILENAMES.deploymentSettings,
+      filename: 'deploymentSettings',
     }, done)
   }
 
@@ -127,7 +320,7 @@ const FileStore = () => {
     if(!params.clustername) return done(`clustername param required for getClusterStatus`)
     readClusterFileAsJSON({
       clustername: params.clustername,
-      filename: FILENAMES.status,
+      filename: 'status',
     }, done)
   }
 
@@ -167,10 +360,7 @@ const FileStore = () => {
       params,
     })
 
-    async.waterfall([
-      (next) => getClusterDirectoryPath(params, next),
-      (directoryPath, next) => rmdir(directoryPath, next),
-    ], done)
+    deleteFolder(getClusterDirectoryPath(params.clustername), done)
   }
 
   /*
@@ -204,212 +394,38 @@ const FileStore = () => {
       params,
     })
 
-    async.parallel({
+    const CLUSTER_FOLDER = getClusterDirectoryPath(params.name)
 
-      settings: next => writeClusterFile({
-        clustername: params.name,
-        filename: FILENAMES.settings,
-        data: JSON.stringify(params),
-      }, next),
+    async.series([
 
-      status: next => writeClusterFile({
-        clustername: params.name,
-        filename: FILENAMES.status,
-        data: JSON.stringify({
-          phase: 'creating',
-        }),
-      }, next),
+      // create the cluster folder
+      next => createFolder(CLUSTER_FOLDER, next),
 
-      publicKey: next => writeClusterFile({
-        clustername: params.name,
-        filename: FILENAMES.publicKey,
-        data: params.public_key,
-      }, next),
-
-    }, done)
-    
-  }
-
-  /*
-  
-    return the directory path for where the files for a given cluster are stored
-
-    params:
-
-     * clustername - string
-    
-  */
-  const getClusterDirectoryPath = (params, done) => {
-    if(!params.clustername) return done(`clustername param required for getClusterDirectoryPath`)
-    const directoryPath = path.join(CLUSTER_FOLDER, params.clustername)
-    done(null, directoryPath)
-  }
-
-  /*
-  
-    return the filepath for a single file belonging to a cluster
-
-    params:
-
-     * clustername - string
-     * filename - string
-    
-  */
-  const getClusterFilePath = (params, done) => {
-    if(!params.clustername) return done(`clustername param required for getClusterFilePath`)
-    if(!params.filename) return done(`filename param required for getClusterFilePath`)
-
-    async.waterfall([
-      (next) => getClusterDirectoryPath({
-        clustername: params.clustername,
-      }, next),
-      (folderpath, next) => {
-        const filename = FILENAMES[params.filename] ? FILENAMES[params.filename] : params.filename
-        const filePath = path.join(folderpath, filename)
-        next(null, filePath)
-      }
-    ], done)
-  }
-
-  /*
-  
-    return the contents of a file associated with a cluster
-
-    params:
-
-     * clustername - string
-     * filename - string
-    
-  */
-  const readClusterFile = (params, done) => {
-    if(!params.clustername) return done(`clustername param required for readClusterFile`)
-    if(!params.filename) return done(`filename param required for readClusterFile`)
-
-    async.waterfall([
-
-      // get the filepath
-      (next) => getClusterFilePath(params, next),
-
-      // check the file exists
-      (filePath, next) => {
-        fs.stat(filePath, (err, stat) => {
-          if(err) return next(err)
-          if(!stat) return next(`error ${filePath} does not exist`)
-          next(null, filePath)
-        })
-      },
-
-      // load the contents
-      (filePath, next) => fs.readFile(filePath, 'utf8', next),
-
-    ], done)
-  }
-
-  /*
-  
-    return the contents of a file associated with a cluster
-    and process it as JSON
-
-    params:
-
-     * clustername - string
-     * filename - string
-    
-  */
-  const readClusterFileAsJSON = (params, done) => {
-    async.waterfall([
-      (next) => readClusterFile(params, next),
-      (fileContents, next) => {
-        let processedFile = null
-        try {
-          processedFile = JSON.parse(fileContents)
-        } catch(e) {
-          return next(e)
-        }
-        next(null, processedFile)
-      }
-    ], done)
-  }
-
-  /*
-  
-    return the stat object for a given cluster file
-    can be used to check if a file exists or get it's size / modified date
-
-    params:
-
-     * clustername - string
-     * filename - string
-    
-  */
-  const statClusterFile = (params, done) => {
-
-    async.waterfall([
-
-      // get the filepath
-      (next) => getClusterFilePath(params, next),
-
-      // check the file exists
-      (filePath, next) => {
-        fs.stat(filePath, (err, stat) => {
-          if(err) return next()
-          next(null, stat)
-        })
-      },
-
-    ], done)
-  }
-
-  /*
-  
-    write a file associated with a cluster - assuming text(utf8)
-    create the cluster folder if it doesn't exist
-
-    params:
-
-     * clustername - string
-     * filename - string
-     * data - string
-    
-  */
-  const writeClusterFile = (params, done) => {
-    if(!params.clustername) return done(`clustername param required for writeClusterFile`)
-    if(!params.filename) return done(`filename param required for writeClusterFile`)
-    if(!params.data) return done(`data param required for writeClusterFile`)
-
-    pino.info({
-      action: 'writeClusterFile',
-      params,
-    })
-
-    async.waterfall([
-      (next) => {
+      // write the initial cluster files
+      next => {
         async.parallel({
-          folder: nextp => getClusterDirectoryPath({
-            clustername: params.clustername,
+          settings: nextp => writeClusterFile({
+            clustername: params.name,
+            filename: 'settings',
+            data: JSON.stringify(params),
           }, nextp),
-          file: nextp => getClusterFilePath({
-            clustername: params.clustername,
-            filename: params.filename,
+
+          status: nextp => writeClusterFile({
+            clustername: params.name,
+            filename: 'status',
+            data: JSON.stringify({
+              phase: 'creating',
+            }),
           }, nextp),
+
+          publicKey: nextp => writeClusterFile({
+            clustername: params.name,
+            filename: 'publicKey',
+            data: params.public_key,
+          }, nextp),
+
         }, next)
-      },
-
-      (paths, next) => {
-        async.series([
-
-          // ensure the cluster folder exists
-          nexts => mkdirp(paths.folder, nexts),
-
-          // write the file contents
-          nexts => fs.writeFile(paths.file, params.data, 'utf8', nexts),
-          
-        ], (err) => {
-          if(err) return done(err)
-          next(null, paths.file)
-        })
       }
-
     ], done)
   }
 
@@ -434,7 +450,7 @@ const FileStore = () => {
 
     writeClusterFile({
       clustername: params.clustername,
-      filename: FILENAMES.status,
+      filename: 'status',
       data: JSON.stringify(params.status),
     }, done)
   }
@@ -477,27 +493,15 @@ const FileStore = () => {
     
   */
   const listUsers = (params, done) => {
+    const USERS_FILE = resolveFilename('users')
     async.series([
       // if the users file does not exist - return empty list
-      next => {
-        fs.stat(USERS_FILE, (err, stat) => {
-          if(err) return done(null, [])
-          next()
-        })
-      },
+      next => statFile(USERS_FILE, (err, stat) => {
+        if(err) return done(null, [])
+        next()
+      }),
 
-      next => {
-        fs.readFile(USERS_FILE, (err, data) => {
-          if(err) return next(err)
-          let users = null
-          try {
-            users = JSON.parse(data)
-          } catch(e) {
-            return next(e.toString())
-          }
-          return done(null, users)
-        })
-      }
+      next => readFileAsJSON(USERS_FILE, done),
     ])
   }
 
@@ -583,6 +587,8 @@ const FileStore = () => {
     if(!params.password) return done(`password param required for addUser`)
     if(!params.type) return done(`type param required for addUser`)
 
+    const USERS_FILE = resolveFilename('users')
+
     async.series([
 
       // check that a user with that username does not exist already
@@ -616,7 +622,7 @@ const FileStore = () => {
 
             const newUsers = results.currentUsers.concat([newUser])
 
-            fs.writeFile(USERS_FILE, JSON.stringify(newUsers), 'utf8', nextw)
+            writeFile(USERS_FILE, JSON.stringify(newUsers), nextw)
           }  
         ], next)
       }
@@ -639,6 +645,8 @@ const FileStore = () => {
 
     if(!params.existingUsername) return done(`existingUsername param required for addUser`)
     if(!params.username) return done(`username param required for addUser`)
+
+    const USERS_FILE = resolveFilename('users')
 
     async.series([
 
@@ -686,7 +694,7 @@ const FileStore = () => {
               return existingUser
             })
 
-            fs.writeFile(USERS_FILE, JSON.stringify(newUsers), 'utf8', nextw)
+            writeFile(USERS_FILE, JSON.stringify(newUsers), nextw)
           }  
         ], next)
       }
@@ -704,6 +712,8 @@ const FileStore = () => {
   */
   const deleteUser = (params, done) => {
     if(!params.username) return done(`username param required for addUser`)
+
+    const USERS_FILE = resolveFilename('users')
 
     async.series([
 
@@ -725,10 +735,8 @@ const FileStore = () => {
           (nextw) => listUsers({}, nextw),
 
           (currentUsers, nextw) => {
-
             const newUsers = currentUsers.filter(user => user.username != params.username)
-
-            fs.writeFile(USERS_FILE, JSON.stringify(newUsers), 'utf8', nextw)
+            writeFile(USERS_FILE, JSON.stringify(newUsers), nextw)
           }  
         ], next)
       }
@@ -737,6 +745,7 @@ const FileStore = () => {
 
 
   return {
+    initialize,
     listClusterNames,
     listClusters,
     getCluster,
@@ -747,6 +756,7 @@ const FileStore = () => {
     destroyCluster,
     getClusterDirectoryPath,
     getClusterFilePath,
+    getLocalClusterFilePath,
     readClusterFile,
     statClusterFile,
     writeClusterFile,

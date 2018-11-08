@@ -37,17 +37,10 @@ const undeploySawtoothManifestsTask = (params, store, dispatcher, done) => {
 
     // get the path to the deploymentValues.yaml file
     (next) => {
-
-      store.getClusterFilePath({
-        clustername: params.name,
-        filename: 'deploymentValues',
-      }, (err, deploymentYamlPath) => {
-        if(err) return next(err)
-        const context = {
-          deploymentYamlPath
-        }
-        next(null, context)
-      })
+      const context = {
+        deploymentYamlPath: store.getLocalClusterFilePath(params.name, 'deploymentValues')
+      }
+      next(null, context)
     },
 
     // get a kubectl that is bound to the given cluster
