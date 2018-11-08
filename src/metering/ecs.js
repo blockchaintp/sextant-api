@@ -5,7 +5,7 @@ const pino = require('pino')({
   name: 'metering.ecs',
 })
 
-const PRODUCT_CODE = '9tqwa1jewqzltf35obossgmqc'
+const PRODUCT_CODE = '90e15i980lrlbxxnm0w7hsw15'
 const PUBLIC_KEY_VERSION = 1
 
 // 10 minutes
