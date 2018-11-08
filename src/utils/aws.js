@@ -66,8 +66,7 @@ const regions = () => {
 const s3BucketNames = (done) => {
   command(`s3api list-buckets`, (err, results) => {
     if(err) return done(err)
-    const bucketNames = results.Buckets.map(bucket => bucket.Name)
-    done(null, bucketNames)
+    done(null, results.Buckets.map(bucket => bucket.Name))
   })
 }
 

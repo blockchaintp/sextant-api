@@ -31,10 +31,19 @@ const ConfigRoutes = (backends) => {
     })
   }
 
+  const setupRemote = (req, res, next) => {
+    config.setupRemote(req.body, (err, result) => {
+      res
+        .status(201)
+        .json(result)
+    })
+  }
+
   return {
     version,
     values,
     aws,
+    setupRemote,
   }
 }
 

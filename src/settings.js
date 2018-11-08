@@ -7,7 +7,16 @@ const args = require('minimist')(process.argv, {
   default:{
     port: process.env.PORT || 80,
     baseUrl: process.env.BASE_URL || '/api/v1',
+
+    // folder locations
     fileStoreFolder: process.env.SEXTANT_FILE_STORE_FOLDER || '/var/lib/sextant-api/filestore',
+
+    // aws
+    awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    awsS3BucketRegion: process.env.AWS_S3_BUCKET_REGION || 'us-east-1',
+
+    // sessions
     sessionSecret: process.env.SESSION_SECRET || 'sextant-blockchain',
 
     // which type of networking we use for kops clusters

@@ -20,6 +20,7 @@ const pino = require('pino')({
 
 // NOTE - to switch the storage implmentation, import a different module here
 const Store = require('./store/file')
+const Remote = require('./store/remote')
 const Backends = require('./backends')
 const Routes = require('./routes')
 const settings = require('./settings')
@@ -38,9 +39,12 @@ const App = () => {
     res.status(500).json({ message: err.message });
   })
 
+  // the object store remote
+  const remote = Remote()
+
   // the data store
   const store = Store({
-
+    remote,
   })
 
   store.initialize()
@@ -72,7 +76,7 @@ const App = () => {
     resave: false,
     saveUninitialized: true,
     store: new FileStore({
-      path: store.SESSIONS_FOLDER,
+      path: store.SESSION_STORE_FOLDER,
     }),
   }))
   app.use(passport.initialize())

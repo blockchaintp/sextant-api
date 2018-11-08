@@ -46,6 +46,7 @@ const Routes = (app, backends) => {
   app.get(basePath('/config/version'), config.version)
   app.get(basePath('/config/values'), config.values)
   app.get(basePath('/config/aws'), config.aws)
+  app.post(basePath('/config/setup_remote'), config.setupRemote)
 
   app.get(basePath('/user'), requireUser('admin'), user.list)
   app.get(basePath('/user/status'), user.status)

@@ -6,7 +6,7 @@ const pino = require('pino')({
   name: 'backend.config',
 })
 
-const ConfigBackend = () => {
+const ConfigBackend = ({ store, jobDispatcher }) => {
   
   /*
   
@@ -36,8 +36,12 @@ const ConfigBackend = () => {
 
   */
   const values = (params, done) => {
-    done(null, {
-      version: packageJSON.version,
+    store.readObjectStoreName((err, remoteName) => {
+      if(err) return done(err)
+      done(null, {
+        version: packageJSON.version,
+        remoteName,
+      })
     })
   }
 
@@ -60,10 +64,26 @@ const ConfigBackend = () => {
     })
   }
 
+  /*
+  
+    setup the remote storage for sextant
+
+    params:
+
+     * name
+    
+  */
+  const setupRemote = (params, done) => {
+    store.setupRemote({
+      name: params.name,
+    }, done)
+  }
+
   return {
     version,
     values,
     aws,
+    setupRemote,
   }
 
 }

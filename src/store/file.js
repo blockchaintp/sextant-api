@@ -13,7 +13,9 @@ const pino = require('pino')({
 const FILENAMES = {
   clusters: 'clusters',
   users: 'users.json',
-  s3BucketName: 's3BucketName',
+  objectStoreName: 'objectStoreName',
+  kopsState: 'kopsState',
+  sextantFlag: 'sextantFlag',
   settings: 'settings.json',
   deploymentSettings: 'deploymentSettings.json',
   status: 'status.json',
@@ -24,12 +26,18 @@ const FILENAMES = {
   deploymentValues: 'deploymentvalues.yaml',
 }
 
-// this is temp storage local to the instance
-const SESSIONS_FOLDER = '/tmp/sextant-sessions'
+const ROOT_FOLDER = settings.fileStoreFolder
 
-const BASE_FOLDER = settings.fileStoreFolder
-//const USERS_FILE = path.join(BASE_FOLDER, FILENAMES.users)
-//const CLUSTER_FOLDER = path.join(BASE_FOLDER, FILENAMES.clusters)
+
+// this is temp storage local to the instance
+const SESSION_STORE_FOLDER = path.join(ROOT_FOLDER, 'sessions')
+
+// this is not saved in the store because it's the thing
+// that connects to the remote store (chicken and egg)
+const REMOTE_CONFIG_STORE_FOLDER = path.join(ROOT_FOLDER, 'remote-config')
+const REMOTE_CONFIG_STORE_NAME_FILE = path.join(REMOTE_CONFIG_STORE_FOLDER, 'name')
+
+const SEXTANT_STORE_FOLDER = path.join(ROOT_FOLDER, 'sextant')
 
 /*
 
@@ -44,7 +52,9 @@ const BASE_FOLDER = settings.fileStoreFolder
    * download (download the entire store locally)
   
 */
-const FileStore = () => {
+const FileStore = (opts) => {
+
+  const remote = opts.remote
 
   /*
   
@@ -52,14 +62,79 @@ const FileStore = () => {
     the users will have to login again
     
   */
-  const initialize = () => {
-    mkdirp.sync(SESSIONS_FOLDER)
+  mkdirp.sync(SESSION_STORE_FOLDER)
 
-    createFolder(resolveFilename('clusters'), () => {
-      pino.info({
-        action: 'cluster folder created'
-      })
+  /*
+  
+    the remote store config folder is used to save the name of the object
+    store we are synchronizing to
+    
+  */
+  mkdirp.sync(REMOTE_CONFIG_STORE_FOLDER)
+
+  /*
+  
+    make sure the local file store root folder exists
+    
+  */
+  mkdirp.sync(SEXTANT_STORE_FOLDER)
+
+  /*
+  
+    initialize the store
+
+    check to see if we have an existing s3 bucket name
+    if we do - then setup the remote with that name
+    
+  */
+  const initialize = () => {
+
+    async.waterfall([
+      (next) => readObjectStoreName(next),
+      (remoteObjectStoreName, next) => {
+        if(remoteObjectStoreName) {
+          pino.info({
+            type: 'setupRemote',
+            name: remoteObjectStoreName,
+          })
+          setupRemote({
+            name: remoteObjectStoreName,
+          }, next)  
+        }
+      },
+    ], (err) => {
+      if(err) {
+        pino.error({
+          type: 'initialize',
+          error: err
+        })
+      }
     })
+    
+  }
+
+  /*
+  
+    initialize the remote with the given name of resource
+
+    this is done in the case we don't already know the name of the remote
+    (i.e. the remote store name file is empty)
+
+    this might mean the remote store exists it's just the instance failed and
+    the user had to re-enter the name of the remote store bucket
+
+    we pass the name of the bucket and the local storage path to the remote
+
+    params:
+
+     * name
+    
+  */
+  const setupRemote = (params, done) => {
+    async.series([
+      next => remote.setup(params.name, SEXTANT_STORE_FOLDER, next),
+      next => writeObjectStoreName(params.name, next),
+    ], done)
   }
   
 
@@ -84,7 +159,7 @@ const FileStore = () => {
   const resolveFilename = (fileName) => FILENAMES[fileName] ? FILENAMES[fileName] : fileName
 
   // turn a fileName into a full local filepath
-  const localPath = (fileName) => path.join(BASE_FOLDER, resolveFilename(fileName))
+  const localPath = (fileName) => path.join(SEXTANT_STORE_FOLDER, resolveFilename(fileName))
 
   // return the relative directory path for where the files for a given cluster are stored
   const getClusterDirectoryPath = (clustername) => path.join(resolveFilename('clusters'), clustername)
@@ -144,6 +219,39 @@ const FileStore = () => {
     // trigger the remote here
   }
 
+  /*
+  
+    get the name of the object store resource the remote is using
+    
+  */
+  const readObjectStoreName = (done) => {
+    async.waterfall([
+      (next) => fs.stat(REMOTE_CONFIG_STORE_NAME_FILE, (err, stat) => {
+        if(err) return done(null, null)
+        if(!stat) return done(null, null)
+        next(null, stat)
+      }),
+      (stat, next) => {
+        fs.readFile(REMOTE_CONFIG_STORE_NAME_FILE, 'utf8', next)
+      }
+    ], done)
+  }
+
+  /*
+  
+    write the name of the object store the remote is using
+    we check with the remote that this is a valid resource name
+    the remote will create the resource if it's valid and does not exist
+
+    if the resource already exists,
+    the remote will check for the existence of a `sextantVersion` file
+    inside of the object store to confirm it's ok to re-connect
+
+    
+  */
+  const writeObjectStoreName = (value, done) => {
+    fs.writeFile(REMOTE_CONFIG_STORE_NAME_FILE, value, 'utf8', done)
+  }
   
     
 
@@ -746,6 +854,8 @@ const FileStore = () => {
 
   return {
     initialize,
+    setupRemote,
+    readObjectStoreName,
     listClusterNames,
     listClusters,
     getCluster,
@@ -768,7 +878,7 @@ const FileStore = () => {
     addUser,
     updateUser,
     deleteUser,
-    SESSIONS_FOLDER,
+    SESSION_STORE_FOLDER,
   }
 
 }

@@ -1,20 +1,93 @@
 const S3FS = require('s3fs')
+const S3 = require('s3')
+const fs = require('fs')
+const aws = require('./aws')
 const settings = require('../settings')
-/*
 
-  const fs = new S3FS(settings.filestoreS3BucketName, {
-    region: settings.filestoreS3BucketRegion,
+const pino = require('pino')({
+  name: 's3',
+})
+
+const S3Factory = (name) => {
+  const s3fs = new S3FS(name, {
+    region: settings.awsS3BucketRegion,
     credentials: {
       accessKeyId: settings.awsAccessKeyId,
       secretAccessKey: settings.awsSecretAccessKey,
     }
   })
-  
-*/
-const s3fsFactory = () => {
+  const client = S3.createClient({
+    s3Options: {
+      accessKeyId: settings.awsAccessKeyId,
+      secretAccessKey: settings.awsSecretAccessKey,
+      region: settings.awsS3BucketRegion,
+    },
+  })
   return {
-    fs,
+    s3fs,
+    client,
+    // used to download the clusters folder
+    folderDownload: (localDir, prefix, done) => {
+      const emitter = client.downloadDir({
+        localDir,
+        deleteRemoved: true,
+        s3Params: {
+          Prefix: prefix,
+          Bucket: name,
+        }
+      })
+
+      emitter.on('error', done)
+      emitter.on('end', done)
+      emitter.on('fileDownloadStart', (localpath, s3key) => {
+        pino.info({
+          action: 'download.start',
+          localpath,
+          s3key,
+        })
+      })
+      emitter.on('fileDownloadEnd', (localpath, s3key) => {
+        pino.info({
+          action: 'download.end',
+          localpath,
+          s3key,
+        })
+      })
+    },
+    // used to download the users.json file
+    fileDownload: (localFile, remoteFile, done) => {
+      s3fs.readFile(remoteFile, 'utf8', (err, contents) => {
+        if(err) return done(err)
+        fs.writeFile(localFile, contents, 'utf8', done)
+      })
+    },
+    statFile: (remoteFile, done) => {
+      s3fs.stat(remoteFile, (err, stat) => {
+        if(err) return done()
+        done(null, stat ? true : false)
+      })
+    },
+    createFolder: (remoteFolder, done) => {
+      s3fs.mkdirp(remoteFolder, done)
+    },
+    writeFile: (remoteFile, contents, done) => {
+      s3fs.writeFile(remoteFile, contents, 'utf8', done)
+    },
+    readFile: (remoteFile, done) => {
+      s3fs.readFile(remoteFile, 'utf8', done)
+    },
+    createBucket: (done) => {
+      s3fs.create({}, done)
+    },
+    bucketNames: aws.s3BucketNames,
+    bucketExists: (done) => {
+      aws.s3BucketNames((err, buckets) => {
+        if(err) return done(err)
+        const exists = buckets.filter(b => b == name).length > 0
+        done(null, exists)
+      })
+    }
   }
 }
 
-module.exports = s3fsFactory
+module.exports = S3Factory
