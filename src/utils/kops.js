@@ -88,7 +88,7 @@ const clusterExists = (params, done) => {
   const { name, domain, bucket } = params
 
   command(`get clusters --state ${ getStateStore(bucket) }`, (err, results) => {
-    if(err) return done(err)
+    if(err) return done(null, false)
     const exists = results.indexOf(`${ name }.${ domain }`) >= 0
     done(null, exists)
   })
@@ -111,7 +111,7 @@ const destroyCluster = (params, done) => {
   if(!params.domain) return done(`domain param required for kops.destroyCluster`)
   if(!params.bucket) return done(`bucket param required for kops.destroyCluster`)
 
-  const { name, domain } = params
+  const { name, domain, bucket } = params
 
   command(`delete cluster ${ name }.${ domain } \\
     --state ${ getStateStore(bucket) } \\
@@ -208,7 +208,7 @@ const exportKubeConfig = (params, done) => {
   if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
   if(!params.bucket) return done(`bucket param required for kops.exportKubeConfig`)
 
-  const { name, domain, kubeConfigPath } = params
+  const { name, domain, kubeConfigPath, bucket } = params
 
   command(`export kubecfg ${ name }.${ domain } \\
     --state ${ getStateStore(bucket) }
