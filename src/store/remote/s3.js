@@ -108,10 +108,16 @@ const S3Remote = () => {
       },
 
       // download the contents of the bucket to the local filesystem
-      (ok, next) => synchronizeLocal(temps3, localStoragePath, done)
+      (ok, next) => synchronizeLocal(temps3, localStoragePath, next)
       
     ], (err) => {
+
       if(err) return done(err)
+
+      pino.info({
+        type: 'remoteInitialized',
+      })
+      
       s3 = temps3
       bucketName = localBucketName
       storagePath = localStoragePath
@@ -123,6 +129,18 @@ const S3Remote = () => {
   return {
     setup,
     isInitialized: () => initialized,
+    createFolder: (folderPath, done) => {
+      if(!s3) return done(`s3 remote not initialized`)
+      s3.createFolder(folderPath, done)
+    },
+    writeFile: (filePath, data, done) => {
+      if(!s3) return done(`s3 remote not initialized`)
+      s3.writeFile(filePath, data, done)
+    },
+    deleteFolder: (folderPath, done) => {
+      if(!s3) return done(`s3 remote not initialized`)
+      s3.deleteFolder(folderPath, done)
+    },
   }
 
 }

@@ -1,6 +1,7 @@
 const S3FS = require('s3fs')
 const S3 = require('s3')
 const fs = require('fs')
+const async = require('async')
 const aws = require('./aws')
 const settings = require('../settings')
 
@@ -69,6 +70,12 @@ const S3Factory = (name) => {
     },
     createFolder: (remoteFolder, done) => {
       s3fs.mkdirp(remoteFolder, done)
+    },
+    deleteFolder: (remoteFolder, done) => {
+      async.series([
+        next => s3fs.rmdirp(remoteFolder, next),
+        next => s3fs.rmdir(remoteFolder, next),
+      ], done)
     },
     writeFile: (remoteFile, contents, done) => {
       s3fs.writeFile(remoteFile, contents, 'utf8', done)

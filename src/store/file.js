@@ -198,25 +198,70 @@ const FileStore = (opts) => {
   */
 
   const createFolder = (folderPath, done) => {
+    if(!remote.isInitialized()) return done(`the remote is not initialized`)
     mkdirp(localPath(folderPath), done)
 
-    // trigger the remote here
+    remote.createFolder(folderPath, (err) => {
+      if(err) {
+        pino.error({
+          type: 'remote.createFolder',
+          folderPath,
+          error: err
+        })
+      }
+      else {
+        pino.info({
+          type: 'remote.createFolder',
+          folderPath,
+        })
+      }
+    })
   }
 
   const writeFile = (filePath, data, done) => {
+    if(!remote.isInitialized()) return done(`the remote is not initialized`)
     const LOCAL_PATH = localPath(filePath)
     fs.writeFile(LOCAL_PATH, data, 'utf8', (err) => {
       if(err) return done(err)
       done(null, LOCAL_PATH)
     })
 
-    // trigger the remote here
+    remote.writeFile(filePath, data, (err) => {
+      if(err) {
+        pino.error({
+          type: 'remote.writeFile',
+          filePath,
+          error: err
+        })
+      }
+      else {
+        pino.info({
+          type: 'remote.writeFile',
+          filePath,
+        })
+      }
+    })
   }
 
   const deleteFolder = (folderPath, done) => {
+    if(!remote.isInitialized()) return done(`the remote is not initialized`)
     rmdir(localPath(folderPath), done)
 
-    // trigger the remote here
+    remote.deleteFolder(folderPath, (err) => {
+      if(err) {
+        pino.error({
+          type: 'remote.deleteFolder',
+          folderPath,
+          error: err
+        })
+      }
+      else {
+        pino.info({
+          type: 'remote.deleteFolder',
+          folderPath,
+        })
+      }
+    })
   }
 
   /*
