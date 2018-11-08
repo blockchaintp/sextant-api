@@ -26,9 +26,9 @@ const schema = Joi.object().keys({
   genesis_enabled: Joi.boolean().required(),
   poet_enabled: Joi.boolean().required(),
   rbac_enabled: Joi.boolean().required(),
-  rbac_secret_key: Joi.string().regex(/^[a-zA-Z0-9]{20}$/).required(),
-  rbac_aes_key: Joi.string().regex(/^[0-9a-fA-F]{32}$/).required(),
-  rbac_batcher_key: Joi.string().regex(/^[0-9a-fA-F]{64}$/).required(),
+  //rbac_secret_key: Joi.string().regex(/^[a-zA-Z0-9]{20}$/).required(),
+  //rbac_aes_key: Joi.string().regex(/^[0-9a-fA-F]{32}$/).required(),
+  //rbac_batcher_key: Joi.string().regex(/^[0-9a-fA-F]{64}$/).required(),
   xo_enabled: Joi.boolean().required(),
   smallbank_enabled: Joi.boolean().required(),
   simple_enabled: Joi.boolean().required(),
@@ -85,9 +85,9 @@ const getValues = (clusterSettings, deploymentSettings) => {
 
   // sawtrooth rbac settings
   sawtooth.rbac.enabled = deploymentSettings.rbac_enabled
-  sawtooth.rbac.secretKey = deploymentSettings.rbac_secret_key
-  sawtooth.rbac.aesKey = deploymentSettings.rbac_aes_key
-  sawtooth.rbac.batcherKey = deploymentSettings.rbac_batcher_key
+  //sawtooth.rbac.secretKey = deploymentSettings.rbac_secret_key
+  //sawtooth.rbac.aesKey = deploymentSettings.rbac_aes_key
+  //sawtooth.rbac.batcherKey = deploymentSettings.rbac_batcher_key
 
   // sawtooth xo settings
   sawtooth.xo.enabled = deploymentSettings.xo_enabled
@@ -108,7 +108,10 @@ const getValues = (clusterSettings, deploymentSettings) => {
 }
 
 // get a string that is the values.yaml ready for kubetpl
-const getYaml = (clusterSettings, deploymentSettings) => yaml.safeDump(getValues(clusterSettings, deploymentSettings))
+const getYaml = (clusterSettings, deploymentSettings) => {
+  const jsonValues = getValues(clusterSettings, deploymentSettings)
+  return yaml.safeDump(jsonValues)
+}
 
 module.exports = {
   validateSettings,

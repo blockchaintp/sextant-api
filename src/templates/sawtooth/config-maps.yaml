@@ -17,8 +17,5 @@ data:
     DB_HOST = 'localhost'
     DB_PORT = 28015
     DEBUG = True
-    SECRET_KEY = '{{.sawtooth.rbac.secretKey}}'
-    AES_KEY = '{{.sawtooth.rbac.aesKey}}'
-    BATCHER_PRIVATE_KEY = '{{.sawtooth.rbac.batcherKey}}'
 ---
 

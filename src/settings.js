@@ -34,7 +34,7 @@ const args = require('minimist')(process.argv, {
       'sawtooth/config-maps.yaml',
       'sawtooth/storage-class.yaml',
       'sawtooth/monitoring.yaml',
-      'sawtooth/rbac-main.yaml',
+      //'sawtooth/rbac-main.yaml',
       'sawtooth/validators.yaml',
     ],
   }
