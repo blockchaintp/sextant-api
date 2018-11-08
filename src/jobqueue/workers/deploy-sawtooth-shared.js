@@ -14,9 +14,13 @@ const Pods = require('../../utils/pods')
    * name
   
 */
+// NOTE: we no longer wait for pods and let k8s figure it out
+// re-enable this if we want to wait for all pods to be ready
 const waitForSawtoothPodsTask = (pino, params, store, dispatcher, done) => {
 
-
+  return done()
+  
+/*
   async.waterfall([
 
     // get a kubectl that is bound to the given cluster
@@ -29,6 +33,8 @@ const waitForSawtoothPodsTask = (pino, params, store, dispatcher, done) => {
     },
 
     // wait for the pods to be ready
+
+
     (kubectl, next) => {
       let waitingForPods = true
 
@@ -52,6 +58,7 @@ const waitForSawtoothPodsTask = (pino, params, store, dispatcher, done) => {
       )
     }
   ], done)
+*/
 }
 
 /*

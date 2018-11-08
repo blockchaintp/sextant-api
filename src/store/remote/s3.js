@@ -1,5 +1,7 @@
 const path = require('path')
 const async = require('async')
+const fs = require('fs')
+const rmdir = require('rmdir')
 const settings = require('../../settings')
 const S3 = require('../../utils/s3')
 const packageJSON = require('../../../package.json')
@@ -74,9 +76,32 @@ const S3Remote = () => {
   // pull the contents of the remote bucket to the local fs
   const synchronizeLocal = (temps3, localStoragePath, done) => {
 
+    const CLUSTER_DIR = path.join(localStoragePath, 'clusters')
+    const USERS_FILE = path.join(localStoragePath, 'users.json')
+
     async.series([
-      next => temps3.folderDownload(path.join(localStoragePath, 'clusters'), 'clusters', next),
-      next => temps3.fileDownload(path.join(localStoragePath, 'users.json'), 'users.json', next),
+
+      // delete the local clusters folder
+      next => {
+        fs.stat(CLUSTER_DIR, (err, stat) => {
+          if(err || !stat) return next()
+          rmdir(CLUSTER_DIR, next)
+        })
+      },
+
+      // delete the local users file
+      next => {
+        fs.stat(USERS_FILE, (err, stat) => {
+          if(err || !stat) return next()
+          fs.unlink(USERS_FILE, next)
+        })
+      },
+
+      // download the remote clusters folder
+      next => temps3.folderDownload(CLUSTER_DIR, 'clusters', next),
+
+      // download the remote users file
+      next => temps3.fileDownload(USERS_FILE, 'users.json', next),
     ], done)
     
   }
