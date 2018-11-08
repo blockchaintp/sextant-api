@@ -6,4 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args: 
+        METERING_MODULE: ecs.js
     image: sextant-api:${ISOLATION_ID}
