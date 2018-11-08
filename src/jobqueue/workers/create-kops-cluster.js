@@ -3,6 +3,8 @@ const pino = require('pino')({
   name: 'worker.createCluster',
 })
 
+const tmp = require('tmp')
+const fs = require('fs')
 const settings = require('../../settings')
 const kops = require('../../utils/kops')
 const clusterUtils = require('../../utils/cluster')
@@ -212,7 +214,13 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
     next => {
 
       async.waterfall([
-        (wnext) => wnext(null, store.getLocalClusterFilePath(params.name, 'kubeConfig')),
+
+        (wnext) => tmp.file({
+          postfix: '',
+        }, (err, filepath) => {
+          if(err) return wnext(err)
+          wnext(null, filepath)
+        }),
 
         (kubeConfigPath, wnext) => {
 
@@ -228,8 +236,21 @@ const exportClusterConfigFilesTask = (params, store, dispatcher, done) => {
             params: exportKubeConfigParams,
           })
 
-          kops.exportKubeConfig(exportKubeConfigParams, wnext)
+          kops.exportKubeConfig(exportKubeConfigParams, (err) => {
+            if(err) return wnext(err)
+            wnext(null, kubeConfigPath)
+          })
         },
+
+        (kubeConfigPath, wnext) => fs.readFile(kubeConfigPath, 'utf8', wnext),
+
+        (kubeConfigContents, wnext) => {
+          store.writeClusterFile({
+            clustername: params.name,
+            filename: 'kubeConfig',
+            data: kubeConfigContents,
+          }, wnext)
+        }
       ], next)
 
     },
