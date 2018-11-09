@@ -15,8 +15,9 @@ const S3Factory = (name) => {
   )
   const s3fs = new S3FS(name, sdkS3
   )
-  const client = S3.createClient(
-  )
+  const client = S3.createClient({
+	  s3Client:sdkS3,
+  })
   return {
     s3fs,
     client,
