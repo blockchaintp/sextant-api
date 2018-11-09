@@ -3,6 +3,7 @@ const S3 = require('s3')
 const fs = require('fs')
 const async = require('async')
 const aws = require('./aws')
+const AWS = require('../aws-sdk')
 const settings = require('../settings')
 
 const pino = require('pino')({
@@ -10,7 +11,7 @@ const pino = require('pino')({
 })
 
 const S3Factory = (name) => {
-  const sdkS3 = new aws.S3(
+  const sdkS3 = new AWS.S3(
   )
   const s3fs = new S3FS(name, sdkS3
   )
