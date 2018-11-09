@@ -11,18 +11,8 @@ const pino = require('pino')({
 
 const S3Factory = (name) => {
   const s3fs = new S3FS(name, {
-    region: settings.awsS3BucketRegion,
-    credentials: {
-      accessKeyId: settings.awsAccessKeyId,
-      secretAccessKey: settings.awsSecretAccessKey,
-    }
   })
   const client = S3.createClient({
-    s3Options: {
-      accessKeyId: settings.awsAccessKeyId,
-      secretAccessKey: settings.awsSecretAccessKey,
-      region: settings.awsS3BucketRegion,
-    },
   })
   return {
     s3fs,
