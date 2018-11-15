@@ -47,16 +47,18 @@ const App = () => {
     remote,
   })
 
-  if(settings.sextantManualInit) {
-    store.initializeManual()  
-  }
-  else {
+  // if the sextantState is set then we are in auto init mode
+  if(settings.sextantState) {
     store.initializeAuto(err => {
       if(err) {
         console.error(err)
         process.exit(1)
       }
     })
+  }
+  else {
+    store.initializeManual()  
+    
   }
   
 
