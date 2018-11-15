@@ -47,7 +47,18 @@ const App = () => {
     remote,
   })
 
-  store.initialize()
+  if(settings.sextantManualInit) {
+    store.initializeManual()  
+  }
+  else {
+    store.initializeAuto(err => {
+      if(err) {
+        console.error(err)
+        process.exit(1)
+      }
+    })
+  }
+  
 
   // generic event emitter to communicate jobs between the dispatcher and handler
   const jobEventEmitter = new EventEmitter()
