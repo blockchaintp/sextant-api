@@ -81,13 +81,20 @@ const FileStore = (opts) => {
 
   /*
   
-    initialize the store
+    initialize the store for manual operations
 
     check to see if we have an existing s3 bucket name
     if we do - then setup the remote with that name
+
+    this is where we display a form in the browser
+    and the user enters the initial bucket name
+
+    --sextant-manual-init or SEXTANT_MANUAL_INIT
+
+    will be set for this to be the init mode
     
   */
-  const initialize = () => {
+  const initializeManual = () => {
 
     async.waterfall([
       (next) => readObjectStoreName(next),
@@ -111,6 +118,79 @@ const FileStore = (opts) => {
       }
     })
     
+  }
+
+  /*
+  
+    initialize the store for auto operations
+
+    we will expect the following CLI arguments for this to work:
+
+      --sextant-state (SEXTANT_STATE)
+      --initial-user (INITIAL_USER)
+      --initial-password
+    check to see if we have an existing s3 bucket name
+    if we do - then setup the remote with that name
+
+    this is where we display a form in the browser
+    and the user enters the initial bucket name
+    
+  */
+  const initializeAuto = (done) => {
+    if(!settings.sextantState) {
+      return done(`--sextant-state argument (or SEXTANT_STATE env variable) required`)
+    }
+
+    async.series([
+
+      // first - initialise the remote S3 bucket
+      next => setupRemote({
+        name: settings.sextantState
+      }, next),
+
+      // check to see if we have an initial user
+      next => {
+        listUsers({}, (err, users) => {
+          if(err) return next(err)
+
+          let createInitialUser = false
+
+          // if we have no users - check that we have the arguments
+          // required and create the new user
+          if(users.length <= 0) {
+            createInitialUser = true
+          }
+          // otherwise - if we have some users and we have an initialUser
+          // setting - check if we don't have that user
+          // if not - create it
+          else if(settings.initialUser) {
+
+            const existingUser = users.filter(user => user.username == settings.initialUser)[0]
+
+            if(!existingUser) createInitialUser = true
+          }
+
+          if(createInitialUser) {
+
+            // if we need to create the initial user but we don't
+            // have the required information - then error
+            if(!settings.initialUser || !settings.initialPassword) {
+              return next(`--initial-user (or INITIAL_USER env variable) and --initial-password (or INITIAL_PASSWORD env variable) arguments are required`)
+            }
+
+            // create the initial user
+            addUser({
+              username: settings.initialUser,
+              password: settings.initialPassword,
+              type: 'admin'
+            }, next)
+          }
+          else {
+            return next()
+          }
+        })
+      },
+    ], done)
   }
 
   /*
@@ -898,7 +978,8 @@ const FileStore = (opts) => {
 
 
   return {
-    initialize,
+    initializeManual,
+    initializeAuto,
     setupRemote,
     readObjectStoreName,
     listClusterNames,

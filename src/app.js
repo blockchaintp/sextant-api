@@ -47,7 +47,20 @@ const App = () => {
     remote,
   })
 
-  store.initialize()
+  // if the sextantState is set then we are in auto init mode
+  if(settings.sextantState) {
+    store.initializeAuto(err => {
+      if(err) {
+        console.error(err)
+        process.exit(1)
+      }
+    })
+  }
+  else {
+    store.initializeManual()  
+    
+  }
+  
 
   // generic event emitter to communicate jobs between the dispatcher and handler
   const jobEventEmitter = new EventEmitter()
