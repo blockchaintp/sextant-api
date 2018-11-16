@@ -5,6 +5,7 @@
 */
 const args = require('minimist')(process.argv, {
   alias: {
+    'sextant-manual-init': 'sextantManualInit',
     'sextant-state': 'sextantState',
     'initial-user': 'initialUser',
     'initial-password': 'initialPassword',
@@ -21,10 +22,15 @@ const args = require('minimist')(process.argv, {
     awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     awsS3BucketRegion: process.env.AWS_S3_BUCKET_REGION || 'us-east-1',
 
-    // the name of the S3 bucket to automatically create
-    // are we displaying a form to enter the name of the S3 bucket
+    // sextant initial user and bucket state
+
+    // are we displaying a user form to enter the name of the S3 bucket
     // and initial root user?  Or are we expecting there to be the following
-    // values to create the bucket, user and password with?
+    // values to create the user and password with?
+    sextantManualInit: process.env.SEXTANT_MANUAL_INIT,
+
+    // the name of the S3 bucket to automatically create if we are not in
+    // SEXTANT_MANUAL_INIT mode
     sextantState: process.env.SEXTANT_STATE,
 
     // the name of the initial user to create if we are not in
