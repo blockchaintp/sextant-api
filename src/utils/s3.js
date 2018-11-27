@@ -11,8 +11,9 @@ const pino = require('pino')({
 })
 
 const S3Factory = (name) => {
-  const sdkS3 = new AWS.S3(
-  )
+  const sdkS3 = new AWS.S3({
+	  signatureVersion:"v4"
+  })
   const s3fs = new S3FS(name, sdkS3
   )
   const client = S3.createClient({
