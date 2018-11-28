@@ -1,6 +1,6 @@
 'use strict'
 
-const AWS = require('../aws-sdk');
+const AWS = require('aws-sdk');
 const pino = require('pino')({
   name: 'metering.ecs',
 })
