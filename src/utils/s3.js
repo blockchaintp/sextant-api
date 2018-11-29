@@ -16,6 +16,9 @@ const S3Factory = (name) => {
   })
   const s3fs = new S3FS(name, sdkS3
   )
+  s3fs.s3.config.update({ 
+	  signatureVersion: 'v4'
+  })
   const client = S3.createClient({
 	  s3Client:sdkS3,
   })
@@ -91,6 +94,13 @@ const S3Factory = (name) => {
       s3fs.readFile(remoteFile, 'utf8', done)
     },
     createBucket: (done) => {
+      pino.info({
+	      action: "s3fs.call" ,
+	      s3fs
+      })
+      s3fs.s3.config.update({ 
+              signatureVersion: 'v4'
+      })
       pino.info({
 	      action: "s3fs.call" ,
 	      s3fs
