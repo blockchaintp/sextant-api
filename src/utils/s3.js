@@ -25,7 +25,7 @@ const S3Factory = (name) => {
   })
   pino.info({
 	  action:"s3fs.construct",
-	  localpath,
+	  s3fs,
   })
   pino.info({
 	  action:"client.construct",
