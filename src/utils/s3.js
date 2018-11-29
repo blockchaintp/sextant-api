@@ -21,17 +21,14 @@ const S3Factory = (name) => {
   })
   pino.info({
 	  action:"sdkS3.construct",
-	  localpath,
 	  sdkS3,
   })
   pino.info({
 	  action:"s3fs.construct",
 	  localpath,
-	  s3fs,
   })
   pino.info({
 	  action:"client.construct",
-	  localpath,
 	  client,
   })
   return {
@@ -96,7 +93,6 @@ const S3Factory = (name) => {
     createBucket: (done) => {
       pino.info({
 	      action: "s3fs.call" ,
-	      localpath,
 	      s3fs
       })
       s3fs.create({}, done)
