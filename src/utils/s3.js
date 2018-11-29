@@ -22,18 +22,6 @@ const S3Factory = (name) => {
   const client = S3.createClient({
 	  s3Client:sdkS3,
   })
-  pino.info({
-	  action:"sdkS3.construct",
-	  sdkS3,
-  })
-  pino.info({
-	  action:"s3fs.construct",
-	  s3fs,
-  })
-  pino.info({
-	  action:"client.construct",
-	  client,
-  })
   return {
     s3fs,
     client,
@@ -94,17 +82,6 @@ const S3Factory = (name) => {
       s3fs.readFile(remoteFile, 'utf8', done)
     },
     createBucket: (done) => {
-      pino.info({
-	      action: "s3fs.call" ,
-	      s3fs
-      })
-      s3fs.s3.config.update({ 
-              signatureVersion: 'v4'
-      })
-      pino.info({
-	      action: "s3fs.call" ,
-	      s3fs
-      })
       s3fs.create({}, done)
     },
     bucketNames: aws.s3BucketNames,
