@@ -2,8 +2,17 @@
 
 version: '3'
 services:
+  api-ecs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args: 
+        METERING_MODULE: ecs.js
+    image: sextant-api-ecs:${ISOLATION_ID}
   api:
     build:
       context: .
       dockerfile: Dockerfile
+      args: 
+        METERING_MODULE: dev.js
     image: sextant-api:${ISOLATION_ID}
