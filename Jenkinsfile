@@ -15,8 +15,8 @@ node {
 	
 	stage("Clean All Previous Images") {
 	    sh '''
-                for img in $(docker images --filter reference='*:${ISOLATION_ID}' --format '{{.Repository}}:{{.Tag}}') \
-                           $(docker images --filter reference='*/*:${ISOLATION_ID}' --format '{{.Repository}}:{{.Tag}}') ; do
+                for img in $(docker images --filter reference=*:${ISOLATION_ID} --format '{{.Repository}}:{{.Tag}}') \
+                           $(docker images --filter reference=*/*:${ISOLATION_ID} --format '{{.Repository}}:{{.Tag}}') ; do
                     docker rmi $img
                 done
             '''
@@ -41,8 +41,8 @@ node {
 
 	stage("Clean Up") {
 	    sh '''
-                for img in $(docker images --filter reference='*:${ISOLATION_ID}' --format '{{.Repository}}:{{.Tag}}') \
-                           $(docker images --filter reference='*/*:${ISOLATION_ID}' --format '{{.Repository}}:{{.Tag}}') ; do
+                for img in $(docker images --filter reference=*:${ISOLATION_ID} --format '{{.Repository}}:{{.Tag}}') \
+                           $(docker images --filter reference=*/*:${ISOLATION_ID} --format '{{.Repository}}:{{.Tag}}') ; do
                     docker rmi $img
                 done
             '''
