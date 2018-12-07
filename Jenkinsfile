@@ -31,7 +31,7 @@ node {
 	
 	// Build docs
 	
-	// Push Docker images
+	// Tag and Push Docker images
 	stage("Tag Push images") {
 	    withCredentials([usernamePassword(credentialsId: 'dockerHubID', usernameVariable: 'DOCKER_USER',passwordVariable: 'DOCKER_PASSWD')]) {
 		sh "docker login -u $DOCKER_USER --password=$DOCKER_PASSWD"
