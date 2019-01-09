@@ -56,11 +56,11 @@ const args = require('minimist')(process.argv, {
 
     // a list of the sawtooth template manifests that will be rendered and applied in order
     sawtoothManifests: [
-      'sawtooth/config-maps.yaml',
-      'sawtooth/storage-class.yaml',
-      'sawtooth/monitoring.yaml',
+      'sawtooth/1.0.5/config-maps.yaml',
+      'sawtooth/1.0.5/storage-class.yaml',
+      'sawtooth/1.0.5/monitoring.yaml',
       //'sawtooth/rbac-main.yaml',
-      'sawtooth/validators.yaml',
+      'sawtooth/1.0.5/validators.yaml',
     ],
   }
 })
