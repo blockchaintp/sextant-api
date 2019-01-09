@@ -54,8 +54,8 @@ const processSettings = (settings) => {
   })
 }
 
-// load the default kops values from sawtooth/defaults.yaml
-const getDefaults = () => templateUtils.getTemplateYaml('sawtooth/defaults.yaml')
+// load the default kops values from sawtooth/1.0.5/defaults.yaml
+const getDefaults = () => templateUtils.getTemplateYaml('sawtooth/1.0.5/defaults.yaml')
 
 // turn the base settings.json into a kops values.yaml structure ready
 // for kubetpl
