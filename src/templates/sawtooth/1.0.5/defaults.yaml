@@ -26,9 +26,6 @@ sawtooth:
   externalSeeds: []
   rbac:
     enabled: true
-    secretKey: 'g7op0ioXPdw7jFTf4aY2'
-    aesKey: '37960e8f0337b90131acfb30b8817d17'
-    batcherKey: 'a8fbe6bb38fb6ae5cc1abbfee9068f734b4c023cc5ffc193a8c9d83793d0ee02'
   xo:
     enabled: true
   smallbank:
