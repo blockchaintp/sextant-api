@@ -1,3 +1,4 @@
+type: cloud
 kops:
   stateStore: s3://clusters.dev.catenasys.com
 
