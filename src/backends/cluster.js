@@ -2,6 +2,7 @@ const async = require('async')
 const sshUtils = require('../utils/ssh')
 const clusterUtils = require('../utils/cluster')
 const kopsSettings = require('../templates/kops_settings')
+const kubeconnectSettings = require('../templates/kubeconnect_settings')
 const sawtoothSettings = require('../templates/sawtooth_settings')
 const kops = require('../utils/kops')
 
@@ -254,10 +255,15 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
     
   */
   const create = (params, done) => {
-
+    let settingsClass
+    if (params.type == 'kubeconnect') {
+      settingsClass=kubeconnectSettings;
+    } else {
+      settingsClass=kopsSettings;
+    }
     // process the incoming settings
-    const settings = kopsSettings.processSettings(params)
-  
+    const settings = settingsClass.processSettings(params);
+
     pino.info({
       action: 'create',
       params,
@@ -267,7 +273,7 @@ const ClustersBackend = ({ store, jobDispatcher }) => {
 
       // validate the given settings
       next => {
-        const errors = kopsSettings.validateSettings(settings)
+        const errors = settingsClass.validateSettings(settings)
         if(errors) return next(errors)
         next()
       },
