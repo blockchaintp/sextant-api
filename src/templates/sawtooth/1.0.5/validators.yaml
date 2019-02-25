@@ -424,7 +424,7 @@ spec:
           requests:
             cpu: "50m"
       - name: utility-shell
-        image: blockchaintp/sawtooth-shell:master
+        image: blockchaintp/sawtooth-shell:1.0.5
         command:
           - bash
           - -c
