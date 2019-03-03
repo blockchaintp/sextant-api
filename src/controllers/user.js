@@ -8,7 +8,7 @@ const UsersBackend = ({ store }) => {
 
   */
   const count = (params, done) => {
-    store.users.list({}, (err, users) => {
+    store.user.list({}, (err, users) => {
       if(err) return done(err)
       done(null, users.length)
     })
@@ -25,7 +25,7 @@ const UsersBackend = ({ store }) => {
       array[user]
 
   */
-  const list = (params, done) => store.users.list({}, done)
+  const list = (params, done) => store.user.list({}, done)
 
   /*
   
@@ -37,7 +37,7 @@ const UsersBackend = ({ store }) => {
     
   */
   const get = (params, done) => {
-    store.users.get({
+    store.user.get({
       username: params.username,
     }, done)
   }
@@ -71,11 +71,11 @@ const UsersBackend = ({ store }) => {
 
      * username - string
      * password - string
-     * type - string
+     * role - {admin,user}
     
   */
   const add = (params, done) => {
-    store.users.add({
+    store.user.add({
       username: params.username,
       password: params.password,
       type: params.type,
@@ -95,7 +95,7 @@ const UsersBackend = ({ store }) => {
     
   */
   const update = (params, done) => {
-    store.users.update({
+    store.user.update({
       existingUsername: params.existingUsername,
       username: params.username,
       password: params.password,
@@ -113,7 +113,7 @@ const UsersBackend = ({ store }) => {
     
   */
   const del = (params, done) => {
-    store.users.delete({
+    store.user.delete({
       username: params.username,
     }, done)
   }

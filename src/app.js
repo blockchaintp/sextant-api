@@ -8,13 +8,15 @@ const pino = require('pino')({
   name: 'app',
 })
 
+const Knex = require('./utils/knex')
 const Store = require('./store')
 const Controllers = require('./controllers')
 const Routes = require('./routes')
 
 const App = () => {
 
-  const store = Store()
+  const knex = Knex()
+  const store = Store(knex)
 
   const controllers = Controllers({
     store,
