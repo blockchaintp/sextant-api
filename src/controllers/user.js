@@ -1,8 +1,4 @@
-const pino = require('pino')({
-  name: 'backend.users',
-})
-
-const UsersBackend = ({ store, jobDispatcher }) => {
+const UsersBackend = ({ store }) => {
   
   /*
   
@@ -12,7 +8,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
 
   */
   const count = (params, done) => {
-    store.listUsers({}, (err, users) => {
+    store.users.list({}, (err, users) => {
       if(err) return done(err)
       done(null, users.length)
     })
@@ -29,7 +25,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
       array[user]
 
   */
-  const list = (params, done) => store.listUsers({}, done)
+  const list = (params, done) => store.users.list({}, done)
 
   /*
   
@@ -41,7 +37,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
     
   */
   const get = (params, done) => {
-    store.getUser({
+    store.users.get({
       username: params.username,
     }, done)
   }
@@ -57,10 +53,14 @@ const UsersBackend = ({ store, jobDispatcher }) => {
     
   */
   const checkPassword = (params, done) => {
-    store.checkUserPassword({
+
+    // do this here not in the store
+    
+    /*store.users.checkPassword({
       username: params.username,
       password: params.password,
     }, done)
+    */
   }
 
   /*
@@ -75,7 +75,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
     
   */
   const add = (params, done) => {
-    store.addUser({
+    store.users.add({
       username: params.username,
       password: params.password,
       type: params.type,
@@ -95,7 +95,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
     
   */
   const update = (params, done) => {
-    store.updateUser({
+    store.users.update({
       existingUsername: params.existingUsername,
       username: params.username,
       password: params.password,
@@ -113,7 +113,7 @@ const UsersBackend = ({ store, jobDispatcher }) => {
     
   */
   const del = (params, done) => {
-    store.deleteUser({
+    store.users.delete({
       username: params.username,
     }, done)
   }

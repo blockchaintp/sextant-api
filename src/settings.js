@@ -1,3 +1,21 @@
+const required_env = [
+  'POSTGRES_SERVICE_HOST',
+  'POSTGRES_USER',
+  'POSTGRES_DB',
+  'POSTGRES_PASSWORD',
+]
+
+const missing_env = required_env.filter(name => process.env[name] ? false : true)
+
+if(missing_env.length>0) {
+  console.error(`The following environment variables are required:
+
+${missing_env.join("\n")}
+`)
+
+  process.exit(1)
+}
+
 /*
 
   the settings passed in via the command line or environment
@@ -6,7 +24,6 @@
 const args = require('minimist')(process.argv, {
   alias: {
     'sextant-manual-init': 'sextantManualInit',
-    'sextant-state': 'sextantState',
     'initial-user': 'initialUser',
     'initial-password': 'initialPassword',
   },
@@ -14,8 +31,12 @@ const args = require('minimist')(process.argv, {
     port: process.env.PORT || 80,
     baseUrl: process.env.BASE_URL || '/api/v1',
 
-    // folder locations
-    fileStoreFolder: process.env.SEXTANT_FILE_STORE_FOLDER || '/var/lib/sextant-api/filestore',
+    // postgres
+    postgreshost: process.env.POSTGRES_SERVICE_HOST,
+    postgresport: process.env.POSTGRES_SERVICE_PORT || 5432,
+    postgresuser: process.env.POSTGRES_USER,
+    postgrespassword: process.env.POSTGRES_PASSWORD,
+    postgresdatabase: process.env.POSTGRES_DB,
 
     // aws
     awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -28,10 +49,6 @@ const args = require('minimist')(process.argv, {
     // and initial root user?  Or are we expecting there to be the following
     // values to create the user and password with?
     sextantManualInit: process.env.SEXTANT_MANUAL_INIT,
-
-    // the name of the S3 bucket to automatically create if we are not in
-    // SEXTANT_MANUAL_INIT mode
-    sextantState: process.env.SEXTANT_STATE,
 
     // the name of the initial user to create if we are not in
     // SEXTANT_MANUAL_INIT mode
@@ -64,5 +81,20 @@ const args = require('minimist')(process.argv, {
     ],
   }
 })
+
+args.postgres = {
+  client: 'pg',
+  connection: {
+    host: args.postgreshost,
+    port: args.postgresport,
+    user: args.postgresuser,
+    password: args.postgrespassword,
+    database: args.postgresdatabase
+  },
+  pool: {
+    min: 2,
+    max: 10
+  }
+}
 
 module.exports = args

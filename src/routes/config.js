@@ -1,10 +1,8 @@
-const ConfigRoutes = (backends) => {
-
-  const { config } = backends
+const ConfigRoutes = (controllers) => {
 
   const version = (req, res, next) => {
 
-    config.version({}, (err, version) => {
+    controllers.config.version({}, (err, version) => {
       res
         .status(200)
         .json({
@@ -15,27 +13,9 @@ const ConfigRoutes = (backends) => {
 
   const values = (req, res, next) => {
 
-    config.values({}, (err, result) => {
+    controllers.config.values({}, (err, result) => {
       res
         .status(200)
-        .json(result)
-    })
-  }
-
-  const aws = (req, res, next) => {
-
-    config.aws({}, (err, result) => {
-      res
-        .status(200)
-        .json(result)
-    })
-  }
-
-  const setupRemote = (req, res, next) => {
-    config.setupRemote(req.body, (err, result) => {
-      if(err) return next(err)
-      res
-        .status(201)
         .json(result)
     })
   }
@@ -43,8 +23,6 @@ const ConfigRoutes = (backends) => {
   return {
     version,
     values,
-    aws,
-    setupRemote,
   }
 }
 

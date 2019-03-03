@@ -1,11 +1,9 @@
 const userUtils = require('../utils/user')
 
-const UserRoutes = (backends) => {
-
-  const { user } = backends
+const UserRoutes = (controllers) => {
 
   const status = (req, res, next) => {
-    user.count({}, (err, userCount) => {
+    controllers.user.count({}, (err, userCount) => {
       if(err) return next(err)
       res
         .status(200)
@@ -19,7 +17,7 @@ const UserRoutes = (backends) => {
   const login = (req, res, next) => {
     const { username, password } = req.body
 
-    user.checkPassword({
+    controllers.user.checkPassword({
       username,
       password,
     }, (err, ok) => {
@@ -32,7 +30,7 @@ const UserRoutes = (backends) => {
       }
       else {
 
-        user.get({
+        controllers.user.get({
           username,
         }, (err, user) => {
           if(err) return next(err)
@@ -58,7 +56,7 @@ const UserRoutes = (backends) => {
   }
 
   const list = (req, res, next) => {
-    user.list({}, (err, users) => {
+    controllers.user.list({}, (err, users) => {
       if(err) return next(err)
       users = users.map(userUtils.safe)
       res
@@ -68,7 +66,7 @@ const UserRoutes = (backends) => {
   }
 
   const get = (req, res, next) => {
-    user.get({
+    controllers.user.get({
       username: req.params.username,
     }, (err, user) => {
       if(err) return next(err)
@@ -79,7 +77,7 @@ const UserRoutes = (backends) => {
   }
 
   const update = (req, res, next) => {
-    user.update({
+    controllers.user.update({
       existingUsername: req.params.username,
       username: req.body.username,
       type: req.body.type,
@@ -95,7 +93,7 @@ const UserRoutes = (backends) => {
   }
 
   const create = (req, res, next) => {
-    user.add(req.body, (err) => {
+    controllers.user.add(req.body, (err) => {
       if(err) return next(err)
       res
         .status(201)
@@ -106,7 +104,7 @@ const UserRoutes = (backends) => {
   }
 
   const del = (req, res, next) => {
-    user.del({
+    controllers.user.del({
       username: req.params.username,
     }, (err) => {
       if(err) return next(err)

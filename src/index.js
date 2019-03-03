@@ -6,7 +6,6 @@ const pino = require('pino')({
 
 const settings = require('./settings')
 const App = require('./app')
-const Metering = require('./metering')
 
 const app = App()
 

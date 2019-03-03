@@ -5,6 +5,8 @@
   "description": "api server for the sextant cluster creation service",
   "main": "index.js",
   "scripts": {
+    "prestart": "knex migrate:latest",
+    "start": "node src/index.js",
     "test": "tape test/*.test.js"
   },
   "dependencies": {
@@ -15,7 +17,6 @@
     "body-parser": "^1.17.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.15.3",
-    "express-pino-logger": "^3.0.2",
     "express-session": "^1.15.6",
     "http-proxy": "^1.17.0",
     "joi": "^13.6.0",
@@ -25,15 +26,14 @@
     "mkdirp": "^0.5.1",
     "node-cidr": "^1.0.0",
     "passport": "^0.4.0",
-    "passport-local": "^1.0.0",
     "pino": "^4.17.6",
     "randomstring": "^1.1.5",
     "request": "^2.81.0",
     "rmdir": "^1.2.0",
-    "s3": "^4.4.0",
-    "s3fs": "^2.5.0",
     "session-file-store": "^1.2.0",
-    "tmp": "^0.0.33"
+    "tmp": "^0.0.33",
+    "knex": "^0.13.0",
+    "pg": "^6.1.2"
   },
   "devDependencies": {
     "tape": "^4.9.1"
