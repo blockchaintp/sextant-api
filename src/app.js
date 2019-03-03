@@ -2,7 +2,7 @@
 
 const express = require('express')
 const bodyParser = require('body-parser')
-//const Passport = require('./passport')
+const Passport = require('./passport')
 
 const pino = require('pino')({
   name: 'app',
@@ -28,7 +28,7 @@ const App = () => {
   app.use(bodyParser.json())
 
   // hook up the session store
-  //Passport(app)
+  Passport(app)
 
   // bind routes to the HTTP server
   Routes(app, controllers)
