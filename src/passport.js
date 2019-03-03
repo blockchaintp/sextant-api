@@ -2,25 +2,29 @@
 
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
-const FileStore = require('session-file-store')(session)
+const pgSession = require('connect-pg-simple')(session)
 const passport = require('passport')
 
 const pino = require('pino')({
   name: 'passport',
 })
 
+const PGPool = require('./utils/pgpool')
 const settings = require('./settings')
 
 const Passport = (app, store) => {
 
+  const pgPool = PGPool()
   app.use(cookieParser())
   app.use(session({ 
     secret: settings.sessionSecret,
     resave: false,
     saveUninitialized: true,
-    store: new FileStore({
-      path: store.SESSION_STORE_FOLDER,
+    store: new pgSession({
+      pool: pgPool,
     }),
+    // 30 days
+    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
   }))
   app.use(passport.initialize())
   app.use(passport.session())

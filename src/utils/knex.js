@@ -3,6 +3,6 @@
 const Knex = require('knex')
 const settings = require('../settings')
 
-const KnexFactory = (opts) => Knex(settings.postgres)
+const KnexFactory = () => Knex(settings.postgres)
 
 module.exports = KnexFactory
