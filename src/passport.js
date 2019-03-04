@@ -2,6 +2,7 @@
 
 const cookieParser = require('cookie-parser')
 const session = require('express-session')
+const pg = require('pg')
 const pgSession = require('connect-pg-simple')(session)
 const passport = require('passport')
 
@@ -9,12 +10,10 @@ const pino = require('pino')({
   name: 'passport',
 })
 
-const PGPool = require('./utils/pgpool')
 const settings = require('./settings')
 
 const Passport = (app, store) => {
-
-  const pgPool = PGPool()
+  const pgPool = new pg.Pool(settings.postgres.connection)
   app.use(cookieParser())
   app.use(session({ 
     secret: settings.sessionSecret,

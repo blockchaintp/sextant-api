@@ -16,7 +16,7 @@ const SIMPLE_USER_DATA = {
 
 const getMockStore = (data) => MockStore(JSON.parse(JSON.stringify(data || ''))) 
 
-tape('user store -> list no data', (t) => {
+tape('mock user store -> list no data', (t) => {
 
   const store = getMockStore()
 
@@ -28,7 +28,7 @@ tape('user store -> list no data', (t) => {
   
 })
 
-tape('user store -> list with order', (t) => {
+tape('mock user store -> list with order', (t) => {
 
   const store = getMockStore(SIMPLE_USER_DATA)
 
@@ -44,7 +44,7 @@ tape('user store -> list with order', (t) => {
   
 })
 
-tape('user store -> get user', (t) => {
+tape('mock user store -> get user', (t) => {
 
   const store = getMockStore(SIMPLE_USER_DATA)
 
@@ -58,7 +58,7 @@ tape('user store -> get user', (t) => {
   
 })
 
-tape('user store -> add user', (t) => {
+tape('mock user store -> add user', (t) => {
 
   const store = getMockStore(SIMPLE_USER_DATA)
 
@@ -79,7 +79,7 @@ tape('user store -> add user', (t) => {
   
 })
 
-tape('user store -> update user', (t) => {
+tape('mock user store -> update user', (t) => {
 
   const store = getMockStore(SIMPLE_USER_DATA)
 
@@ -102,7 +102,7 @@ tape('user store -> update user', (t) => {
   
 })
 
-tape('user store -> delete user', (t) => {
+tape('mock user store -> delete user', (t) => {
 
   const store = getMockStore(SIMPLE_USER_DATA)
 

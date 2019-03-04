@@ -2,20 +2,23 @@
 
 const express = require('express')
 const bodyParser = require('body-parser')
+const Knex = require('knex')
+
 const Passport = require('./passport')
 
 const pino = require('pino')({
   name: 'app',
 })
 
-const Knex = require('./utils/knex')
 const Store = require('./store')
 const Controllers = require('./controllers')
 const Routes = require('./routes')
 
+const settings = require('./settings')
+
 const App = () => {
 
-  const knex = Knex()
+  const knex = Knex(settings.postgres)
   const store = Store(knex)
 
   const controllers = Controllers({
