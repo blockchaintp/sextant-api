@@ -1,3 +1,11 @@
-const PostgresStore = require('./postgres')
+const UserStore = require('./user')
 
-module.exports = PostgresStore
+const Store = (knex) => {
+  const user = UserStore(knex)
+
+  return {
+    user,
+  }
+}
+
+module.exports = Store

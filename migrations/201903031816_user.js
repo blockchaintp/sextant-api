@@ -7,7 +7,6 @@ const up = (knex, Promise) => {
       table.specificType('created_at', 'timestamp default now()')
       table.string('username').unique().notNullable()
       table.string('hashed_password').notNullable()
-      table.string('salt').notNullable()
       table.enu('role', enumerations.ADMIN_ROLE, {
         useNative: true,
         enumName: 'ADMIN_ROLE',

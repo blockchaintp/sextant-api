@@ -1,4 +1,4 @@
-const databaseTools = require('../../utils/database')
+const databaseTools = require('../utils/database')
 
 const UserStore = (knex) => {
 
@@ -30,11 +30,14 @@ const UserStore = (knex) => {
   */
   const get = (params, done) => {
     if(!params.id && !params.username) return done(`one of id or username must be given to store.user.get`)
+
+    const query = {}
+    if(params.id) query.id = params.id
+    if(params.username) query.username = params.username
+
     knex.select('*')
       .from('user')
-      .where({
-        params
-      })
+      .where(query)
       .asCallback(databaseTools.singleExtractor(done))
   }
 

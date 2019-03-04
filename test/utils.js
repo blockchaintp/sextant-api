@@ -31,7 +31,7 @@ const createTestKnex = (databaseName, done) => {
     .then(() => {
       const testKnex = Knex(getDatabaseConnectionSettings(databaseName))
       testKnex.migrate.latest({
-        directory: path.join(__dirname, '..', '..', 'migrations')
+        directory: path.join(__dirname, '..', 'migrations')
       })
       .then(() => {
         masterKnex.destroy()

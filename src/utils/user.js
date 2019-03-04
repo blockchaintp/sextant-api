@@ -1,3 +1,6 @@
+const bcrypt = require('bcrypt')
+const SALT_ROUNDS = 10
+
 const safe = (user) => {
   return {
     username: user.username,
@@ -37,8 +40,13 @@ const addUserAuthHandler = (controller) => (req, res, next) => {
   })
 }
 
+const getPasswordHash = (plainTextPassword, done) => bcrypt.hash(plainTextPassword, SALT_ROUNDS, done)
+const compareHashedPasswords = (plainTextPassword, hash, done) => bcrypt.compare(plainTextPassword, hash, done)
+
 module.exports = {
   safe,
   requireUser,
   addUserAuthHandler,
+  getPasswordHash,
+  compareHashedPasswords,
 }
