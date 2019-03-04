@@ -22,8 +22,7 @@ const UserStore = (knex) => {
 
     params:
 
-     * id
-     * username
+      * id or username
     
     one of id or username must be given
   
@@ -47,13 +46,17 @@ const UserStore = (knex) => {
 
     params:
 
-     * data
-  
+      * username
+      * hashed_password
+      * role
+      * meta
   */
-  const add = (params, done) => {
-    if(!params.data) return done(`data param must be given to store.user.add`)
+  const create = (params, done) => {
+    if(!params.username) return done(`username param must be given to store.user.add`)
+    if(!params.hashed_password) return done(`hashed_password param must be given to store.user.add`)
+    if(!params.role) return done(`role param must be given to store.user.add`)
     knex('user')
-      .insert(params.data)
+      .insert(params)
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))
   }
@@ -64,9 +67,12 @@ const UserStore = (knex) => {
 
     params:
 
-     * id
-     * username
-     * data
+      * id or username
+      * data (all optional)
+        * username
+        * hashed_password
+        * role
+        * meta
     
     one of id or username must be given
   
@@ -92,8 +98,7 @@ const UserStore = (knex) => {
 
     params:
 
-     * id
-     * username
+      * id or username
     
     one of id or username must be given
   
@@ -110,7 +115,7 @@ const UserStore = (knex) => {
   return {
     list,
     get,
-    add,
+    create,
     update,
     delete: del,
   }

@@ -10,18 +10,10 @@ const up = (knex, Promise) => {
         .inTable('user')
         .notNullable()
         .onDelete('cascade')
-      table.enu('permission', enumerations.PERMISSION_ROLE, {
-        useNative: true,
-        enumName: 'PERMISSION_ROLE',
-      }).notNullable()
-      table.integer('cluster')
-        .references('id')
-        .inTable('cluster')
-        .onDelete('cascade')
-      table.integer('deployment')
-        .references('id')
-        .inTable('deployment')
-        .onDelete('cascade')
+      table.enu('permission', enumerations.PERMISSION_ROLE).notNullable()
+      table.enu('resource_type', enumerations.RESOURCE_TYPES).notNullable()
+      table.integer('resource_id')
+        .notNullable()
     })
   ])
 }

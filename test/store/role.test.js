@@ -2,12 +2,34 @@
 
 const tape = require('tape')
 const async = require('async')
-const Store = require('../../src/store/user')
+const userUtils = require('../../src/utils/user')
+const UserStore = require('../../src/store/user')
+const RoleStore = require('../../src/store/role')
 const utils = require('../utils')
 
-const userFixtures = require('./fixtures/user')
-
 const databaseName = `testdb${new Date().getTime()}`
+
+const SIMPLE_USER_DATA = [{
+  username: 'zebra',
+  password: 'zebra1',
+  role: 'admin',
+},{
+  username: 'apples',
+  password: 'apples1',
+  role: 'write',
+}]
+
+const getTestUserData = (data, done) => {
+  userUtils.getPasswordHash(data.password, (err, hashed_password) => {
+    if(err) return done(err)
+    const userData = {
+      username: data.username,
+      role: data.role,
+      hashed_password,
+    }
+    done(null, userData)
+  })
+}
 
 let databaseConnection = null
 
@@ -73,9 +95,16 @@ tape('user store -> insert with bad role', (t) => {
   })  
 })
 
-tape('user store -> create users', (t) => {
+tape('user store -> create user', (t) => {
 
-  userFixtures.insertTestUsers(databaseConnection, (err) => {
+  const store = Store(databaseConnection)
+
+  async.eachSeries(SIMPLE_USER_DATA, (userData, nextUser) => {
+    getTestUserData(userData, (err, data) => {
+      if(err) return nextUser(err)
+      store.create(data, nextUser)
+    })
+  }, (err) => {
     t.notok(err, `there was no error`)
     t.end()
   })

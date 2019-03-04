@@ -1,6 +1,6 @@
-const ADMIN_ROLE = [
-  'admin',
-  'user',
+const RESOURCE_TYPES = [
+  'cluster',
+  'deployment',
 ]
 
 const CLUSTER_PROVISION_TYPE = [
@@ -26,12 +26,13 @@ const DEPLOYMENT_STATUS = [
 ]
 
 const PERMISSION_ROLE = [
+  'admin',
   'read',
   'write',
 ]
 
 module.exports = {
-  ADMIN_ROLE,
+  RESOURCE_TYPES,
   CLUSTER_PROVISION_TYPE,
   CLUSTER_STATUS,
   DEPLOYMENT_STATUS,
