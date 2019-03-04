@@ -7,7 +7,7 @@
   "scripts": {
     "prestart": "knex migrate:latest",
     "start": "node src/index.js",
-    "test": "tape test/*.test.js"
+    "test": "tape {src,test}/**/*.test.js"
   },
   "dependencies": {
     "async": "^2.6.0",
