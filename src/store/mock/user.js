@@ -17,7 +17,8 @@ const MockUserStore = (data) => {
   data = data || {}
 
   const highestId = Object.keys(data).reduce((highest, id) => {
-    return id > highest ? id : highest
+    const user = data[id]
+    return user.id > highest ? user.id : highest
   }, 0)
 
   /*
@@ -32,8 +33,7 @@ const MockUserStore = (data) => {
       all = all.concat(data[id])
       return all
     }, [])
-    users = users.sort(sortUsernames)
-    return done(null, users)
+    return done(null, users.sort(sortUsernames))
   }
 
   /*

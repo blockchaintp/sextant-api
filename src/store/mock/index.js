@@ -1,4 +1,4 @@
-const UserStore = require('./user.mock')
+const UserStore = require('./user')
 
 const MockStore = (data) => {
   data = data || {}

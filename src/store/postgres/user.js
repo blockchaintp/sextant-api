@@ -1,4 +1,4 @@
-const databaseTools = require('../utils/database')
+const databaseTools = require('../../utils/database')
 
 const UserStore = (knex) => {
 

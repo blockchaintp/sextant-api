@@ -1,4 +1,4 @@
-const UsersBackend = ({ store }) => {
+const UserController = ({ store }) => {
   
   /*
   
