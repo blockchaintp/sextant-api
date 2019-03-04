@@ -78,3 +78,44 @@ tape('user store -> add user', (t) => {
   })
   
 })
+
+tape('user store -> update user', (t) => {
+
+  const store = getMockStore(SIMPLE_USER_DATA)
+
+  store.update({
+    id: 1,
+    data: {
+      username: 'oranges',
+    }
+  }, (err, user) => {
+    t.notok(err, `there was no error`)
+    store.get({
+      id: 1,
+    }, (err, user) => {
+      t.notok(err, `there was no error`)
+      t.equal(user.username, 'oranges', `the returned user username is correct`)
+      t.equal(user.id, 1, `the returned user id is correct`)
+      t.end()
+    })
+  })
+  
+})
+
+tape('user store -> delete user', (t) => {
+
+  const store = getMockStore(SIMPLE_USER_DATA)
+
+  store.delete({
+    id: 1,
+  }, (err, user) => {
+    t.notok(err, `there was no error`)
+    store.list({},(err, users) => {
+      t.notok(err, `there was no error`)
+      t.equal(users.length, 1, `there is 1 user`)
+      t.equal(users[0].username, 'apples', 'the remaining username is correct')
+      t.end()
+    })
+  })
+  
+})
