@@ -2,6 +2,7 @@
 
 const tape = require('tape')
 const async = require('async')
+const tools = require('../tools')
 
 const database = require('../database')
 const fixtures = require('../fixtures')
@@ -21,33 +22,18 @@ database.testSuiteWithDatabase(getConnection => {
     })
     
   })
-  
-  tape('user store -> insert with no hashed password', (t) => {
-  
+
+  tape('user store -> insert with missing values', (t) => {
+
     const store = UserStore(getConnection())
-  
-    store.create({
+
+    tools.insertWithMissingValues(t, store, {
       username: 'apples',
-      role: 'admin'
-    }, (err, user) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
-  })
-  
-  tape('user store -> insert with no role', (t) => {
-  
-    const store = UserStore(getConnection())
-  
-    store.create({
-      username: 'apples',
+      role: 'admin',
       hashed_password: 'na',
-    }, (err, user) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
+    })
   })
-  
+
   tape('user store -> insert with bad role', (t) => {
   
     const store = UserStore(getConnection())

@@ -4,48 +4,47 @@
   
   actions are objects with the following fields:
 
-    {
-      resource_type,
-      resource_id,
-      parent_id,
-      method,
-    }
+    * type - the resource type we are performing an action on
+      * user
+      * cluster
+      * deployment
 
-    resource_type:
-  
-     * user
-     * cluster
-     * deployment
-    
-    methods:
+    * method - the method we are performing
+      * list
+      * get
+      * create
+      * update
+      * delete
 
-     * list
-     * get
-     * create
-     * update
-     * delete
-  
-  anything in the user namespace needs an admin user
+    * resource_id - the resource id we require a role for
+      
+  admin users are automatically allowed access to all methods
 
-  the exceptions are
-  
-    'user.create' - if there are currently no users
-    then we allow a user.create from a non-logged in user (as this is the genesis admin user)
+  METHOD CONFIG
 
-    'user.{get,update}' - if the resource_id is the id of the currently logged in user then we allow it
+  each method has a config describing the type of access required
 
-  all other actions are allowed by admins
-  list actions are allowed by all users - they will only see things they have a read/write role bound to
+    * if it is an object
+      * it contains a config for how to authorize the method
+      * a logged in user is automatically required
+      * an admin user is automatically allowed
+    * if the method config is a function it looks after it's own case
+      
+  here are the meanings of the various config values for each method:
 
-  create actions - are special:
-
-   'cluster.create' requires the user.role to be write or admin
-   'deployment.create' requires a writable role on the cluster the deployment is for (denoted by parentId)
-
-  get actions need a read role bound to the item in question
-  {create,update,delete} actions need a write role bound to the item in question
-
-  the handler will return an error if access is not allowed
+    * admin
+        * if the user is not an admin - deny
+    * userRole
+        * the user role must be at least the given level
+    * resourceRole
+        * use the role_resource_type and role_resource_id to check the user 
+          has at least the given level for the resource
+        * required a role_resource_id in the action 
+    * resourceRoleForType
+        * ensure the role_resource_type being asked for is the given type
+        * used when we are performing an action for a resource that needs a certain
+          role for another type - for example when creating deployments for a cluster
+          we need to check for a write role on the cluster even though the action.type is deployment
 
 */
 
@@ -55,165 +54,159 @@ const ACCESS_LEVELS = {
   admin: 3,
 }
 
-// handler to deny access
-const deny = (store, user, action, done) => done(`access denied`)
+const HELPERS = {
 
-// if there is a user and they are admin - allow
-const allowAdmin = (handler) => (store, user, action, done) => {
-  if(user && user.role == 'admin') return done()
-  handler(store, user, action, done)
-}
-
-// helper to allow if the user is the same as the item being affected
-// i.e. action.resource_type == 'user' && action.resource_id == user.id
-// admin overrides this
-const allowSameUser = (handler) => (store, user, action, done) => {
-  if(user && user.id == action.resource_id) return done(`access denied`)
-  handler(store, user, action, done)
-}
-
-
-// insist there is a logged in user
-const requireUser = (handler) => (store, user, action, done) => {
-  if(!user) return done(`access denied`)
-  handler(store, user, action, done)
-}
-
-const roleHandler = (store, accessLevel, query, done) => {
-  store.role.get(query, (err, role) => {
-    if(err) return done(err)
-    if(!role) return done(`access denied`)
-    if(!ACCESS_LEVELS[role.permission] || ACCESS_LEVELS[role.permission] < accessLevel) return done(`access denied`)
-    return done()
-  })
-}
-
-const resourceHandler = (accessLevel) => allowAdmin(requireUser((store, user, action, done) => {
-  resourceHandler(store, ACCESS_LEVELS.read, {
-    user: user.id,
-    resource_type: action.resource_type,
-    resource_id: action.resource_id,
-  }, done)
-}))
-
-const readHandler = allowAdmin(requireUser((store, user, action, done) => {
-  resourceHandler(store, ACCESS_LEVELS.read, {
-    user: user.id,
-    resource_type: action.resource_type,
-    resource_id: action.resource_id,
-  }, done)
-}))
-
-const writeHandler = allowAdmin(requireUser((store, user, action, done) => {
-  resourceHandler(store, ACCESS_LEVELS.write, {
-    user: user.id,
-    resource_type: action.resource_type,
-    resource_id: action.resource_id,
-  }, done)
-}))
-
-// allow for special case handlers
-const TYPE_HANDLERS = {
-  user: {
-
-    // only admin can see or delete users
-    list: allowAdmin(deny),
-    delete: allowAdmin(deny),
-
-    /*
-    
-      these methods are used for the 'edit your account' section
-      i.e. the user changes their own settings
-    
-    */
-    get: allowAdmin(allowSameUser(deny)),
-    update: allowAdmin(allowSameUser(deny)),
-
-    /*
+  // allow a logged in user to read or update it's own record
+  // this is so a user can read itself or update their password etc
+  allowUserAccessToOwnRecord: (store, user, action, done) => {
+    // requires a user
+    if(!user) return done(`access denied`)
+    // admin gets access
+    if(user && user.role == 'admin') return done()
   
-    to allow the initial user to be created
-
-    these are the only two cases that allow a user.create
-
-     * the user is logged in and has role=admin
-     * the user is not logged in and there are zero existing users
-  
-  */
-    create: allowAdmin((store, user, action, done) => {
-      if(!user) {
-        // if there is no user and there are zero existing users - allow
-        store.user.list((err, users) => {
-          if(err) return done(err)
-          if(users.length > 0) return done(`requires a user with admin access`)
-          return done()
-        })
-      }
-      else {
-        return done(`access denied`)
-      }
-      
-    }),
+    // if the user is getting it's own data - allow
+    if(action.resource_type == 'user' && action.resource_id == user.id) return done()
+    else return done(`access denied`)
   },
-  cluster: {
 
-    // the user must be either admin or have at at least a write role
-    create: allowAdmin((store, user, action, done) => {
-      if(!user) return done(`access denied`)
-      if(user && ACCESS_LEVELS[user.role] >= ACCESS_LEVELS.write) return done()
+  // if there is no user and zero existing users - allow (so the initial account can be created)
+    // if there is a user - they must be an admin
+  allowInitialAccountCreation: (store, user, action, done) => {
+    if(user) {
+      if(user.role == 'admin') return done()
       else return done(`access denied`)
-    }),
-
-  },
-  deployment: {
-
-    // the user must be either admin or have a write role on the cluster
-    // the deployment is for
-    create: allowAdmin((store, user, action, done) => {
-      if(!user) return done(`access denied`)
-      // we must be given a parentId to determine if the user has write access to the cluster
-      if(!action.parentId) return done(`access denied`)
-
-      roleHandler(store, ACCESS_LEVELS.write, {
-        user: user.id,
-        resource_type: 'cluster',
-        resource_id: action.parentId,
-      }, done)
-    }),
-  },
+    }
+    else {
+      store.user.list((err, users) => {
+        if(err) return done(err)
+        if(users.length > 0) return done(`access denied`)
+        return done()
+      })
+    }
+  }
 }
 
-// generic CRUD method handlers
-const METHOD_HANDLERS = {
+const METHOD_CONFIG = {
+  user: {
+    list: {
+      admin: true,
+    },
+    get: HELPERS.allowUserAccessToOwnRecord,
+    create: HELPERS.allowInitialAccountCreation,
+    update: HELPERS.allowUserAccessToOwnRecord,
+    delete: {
+      admin: true,
+    },
+  },
 
-  // allow any logged in user - the list controller will use this to determine what to display
-  list: requireUser,
+  cluster: {
+    // the controller will only list clusters the user has access to
+    list: {},
+    get: {
+      resourceRole: 'read',
+    },
+    create: {
+      userRole: 'write',
+    },
+    update: {
+      resourceRole: 'write',
+    },
+    delete: {
+      resourceRole: 'write',
+    }
+  },
 
-  // if not admin - a read role binding for the resource_id must exist
-  get: resourceHandler(ACCESS_LEVELS.read),
-
-  // create is handled by the specific type handlers above
-
-  // if not admin - a read role binding for the resource_id must exist
-  update: resourceHandler(ACCESS_LEVELS.write),
-
-  // if not admin - a read role binding for the resource_id must exist
-  delete: resourceHandler(ACCESS_LEVELS.write),
+  deployment: {
+    // ask for read access to the given cluster
+    list: {
+      resourceRole: 'read',
+      resourceRoleForType: 'cluster',
+    },
+    get: {
+      resourceRole: 'read',
+    },
+    // the resource_id, resource_type for deployment create will be cluster
+    create: {
+      resourceRole: 'write',
+      resourceRoleForType: 'cluster',
+    },
+    update: {
+      resourceRole: 'write',
+    },
+    delete: {
+      resourceRole: 'write',
+    }
+  }
 }
 
 const RBAC = (store, user, action, done) => {
-  if(!TYPE_HANDLERS[action.resource_type]) return done(`unknown resource_type ${action.resource_type}`)
-  if(!METHOD_HANDLERS[action.method]) return done(`unknown method ${action.method}`)
 
-  const typeHandler = TYPE_HANDLERS[action.resource_type][action.method]
-  const methodHandler = METHOD_HANDLERS[action.method]
+  const {
+    resource_type,
+    resource_id,
+    method,
+  } = action
 
-  // look for a special case handler
-  if(typeHandler) {
-    typeHandler(store, user, action, done)
+  if(!resource_type) return done(`resource_type required`)
+  if(!method) return done(`method required`)
+
+  const group = METHOD_CONFIG[resource_type]
+  if(!group) return done(`unknown resource_type ${resource_type}`)
+
+  const methodConfig = group[method]
+  if(!methodConfig) return done(`unknown method ${method}`)
+
+  // if the method handler is a function - it looks after itself
+  if(typeof(methodConfig) === 'function') {
+    methodConfig(store, user, action, done)
   }
   else {
-    // run the generic method handler
-    methodHandler(store, user, action, done)
+
+    // no logged in user - deny
+    if(!user) return done(`access denied`)
+
+    // if they are an admin - allow
+    if(user.role == 'admin') return done()
+
+    // require admin and they are not - deny
+    if(methodConfig.admin && user.role != 'admin') return done(`access denied`)
+
+    // require at least X user role - deny
+    if(methodConfig.userRole && ACCESS_LEVELS[user.role] < ACCESS_LEVELS[methodConfig.userRole]) return done(`access denied`)
+
+    // require the action resource type be 
+    if(methodConfig.resourceRole) {
+      // we need a resource_id if we are performing a resourceRole check
+      if(!resource_id) return done(`access denied`)
+
+      // if the method config is asking for another type of resource type use it - otherwise default to the action type
+      const resourceType = methodConfig.resourceRoleForType || resource_type
+
+      // load the role and check it
+      store.role.get({
+        user: user.id,
+        resource_type: resourceType,
+        resource_id,
+      }, (err, role) => {
+        if(err) return done(err)
+
+        // if there is no role we can't grant access
+        if(!role) return done(`access denied`)
+
+        // ensure the role has a correct permission value
+        if(!ACCESS_LEVELS[role.permission]) return done(`access denied`)
+
+        // check the granted role is at least the required type
+        if(ACCESS_LEVELS[role.permission] < ACCESS_LEVELS[methodConfig.resourceRole]) return done(`access denied`)
+
+        // ok - we are allowed
+        return done()
+      })
+    }
+    else {
+      // we assume that there are no checks to perform for this method so allow
+      done()
+    }
   }
 }
 

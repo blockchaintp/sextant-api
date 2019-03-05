@@ -94,8 +94,7 @@ const RoleStore = (knex) => {
   return {
     list,
     get,
-    add,
-    update,
+    create,
     delete: del,
   }
 }

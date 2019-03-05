@@ -1,9 +1,11 @@
 'use strict'
 
 const tape = require('tape')
+const async = require('async')
 
 const database = require('../database')
 const fixtures = require('../fixtures')
+const tools = require('../tools')
 
 const DeploymentStore = require('../../src/store/deployment')
 const enumerations = require('../../src/enumerations')
@@ -48,46 +50,16 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('deployment store -> insert with no cluster', (t) => {
-  
-    const store = DeploymentStore(getConnection())
-  
-    store.create({
-      name: 'testdeployment',
-      desired_state: {
-        apples: 10,
-      },
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
-  })
+  tape('deployment store -> insert with missing values', (t) => {
 
-  tape('deployment store -> insert with no name', (t) => {
-  
     const store = DeploymentStore(getConnection())
-  
-    store.create({
+
+    tools.insertWithMissingValues(t, store, {
+      name: 'testdeployment',
       cluster: testCluster.id,
       desired_state: {
         apples: 10,
       },
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
-  })
-
-  tape('deployment store -> insert with no desired_state', (t) => {
-  
-    const store = DeploymentStore(getConnection())
-  
-    store.create({
-      cluster: testCluster.id,
-      name: 'testdeployment',
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
     })
   })
 

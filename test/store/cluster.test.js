@@ -4,6 +4,7 @@ const tape = require('tape')
 
 const database = require('../database')
 const fixtures = require('../fixtures')
+const tools = require('../tools')
 
 const ClusterStore = require('../../src/store/cluster')
 const enumerations = require('../../src/enumerations')
@@ -23,48 +24,18 @@ database.testSuiteWithDatabase(getConnection => {
     })
     
   })
-  
-  tape('cluster store -> insert with no name', (t) => {
-  
+
+  tape('cluster store -> insert with missing values', (t) => {
+
     const store = ClusterStore(getConnection())
-  
-    store.create({
+
+    tools.insertWithMissingValues(t, store, {
+      name: 'testcluster',
       provision_type: 'aws_ec2',
       desired_state: {
         apples: 10,
       },
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
-  })
-
-  tape('cluster store -> insert with no provision_type', (t) => {
-  
-    const store = ClusterStore(getConnection())
-  
-    store.create({
-      name: 'testcluster',
-      desired_state: {
-        apples: 10,
-      },
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
-  })
-
-  tape('cluster store -> insert with no desired_state', (t) => {
-  
-    const store = ClusterStore(getConnection())
-  
-    store.create({
-      name: 'testcluster',
-      provision_type: 'aws_ec2',
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
+    })
   })
 
   tape('cluster store -> insert with bad provision_type', (t) => {
