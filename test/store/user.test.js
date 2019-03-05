@@ -6,13 +6,13 @@ const async = require('async')
 const database = require('../database')
 const fixtures = require('../fixtures')
 
-const Store = require('../../src/store/user')
+const UserStore = require('../../src/store/user')
 
 database.testSuiteWithDatabase(getConnection => {
 
   tape('user store -> list no data', (t) => {
 
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.list({}, (err, users) => {
       t.notok(err, `there was no error`)
@@ -24,7 +24,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> insert with no hashed password', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.create({
       username: 'apples',
@@ -37,7 +37,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> insert with no role', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.create({
       username: 'apples',
@@ -50,7 +50,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> insert with bad role', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.create({
       username: 'apples',
@@ -74,7 +74,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> list with ordered data', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.list({}, (err, users) => {
       t.notok(err, `there was no error`)
@@ -90,7 +90,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> get from username then id', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     async.waterfall([
       (next) => store.get({
@@ -118,7 +118,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> update user', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.update({
       username: 'apples',
@@ -139,9 +139,9 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
   
-  tape('mock user store -> delete user', (t) => {
+  tape('user store -> delete user', (t) => {
   
-    const store = Store(getConnection())
+    const store = UserStore(getConnection())
   
     store.delete({
       username: 'oranges',
