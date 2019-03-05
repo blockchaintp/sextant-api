@@ -1,6 +1,8 @@
 'use strict'
 
-const userUtils = require('../../../src/utils/user')
+const async = require('async')
+const userUtils = require('../src/utils/user')
+const UserStore = require('../src/store/user')
 
 const SIMPLE_USER_DATA = [{
   username: 'zebra',
@@ -25,7 +27,7 @@ const getTestUserData = (data, done) => {
 }
 
 const insertTestUsers = (databaseConnection, done) => {
-  const store = Store(databaseConnection)
+  const store = UserStore(databaseConnection)
 
   async.eachSeries(SIMPLE_USER_DATA, (userData, nextUser) => {
     getTestUserData(userData, (err, data) => {

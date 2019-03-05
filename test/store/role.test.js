@@ -2,6 +2,7 @@
 
 const tape = require('tape')
 const async = require('async')
+
 const userUtils = require('../../src/utils/user')
 const UserStore = require('../../src/store/user')
 const RoleStore = require('../../src/store/role')
