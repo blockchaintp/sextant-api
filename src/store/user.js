@@ -1,5 +1,12 @@
 const databaseTools = require('../utils/database')
 
+const getIdOrUsernameQuery = (params) => {
+  const query = {}
+  if(params.id) query.id = params.id
+  if(params.username) query.username = params.username
+  return query
+}
+
 const UserStore = (knex) => {
 
   /*
@@ -30,13 +37,9 @@ const UserStore = (knex) => {
   const get = (params, done) => {
     if(!params.id && !params.username) return done(`one of id or username must be given to store.user.get`)
 
-    const query = {}
-    if(params.id) query.id = params.id
-    if(params.username) query.username = params.username
-
     knex.select('*')
       .from('user')
-      .where(query)
+      .where(getIdOrUsernameQuery(params))
       .asCallback(databaseTools.singleExtractor(done))
   }
 
@@ -52,16 +55,17 @@ const UserStore = (knex) => {
       * meta
   */
   const create = (params, done) => {
-    if(!params.username) return done(`username param must be given to store.user.add`)
-    if(!params.hashed_password) return done(`hashed_password param must be given to store.user.add`)
-    if(!params.role) return done(`role param must be given to store.user.add`)
+    if(!params.username) return done(`username param must be given to store.user.create`)
+    if(!params.hashed_password) return done(`hashed_password param must be given to store.user.create`)
+    if(!params.role) return done(`role param must be given to store.user.create`)
 
     const insertData = {
       username: params.username,
       hashed_password: params.hashed_password,
       role: params.role,
-      meta: params.meta || {},
+      meta: params.meta,
     }
+
     knex('user')
       .insert(insertData)
       .returning('*')
@@ -88,12 +92,8 @@ const UserStore = (knex) => {
     if(!params.id && !params.username) return done(`one of id or username must be given to store.user.update`)
     if(!params.data) return done(`data param must be given to store.user.update`)
 
-    const query = {}
-    if(params.id) query.id = params.id
-    if(params.username) query.username = params.username
-
     knex('user')
-      .where(query)
+      .where(getIdOrUsernameQuery(params))
       .update(params.data)
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))
@@ -112,8 +112,9 @@ const UserStore = (knex) => {
   */
   const del = (params, done) => {
     if(!params.id && !params.username) return done(`one of id or username must be given to store.user.delete`)
+
     knex('user')
-      .where(params)
+      .where(getIdOrUsernameQuery(params))
       .del()
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))

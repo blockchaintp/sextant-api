@@ -11,7 +11,7 @@ const up = (knex, Promise) => {
         .notNullable()
         .onDelete('cascade')
       table.string('name').unique().notNullable()
-      table.enu('status', enumerations.DEPLOYMENT_STATUS).notNullable()
+      table.enu('status', enumerations.DEPLOYMENT_STATUS).notNullable().defaultTo(enumerations.DEPLOYMENT_STATUS_DEFAULT)
       table.json('desired_state').defaultTo('{}')
       table.json('applied_state').defaultTo('{}')
       table.boolean('maintenance_flag').defaultTo('false')

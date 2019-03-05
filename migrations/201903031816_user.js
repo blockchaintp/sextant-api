@@ -8,7 +8,7 @@ const up = (knex, Promise) => {
       table.string('username').unique().notNullable()
       table.string('hashed_password').notNullable()
       table.enu('role', enumerations.PERMISSION_ROLE).notNullable()
-      table.json('meta')
+      table.json('meta').defaultTo('{}')
     })
   ])
 }

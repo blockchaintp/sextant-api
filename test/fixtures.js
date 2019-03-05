@@ -3,6 +3,7 @@
 const async = require('async')
 const userUtils = require('../src/utils/user')
 const UserStore = require('../src/store/user')
+const ClusterStore = require('../src/store/cluster')
 
 const SIMPLE_USER_DATA = [{
   username: 'zebra',
@@ -12,6 +13,26 @@ const SIMPLE_USER_DATA = [{
   username: 'apples',
   password: 'apples1',
   role: 'write',
+}]
+
+const SIMPLE_CLUSTER_DATA = [{
+  name: 'testcluster',
+  provision_type: 'aws_ec2',
+  desired_state: {
+    apples: 10,
+  },
+  capabilities: {
+    funkyFeature: true,
+  },
+},{
+  name: 'othercluster',
+  provision_type: 'google_gke',
+  desired_state: {
+    oranges: 10,
+  },
+  capabilities: {
+    otherFunkyFeature: true,
+  },
 }]
 
 const getTestUserData = (data, done) => {
@@ -47,8 +68,28 @@ const insertTestUsers = (databaseConnection, done) => {
   })
 }
 
+const insertTestClusters = (databaseConnection, done) => {
+  const store = ClusterStore(databaseConnection)
+
+  // map of cluster names onto database records
+  const clusterMap = {}
+
+  async.eachSeries(SIMPLE_CLUSTER_DATA, (clusterData, nextCluster) => {
+    store.create(clusterData, (err, cluster) => {
+      if(err) return nextCluster(err)
+      clusterMap[cluster.name] = cluster
+      nextCluster()
+    })
+  }, (err) => {
+    if(err) return done(err)
+    done(null, clusterMap)
+  })
+}
+
 module.exports = {
   SIMPLE_USER_DATA,
+  SIMPLE_CLUSTER_DATA,
   getTestUserData,
   insertTestUsers,
+  insertTestClusters,
 }

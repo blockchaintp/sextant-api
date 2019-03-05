@@ -19,11 +19,15 @@ const CLUSTER_STATUS = [
   'error',
 ]
 
+const CLUSTER_STATUS_DEFAULT = 'created'
+
 const DEPLOYMENT_STATUS = [
   'created',
   'provisioned',
   'error',
 ]
+
+const DEPLOYMENT_STATUS_DEFAULT = 'created'
 
 const PERMISSION_ROLE = [
   'admin',
@@ -35,6 +39,8 @@ module.exports = {
   RESOURCE_TYPES,
   CLUSTER_PROVISION_TYPE,
   CLUSTER_STATUS,
+  CLUSTER_STATUS_DEFAULT,
   DEPLOYMENT_STATUS,
+  DEPLOYMENT_STATUS_DEFAULT,
   PERMISSION_ROLE,
 }
