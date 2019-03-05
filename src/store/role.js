@@ -45,7 +45,7 @@ const RoleStore = (knex) => {
     .where({
       user: params.user,
     })
-    .asCallback(databaseTools.allExtractor(done))
+    .asCallback(databaseTools.singleExtractor(done))
 }
 
   /*

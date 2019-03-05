@@ -1,6 +1,7 @@
 'use strict'
 
 const tape = require('tape')
+const async = require('async')
 const tools = require('../tools')
 const database = require('../database')
 const fixtures = require('../fixtures')
@@ -89,6 +90,88 @@ database.testSuiteWithDatabase(getConnection => {
       roleMap = roles
       t.end()
     })
+  })
+
+  tape('role store -> list', (t) => {
+  
+    const store = RoleStore(getConnection())
+  
+    store.list({
+      user: testUser.id,
+    }, (err, roles) => {
+      t.notok(err, `there was no error`)
+      t.equal(roles.length, 2, `there were 2 roles`)
+
+      const loadedRoleMap = roles.reduce((all, role) => {
+        all[role.resource_type] = role
+        return all
+      }, {})
+
+      t.deepEqual(loadedRoleMap, roleMap, `the loaded roles are correct`)
+      t.end()
+    })
+    
+  })
+
+  tape('role store -> get with missing values', (t) => {
+  
+    const store = RoleStore(getConnection())
+
+    const baseObject = {
+      user: testUser.id,
+      resource_type: 'cluster',
+      resource_id: 10,
+    }
+
+    async.eachSeries(Object.keys(baseObject), (field, nextField) => {
+      const query = Object.assign({}, baseObject)
+      delete(query[field])
+      store.get(query, (err) => {
+        t.ok(err, `there was an error for missing field: ${field}`)
+        nextField()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+
+  
+  })
+
+  tape('role store -> get', (t) => {
+  
+    const store = RoleStore(getConnection())
+
+    store.get({
+      user: testUser.id,
+      resource_type: 'cluster',
+      resource_id: 10,
+    }, (err, role) => {
+      t.notok(err, `there was no error`)
+      t.deepEqual(role, roleMap.cluster, `the loaded role is correct`)
+      t.end()
+    })
+  
+  })
+
+  tape('role store -> delete', (t) => {
+  
+    const store = RoleStore(getConnection())
+
+    store.delete({
+      id: roleMap.cluster.id,
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      store.list({
+        user: testUser.id,
+      },(err, roles) => {
+        t.notok(err, `there was no error`)
+        t.equal(roles.length, 1, `there is 1 role`)
+        t.deepEqual(roles[0], roleMap.deployment, 'the remaining role is correct')
+        t.end()
+      })
+    })
+    
   })
 
 })
