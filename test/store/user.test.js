@@ -64,7 +64,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> create users', (t) => {
   
-    fixtures.insertTestUsers(getConnection(), (err) => {
+    fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
       t.end()
     })

@@ -29,12 +29,22 @@ const getTestUserData = (data, done) => {
 const insertTestUsers = (databaseConnection, done) => {
   const store = UserStore(databaseConnection)
 
+  // map of usernames onto database records
+  const userMap = {}
+
   async.eachSeries(SIMPLE_USER_DATA, (userData, nextUser) => {
     getTestUserData(userData, (err, data) => {
       if(err) return nextUser(err)
-      store.create(data, nextUser)
+      store.create(data, (err, user) => {
+        if(err) return nextUser(err)
+        userMap[user.username] = user
+        nextUser()
+      })
     })
-  }, done)
+  }, (err) => {
+    if(err) return done(err)
+    done(null, userMap)
+  })
 }
 
 module.exports = {
