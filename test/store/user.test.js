@@ -23,7 +23,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('user store -> insert with missing values', (t) => {
+  tape('user store -> create with missing values', (t) => {
 
     const store = UserStore(getConnection())
 
@@ -34,7 +34,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('user store -> insert with bad role', (t) => {
+  tape('user store -> create with bad role', (t) => {
   
     const store = UserStore(getConnection())
   

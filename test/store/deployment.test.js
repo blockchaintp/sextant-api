@@ -50,7 +50,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('deployment store -> insert with missing values', (t) => {
+  tape('deployment store -> create with missing values', (t) => {
 
     const store = DeploymentStore(getConnection())
 

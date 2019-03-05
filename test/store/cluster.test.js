@@ -25,7 +25,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('cluster store -> insert with missing values', (t) => {
+  tape('cluster store -> create with missing values', (t) => {
 
     const store = ClusterStore(getConnection())
 
@@ -38,7 +38,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster store -> insert with bad provision_type', (t) => {
+  tape('cluster store -> create with bad provision_type', (t) => {
   
     const store = ClusterStore(getConnection())
   

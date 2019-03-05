@@ -5,6 +5,7 @@ const userUtils = require('../src/utils/user')
 const UserStore = require('../src/store/user')
 const ClusterStore = require('../src/store/cluster')
 const DeployentStore = require('../src/store/deployment')
+const RoleStore = require('../src/store/role')
 
 const SIMPLE_USER_DATA = [{
   username: 'zebra',
@@ -46,6 +47,16 @@ const SIMPLE_DEPLOYMENT_DATA = [{
   desired_state: {
     oranges: 10,
   },
+}]
+
+const SIMPLE_ROLE_DATA = [{
+  permission: 'read',
+  resource_type: 'cluster',
+  resource_id: 10,
+}, {
+  permission: 'write',
+  resource_type: 'deployment',
+  resource_id: 11,
 }]
 
 const getTestUserData = (data, done) => {
@@ -120,12 +131,35 @@ const insertTestDeployments = (databaseConnection, cluster, done) => {
   })
 }
 
+const insertTestRoles = (databaseConnection, user, done) => {
+  const store = RoleStore(databaseConnection)
+
+  // map of resource types onto database records
+  const roleMap = {}
+
+  async.eachSeries(SIMPLE_ROLE_DATA, (roleData, nextRole) => {
+    const insertData = Object.assign({}, roleData, {
+      user,
+    })
+    store.create(insertData, (err, role) => {
+      if(err) return nextRole(err)
+      roleMap[role.resource_type] = role
+      nextRole()
+    })
+  }, (err) => {
+    if(err) return done(err)
+    done(null, roleMap)
+  })
+}
+
 module.exports = {
   SIMPLE_USER_DATA,
   SIMPLE_CLUSTER_DATA,
   SIMPLE_DEPLOYMENT_DATA,
+  SIMPLE_ROLE_DATA,
   getTestUserData,
   insertTestUsers,
   insertTestClusters,
   insertTestDeployments,
+  insertTestRoles,
 }
