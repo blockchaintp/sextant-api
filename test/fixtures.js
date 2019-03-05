@@ -4,6 +4,7 @@ const async = require('async')
 const userUtils = require('../src/utils/user')
 const UserStore = require('../src/store/user')
 const ClusterStore = require('../src/store/cluster')
+const DeployentStore = require('../src/store/deployment')
 
 const SIMPLE_USER_DATA = [{
   username: 'zebra',
@@ -32,6 +33,18 @@ const SIMPLE_CLUSTER_DATA = [{
   },
   capabilities: {
     otherFunkyFeature: true,
+  },
+}]
+
+const SIMPLE_DEPLOYMENT_DATA = [{
+  name: 'testdeployment',
+  desired_state: {
+    apples: 10,
+  },
+},{
+  name: 'otherdeployment',
+  desired_state: {
+    oranges: 10,
   },
 }]
 
@@ -86,10 +99,33 @@ const insertTestClusters = (databaseConnection, done) => {
   })
 }
 
+const insertTestDeployments = (databaseConnection, cluster, done) => {
+  const store = DeployentStore(databaseConnection)
+
+  // map of cluster names onto database records
+  const deploymentMap = {}
+
+  async.eachSeries(SIMPLE_DEPLOYMENT_DATA, (deploymentData, nextDeployment) => {
+    const insertData = Object.assign({}, deploymentData, {
+      cluster,
+    })
+    store.create(insertData, (err, deployment) => {
+      if(err) return nextDeployment(err)
+      deploymentMap[deployment.name] = deployment
+      nextDeployment()
+    })
+  }, (err) => {
+    if(err) return done(err)
+    done(null, deploymentMap)
+  })
+}
+
 module.exports = {
   SIMPLE_USER_DATA,
   SIMPLE_CLUSTER_DATA,
+  SIMPLE_DEPLOYMENT_DATA,
   getTestUserData,
   insertTestUsers,
   insertTestClusters,
+  insertTestDeployments,
 }

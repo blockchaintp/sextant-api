@@ -65,7 +65,6 @@ const DeploymentStore = (knex) => {
       cluster: params.cluster,
       name: params.name,
       desired_state: params.desired_state,
-      status: 'created',
     }
 
     knex('deployment')

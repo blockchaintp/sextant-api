@@ -1,12 +1,10 @@
 'use strict'
 
 const tape = require('tape')
-const async = require('async')
 
 const database = require('../database')
 const fixtures = require('../fixtures')
 
-const UserStore = require('../../src/store/user')
 const ClusterStore = require('../../src/store/cluster')
 const enumerations = require('../../src/enumerations')
 
@@ -18,9 +16,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = ClusterStore(getConnection())
   
-    store.list({}, (err, users) => {
+    store.list({}, (err, clusters) => {
       t.notok(err, `there was no error`)
-      t.equal(users.length, 0, `there were no clusters`)
+      t.equal(clusters.length, 0, `there were no clusters`)
       t.end()
     })
     
@@ -35,7 +33,7 @@ database.testSuiteWithDatabase(getConnection => {
       desired_state: {
         apples: 10,
       },
-    }, (err, user) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })  
@@ -50,7 +48,7 @@ database.testSuiteWithDatabase(getConnection => {
       desired_state: {
         apples: 10,
       },
-    }, (err, user) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })  
@@ -63,7 +61,7 @@ database.testSuiteWithDatabase(getConnection => {
     store.create({
       name: 'testcluster',
       provision_type: 'aws_ec2',
-    }, (err, user) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })  
@@ -79,7 +77,7 @@ database.testSuiteWithDatabase(getConnection => {
       desired_state: {
         apples: 10,
       },
-    }, (err, user) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })  
@@ -179,7 +177,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('cluster store -> delete user', (t) => {
+  tape('cluster store -> delete', (t) => {
   
     const store = ClusterStore(getConnection())
   
@@ -187,7 +185,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.delete({
       id: testcluster.id,
-    }, (err, user) => {
+    }, (err) => {
       t.notok(err, `there was no error`)
       store.list({},(err, clusters) => {
         t.notok(err, `there was no error`)
