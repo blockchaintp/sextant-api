@@ -66,6 +66,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
+      t.deepEqual(users.zebra.meta, {}, `the metadata defaults to empty object`)
       t.end()
     })
   

@@ -55,8 +55,15 @@ const UserStore = (knex) => {
     if(!params.username) return done(`username param must be given to store.user.add`)
     if(!params.hashed_password) return done(`hashed_password param must be given to store.user.add`)
     if(!params.role) return done(`role param must be given to store.user.add`)
+
+    const insertData = {
+      username: params.username,
+      hashed_password: params.hashed_password,
+      role: params.role,
+      meta: params.meta || {},
+    }
     knex('user')
-      .insert(params)
+      .insert(insertData)
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))
   }
