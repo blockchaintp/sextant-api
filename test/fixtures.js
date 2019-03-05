@@ -71,13 +71,19 @@ const getTestUserData = (data, done) => {
   })
 }
 
-const insertTestUsers = (databaseConnection, done) => {
+const insertTestUsers = (databaseConnection, data, done) => {
+
+  if(!done) {
+    done = data
+    data = SIMPLE_USER_DATA
+  }
+
   const store = UserStore(databaseConnection)
 
   // map of usernames onto database records
   const userMap = {}
 
-  async.eachSeries(SIMPLE_USER_DATA, (userData, nextUser) => {
+  async.eachSeries(data, (userData, nextUser) => {
     getTestUserData(userData, (err, data) => {
       if(err) return nextUser(err)
       store.create(data, (err, user) => {
@@ -92,13 +98,19 @@ const insertTestUsers = (databaseConnection, done) => {
   })
 }
 
-const insertTestClusters = (databaseConnection, done) => {
+const insertTestClusters = (databaseConnection, data, done) => {
+
+  if(!done) {
+    done = data
+    data = SIMPLE_CLUSTER_DATA
+  }
+
   const store = ClusterStore(databaseConnection)
 
   // map of cluster names onto database records
   const clusterMap = {}
 
-  async.eachSeries(SIMPLE_CLUSTER_DATA, (clusterData, nextCluster) => {
+  async.eachSeries(data, (clusterData, nextCluster) => {
     store.create(clusterData, (err, cluster) => {
       if(err) return nextCluster(err)
       clusterMap[cluster.name] = cluster
@@ -110,13 +122,19 @@ const insertTestClusters = (databaseConnection, done) => {
   })
 }
 
-const insertTestDeployments = (databaseConnection, cluster, done) => {
+const insertTestDeployments = (databaseConnection, cluster, data, done) => {
+
+  if(!done) {
+    done = data
+    data = SIMPLE_DEPLOYMENT_DATA
+  }
+
   const store = DeployentStore(databaseConnection)
 
   // map of cluster names onto database records
   const deploymentMap = {}
 
-  async.eachSeries(SIMPLE_DEPLOYMENT_DATA, (deploymentData, nextDeployment) => {
+  async.eachSeries(data, (deploymentData, nextDeployment) => {
     const insertData = Object.assign({}, deploymentData, {
       cluster,
     })
@@ -131,13 +149,19 @@ const insertTestDeployments = (databaseConnection, cluster, done) => {
   })
 }
 
-const insertTestRoles = (databaseConnection, user, done) => {
+const insertTestRoles = (databaseConnection, user, data, done) => {
+
+  if(!done) {
+    done = data
+    data = SIMPLE_ROLE_DATA
+  }
+
   const store = RoleStore(databaseConnection)
 
   // map of resource types onto database records
   const roleMap = {}
 
-  async.eachSeries(SIMPLE_ROLE_DATA, (roleData, nextRole) => {
+  async.eachSeries(data, (roleData, nextRole) => {
     const insertData = Object.assign({}, roleData, {
       user,
     })
