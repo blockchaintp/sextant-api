@@ -48,10 +48,10 @@ const Routes = ({
   app.get(basePath('/user/logout'), requireUser, user.logout)
 
   app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), user.list)
-  app.post(basePath('/user'), user.create)
-  app.get(basePath('/user/:id'), user.get)
-  app.put(basePath('/user/:id'), user.update)
-  app.delete(basePath('/user/:id'), user.del)
+  app.post(basePath('/user'), rbacMiddleware(store, 'user', 'create'), user.create)
+  app.get(basePath('/user/:id'), rbacMiddleware(store, 'user', 'get'), user.get)
+  app.put(basePath('/user/:id'), rbacMiddleware(store, 'user', 'update'), user.update)
+  app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.del)
 }
 
 module.exports = Routes

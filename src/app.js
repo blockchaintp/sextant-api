@@ -45,6 +45,7 @@ const App = ({
   // bind routes to the HTTP server
   Router({
     app,
+    store,
     controllers,
     settings,
   })

@@ -68,6 +68,56 @@ app.testSuiteWithApp(({
     
   })
 
+  tape('user routes -> not logged in get', (t) => {
+
+    request({
+      method: 'get',
+      url: `${url}/user/1`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 status`)
+      t.equal(body.error, `access denied`, `correct error`)
+      t.end()
+    })
+    
+  })
+
+  tape('user routes -> not logged in update', (t) => {
+
+    request({
+      method: 'put',
+      url: `${url}/user/1`,
+      json: true,
+      body: {
+        meta: {
+          apples: 10,
+        }
+      }
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 status`)
+      t.equal(body.error, `access denied`, `correct error`)
+      t.end()
+    })
+    
+  })
+
+  tape('user routes -> not logged in delete', (t) => {
+
+    request({
+      method: 'delete',
+      url: `${url}/user/1`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 status`)
+      t.equal(body.error, `access denied`, `correct error`)
+      t.end()
+    })
+    
+  })
+
   tape('user routes -> register initial admin user', (t) => {
 
     request({

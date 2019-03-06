@@ -53,6 +53,9 @@ database.testSuiteWithDatabase(getConnection => {
     controller.create(TEST_USER, (err, user) => {
       t.notok(err, `there was no error`)
       t.equal(user.username, TEST_USER.username)
+
+      // make sure the role is forced to admin as the initial user
+      t.equal(user.role, 'admin')
       t.end()
     })
   })
