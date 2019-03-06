@@ -1,3 +1,4 @@
+const config = require('./config')
 const required_env = [
   'POSTGRES_SERVICE_HOST',
   'POSTGRES_USER',
@@ -29,7 +30,7 @@ const args = require('minimist')(process.argv, {
   },
   default:{
     port: process.env.PORT || 80,
-    baseUrl: process.env.BASE_URL || '/api/v1',
+    baseUrl: process.env.BASE_URL || config.baseUrl,
 
     // postgres
     postgreshost: process.env.POSTGRES_SERVICE_HOST,
@@ -59,7 +60,7 @@ const args = require('minimist')(process.argv, {
     initialPassword: process.env.INITIAL_PASSWORD,
 
     // sessions
-    sessionSecret: process.env.SESSION_SECRET || 'sextant-blockchain',
+    sessionSecret: process.env.SESSION_SECRET || config.sessionSecret,
 
     // which type of networking we use for kops clusters
     kopsNetworking: 'weave',

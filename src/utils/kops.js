@@ -6,8 +6,6 @@ const pino = require('pino')({
   name: 'kops',
 })
 
-const settings = require('../settings')
-
 const command = (cmd, options, done) => {
 
   if(!done) {

@@ -10,18 +10,26 @@ const pino = require('pino')({
   name: 'passport',
 })
 
-const settings = require('./settings')
+const Passport = ({
+  app,
+  store,
+  settings,
+  sessionStore,
+}) => {
 
-const Passport = (app, store) => {
-  const pgPool = new pg.Pool(settings.postgres.connection)
+  if(!sessionStore) {
+    const pgPool = new pg.Pool(settings.postgres.connection)
+    sessionStore = new pgSession({
+      pool: pgPool,
+    })
+  }
+  
   app.use(cookieParser())
   app.use(session({ 
     secret: settings.sessionSecret,
     resave: false,
     saveUninitialized: true,
-    store: new pgSession({
-      pool: pgPool,
-    }),
+    store: sessionStore,
     // 30 days
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
   }))

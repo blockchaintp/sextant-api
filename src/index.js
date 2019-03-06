@@ -7,7 +7,9 @@ const pino = require('pino')({
 const settings = require('./settings')
 const App = require('./app')
 
-const app = App()
+const app = App({
+  settings,
+})
 
 app.listen(settings.port, () => {
   pino.info({

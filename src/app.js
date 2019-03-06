@@ -14,14 +14,18 @@ const Store = require('./store')
 const Controller = require('./controller')
 const Router = require('./router')
 
-const settings = require('./settings')
+const App = ({
+  knex,
+  store,
+  controllers,
+  settings,
+  sessionStore,
+}) => {
 
-const App = () => {
+  knex = knex || Knex(settings.postgres)
+  store = store || Store(knex)
 
-  const knex = Knex(settings.postgres)
-  const store = Store(knex)
-
-  const controllers = Controller({
+  controllers = controllers || Controller({
     store,
   })
 
@@ -31,10 +35,19 @@ const App = () => {
   app.use(bodyParser.json())
 
   // hook up the session store
-  Passport(app)
+  Passport({
+    app,
+    store,
+    settings,
+    sessionStore,
+  })
 
   // bind routes to the HTTP server
-  Router(app, controllers)
+  Router({
+    app,
+    controllers,
+    settings,
+  })
 
   /*
   

@@ -1,7 +1,5 @@
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
-const settings = require('../settings')
-
 const userUtils = require('../utils/user')
 
 const { 
@@ -9,9 +7,13 @@ const {
   addUserAuthHandler,
 } = userUtils
 
-const basePath = (path) => `${settings.baseUrl}${path}`
+const Routes = ({
+  app,
+  controllers,
+  settings,
+}) => {
 
-const Routes = (app, controllers) => {
+  const basePath = (path) => `${settings.baseUrl}${path}`
 
   const config = ConfigRoutes(controllers)
   const user = UserRoutes(controllers)

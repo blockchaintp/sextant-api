@@ -71,7 +71,7 @@ const testSuiteWithDatabase = (handler) => {
     })
   })
 
-  handler(getDatabaseConnection)
+  handler(getDatabaseConnection, getConnectionSettings(databaseName))
 
   tape('teardown database', (t) => {
     databaseConnection
