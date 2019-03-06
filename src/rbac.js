@@ -182,12 +182,14 @@ const RBAC = (store, user, action, done) => {
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
       const resourceType = methodConfig.resourceRoleForType || resource_type
 
-      // load the role and check it
-      store.role.get({
+      const roleQuery = {
         user: user.id,
         resource_type: resourceType,
         resource_id,
-      }, (err, role) => {
+      }
+
+      // load the role and check it
+      store.role.get(roleQuery, (err, role) => {
         if(err) return done(err)
 
         // if there is no role we can't grant access

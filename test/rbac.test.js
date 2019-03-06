@@ -231,6 +231,51 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('rbac -> deployment.list allowed for admin', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.admin, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'list',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+    
+  })
+
+  tape('rbac -> deployment.list not allowed for no user', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, null, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'list',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+    
+  })
+
+  tape('rbac -> deployment.list not allowed for read with no role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'list',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+    
+  })
+
   tape('rbac -> cluster.get not allowed for read with no role', (t) => {
 
     const store = Store(getConnection())
@@ -270,6 +315,21 @@ database.testSuiteWithDatabase(getConnection => {
       resource_type: 'cluster',
       resource_id: 1,
       method: 'get',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+    
+  })
+
+  tape('rbac -> deplpyment.list allowed for read with role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'list',
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
@@ -330,6 +390,20 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
+  tape('rbac -> deployment.create not allowed for read with role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'create',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
   tape('rbac -> cluster.delete not allowed for read with role', (t) => {
 
     const store = Store(getConnection())
@@ -352,6 +426,20 @@ database.testSuiteWithDatabase(getConnection => {
       resource_type: 'cluster',
       resource_id: 1,
       method: 'update',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.create not allowed for write with no role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.write, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'create',
     }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
@@ -402,6 +490,20 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
+  tape('rbac -> deployment.create allowed for write with role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.write, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'create',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
   tape('rbac -> cluster.delete allowed for write with role', (t) => {
 
     const store = Store(getConnection())
@@ -412,6 +514,220 @@ database.testSuiteWithDatabase(getConnection => {
       method: 'delete',
     }, (err) => {
       t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.get allowed for admin', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.admin, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'get',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.get not allowed for no user', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, null, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'get',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.create allowed for admin', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.admin, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'create',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.create not allowed for no user', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, null, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'create',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.update allowed for admin', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.admin, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'update',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.update not allowed for no user', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, null, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'update',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.delete allowed for admin', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.admin, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'delete',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.delete not allowed for no user', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, null, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'delete',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.get not allowed for read without role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'get',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  // insert a read role for a deployment for the read user
+  tape('rbac -> deployment.get insert read role', (t) => {
+
+    const store = Store(getConnection())
+
+    store.role.create({
+      user: userMapByRole.read.id,
+      permission: 'read',
+      resource_type: 'deployment',
+      resource_id: 1,
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })    
+  })
+
+  tape('rbac -> deployment.get allowed for read with role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'get',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.update not allowed for write without role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.write, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'update',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+  })
+
+  // insert a read role for a deployment for the read user
+  tape('rbac -> deployment.update insert write role', (t) => {
+
+    const store = Store(getConnection())
+
+    store.role.create({
+      user: userMapByRole.write.id,
+      permission: 'write',
+      resource_type: 'deployment',
+      resource_id: 1,
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })    
+  })
+
+  tape('rbac -> deployment.update allowed for write with role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.write, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'update',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('rbac -> deployment.update allowed for read with role', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'deployment',
+      resource_id: 1,
+      method: 'update',
+    }, (err) => {
+      t.ok(err, `there was an error`)
       t.end()
     })
   })

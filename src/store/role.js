@@ -44,6 +44,8 @@ const RoleStore = (knex) => {
     .from('role')
     .where({
       user: params.user,
+      resource_type: params.resource_type,
+      resource_id: params.resource_id,
     })
     .asCallback(databaseTools.singleExtractor(done))
 }

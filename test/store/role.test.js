@@ -138,7 +138,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   })
 
-  tape('role store -> get', (t) => {
+  tape('role store -> get for cluster', (t) => {
   
     const store = RoleStore(getConnection())
 
@@ -148,7 +148,23 @@ database.testSuiteWithDatabase(getConnection => {
       resource_id: 10,
     }, (err, role) => {
       t.notok(err, `there was no error`)
-      t.deepEqual(role, roleMap.cluster, `the loaded role is correct`)
+      t.deepEqual(role, roleMap.cluster, `the loaded cluster role is correct`)
+      t.end()
+    })
+  
+  })
+
+  tape('role store -> get for deployment', (t) => {
+  
+    const store = RoleStore(getConnection())
+
+    store.get({
+      user: testUser.id,
+      resource_type: 'deployment',
+      resource_id: 11,
+    }, (err, role) => {
+      t.notok(err, `there was no error`)
+      t.deepEqual(role, roleMap.deployment, `the loaded deployment role is correct`)
       t.end()
     })
   
