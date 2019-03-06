@@ -1,7 +1,8 @@
 'use strict'
 
 const tape = require('tape')
-const request = require('request')
+const Request = require('request')
+const request = Request.defaults({jar: true})
 const app = require('../app')
 const packageJSON = require('../../package.json')
 

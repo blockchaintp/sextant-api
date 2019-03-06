@@ -3,14 +3,20 @@ const userUtils = require('../utils/user')
 const UserRoutes = (controllers) => {
 
   const status = (req, res, next) => {
+    const result = req.user ?
+      userUtils.safe(req.user) :
+      null
+    res
+      .status(200)
+      .json(result)
+  }
+
+  const hasInitialUser = (req, res, next) => {
     controllers.user.count({}, (err, userCount) => {
       if(err) return next(err)
       res
         .status(200)
-        .json({
-          count: userCount,
-          data: req.user,
-        })
+        .json(userCount > 0 ? true : false)
     })
   }
 
@@ -86,20 +92,16 @@ const UserRoutes = (controllers) => {
       if(err) return next(err)
       res
         .status(200)
-        .json({
-          ok: true,
-        })
+        .json(userUtils.safe(user))
     })
   }
 
   const create = (req, res, next) => {
-    controllers.user.add(req.body, (err) => {
+    controllers.user.create(req.body, (err, user) => {
       if(err) return next(err)
       res
         .status(201)
-        .json({
-          ok: true,
-        })
+        .json(userUtils.safe(user))
     })
   }
 
@@ -118,6 +120,7 @@ const UserRoutes = (controllers) => {
 
   return {
     status,
+    hasInitialUser,
     login,
     logout,
     list,

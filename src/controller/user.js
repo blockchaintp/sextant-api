@@ -80,6 +80,9 @@ const UserController = ({ store }) => {
      * password - string
      * role - {admin,user}
     
+    if there are no current users - force the role to be 'admin'
+    this is to avoid the initial user being created who cannot then add more users
+
   */
   const create = (params, done) => {
 
@@ -87,15 +90,20 @@ const UserController = ({ store }) => {
     if(!params.password) return done(`password required for controller.user.create`)
     if(!params.role) return done(`role required for controller.user.create`)
     
-    utils.getPasswordHash(params.username, (err, hashed_password) => {
+    count({}, (err, existingUsers) => {
       if(err) return done(err)
-      store.user.create({
-        username: params.username,
-        hashed_password,
-        role: params.role,
-      }, done)
+
+      const role = existingUsers == 0 ? 'admin' : params.role
+
+      utils.getPasswordHash(params.username, (err, hashed_password) => {
+        if(err) return done(err)
+        store.user.create({
+          username: params.username,
+          hashed_password,
+          role,
+        }, done)
+      })
     })
-    
   }
 
   /*
