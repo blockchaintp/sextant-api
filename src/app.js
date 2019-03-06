@@ -11,8 +11,8 @@ const pino = require('pino')({
 })
 
 const Store = require('./store')
-const Controllers = require('./controllers')
-const Routes = require('./routes')
+const Controller = require('./controller')
+const Router = require('./router')
 
 const settings = require('./settings')
 
@@ -21,7 +21,7 @@ const App = () => {
   const knex = Knex(settings.postgres)
   const store = Store(knex)
 
-  const controllers = Controllers({
+  const controllers = Controller({
     store,
   })
 
@@ -34,7 +34,7 @@ const App = () => {
   Passport(app)
 
   // bind routes to the HTTP server
-  Routes(app, controllers)
+  Router(app, controllers)
 
   /*
   
