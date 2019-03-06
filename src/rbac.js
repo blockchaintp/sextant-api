@@ -77,7 +77,7 @@ const HELPERS = {
       else return done(`access denied`)
     }
     else {
-      store.user.list((err, users) => {
+      store.user.list({}, (err, users) => {
         if(err) return done(err)
         if(users.length > 0) return done(`access denied`)
         return done()
