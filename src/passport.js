@@ -44,6 +44,45 @@ const PassportHandlers = ({
   app.use(passport.initialize())
   app.use(passport.session())
 
+  // JWT token based access
+  app.use((req, res, next) => {
+    if(req.headers && req.headers.authorization) {
+      const parts = req.headers.authorization.split(' ')
+
+      if(parts.length != 2) {
+        res._code = 400
+        return next(`bad authorization header format`)
+      }
+
+      const [ scheme, token ] = parts
+
+      if (/^Bearer$/i.test(scheme)) {
+        userUtils.decodeToken(token, settings.tokenSecret, (err, decoded) => {
+          // no user if we have an error or no decoded token
+          if(err || !decoded) return next()
+
+          controllers.user.get({
+            username: decoded.username,
+          }, (err, user) => {
+            if(err || !user || user.token_salt != decoded.salt) {
+              res._code = 403
+              return next(`access denied`)
+            }
+
+            req.user = userUtils.safe(user)
+            return next()
+          })
+        })
+      } else {
+        res._code = 400
+        return next(`bad authorization header format`)
+      }
+    }
+    else {
+      return next()
+    }
+  })
+
   // passport user serializer/deserializer
   passport.serializeUser((user, done) => {
     done(null, user.username)
