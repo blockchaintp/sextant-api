@@ -3,6 +3,7 @@
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const Passport = require('passport').Passport
+const userUtils = require('./utils/user')
 
 const pino = require('pino')({
   name: 'passport',
@@ -68,7 +69,7 @@ const PassportHandlers = ({
         return done(errorInfo)
       }
       else {
-        return done(null, user)
+        return done(null, userUtils.safe(user))
       }
     })
   })
