@@ -29,7 +29,7 @@ database.testSuiteWithDatabase(getConnection => {
   
   })
 
-  tape('cluster controller -> create cluster', (t) => {
+  tape('cluster controller -> create cluster for write user', (t) => {
   
     const controller = getController()
     const store = Store(getConnection())
@@ -185,7 +185,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('cluster controller -> create admin cluster', (t) => {
+  tape('cluster controller -> create cluster for admin user', (t) => {
   
     const controller = getController()
     
@@ -202,6 +202,45 @@ database.testSuiteWithDatabase(getConnection => {
       t.end()
     })
  
+  })
+
+  tape('cluster controller -> list clusters for admin user', (t) => {
+
+    const controller = getController()
+
+    controller.list({
+      user: userMap.admin,
+    }, (err, clusters) => {
+      t.notok(err, `there was no error`)
+      t.equal(clusters.length, 2, `there are 2 clusters`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> list clusters for write user', (t) => {
+
+    const controller = getController()
+
+    controller.list({
+      user: userMap.write,
+    }, (err, clusters) => {
+      t.notok(err, `there was no error`)
+      t.equal(clusters.length, 1, `there is 1 cluster`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> list clusters for read user', (t) => {
+
+    const controller = getController()
+    
+    controller.list({
+      user: userMap.read,
+    }, (err, clusters) => {
+      t.notok(err, `there was no error`)
+      t.equal(clusters.length, 0, `there are no clusters`)
+      t.end()
+    })
   })
 
   

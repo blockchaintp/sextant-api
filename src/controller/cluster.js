@@ -1,4 +1,7 @@
 const async = require('async')
+const config = require('../config')
+
+const ACCESS_LEVELS = config.ACCESS_LEVELS
 
 const ClusterController = ({ store, settings }) => {
   
@@ -17,11 +20,40 @@ const ClusterController = ({ store, settings }) => {
 
   */
   const list = (params, done) => {
+
+    const {
+      user,
+    } = params
+
+    if(!user) return done(`user required for controllers.cluster.list`)
+
     store.cluster.list({}, (err, clusters) => {
       if(err) return done(err)
 
-      // TODO: filter clusters based on user
-      done(null, clusters)
+      // if it's an admin - they can see all clusters
+      if(user.role == 'admin') return done(null, clusters)
+
+      // we need to load the roles that are for a cluster for the user
+      store.role.list({
+        user: user.id,
+      }, (err, roles) => {
+        if(err) return done(err)
+
+        const roleMap = roles
+          .filter(role => role.resource_type == 'cluster')
+          .reduce((all, role) => {
+            all[role.resource_id] = role
+            return all
+          }, {})
+
+        clusters = clusters.filter(cluster => {
+          const clusterRole = roleMap[cluster.id]
+          if(!clusterRole) return false
+          return ACCESS_LEVELS[clusterRole.permission] >= ACCESS_LEVELS.read
+        })
+
+        done(null, clusters)
+      })       
     })
   }
 

@@ -48,11 +48,9 @@
 
 */
 
-const ACCESS_LEVELS = {
-  read: 1,
-  write: 2,
-  admin: 3,
-}
+const config = require('./config')
+
+const ACCESS_LEVELS = config.ACCESS_LEVELS
 
 const HELPERS = {
 
