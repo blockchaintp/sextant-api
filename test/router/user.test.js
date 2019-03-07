@@ -2,9 +2,8 @@
 
 const tape = require('tape')
 const async = require('async')
-const Request = require('request')
-const request = Request.defaults({jar: true})
 const app = require('../app')
+const tools = require('../tools')
 
 app.testSuiteWithApp(({
   getConnection,
@@ -28,7 +27,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> not logged in status', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/status`,
       json: true,
@@ -43,7 +42,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> hasInitialUser (with no user)', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/hasInitialUser`,
       json: true,
@@ -58,7 +57,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logout whilst not logged in', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/logout`,
       json: true,
@@ -94,7 +93,7 @@ app.testSuiteWithApp(({
     async.eachSeries(routes, (route, nextRoute) => {
       const requestOptions = Object.assign({}, route)
       requestOptions.json = true
-      request(requestOptions, (err, res, body) => {
+      tools.sessionRequest(requestOptions, (err, res, body) => {
         t.notok(err, `there is no error: ${route.url}`)
         t.equal(res.statusCode, 403, `403 status: ${route.url}`)
         t.equal(body.error, `access denied`, `correct error: ${route.url}`)
@@ -108,7 +107,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> register initial admin user', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user`,
       json: true,
@@ -125,7 +124,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> hasInitialUser (with user)', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/hasInitialUser`,
       json: true,
@@ -140,7 +139,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> register not logged in now there is a user', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user`,
       json: true,
@@ -156,7 +155,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> login with bad details', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
@@ -175,7 +174,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> login with admin user', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
@@ -194,7 +193,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logged in (admin) status', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/status`,
       json: true,
@@ -211,7 +210,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logged in (admin) list', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user`,
       json: true,
@@ -227,7 +226,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logged in (admin) get user', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/${USER_RECORDS.admin.id}`,
       json: true,
@@ -242,7 +241,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logged in (admin) - try to update own role', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'put',
       url: `${url}/user/${USER_RECORDS.admin.id}`,
       json: true,
@@ -260,7 +259,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logged in (admin) - try to delete self', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'delete',
       url: `${url}/user/${USER_RECORDS.admin.id}`,
       json: true,
@@ -277,7 +276,7 @@ app.testSuiteWithApp(({
 
     ADMIN_USER.password = 'newpassword'
 
-    request({
+    tools.sessionRequest({
       method: 'put',
       url: `${url}/user/${USER_RECORDS.admin.id}`,
       json: true,
@@ -297,7 +296,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logout', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/logout`,
       json: true,
@@ -312,7 +311,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> not logged in status', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/status`,
       json: true,
@@ -327,7 +326,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> login with new password', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
@@ -346,7 +345,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> register read only user', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user`,
       json: true,
@@ -364,7 +363,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> allow update other user role', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'put',
       url: `${url}/user/${USER_RECORDS.read.id}`,
       json: true,
@@ -383,7 +382,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logout', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/logout`,
       json: true,
@@ -398,7 +397,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> login read user', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
@@ -452,7 +451,7 @@ app.testSuiteWithApp(({
     async.eachSeries(routes, (route, nextRoute) => {
       const requestOptions = Object.assign({}, route)
       requestOptions.json = true
-      request(requestOptions, (err, res, body) => {
+      tools.sessionRequest(requestOptions, (err, res, body) => {
         t.notok(err, `there is no error: ${route.url}`)
         t.equal(res.statusCode, 403, `403 status: ${route.url}`)
         t.equal(body.error, `access denied`, `correct error: ${route.url}`)
@@ -466,7 +465,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> get own record', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/${USER_RECORDS.read.id}`,
       json: true,
@@ -482,7 +481,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> update own record', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'put',
       url: `${url}/user/${USER_RECORDS.read.id}`,
       json: true,
@@ -494,7 +493,7 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
-      request({
+      tools.sessionRequest({
         method: 'get',
         url: `${url}/user/${USER_RECORDS.read.id}`,
         json: true,
@@ -510,7 +509,7 @@ app.testSuiteWithApp(({
 
   tape('user routes -> logout', (t) => {
 
-    request({
+    tools.sessionRequest({
       method: 'get',
       url: `${url}/user/logout`,
       json: true,

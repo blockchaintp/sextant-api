@@ -1,5 +1,6 @@
 'use strict'
 
+const request = require('request')
 const async = require('async')
 
 const insertWithMissingValues = (t, store, baseObject) => {
@@ -16,6 +17,14 @@ const insertWithMissingValues = (t, store, baseObject) => {
   })
 }
 
+const sessionRequest = (opts, done) => {
+  const requestOpts = Object.assign({}, opts, {
+    jar: true
+  })
+  request(requestOpts, done)
+}
+
 module.exports = {
   insertWithMissingValues,
+  sessionRequest,
 }
