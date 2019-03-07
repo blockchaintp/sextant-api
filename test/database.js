@@ -16,8 +16,8 @@ const getConnectionSettings = (databaseName) => {
       database: databaseName || 'postgres',
     },
     pool: {
-      min: 2,
-      max: 10
+      min: 0,
+      max: 10,
     }
   }
 }

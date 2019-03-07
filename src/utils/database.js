@@ -29,6 +29,9 @@ const transaction = (knex, handler, done) => {
           .then(() => {
             done(err)
           })
+          .catch((e) => {
+            done(`error in transaction rollback callback: ${e.toString()}`)
+          })
       }
       else {
         trx
@@ -36,10 +39,17 @@ const transaction = (knex, handler, done) => {
           .then(() => {
             done(null, results)
           })
+          .catch((e) => {
+            trx
+              .rollback()
+              .then(() => {
+                done(`error in transaction commit callback: ${e.toString()}`)
+              })
+          })
       }
     })  
   }).catch((e) => {
-    console.error(`error in transaction: ${e.toString()}`)
+    done(`error in transaction: ${e.toString()}`)
   })
 }
 

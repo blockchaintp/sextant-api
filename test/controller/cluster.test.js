@@ -17,11 +17,11 @@ database.testSuiteWithDatabase(getConnection => {
   }
 
   let userMap = {}
-  let testCluster = null
+  let testClusters = {}
 
   tape('cluster controller -> create users', (t) => {
   
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
+    fixtures.insertTestUsers(getConnection(), fixtures.EXTRA_USER_DATA, (err, users) => {
       t.notok(err, `there was no error`)
       userMap = users
       t.end()
@@ -47,7 +47,7 @@ database.testSuiteWithDatabase(getConnection => {
           if(err) return next(err)
           t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
           t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
-          testCluster = cluster
+          testClusters.write = cluster
           next()
         })
       },
@@ -57,12 +57,12 @@ database.testSuiteWithDatabase(getConnection => {
         store.role.get({
           user: userMap.write.id,
           resource_type: 'cluster',
-          resource_id: testCluster.id
+          resource_id: testClusters.write.id
         }, (err, role) => {
           if(err) return next(err)
           t.equal(role.user, userMap.write.id, `the role user id is correct`)
           t.equal(role.resource_type, 'cluster', `the role resource_type is correct`)
-          t.equal(role.resource_id, testCluster.id, `the role resource_id is correct`)
+          t.equal(role.resource_id, testClusters.write.id, `the role resource_id is correct`)
           next()
         })
       },
@@ -71,22 +71,22 @@ database.testSuiteWithDatabase(getConnection => {
       next => {
         store.task.list({
           resource_type: 'cluster',
-          resource_id: testCluster.id
+          resource_id: testClusters.write.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length,1, `there is a create task`)
           const task = tasks[0]
           t.equal(task.user, userMap.write.id, `the task resource_type is correct`)
           t.equal(task.resource_type, 'cluster', `the task resource_type is correct`)
-          t.equal(task.resource_id, testCluster.id, `the task resource_id is correct`)
+          t.equal(task.resource_id, testClusters.write.id, `the task resource_id is correct`)
           t.equal(task.status, 'created', `the task status is correct`)
           t.equal(task.restartable, true, `the task restartable is correct`)
           t.deepEqual(task.payload, {
             type: 'cluster.create',
-            clusterid: testCluster.id,
-            provision_type: testCluster.provision_type,
-            desired_state: testCluster.desired_state,
-            capabilities: testCluster.capabilities,
+            clusterid: testClusters.write.id,
+            provision_type: testClusters.write.provision_type,
+            desired_state: testClusters.write.desired_state,
+            capabilities: testClusters.write.capabilities,
           }, 'the task payload is correct')
           next()
         })
@@ -107,7 +107,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     controller.update({
       user: userMap.write,
-      id: testCluster.id,
+      id: testClusters.write.id,
       data: {
         desired_state,
       },
@@ -125,7 +125,7 @@ database.testSuiteWithDatabase(getConnection => {
     async.waterfall([
       (next) => store.task.list({
         resource_type: 'cluster',
-        resource_id: testCluster.id
+        resource_id: testClusters.write.id
       }, next),
 
       (tasks, next) => store.task.update({
@@ -155,7 +155,7 @@ database.testSuiteWithDatabase(getConnection => {
       next => {
         controller.update({
           user: userMap.write,
-          id: testCluster.id,
+          id: testClusters.write.id,
           data: {
             desired_state,
           },
@@ -169,7 +169,7 @@ database.testSuiteWithDatabase(getConnection => {
       next => {
         store.task.list({
           resource_type: 'cluster',
-          resource_id: testCluster.id
+          resource_id: testClusters.write.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length,2, `there are 2 tasks`)
@@ -184,5 +184,25 @@ database.testSuiteWithDatabase(getConnection => {
     })
     
   })
+
+  tape('cluster controller -> create admin cluster', (t) => {
+  
+    const controller = getController()
+    
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
+
+    controller.create({
+      user: userMap.admin,
+      data: clusterData,
+    }, (err, cluster) => {
+      t.notok(err, `there was no error`)
+      t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
+      t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
+      testClusters.admin = cluster
+      t.end()
+    })
+ 
+  })
+
   
 })

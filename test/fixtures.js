@@ -10,16 +10,20 @@ const RoleStore = require('../src/store/role')
 const TaskStore = require('../src/store/task')
 
 const SIMPLE_USER_DATA = [{
-  // zebra
   username: 'admin',
   password: 'admin1',
   role: 'admin',
 },{
-  // apples
   username: 'write',
   password: 'write1',
   role: 'write',
 }]
+
+const EXTRA_USER_DATA = SIMPLE_USER_DATA.concat([{
+  username: 'read',
+  password: 'read1',
+  role: 'read',
+}])
 
 const SIMPLE_CLUSTER_DATA = [{
   name: 'testcluster',
@@ -240,6 +244,7 @@ const insertTestTasks = (databaseConnection, user, data, done) => {
 
 module.exports = {
   SIMPLE_USER_DATA,
+  EXTRA_USER_DATA,
   SIMPLE_CLUSTER_DATA,
   SIMPLE_DEPLOYMENT_DATA,
   SIMPLE_ROLE_DATA,
