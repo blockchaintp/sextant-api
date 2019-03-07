@@ -233,12 +233,24 @@ database.testSuiteWithDatabase(getConnection => {
   tape('cluster controller -> list clusters for read user', (t) => {
 
     const controller = getController()
-    
+
     controller.list({
       user: userMap.read,
     }, (err, clusters) => {
       t.notok(err, `there was no error`)
       t.equal(clusters.length, 0, `there are no clusters`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> list clusters for no user', (t) => {
+
+    const controller = getController()
+    
+    controller.list({
+
+    }, (err, clusters) => {
+      t.ok(err, `there was an error`)
       t.end()
     })
   })
