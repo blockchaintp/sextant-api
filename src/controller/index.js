@@ -1,5 +1,6 @@
 const ConfigController = require('./config')
 const UserController = require('./user')
+const ClusterController = require('./cluster')
 
 const Controllers = ({ 
   store,
@@ -15,10 +16,16 @@ const Controllers = ({
     store,
     settings,
   })
+
+  const cluster = ClusterController({
+    store,
+    settings,
+  })
   
   return {
     config,
     user,
+    cluster,
   }
 }
 
