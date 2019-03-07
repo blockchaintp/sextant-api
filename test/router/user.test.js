@@ -117,6 +117,9 @@ app.testSuiteWithApp(({
       t.equal(res.statusCode, 201, `201 code`)
       t.equal(body.username, ADMIN_USER.username, `the username is correct`)
       t.equal(body.role, 'admin', 'the user was created with admin role')
+      t.notok(body.hashed_password, 'the hashed_password is not in the result')
+      t.notok(body.token_salt, 'the token_salt is not in the result')
+      t.ok(body.token, 'the token is in the result')
       t.end()
     })
     
