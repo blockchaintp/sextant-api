@@ -154,7 +154,6 @@ const ClusterController = ({ store, settings }) => {
 
     store.transaction((transaction, finished) => {
 
-      throw new Error('apples')
       async.waterfall([
 
         (next) => {

@@ -21,35 +21,47 @@ const singleExtractor = extractor(getSingleRecord)
 const allExtractor = extractor(getAllRecords)
 
 const transaction = (knex, handler, done) => {
+
+  let doneCalled = false
+  let callbackReached = false
+  const runDone = (err, result) => {
+    if(doneCalled) return
+    doneCalled = true
+    done(err, result)
+  }
+
   knex.transaction(trx => {
     handler(trx, (err, results) => {
+      callbackReached = true
       if(err) {
         trx
           .rollback()
           .then(() => {
-            done(err)
+            runDone(err)
           })
           .catch((e) => {
-            done(`error in transaction rollback callback: ${e.toString()}`)
+            runDone(`error in transaction rollback callback: ${e.toString()}`)
           })
       }
       else {
         trx
           .commit()
           .then(() => {
-            done(null, results)
+            runDone(null, results)
           })
           .catch((e) => {
             trx
               .rollback()
               .then(() => {
-                done(`error in transaction commit callback: ${e.toString()}`)
+                runDone(`error in transaction commit callback: ${e.toString()}`)
               })
           })
       }
     })  
   }).catch((e) => {
-    done(`error in transaction: ${e.toString()}`)
+    if(!callbackReached) {
+      runDone(`error in transaction: ${e.toString()}`)
+    }
   })
 }
 
