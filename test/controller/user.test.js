@@ -19,7 +19,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   const TEST_USER = {
     username: 'apples',
-    password: 'apples',
+    password: 'oranges',
     role: 'read',
   }
 
@@ -75,13 +75,27 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
+  tape('user controller -> check password (wrong user)', (t) => {
+
+    const controller = getController()
+
+    controller.checkPassword({
+      username: 'baduser',
+      password: TEST_USER.password,
+    }, (err, result) => {
+      t.notok(err, `there was no error`)
+      t.notok(result, `the result was correct`)
+      t.end()
+    })
+  })
+
   tape('user controller -> check password (incorrect)', (t) => {
 
     const controller = getController()
 
     controller.checkPassword({
       username: TEST_USER.username,
-      password: 'oranges',
+      password: 'badpassword',
     }, (err, result) => {
       t.notok(err, `there was no error`)
       t.notok(result, `the result was correct`)

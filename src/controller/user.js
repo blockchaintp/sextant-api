@@ -66,6 +66,7 @@ const UserController = ({ store }) => {
       username: params.username,
     }, (err, user) => {
       if(err) return done(err)
+      if(!user) return done(null, false)
       utils.compareHashedPasswords(params.password, user.hashed_password, done)
     })
   }
@@ -80,22 +81,21 @@ const UserController = ({ store }) => {
      * password - string
      * role - {admin,user}
     
-    if there are no current users - force the role to be 'admin'
-    this is to avoid the initial user being created who cannot then add more users
-
   */
   const create = (params, done) => {
 
     if(!params.username) return done(`username required for controller.user.create`)
     if(!params.password) return done(`password required for controller.user.create`)
     if(!params.role) return done(`role required for controller.user.create`)
-    
+
     count({}, (err, existingUsers) => {
       if(err) return done(err)
 
+      // if there are no current users - force the role to be 'admin'
+      // this is to avoid the initial user being created who cannot then add more users
       const role = existingUsers == 0 ? 'admin' : params.role
 
-      utils.getPasswordHash(params.username, (err, hashed_password) => {
+      utils.getPasswordHash(params.password, (err, hashed_password) => {
         if(err) return done(err)
         store.user.create({
           username: params.username,
