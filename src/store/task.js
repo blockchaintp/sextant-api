@@ -73,33 +73,42 @@ const TaskStore = (knex) => {
 
     params:
 
-      * user
-      * resource_type
-      * resource_id
-      * restartable
-      * payload
+      * data
+        * user
+        * resource_type
+        * resource_id
+        * restartable
+        * payload
+      
+      * transaction - used if present
     
   */
   const create = (params, done) => {
-    if(!params.user) return done(`user param must be given to store.task.create`)
-    if(!params.resource_type) return done(`resource_type param must be given to store.task.create`)
-    if(!params.resource_id) return done(`resource_id param must be given to store.task.create`)
-    if(typeof(params.restartable) !== 'boolean') return done(`restartable param must be given to store.task.create`)
-    if(!params.payload) return done(`payload param must be given to store.task.create`)
+    if(!params.data) return done(`data param must be given to store.task.create`)
+    if(!params.data.user) return done(`data.user param must be given to store.task.create`)
+    if(!params.data.resource_type) return done(`data.resource_type param must be given to store.task.create`)
+    if(!params.data.resource_id) return done(`data.resource_id param must be given to store.task.create`)
+    if(typeof(params.data.restartable) !== 'boolean') return done(`data.restartable param must be given to store.task.create`)
+    if(!params.data.payload) return done(`data.payload param must be given to store.task.create`)
 
     const insertData = {
-      user: params.user,
-      resource_type: params.resource_type,
-      resource_id: params.resource_id,
-      restartable: params.restartable,
-      payload: params.payload,
+      user: params.data.user,
+      resource_type: params.data.resource_type,
+      resource_id: params.data.resource_id,
+      restartable: params.data.restartable,
+      payload: params.data.payload,
       status: 'created',
     }
 
-    knex('task')
+    const query = knex('task')
       .insert(insertData)
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -111,13 +120,15 @@ const TaskStore = (knex) => {
       * id
       * data (all optional)
         * status
+      
+      * transaction - used if present
   
   */
   const update = (params, done) => {
     if(!params.id) return done(`id must be given to store.task.update`)
     if(!params.data) return done(`data param must be given to store.task.update`)
 
-    knex('task')
+    const query = knex('task')
       .where({
         id: params.id,
       })
@@ -125,7 +136,12 @@ const TaskStore = (knex) => {
         status: params.data.status,
       })
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+    
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

@@ -41,17 +41,36 @@ const ClusterController = ({ store, settings }) => {
     
   */
   const create = (params, done) => {
-    store.cluster.create({
-      name: params.name,
-      provision_type: params.provision_type,
-      desired_state: params.desired_state,
-      capabilities: params.capabilities,
-    }, (err, cluster) => {
-      if(err) return done(err)
 
-      // TODO: create write role for user
-      done(null, cluster)
-    })
+    if(!params.user) return done(`user required for controllers.cluster.create`)
+    if(!params.data) return done(`data required for controllers.cluster.create`)
+    if(!params.data.name) return done(`data.name required for controllers.cluster.create`)
+    if(!params.data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
+    if(!params.data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
+
+    store.transaction((transaction, finished) => {
+
+      async.waterfall([
+
+        // create the cluster record
+        (next) => store.cluster.create({
+          data: {
+            name: params.name,
+            provision_type: params.provision_type,
+            desired_state: params.desired_state,
+            capabilities: params.capabilities,
+          }
+        }, next),
+
+        // create the user role if needed
+        (cluster, next) => {
+          if(user.role == 'admin') return next(null, cluster)
+
+          next(null, cluster)
+        },
+      ], finished)
+    }, done)
+    
   }
 
   /*

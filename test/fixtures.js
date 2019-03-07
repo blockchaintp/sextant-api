@@ -111,7 +111,9 @@ const insertTestUsers = (databaseConnection, data, done) => {
   async.eachSeries(data, (userData, nextUser) => {
     getTestUserData(userData, (err, data) => {
       if(err) return nextUser(err)
-      store.create(data, (err, user) => {
+      store.create({
+        data
+      }, (err, user) => {
         if(err) return nextUser(err)
         userMap[user.username] = user
         nextUser()
@@ -136,7 +138,9 @@ const insertTestClusters = (databaseConnection, data, done) => {
   const clusterMap = {}
 
   async.eachSeries(data, (clusterData, nextCluster) => {
-    store.create(clusterData, (err, cluster) => {
+    store.create({
+      data: clusterData
+    }, (err, cluster) => {
       if(err) return nextCluster(err)
       clusterMap[cluster.name] = cluster
       nextCluster()
@@ -163,7 +167,9 @@ const insertTestDeployments = (databaseConnection, cluster, data, done) => {
     const insertData = Object.assign({}, deploymentData, {
       cluster,
     })
-    store.create(insertData, (err, deployment) => {
+    store.create({
+      data: insertData
+    }, (err, deployment) => {
       if(err) return nextDeployment(err)
       deploymentMap[deployment.name] = deployment
       nextDeployment()
@@ -190,7 +196,9 @@ const insertTestRoles = (databaseConnection, user, data, done) => {
     const insertData = Object.assign({}, roleData, {
       user,
     })
-    store.create(insertData, (err, role) => {
+    store.create({
+      data: insertData
+    }, (err, role) => {
       if(err) return nextRole(err)
       roleMap[role.resource_type] = role
       nextRole()
@@ -217,7 +225,9 @@ const insertTestTasks = (databaseConnection, user, data, done) => {
     const insertData = Object.assign({}, taskData, {
       user,
     })
-    store.create(insertData, (err, task) => {
+    store.create({
+      data: insertData
+    }, (err, task) => {
       if(err) return nextTask(err)
       taskMap[task.id] = task
       nextTask()

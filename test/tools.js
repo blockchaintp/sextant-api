@@ -7,7 +7,9 @@ const insertWithMissingValues = (t, store, baseObject) => {
   async.eachSeries(Object.keys(baseObject), (field, nextField) => {
     const insertData = Object.assign({}, baseObject)
     delete(insertData[field])
-    store.create(insertData, (err) => {
+    store.create({
+      data: insertData
+    }, (err) => {
       t.ok(err, `there was an error for missing field: ${field}`)
       nextField()
     })

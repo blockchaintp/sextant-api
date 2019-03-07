@@ -46,31 +46,40 @@ const UserStore = (knex) => {
 
     params:
 
-      * username
-      * hashed_password
-      * role
-      * meta
+      * data
+        * username
+        * hashed_password
+        * role
+        * meta
+      
+      * transaction - used if present
   */
   const create = (params, done) => {
-    if(!params.username) return done(`username param must be given to store.user.create`)
-    if(!params.hashed_password) return done(`hashed_password param must be given to store.user.create`)
-    if(!params.token) return done(`token param must be given to store.user.create`)
-    if(!params.token_salt) return done(`token_salt param must be given to store.user.create`)
-    if(!params.role) return done(`role param must be given to store.user.create`)
+    if(!params.data) return done(`data param must be given to store.user.create`)
+    if(!params.data.username) return done(`data.username param must be given to store.user.create`)
+    if(!params.data.hashed_password) return done(`data.hashed_password param must be given to store.user.create`)
+    if(!params.data.token) return done(`data.token param must be given to store.user.create`)
+    if(!params.data.token_salt) return done(`data.token_salt param must be given to store.user.create`)
+    if(!params.data.role) return done(`data.role param must be given to store.user.create`)
 
     const insertData = {
-      username: params.username,
-      hashed_password: params.hashed_password,
-      token: params.token,
-      token_salt: params.token_salt,
-      role: params.role,
-      meta: params.meta,
+      username: params.data.username,
+      hashed_password: params.data.hashed_password,
+      token: params.data.token,
+      token_salt: params.data.token_salt,
+      role: params.data.role,
+      meta: params.data.meta,
     }
 
-    knex('useraccount')
+    const query = knex('useraccount')
       .insert(insertData)
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+    
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -85,6 +94,8 @@ const UserStore = (knex) => {
         * hashed_password
         * role
         * meta
+      
+      * transaction - used if present
     
     one of id or username must be given
   
@@ -93,13 +104,18 @@ const UserStore = (knex) => {
     if(!params.id) return done(`id must be given to store.user.update`)
     if(!params.data) return done(`data param must be given to store.user.update`)
 
-    knex('useraccount')
+    const query = knex('useraccount')
       .where({
         id: params.id,
       })
       .update(params.data)
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -109,18 +125,25 @@ const UserStore = (knex) => {
     params:
 
       * id
+
+      * transaction - used if present
     
   */
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.user.delete`)
 
-    knex('useraccount')
+    const query = knex('useraccount')
       .where({
         id: params.id,
       })
       .del()
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

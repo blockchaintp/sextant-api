@@ -24,7 +24,8 @@ const testSuiteWithApp = (handler) => {
         settings,
       })
 
-      server = app.listen(TEST_PORT, () => {
+      server = app.listen(TEST_PORT, (err) => {
+        t.notok(err, `there was no error`)
         t.end()        
       })
     })
@@ -35,7 +36,8 @@ const testSuiteWithApp = (handler) => {
     })
 
     tape('stop app', (t) => {
-      server.close(() => {
+      server.close((err) => {
+        t.notok(err, `there was no error`)
         t.end()
       })
     })

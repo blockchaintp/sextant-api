@@ -56,21 +56,36 @@ const RoleStore = (knex) => {
 
     params:
 
-      * user
-      * permission
-      * resource_type
-      * resource_id
+      * data
+        * user
+        * permission
+        * resource_type
+        * resource_id
+      
+      * transaction - used if present
   
   */
   const create = (params, done) => {
-    if(!params.user) return done(`user param must be given to store.role.add`)
-    if(!params.permission) return done(`permission param must be given to store.role.add`)
-    if(!params.resource_type) return done(`resource_type param must be given to store.role.add`)
-    if(!params.resource_id) return done(`resource_id param must be given to store.role.add`)
-    knex('role')
-      .insert(params)
+    if(!params.data) return done(`data param must be given to store.role.add`)
+    if(!params.data.user) return done(`data.user param must be given to store.role.add`)
+    if(!params.data.permission) return done(`data.permission param must be given to store.role.add`)
+    if(!params.data.resource_type) return done(`data.resource_type param must be given to store.role.add`)
+    if(!params.data.resource_id) return done(`data.resource_id param must be given to store.role.add`)
+
+    const query = knex('role')
+      .insert({
+        user: params.data.user,
+        permission: params.data.permission,
+        resource_type: params.data.resource_type,
+        resource_id: params.data.resource_id,
+      })
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -80,17 +95,24 @@ const RoleStore = (knex) => {
     params:
 
      * id
+
+     * transaction - used if present
   
   */
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.role.delete`)
-    knex('role')
+    const query = knex('role')
       .where({
         id: params.id,
       })
       .del()
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

@@ -49,28 +49,37 @@ const DeploymentStore = (knex) => {
 
     params:
 
-      * cluster
-      * name
-      * desired_state
+      * data
+        * cluster
+        * name
+        * desired_state
+      
+      * transaction - used if present
     
     status is set to 'created' for a new deployment
 
   */
   const create = (params, done) => {
-    if(!params.cluster) return done(`cluster param must be given to store.deployment.create`)
-    if(!params.name) return done(`name param must be given to store.deployment.create`)
-    if(!params.desired_state) return done(`desired_state param must be given to store.deployment.create`)
+    if(!params.data) return done(`data param must be given to store.deployment.create`)
+    if(!params.data.cluster) return done(`data.cluster param must be given to store.deployment.create`)
+    if(!params.data.name) return done(`data.name param must be given to store.deployment.create`)
+    if(!params.data.desired_state) return done(`data.desired_state param must be given to store.deployment.create`)
 
     const insertData = {
-      cluster: params.cluster,
-      name: params.name,
-      desired_state: params.desired_state,
+      cluster: params.data.cluster,
+      name: params.data.name,
+      desired_state: params.data.desired_state,
     }
 
-    knex('deployment')
+    const query = knex('deployment')
       .insert(insertData)
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -86,19 +95,26 @@ const DeploymentStore = (knex) => {
         * desired_state
         * applied_state
         * maintenance_flag
+      
+      * transaction - used if present
   
   */
   const update = (params, done) => {
     if(!params.id) return done(`id must be given to store.cluster.update`)
     if(!params.data) return done(`data param must be given to store.cluster.update`)
 
-    knex('deployment')
+    const query = knex('deployment')
       .where({
         id: params.id,
       })
       .update(params.data)
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -108,18 +124,25 @@ const DeploymentStore = (knex) => {
     params:
 
       * id
+
+      * transaction - used if present
     
   */
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.deployment.delete`)
 
-    knex('deployment')
+    const query = knex('deployment')
       .where({
         id: params.id,
       })
       .del()
       .returning('*')
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      query.transacting(params.transaction)
+    }
+    
+    query.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

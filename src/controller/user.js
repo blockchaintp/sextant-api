@@ -104,11 +104,13 @@ const UserController = ({ store, settings }) => {
       }, (err, values) => {
         if(err) return done(err)
         store.user.create({
-          username: params.username,
-          role,
-          hashed_password: values.hashed_password,
-          token: values.generated_token.token,
-          token_salt: values.generated_token.salt,
+          data: {
+            username: params.username,
+            role,
+            hashed_password: values.hashed_password,
+            token: values.generated_token.token,
+            token_salt: values.generated_token.salt,
+          }
         }, done)
       })
     })

@@ -20,7 +20,7 @@ const extractor = (map) => (done) => (err, raw) => {
 const singleExtractor = extractor(getSingleRecord)
 const allExtractor = extractor(getAllRecords)
 
-const knexTransaction = (knex, handler, done) => {
+const transaction = (knex, handler, done) => {
   knex.transaction(trx => {
     handler(trx, (err, results) => {
       if(err) {
@@ -47,5 +47,5 @@ module.exports = {
   extractor,
   singleExtractor,
   allExtractor,
-  knexTransaction
+  transaction,
 }

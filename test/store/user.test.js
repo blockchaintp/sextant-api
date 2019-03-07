@@ -43,11 +43,13 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     store.create({
-      username: 'apples',
-      hashed_password: 'na',
-      token: 'na',
-      token_salt: 'na',
-      role: 'apples'
+      data: {
+        username: 'apples',
+        hashed_password: 'na',
+        token: 'na',
+        token_salt: 'na',
+        role: 'apples'
+      }
     }, (err, user) => {
       t.ok(err, `there was an error`)
       t.end()

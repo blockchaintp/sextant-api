@@ -357,10 +357,12 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     store.role.create({
-      user: userMapByRole.read.id,
-      permission: 'read',
-      resource_type: 'cluster',
-      resource_id: 1,
+      data: {
+        user: userMapByRole.read.id,
+        permission: 'read',
+        resource_type: 'cluster',
+        resource_id: 1,
+      }
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
@@ -526,10 +528,12 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     store.role.create({
-      user: userMapByRole.write.id,
-      permission: 'write',
-      resource_type: 'cluster',
-      resource_id: 1,
+      data: {
+        user: userMapByRole.write.id,
+        permission: 'write',
+        resource_type: 'cluster',
+        resource_id: 1,
+      }
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
@@ -710,10 +714,12 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     store.role.create({
-      user: userMapByRole.read.id,
-      permission: 'read',
-      resource_type: 'deployment',
-      resource_id: 1,
+      data: {
+        user: userMapByRole.read.id,
+        permission: 'read',
+        resource_type: 'deployment',
+        resource_id: 1,
+      }
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
@@ -754,10 +760,12 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     store.role.create({
-      user: userMapByRole.write.id,
-      permission: 'write',
-      resource_type: 'deployment',
-      resource_id: 1,
+      data: {
+        user: userMapByRole.write.id,
+        permission: 'write',
+        resource_type: 'deployment',
+        resource_id: 1,
+      }
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()

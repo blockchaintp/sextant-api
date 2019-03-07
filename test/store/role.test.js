@@ -67,10 +67,12 @@ database.testSuiteWithDatabase(getConnection => {
     const store = RoleStore(getConnection())
 
     store.create({
-      user: testUser.id,
-      permission: 'read',
-      resource_type: 'oranges',
-      resource_id: 10,
+      data: {
+        user: testUser.id,
+        permission: 'read',
+        resource_type: 'oranges',
+        resource_id: 10,
+      }
     }, (err) => {
       t.ok(err, `there was an error`)
       t.end()

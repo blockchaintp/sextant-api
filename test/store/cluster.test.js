@@ -43,11 +43,13 @@ database.testSuiteWithDatabase(getConnection => {
     const store = ClusterStore(getConnection())
   
     store.create({
-      name: 'testcluster',
-      provision_type: 'silly_provision_type',
-      desired_state: {
-        apples: 10,
-      },
+      data: {
+        name: 'testcluster',
+        provision_type: 'silly_provision_type',
+        desired_state: {
+          apples: 10,
+        },
+      }
     }, (err) => {
       t.ok(err, `there was an error`)
       t.end()

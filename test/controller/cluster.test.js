@@ -26,5 +26,16 @@ database.testSuiteWithDatabase(getConnection => {
     })
   
   })
+/*
+  tape('cluster controller -> create cluster', (t) => {
   
+    const controller = getController()
+
+    controller.create({
+      
+    })
+    
+  
+  })
+  */
 })
