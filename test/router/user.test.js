@@ -527,6 +527,24 @@ app.testSuiteWithApp(({
     
   })
 
+  tape('user routes -> attempt to update token via update method', (t) => {
+
+    tools.sessionRequest({
+      method: 'put',
+      url: `${url}/user/${USER_RECORDS.read.id}`,
+      json: true,
+      body: {
+        token: 'badtoken',
+      }
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 code`)
+      t.equal(body.error, 'cannot change token via update', `error message was correct`)
+      t.end()
+    })
+    
+  })
+
   tape('user routes -> logout', (t) => {
 
     tools.sessionRequest({

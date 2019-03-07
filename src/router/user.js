@@ -103,6 +103,11 @@ const UserRoutes = (controllers) => {
       res._code = 403
       return next(`cannot change own role`)
     }
+
+    if(req.body.token || req.body.token_salt) {
+      res._code = 403
+      return next(`cannot change token via update`)
+    }
     
     controllers.user.update({
       id: req.params.id,

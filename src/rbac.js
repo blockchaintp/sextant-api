@@ -58,11 +58,12 @@ const HELPERS = {
 
   // allow a logged in user to read or update it's own record
   // this is so a user can read itself or update their password etc
-  allowUserAccessToOwnRecord: (store, user, action, done) => {
+  allowUserAccessToOwnRecord: (opts) => (store, user, action, done) => {
     // requires a user
     if(!user) return done(`access denied`)
-    // admin gets access
-    if(user && user.role == 'admin') return done()
+
+    // admin gets access if configured
+    if(user && user.role == 'admin' && opts.allowAdmin) return done()
   
     // if the user is getting it's own data - allow
     if(action.resource_type == 'user' && action.resource_id == user.id) return done()
@@ -71,7 +72,7 @@ const HELPERS = {
 
   // if there is no user and zero existing users - allow (so the initial account can be created)
     // if there is a user - they must be an admin
-  allowInitialAccountCreation: (store, user, action, done) => {
+  allowInitialAccountCreation: (opts) => (store, user, action, done) => {
     if(user) {
       if(user.role == 'admin') return done()
       else return done(`access denied`)
@@ -91,9 +92,16 @@ const METHOD_CONFIG = {
     list: {
       admin: true,
     },
-    get: HELPERS.allowUserAccessToOwnRecord,
-    create: HELPERS.allowInitialAccountCreation,
-    update: HELPERS.allowUserAccessToOwnRecord,
+    get: HELPERS.allowUserAccessToOwnRecord({
+      allowAdmin: true,
+    }),
+    create: HELPERS.allowInitialAccountCreation(),
+    update: HELPERS.allowUserAccessToOwnRecord({
+      allowAdmin: true,
+    }),
+    updateToken: HELPERS.allowUserAccessToOwnRecord({
+      allowAdmin: false,
+    }),
     delete: {
       admin: true,
     },

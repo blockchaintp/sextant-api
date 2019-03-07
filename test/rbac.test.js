@@ -190,6 +190,21 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('rbac -> user.get not allowed for other record', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'user',
+      resource_id: userMapByRole.admin.id,
+      method: 'get',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+    
+  })
+
   tape('rbac -> user.update allowed for own record', (t) => {
 
     const store = Store(getConnection())
@@ -200,6 +215,51 @@ database.testSuiteWithDatabase(getConnection => {
       method: 'update',
     }, (err) => {
       t.notok(err, `there was no error`)
+      t.end()
+    })
+    
+  })
+
+  tape('rbac -> user.update not allowed for other record', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'user',
+      resource_id: userMapByRole.admin.id,
+      method: 'update',
+    }, (err) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+    
+  })
+
+  tape('rbac -> user.updateToken allowed for own record', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.read, {
+      resource_type: 'user',
+      resource_id: userMapByRole.read.id,
+      method: 'updateToken',
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+    
+  })
+
+  tape('rbac -> user.updateToken not allowed for other record even when user is admin', (t) => {
+
+    const store = Store(getConnection())
+
+    rbac(store, userMapByRole.admin, {
+      resource_type: 'user',
+      resource_id: userMapByRole.read.id,
+      method: 'updateToken',
+    }, (err) => {
+      t.ok(err, `there was an error`)
       t.end()
     })
     
