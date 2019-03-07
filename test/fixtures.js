@@ -7,14 +7,17 @@ const UserStore = require('../src/store/user')
 const ClusterStore = require('../src/store/cluster')
 const DeployentStore = require('../src/store/deployment')
 const RoleStore = require('../src/store/role')
+const TaskStore = require('../src/store/task')
 
 const SIMPLE_USER_DATA = [{
-  username: 'zebra',
-  password: 'zebra1',
+  // zebra
+  username: 'admin',
+  password: 'admin1',
   role: 'admin',
 },{
-  username: 'apples',
-  password: 'apples1',
+  // apples
+  username: 'write',
+  password: 'write1',
   role: 'write',
 }]
 
@@ -58,6 +61,22 @@ const SIMPLE_ROLE_DATA = [{
   permission: 'write',
   resource_type: 'deployment',
   resource_id: 11,
+}]
+
+const SIMPLE_TASK_DATA = [{
+  resource_type: 'cluster',
+  resource_id: 10,
+  restartable: true,
+  payload: {
+    apples: 10,
+  },
+}, {
+  resource_type: 'deployment',
+  resource_id: 11,
+  restartable: false,
+  payload: {
+    oranges: 10,
+  },
 }]
 
 const getTestUserData = (data, done) => {
@@ -182,14 +201,43 @@ const insertTestRoles = (databaseConnection, user, data, done) => {
   })
 }
 
+const insertTestTasks = (databaseConnection, user, data, done) => {
+
+  if(!done) {
+    done = data
+    data = SIMPLE_TASK_DATA
+  }
+
+  const store = TaskStore(databaseConnection)
+
+  // map of resource types onto database records
+  const taskMap = {}
+
+  async.eachSeries(data, (taskData, nextTask) => {
+    const insertData = Object.assign({}, taskData, {
+      user,
+    })
+    store.create(insertData, (err, task) => {
+      if(err) return nextTask(err)
+      taskMap[task.id] = task
+      nextTask()
+    })
+  }, (err) => {
+    if(err) return done(err)
+    done(null, taskMap)
+  })
+}
+
 module.exports = {
   SIMPLE_USER_DATA,
   SIMPLE_CLUSTER_DATA,
   SIMPLE_DEPLOYMENT_DATA,
   SIMPLE_ROLE_DATA,
+  SIMPLE_TASK_DATA,
   getTestUserData,
   insertTestUsers,
   insertTestClusters,
   insertTestDeployments,
   insertTestRoles,
+  insertTestTasks,
 }

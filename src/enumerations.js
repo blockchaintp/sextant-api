@@ -35,6 +35,15 @@ const PERMISSION_ROLE = [
   'write',
 ]
 
+const TASK_STATUS = [
+  'created',
+  'running',
+  'finished',
+  'cancelling',
+  'cancelled',
+  'error',
+]
+
 module.exports = {
   RESOURCE_TYPES,
   CLUSTER_PROVISION_TYPE,
@@ -43,4 +52,5 @@ module.exports = {
   DEPLOYMENT_STATUS,
   DEPLOYMENT_STATUS_DEFAULT,
   PERMISSION_ROLE,
+  TASK_STATUS,
 }

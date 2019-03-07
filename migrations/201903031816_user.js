@@ -2,7 +2,7 @@ const enumerations = require('../src/enumerations')
 
 const up = (knex, Promise) => {
   return Promise.all([
-    knex.schema.createTable('user', (table) => {
+    knex.schema.createTable('useraccount', (table) => {
       table.specificType('id', 'serial primary key not null')
       table.specificType('created_at', 'timestamp default now()')
       table.string('username').unique().notNullable()
@@ -17,7 +17,7 @@ const up = (knex, Promise) => {
 
 const down = (knex, Promise) => {
   return Promise.all([
-    knex.schema.dropTable('user')
+    knex.schema.dropTable('useraccount')
   ])
 }
 

@@ -58,7 +58,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
-      t.deepEqual(users.zebra.meta, {}, `the metadata defaults to empty object`)
+      t.deepEqual(users.admin.meta, {}, `the metadata defaults to empty object`)
       userMap = users
       t.end()
     })
@@ -73,8 +73,8 @@ database.testSuiteWithDatabase(getConnection => {
       t.notok(err, `there was no error`)
       t.equal(users.length, 2, `there were 2 users`)
       t.deepEqual(users.map(user => user.username), [
-        'apples',
-        'zebra',
+        'admin',
+        'write',
       ], 'the users were in the correct order')
       t.end()
     })
@@ -87,18 +87,18 @@ database.testSuiteWithDatabase(getConnection => {
   
     async.waterfall([
       (next) => store.get({
-        username: 'apples',
+        username: 'write',
       }, next),
   
       (usernameUser, next) => {
-        t.equal(usernameUser.username, 'apples', `the returned username is correct`)
+        t.equal(usernameUser.username, 'write', `the returned username is correct`)
         store.get({
           id: usernameUser.id,
         }, next)
       },
   
       (idUser, next) => {
-        t.equal(idUser.username, 'apples', `the returned username is correct`)
+        t.equal(idUser.username, 'write', `the returned username is correct`)
         next()
       },
   
@@ -114,7 +114,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     store.update({
-      id: userMap.apples.id,
+      id: userMap.write.id,
       data: {
         username: 'oranges',
       }
@@ -137,13 +137,13 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     store.delete({
-      id: userMap.apples.id,
+      id: userMap.write.id,
     }, (err, user) => {
       t.notok(err, `there was no error`)
       store.list({},(err, users) => {
         t.notok(err, `there was no error`)
         t.equal(users.length, 1, `there is 1 user`)
-        t.equal(users[0].username, 'zebra', 'the remaining username is correct')
+        t.equal(users[0].username, 'admin', 'the remaining username is correct')
         t.end()
       })
     })

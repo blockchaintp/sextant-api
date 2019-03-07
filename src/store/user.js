@@ -11,7 +11,7 @@ const UserStore = (knex) => {
   */
   const list = (params, done) => {
     knex.select('*')
-      .from('user')
+      .from('useraccount')
       .orderBy('username')
       .asCallback(databaseTools.allExtractor(done))
   }
@@ -35,7 +35,7 @@ const UserStore = (knex) => {
     if(params.username) query.username = params.username
     
     knex.select('*')
-      .from('user')
+      .from('useraccount')
       .where(query)
       .asCallback(databaseTools.singleExtractor(done))
   }
@@ -67,7 +67,7 @@ const UserStore = (knex) => {
       meta: params.meta,
     }
 
-    knex('user')
+    knex('useraccount')
       .insert(insertData)
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))
@@ -93,7 +93,7 @@ const UserStore = (knex) => {
     if(!params.id) return done(`id must be given to store.user.update`)
     if(!params.data) return done(`data param must be given to store.user.update`)
 
-    knex('user')
+    knex('useraccount')
       .where({
         id: params.id,
       })
@@ -114,7 +114,7 @@ const UserStore = (knex) => {
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.user.delete`)
 
-    knex('user')
+    knex('useraccount')
       .where({
         id: params.id,
       })

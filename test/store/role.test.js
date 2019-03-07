@@ -19,7 +19,7 @@ database.testSuiteWithDatabase(getConnection => {
     fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
       userMap = users
-      testUser = users.apples
+      testUser = users.write
       t.end()
     })
   

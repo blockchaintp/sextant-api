@@ -84,10 +84,17 @@ const testSuiteWithDatabase = (handler) => {
     databaseConnection
       .destroy()
       .then(() => {
-        destroyTestKnex(databaseName, (err, knex) => {
-          t.notok(err, `there was no error`)
+
+        if(process.env.KEEP_DATABASE) {
           t.end()
-        })
+        }
+        else {
+          destroyTestKnex(databaseName, (err, knex) => {
+            t.notok(err, `there was no error`)
+            t.end()
+          })
+        }
+        
       })
       .catch(err => {
         t.error(err)
