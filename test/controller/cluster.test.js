@@ -70,8 +70,7 @@ database.testSuiteWithDatabase(getConnection => {
       // check we have a task for the cluster.create
       next => {
         store.task.list({
-          resource_type: 'cluster',
-          resource_id: testClusters.write.id
+          cluster: testClusters.write.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length,1, `there is a create task`)
@@ -81,13 +80,7 @@ database.testSuiteWithDatabase(getConnection => {
           t.equal(task.resource_id, testClusters.write.id, `the task resource_id is correct`)
           t.equal(task.status, 'created', `the task status is correct`)
           t.equal(task.restartable, true, `the task restartable is correct`)
-          t.deepEqual(task.payload, {
-            type: 'cluster.create',
-            clusterid: testClusters.write.id,
-            provision_type: testClusters.write.provision_type,
-            desired_state: testClusters.write.desired_state,
-            capabilities: testClusters.write.capabilities,
-          }, 'the task payload is correct')
+          t.equal(task.payload.action, 'cluster.create', `the task payload action is correct`)
           next()
         })
       },
@@ -124,8 +117,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     async.waterfall([
       (next) => store.task.list({
-        resource_type: 'cluster',
-        resource_id: testClusters.write.id
+        cluster: testClusters.write.id
       }, next),
 
       (tasks, next) => store.task.update({
@@ -168,13 +160,12 @@ database.testSuiteWithDatabase(getConnection => {
 
       next => {
         store.task.list({
-          resource_type: 'cluster',
-          resource_id: testClusters.write.id
+          cluster: testClusters.write.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length,2, `there are 2 tasks`)
           t.deepEqual(tasks.map(task => task.status), ['created', 'finished'], `the tasks are correct`)
-          t.equal(tasks[0].payload.type, 'cluster.update', `the new task has the correct type`)
+          t.equal(tasks[0].payload.action, 'cluster.update', `the new task has the correct type`)
           next()
         })
       },
@@ -265,6 +256,64 @@ database.testSuiteWithDatabase(getConnection => {
     }, (err, cluster) => {
       t.ok(err, `there was an error`)
       t.equal(err, `there are active tasks for this cluster`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> update task', (t) => {
+
+    const store = Store(getConnection())
+
+    async.waterfall([
+      (next) => store.task.list({
+        cluster: testClusters.write.id
+      }, next),
+
+      (tasks, next) => {
+        store.task.update({
+          id: tasks[0].id,
+          data: {
+            status: 'finished',
+          }
+        }, next)
+      },
+
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+    
+  })
+
+  tape('cluster controller -> delete a cluster', (t) => {
+
+    const controller = getController()
+    const store = Store(getConnection())
+
+    async.series([
+      next => {
+        controller.delete({
+          user: userMap.write,
+          id: testClusters.write.id,
+        }, (err, cluster) => {
+          if(err) return next(err)
+          next()
+        })
+      },
+
+      next => {
+        store.task.list({
+          cluster: testClusters.write.id
+        }, (err, tasks) => {
+          if(err) return next(err)
+          t.equal(tasks.length, 3, `there are 3 tasks`)
+          t.deepEqual(tasks.map(task => task.status), ['created', 'finished', 'finished'], `the tasks are correct`)
+          t.equal(tasks[0].payload.action, 'cluster.delete', `the new task has the correct type`)
+          next()
+        })
+      },
+    ], (err) => {
+      t.notok(err, `there as no error`)
       t.end()
     })
   })

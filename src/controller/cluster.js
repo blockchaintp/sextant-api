@@ -12,6 +12,7 @@ const ClusterController = ({ store, settings }) => {
     params:
 
      * user - the user that is viewing the list
+     * deleted - include deleted clusters in the list
 
     if the is an admin role - then load all clusters
 
@@ -23,11 +24,14 @@ const ClusterController = ({ store, settings }) => {
 
     const {
       user,
+      deleted,
     } = params
 
     if(!user) return done(`user required for controllers.cluster.list`)
 
-    store.cluster.list({}, (err, clusters) => {
+    store.cluster.list({
+      deleted,
+    }, (err, clusters) => {
       if(err) return done(err)
 
       // if it's an admin - they can see all clusters
@@ -129,11 +133,7 @@ const ClusterController = ({ store, settings }) => {
               resource_id: cluster.id,
               restartable: true,
               payload: {
-                type: 'cluster.create',
-                clusterid: cluster.id,
-                provision_type: cluster.provision_type,
-                desired_state: cluster.desired_state,
-                capabilities: cluster.capabilities,
+                action: 'cluster.create',
               }
             },
             transaction,
@@ -221,11 +221,7 @@ const ClusterController = ({ store, settings }) => {
               resource_id: cluster.id,
               restartable: true,
               payload: {
-                type: 'cluster.update',
-                clusterid: cluster.id,
-                provision_type: cluster.provision_type,
-                desired_state: cluster.desired_state,
-                capabilities: cluster.capabilities,
+                action: 'cluster.update',
               }
             },
             transaction,
@@ -261,8 +257,56 @@ const ClusterController = ({ store, settings }) => {
     if(!id) return done(`id must be given to controller.cluster.delete`) 
 
     
-    store.cluster.delete({
-      id: params.id,
+    // check to see if there is a running or cancelling tasks for the given cluster
+    // if there is, don't allow the update
+
+    store.transaction((transaction, finished) => {
+
+      async.waterfall([
+
+        (next) => {
+          store.task.activeForResource({
+            cluster: id,
+          }, (err, activeTasks) => {
+            if(err) return next(err)
+            if(activeTasks.length > 0) return next(`there are active tasks for this cluster`)
+            next(null, true)
+          })
+        },
+
+        (ok, next) => {
+          store.cluster.update({
+            id: params.id,
+            data: {
+              desired_state: {
+                deleted: true,
+              },
+            },
+            transaction,
+          }, next)
+        },
+
+        (cluster, next) => {
+
+          store.task.create({
+            data: {
+              user: params.user.id,
+              resource_type: 'cluster',
+              resource_id: cluster.id,
+              restartable: true,
+              payload: {
+                action: 'cluster.delete',
+              }
+            },
+            transaction,
+          }, (err, task) => {
+            if(err) return next(err)
+            next(null, cluster)
+          })
+        },
+
+      ], finished)
+
     }, done)
   }
 
