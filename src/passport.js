@@ -1,34 +1,41 @@
 'use strict'
 
-const cookieParser = require('cookie-parser')
 const session = require('express-session')
-const pg = require('pg')
-const pgSession = require('connect-pg-simple')(session)
-const passport = require('passport')
+const cookieParser = require('cookie-parser')
+const Passport = require('passport').Passport
 
 const pino = require('pino')({
   name: 'passport',
 })
 
-const Passport = ({
+const PassportHandlers = ({
   app,
-  store,
   settings,
   sessionStore,
+  controllers,
 }) => {
-
-  if(!sessionStore) {
-    const pgPool = new pg.Pool(settings.postgres.connection)
-    sessionStore = new pgSession({
-      pool: pgPool,
-    })
+  if(!app) {
+    throw new Error(`app required`)
   }
-  
+
+  if(!settings) {
+    throw new Error(`settings required`)
+  }
+
+  if(!controllers) {
+    throw new Error(`store required`)
+  }
+
+  const passport = new Passport()
+
   app.use(cookieParser())
   app.use(session({ 
     secret: settings.sessionSecret,
     resave: false,
     saveUninitialized: true,
+
+    // in production this will be the postgres session store
+    // otherwise default in the in-memory store for testing
     store: sessionStore,
     // 30 days
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
@@ -41,13 +48,13 @@ const Passport = ({
     done(null, user.username)
   })
   passport.deserializeUser((username, done) => {
-    store.user.get({
+    controllers.user.get({
       username
     }, (err, user) => {
       if(err) {
         const errorInfo = {
           type: 'deserializeUser',
-          error: err
+          error: err.toString()
         }
         pino.error(errorInfo)
         return done(errorInfo)
@@ -67,4 +74,4 @@ const Passport = ({
   })
 }
 
-module.exports = Passport
+module.exports = PassportHandlers

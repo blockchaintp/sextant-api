@@ -37,11 +37,11 @@ const App = ({
   // hook up the session store
   Passport({
     app,
-    store,
     settings,
+    controllers,
     sessionStore,
   })
-
+ 
   // bind routes to the HTTP server
   Router({
     app,
@@ -76,7 +76,7 @@ const App = ({
   app.use((err, req, res, next) => {
     pino.error({
       action: 'error',
-      error: err.toString(),
+      error: err.error ? err.error.toString() : err.toString(),
       code: res._code || 500
     })
     // if the error was with the deserializer then logout to clear the cookie

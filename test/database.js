@@ -3,6 +3,7 @@
 const tape = require('tape')
 const path = require('path')
 const Knex = require('knex')
+const randomstring = require('randomstring')
 
 const getConnectionSettings = (databaseName) => {
   return {
@@ -62,7 +63,13 @@ const testSuiteWithDatabase = (handler) => {
   let databaseConnection = null
   const getDatabaseConnection = () => databaseConnection
 
-  const databaseName = `testdb${new Date().getTime()}`
+  const randomDatabaseName = randomstring.generate({
+    length: 16,
+    charset: 'alphabetic',
+    capitalization: 'lowercase',
+  })
+
+  const databaseName = `testdb${randomDatabaseName}`
   tape('setup database', (t) => {
     createTestKnex(databaseName, (err, knex) => {
       t.notok(err, `there was no error`)
