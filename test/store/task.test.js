@@ -62,7 +62,12 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('task store -> create tasks for write user', (t) => {
 
-    fixtures.insertTestTasks(getConnection(), userMap.write.id, (err, tasks) => {
+    const insertData = fixtures.SIMPLE_TASK_DATA.map(task => {
+      return Object.assign({}, task, {
+        resource_id: task.resource_id + 10,
+      })
+    })
+    fixtures.insertTestTasks(getConnection(), userMap.write.id, insertData, (err, tasks) => {
       t.notok(err, `there was no error`)
       Object.keys(tasks).forEach(key => {
         taskMap[key] = tasks[key]
@@ -91,9 +96,9 @@ database.testSuiteWithDatabase(getConnection => {
       cluster: 10,
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
-      t.equal(tasks.length, 2, `there were 2 tasks`)
-      t.deepEqual(tasks.map(task => task.resource_type), ['cluster', 'cluster'], `the resource_types are correct`)
-      t.deepEqual(tasks.map(task => task.resource_id), [10, 10], `the resource_ids are correct`)
+      t.equal(tasks.length, 1, `there was 1 task`)
+      t.equal(tasks[0].resource_type, 'cluster', `the resource_type is correct`)
+      t.equal(tasks[0].resource_id, 10, `the resource_id is correct`)
       t.end()
     })
     
@@ -107,9 +112,9 @@ database.testSuiteWithDatabase(getConnection => {
       deployment: 11,
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
-      t.equal(tasks.length, 2, `there were 2 tasks`)
-      t.deepEqual(tasks.map(task => task.resource_type), ['deployment', 'deployment'], `the resource_types are correct`)
-      t.deepEqual(tasks.map(task => task.resource_id), [11, 11], `the resource_ids are correct`)
+      t.equal(tasks.length, 1, `there was 1 task`)
+      t.equal(tasks[0].resource_type, 'deployment', `the resource_type is correct`)
+      t.equal(tasks[0].resource_id, 11, `the resource_id is correct`)
       t.end()
     })
     
@@ -188,18 +193,14 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('task store -> list by multiple status', (t) => {
+  tape('task store -> activeForResource', (t) => {
 
     const store = TaskStore(getConnection())
 
     const ids = Object.keys(taskMap).map(i => parseInt(i))
 
-    store.list({
+    store.activeForResource({
       cluster: 10,
-      status: [
-        'running',
-        'cancelling',
-      ]
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
       t.equal(tasks.length, 1, `there was 1 task`)

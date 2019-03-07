@@ -68,6 +68,43 @@ const TaskStore = (knex) => {
       .asCallback(databaseTools.allExtractor(done))
   }
 
+
+  /*
+  
+    get active tasks for either a specific resource
+
+    params:
+
+     * cluster - we want active tasks for a cluster
+     * deployment - we want active tasks for a deployment
+
+  */
+  const activeForResource = (params, done) => {
+
+    if(!params.cluster && !params.deployment) return done(`cluster or deployment required for controller.task.activeForResource`)
+
+    const query = {
+      status: [
+        // created tasks are expected to be picked up by the worker any moment
+        // so count as active
+        'created',
+        'running',
+        'cancelling',
+      ]
+    }
+
+    if(params.cluster) {
+      query.cluster = params.cluster
+    }
+
+    if(params.deployment) {
+      query.deployment = params.deployment
+    }
+
+    list(query, done)
+  }
+
+
   /*
   
     get a single task
@@ -139,7 +176,7 @@ const TaskStore = (knex) => {
     params:
 
       * id
-      * data (all optional)
+      * data
         * status
       
       * transaction - used if present
@@ -148,6 +185,9 @@ const TaskStore = (knex) => {
   const update = (params, done) => {
     if(!params.id) return done(`id must be given to store.task.update`)
     if(!params.data) return done(`data param must be given to store.task.update`)
+    if(!params.data.status) return done(`data.status param must be given to store.task.update`)
+
+    if(enumerations.TASK_STATUS.indexOf(params.data.status) < 0) return done(`bad status: ${params.data.status}`)
 
     const query = knex('task')
       .where({
@@ -167,6 +207,7 @@ const TaskStore = (knex) => {
 
   return {
     list,
+    activeForResource,
     get,
     create,
     update,

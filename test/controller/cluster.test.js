@@ -99,6 +99,89 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   tape('cluster controller -> cannot update a cluster with a running task', (t) => {
+
+    const controller = getController()
+
+    const desired_state = Object.assign({}, fixtures.SIMPLE_CLUSTER_DATA[0])
+    desired_state.oranges = 11
+
+    controller.update({
+      user: userMap.write,
+      id: testCluster.id,
+      data: {
+        desired_state,
+      },
+    }, (err, cluster) => {
+      t.ok(err, `there was an error`)
+      t.equal(err, `there are active tasks for this cluster`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> update task', (t) => {
+
+    const store = Store(getConnection())
+
+    async.waterfall([
+      (next) => store.task.list({
+        resource_type: 'cluster',
+        resource_id: testCluster.id
+      }, next),
+
+      (tasks, next) => store.task.update({
+        id: tasks[0].id,
+        data: {
+          status: 'finished',
+        }
+      }, next)
+
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+    
+  })
+
+  tape('cluster controller -> update a cluster', (t) => {
+
+    const controller = getController()
+    const store = Store(getConnection())
+
+    const desired_state = Object.assign({}, fixtures.SIMPLE_CLUSTER_DATA[0].desired_state, {
+      oranges: 11,
+    })
+
+    async.series([
+      next => {
+        controller.update({
+          user: userMap.write,
+          id: testCluster.id,
+          data: {
+            desired_state,
+          },
+        }, (err, cluster) => {
+          if(err) return next(err)
+          t.deepEqual(cluster.desired_state, desired_state, `the desired_state is correct`)
+          next()
+        })
+      },
+
+      next => {
+        store.task.list({
+          resource_type: 'cluster',
+          resource_id: testCluster.id
+        }, (err, tasks) => {
+          if(err) return next(err)
+          t.equal(tasks.length,2, `there are 2 tasks`)
+          t.deepEqual(tasks.map(task => task.status), ['created', 'finished'], `the tasks are correct`)
+          t.equal(tasks[0].payload.type, 'cluster.update', `the new task has the correct type`)
+          next()
+        })
+      },
+    ], (err) => {
+      t.notok(err, `there as no error`)
+      t.end()
+    })
     
   })
   

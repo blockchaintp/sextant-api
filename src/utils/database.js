@@ -38,6 +38,8 @@ const transaction = (knex, handler, done) => {
           })
       }
     })  
+  }).catch((e) => {
+    console.error(`error in transaction: ${e.toString()}`)
   })
 }
 

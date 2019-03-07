@@ -138,6 +138,7 @@ const ClusterController = ({ store, settings }) => {
     params:
 
       * id
+      * user - the user that is updating the cluster
       * data
         * desired_state
         * maintenance_flag
@@ -145,35 +146,66 @@ const ClusterController = ({ store, settings }) => {
   */
   const update = (params, done) => {
     if(!params.id) return done(`id must be given to controller.cluster.update`)
+    if(!params.user) return done(`user must be given to controller.cluster.update`)
     if(!params.data) return done(`data must be given to controller.cluster.update`)
 
-    // check to see if there is a running,cancelling task for the given cluster
+    // check to see if there is a running or cancelling tasks for the given cluster
     // if there is, don't allow the update
 
     store.transaction((transaction, finished) => {
 
-      async.series([
-        next => {
-          store.task.list({
+      async.waterfall([
+
+        (next) => {
+          store.task.activeForResource({
             cluster: params.id,
+          }, (err, activeTasks) => {
+            if(err) return next(err)
+            if(activeTasks.length > 0) return next(`there are active tasks for this cluster`)
+            next(null, true)
           })
         },
 
-        next => {
+        (ok, next) => {
           store.cluster.update({
             id: params.id,
             data: {
-              desired_state: params.desired_state,
-              maintenance_flag: params.maintenance_flag,
-            }
-          }, done)
-        }
+              desired_state: params.data.desired_state,
+              maintenance_flag: params.data.maintenance_flag,
+            },
+            transaction,
+          }, next)
+        },
+
+        // if desired_state is given - we trigger a new task to update the cluster
+        (cluster, next) => {
+
+          if(!params.data.desired_state) return next(null, cluster)
+
+          store.task.create({
+            data: {
+              user: params.user.id,
+              resource_type: 'cluster',
+              resource_id: cluster.id,
+              restartable: true,
+              payload: {
+                type: 'cluster.update',
+                clusterid: cluster.id,
+                provision_type: cluster.provision_type,
+                desired_state: cluster.desired_state,
+                capabilities: cluster.capabilities,
+              }
+            },
+            transaction,
+          }, (err, task) => {
+            if(err) return next(err)
+            next(null, cluster)
+          })
+        },
+
       ], finished)
 
-    })
-
-    
-    
+    }, done)
   }
 
   /*
