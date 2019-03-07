@@ -73,7 +73,7 @@ const UserRoutes = (controllers) => {
 
   const get = (req, res, next) => {
     controllers.user.get({
-      username: req.params.username,
+      id: req.params.id,
     }, (err, user) => {
       if(err) return next(err)
       res
@@ -83,11 +83,21 @@ const UserRoutes = (controllers) => {
   }
 
   const update = (req, res, next) => {
+
+    // we have already done rbac but we need to check
+    // a  user is not changing their own role
+    // this is to prevent:
+    //
+    //  * an admin user locking themselves out of the system (by downgrading)
+    //  * a normal user giving themselves admin access
+    if(req.user.id == req.params.id && req.body.role) {
+      res._code = 403
+      return next(`cannot change own role`)
+    }
+    
     controllers.user.update({
-      existingUsername: req.params.username,
-      username: req.body.username,
-      type: req.body.type,
-      password: req.body.password,
+      id: req.params.id,
+      data: req.body,
     }, (err, user) => {
       if(err) return next(err)
       res
@@ -106,8 +116,15 @@ const UserRoutes = (controllers) => {
   }
 
   const del = (req, res, next) => {
+
+    // make sure a user cannot delete themselves
+    if(req.user.id == req.params.id) {
+      res._code = 403
+      return next(`cannot delete yourself`)
+    }
+
     controllers.user.del({
-      username: req.params.username,
+      id: req.params.id,
     }, (err) => {
       if(err) return next(err)
       res

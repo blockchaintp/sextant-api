@@ -1,3 +1,4 @@
+const async = require('async')
 const utils = require('../utils/user')
 
 const UserController = ({ store }) => {
@@ -35,14 +36,13 @@ const UserController = ({ store }) => {
 
     params:
 
-     * username - string
      * id - int
     
     one of username of id must be given
     
   */
   const get = (params, done) => {
-    if(!params.username && !params.id) return done(`id or username required for controller.user.get`)
+    if(!params.id && !params.username) return done(`id or username required for controller.user.get`)
     store.user.get({
       username: params.username,
       id: params.id,
@@ -112,24 +112,48 @@ const UserController = ({ store }) => {
 
     params:
 
-      * id or username
+      * id
       * data (all optional)
         * username
-        * hashed_password
+        * password
         * role
         * meta
     
   */
   const update = (params, done) => {
 
-    if(!params.id && !params.username) return done(`one of id or username must be given to controller.user.update`)
+    if(!params.id) return done(`id must be given to controller.user.update`)
     if(!params.data) return done(`data param must be given to controller.user.update`)
 
-    store.user.update({
-      id: params.id,
-      username: params.username,
-      data: params.data,
-    }, done)
+    const { 
+      id,
+      data,
+    } = params
+
+    async.waterfall([
+      (next) => {
+        if(data.password) {
+          utils.getPasswordHash(data.password, (err, hashed_password) => {
+            if(err) return next(err)
+            const updateData = Object.assign({}, data)
+            delete(updateData.password)
+            updateData.hashed_password = hashed_password
+            next(null, updateData)
+          })
+        }
+        else {
+          next(null, data)
+        }
+      },
+
+      (updateData, next) => {
+        store.user.update({
+          id: params.id,
+          data: updateData,
+        }, next)
+      },
+    ], done)
+    
   }
 
   /*
@@ -142,9 +166,9 @@ const UserController = ({ store }) => {
     
   */
   const del = (params, done) => {
-    if(!params.id && !params.username) return done(`one of id or username must be given to controller.user.delete`)
+    if(!params.id) return done(`id must be given to controller.user.delete`)
     store.user.delete({
-      username: params.username,
+      id: params.id,
     }, done)
   }
 

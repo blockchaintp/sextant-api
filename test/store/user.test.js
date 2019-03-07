@@ -11,6 +11,8 @@ const UserStore = require('../../src/store/user')
 
 database.testSuiteWithDatabase(getConnection => {
 
+  let userMap = {}
+
   tape('user store -> list no data', (t) => {
 
     const store = UserStore(getConnection())
@@ -53,6 +55,7 @@ database.testSuiteWithDatabase(getConnection => {
     fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
       t.deepEqual(users.zebra.meta, {}, `the metadata defaults to empty object`)
+      userMap = users
       t.end()
     })
   
@@ -107,7 +110,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     store.update({
-      username: 'apples',
+      id: userMap.apples.id,
       data: {
         username: 'oranges',
       }
@@ -130,7 +133,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     store.delete({
-      username: 'oranges',
+      id: userMap.apples.id,
     }, (err, user) => {
       t.notok(err, `there was no error`)
       store.list({},(err, users) => {

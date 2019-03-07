@@ -1,12 +1,5 @@
 const databaseTools = require('../utils/database')
 
-const getIdOrUsernameQuery = (params) => {
-  const query = {}
-  if(params.id) query.id = params.id
-  if(params.username) query.username = params.username
-  return query
-}
-
 const UserStore = (knex) => {
 
   /*
@@ -37,9 +30,13 @@ const UserStore = (knex) => {
   const get = (params, done) => {
     if(!params.id && !params.username) return done(`one of id or username must be given to store.user.get`)
 
+    const query = {}
+    if(params.id) query.id = params.id
+    if(params.username) query.username = params.username
+    
     knex.select('*')
       .from('user')
-      .where(getIdOrUsernameQuery(params))
+      .where(query)
       .asCallback(databaseTools.singleExtractor(done))
   }
 
@@ -78,7 +75,7 @@ const UserStore = (knex) => {
 
     params:
 
-      * id or username
+      * id
       * data (all optional)
         * username
         * hashed_password
@@ -89,11 +86,13 @@ const UserStore = (knex) => {
   
   */
   const update = (params, done) => {
-    if(!params.id && !params.username) return done(`one of id or username must be given to store.user.update`)
+    if(!params.id) return done(`id must be given to store.user.update`)
     if(!params.data) return done(`data param must be given to store.user.update`)
 
     knex('user')
-      .where(getIdOrUsernameQuery(params))
+      .where({
+        id: params.id,
+      })
       .update(params.data)
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))
@@ -105,16 +104,16 @@ const UserStore = (knex) => {
 
     params:
 
-      * id or username
+      * id
     
-    one of id or username must be given
-  
   */
   const del = (params, done) => {
-    if(!params.id && !params.username) return done(`one of id or username must be given to store.user.delete`)
+    if(!params.id) return done(`id must be given to store.user.delete`)
 
     knex('user')
-      .where(getIdOrUsernameQuery(params))
+      .where({
+        id: params.id,
+      })
       .del()
       .returning('*')
       .asCallback(databaseTools.singleExtractor(done))

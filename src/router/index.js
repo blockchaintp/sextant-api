@@ -23,7 +23,10 @@ const rbacMiddleware = (store, resource_type, method) => (req, res, next) => {
 }
 
 const requireUser = (req, res, next) => {
-  if(!req.user) return next(`not logged in`)
+  if(!req.user) {
+    res._code = 403
+    return next(`not logged in`)
+  }
   next()
 }
 
