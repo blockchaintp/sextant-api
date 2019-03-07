@@ -119,7 +119,7 @@ app.testSuiteWithApp(({
       t.equal(body.role, 'admin', 'the user was created with admin role')
       t.notok(body.hashed_password, 'the hashed_password is not in the result')
       t.notok(body.token_salt, 'the token_salt is not in the result')
-      t.ok(body.token, 'the token is in the result')
+      t.notok(body.token, 'the token is not in the result')
       t.end()
     })
     

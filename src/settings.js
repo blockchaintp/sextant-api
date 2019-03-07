@@ -34,6 +34,9 @@ const args = require('minimist')(process.argv, {
     port: process.env.PORT || 80,
     baseUrl: process.env.BASE_URL || config.baseUrl,
 
+    // turn logging on?
+    logging: process.env.LOGGING,
+
     // postgres
     postgreshost: process.env.POSTGRES_SERVICE_HOST,
     postgresport: process.env.POSTGRES_SERVICE_PORT || 5432,

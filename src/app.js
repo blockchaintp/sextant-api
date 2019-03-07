@@ -59,11 +59,13 @@ const App = ({
   */
   app.use((req, res, next) => {
     const error = `url ${req.url} not found`
-    pino.error({
-      action: 'error',
-      error,
-      code: 404,
-    })
+    if(settings.logging) {
+      pino.error({
+        action: 'error',
+        error,
+        code: 404,
+      })
+    }
     res.status(res._code || 404)
     res.json({ error })
   })
@@ -75,11 +77,13 @@ const App = ({
     
   */
   app.use((err, req, res, next) => {
-    pino.error({
-      action: 'error',
-      error: err.error ? err.error.toString() : err.toString(),
-      code: res._code || 500
-    })
+    if(settings.logging) {
+      pino.error({
+        action: 'error',
+        error: err.error ? err.error.toString() : err.toString(),
+        code: res._code || 500
+      })
+    }
     // if the error was with the deserializer then logout to clear the cookie
     if(err.type == 'deserializeUser') {
       req.logout()
