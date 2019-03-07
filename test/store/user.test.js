@@ -32,6 +32,8 @@ database.testSuiteWithDatabase(getConnection => {
     tools.insertWithMissingValues(t, store, {
       username: 'apples',
       role: 'admin',
+      token: 'na',
+      token_salt: 'na',
       hashed_password: 'na',
     })
   })
@@ -43,6 +45,8 @@ database.testSuiteWithDatabase(getConnection => {
     store.create({
       username: 'apples',
       hashed_password: 'na',
+      token: 'na',
+      token_salt: 'na',
       role: 'apples'
     }, (err, user) => {
       t.ok(err, `there was an error`)

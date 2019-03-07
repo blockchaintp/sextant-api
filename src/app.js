@@ -27,6 +27,7 @@ const App = ({
 
   controllers = controllers || Controller({
     store,
+    settings,
   })
 
   // the HTTP server

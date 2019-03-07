@@ -54,11 +54,15 @@ const UserStore = (knex) => {
   const create = (params, done) => {
     if(!params.username) return done(`username param must be given to store.user.create`)
     if(!params.hashed_password) return done(`hashed_password param must be given to store.user.create`)
+    if(!params.token) return done(`token param must be given to store.user.create`)
+    if(!params.token_salt) return done(`token_salt param must be given to store.user.create`)
     if(!params.role) return done(`role param must be given to store.user.create`)
 
     const insertData = {
       username: params.username,
       hashed_password: params.hashed_password,
+      token: params.token,
+      token_salt: params.token_salt,
       role: params.role,
       meta: params.meta,
     }

@@ -1,7 +1,10 @@
 const async = require('async')
 const utils = require('../utils/user')
 
-const UserController = ({ store }) => {
+const UserController = ({ store, settings }) => {
+  
+  if(!settings) throw new Error(`settings required for user controller`)
+  if(!settings.tokenSecret) throw new Error(`settings.tokenSecret required for user controller`)
   
   /*
   
@@ -95,12 +98,17 @@ const UserController = ({ store }) => {
       // this is to avoid the initial user being created who cannot then add more users
       const role = existingUsers == 0 ? 'admin' : params.role
 
-      utils.getPasswordHash(params.password, (err, hashed_password) => {
+      async.parallel({
+        hashed_password: (next) => utils.getPasswordHash(params.password, next),
+        generated_token: (next) => utils.generateToken(params.username, settings.tokenSecret, next),
+      }, (err, values) => {
         if(err) return done(err)
         store.user.create({
           username: params.username,
-          hashed_password,
           role,
+          hashed_password: values.hashed_password,
+          token: values.generated_token.token,
+          token_salt: values.generated_token.salt,
         }, done)
       })
     })
@@ -124,6 +132,9 @@ const UserController = ({ store }) => {
 
     if(!params.id) return done(`id must be given to controller.user.update`)
     if(!params.data) return done(`data param must be given to controller.user.update`)
+
+    // check someone is not trying to manually overwrite a users token
+    if(params.data.token || params.data.token_salt) return done(`access denied`)
 
     const { 
       id,
@@ -158,6 +169,39 @@ const UserController = ({ store }) => {
 
   /*
   
+    update a users token
+
+    params:
+
+      * id
+    
+  */
+  const updateToken = (params, done) => {
+
+    if(!params.id) return done(`id must be given to controller.user.update`)
+
+    async.waterfall([
+      (next) => get({
+        id: params.id,
+      }, next),
+
+      (user, next) => utils.generateToken(user.username, settings.tokenSecret, next),
+        
+      (generatedToken, next) => {
+        store.user.update({
+          id: params.id,
+          data: {
+            token: generatedToken.token,
+            token_salt: generatedToken.salt,
+          },
+        }, next)
+      }
+    ], done)
+
+  }
+
+  /*
+  
     delete a user
 
     params:
@@ -179,6 +223,7 @@ const UserController = ({ store }) => {
     checkPassword,
     create,
     update,
+    updateToken,
     delete: del,
   }
 

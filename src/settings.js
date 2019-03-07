@@ -4,6 +4,8 @@ const required_env = [
   'POSTGRES_USER',
   'POSTGRES_DB',
   'POSTGRES_PASSWORD',
+  'SESSION_SECRET',
+  'TOKEN_SECRET',
 ]
 
 const missing_env = required_env.filter(name => process.env[name] ? false : true)
@@ -60,7 +62,8 @@ const args = require('minimist')(process.argv, {
     initialPassword: process.env.INITIAL_PASSWORD,
 
     // sessions
-    sessionSecret: process.env.SESSION_SECRET || config.sessionSecret,
+    sessionSecret: process.env.SESSION_SECRET,
+    tokenSecret: process.env.TOKEN_SECRET,
 
     // which type of networking we use for kops clusters
     kopsNetworking: 'weave',

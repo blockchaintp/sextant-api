@@ -1,6 +1,7 @@
 'use strict'
 
 const async = require('async')
+const config = require('../src/config')
 const userUtils = require('../src/utils/user')
 const UserStore = require('../src/store/user')
 const ClusterStore = require('../src/store/cluster')
@@ -60,12 +61,17 @@ const SIMPLE_ROLE_DATA = [{
 }]
 
 const getTestUserData = (data, done) => {
-  userUtils.getPasswordHash(data.password, (err, hashed_password) => {
+  async.parallel({
+    hashed_password: (next) => userUtils.getPasswordHash(data.password, next),
+    generated_token: (next) => userUtils.generateToken(data.username, config.tokenSecret, next),
+  }, (err, values) => {
     if(err) return done(err)
     const userData = {
       username: data.username,
       role: data.role,
-      hashed_password,
+      hashed_password: values.hashed_password,
+      token: values.generated_token.token,
+      token_salt: values.generated_token.salt,
     }
     done(null, userData)
   })
