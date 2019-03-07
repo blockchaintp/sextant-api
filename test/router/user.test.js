@@ -25,7 +25,7 @@ app.testSuiteWithApp(({
 
   const USER_RECORDS = {}
 
-  tape('user routes -> not logged in status', (t) => {
+  tape('user routes -> (not logged in) status', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -40,7 +40,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> hasInitialUser (with no user)', (t) => {
+  tape('user routes -> (not logged in) hasInitialUser', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -55,7 +55,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logout whilst not logged in', (t) => {
+  tape('user routes ->  (not logged in) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -70,7 +70,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> not logged in', (t) => {
+  tape('user routes -> (not logged in) check routes are denied access', (t) => {
     const routes = [{
       method: 'get',
       url: `${url}/user`,
@@ -105,7 +105,7 @@ app.testSuiteWithApp(({
     })
   })
 
-  tape('user routes -> register initial admin user', (t) => {
+  tape('user routes -> (not logged in) register initial admin user', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -125,7 +125,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> hasInitialUser (with user)', (t) => {
+  tape('user routes -> (not logged in) hasInitialUser (with user)', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -140,7 +140,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> register not logged in now there is a user', (t) => {
+  tape('user routes -> (not logged in) register now there is a user', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -156,7 +156,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> login with bad details', (t) => {
+  tape('user routes -> (not logged in) login with bad details', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -175,7 +175,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> login with admin user', (t) => {
+  tape('user routes -> (as admin) login', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -194,7 +194,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logged in (admin) status', (t) => {
+  tape('user routes -> (as admin) status', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -211,7 +211,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logged in (admin) list', (t) => {
+  tape('user routes -> (as admin) list', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -227,7 +227,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logged in (admin) get user', (t) => {
+  tape('user routes -> (as admin) get user', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -243,7 +243,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logged in (admin) - try to update own role', (t) => {
+  tape('user routes -> (as admin) try to update own role', (t) => {
 
     tools.sessionRequest({
       method: 'put',
@@ -261,7 +261,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logged in (admin) - try to delete self', (t) => {
+  tape('user routes -> (as admin) try to delete self', (t) => {
 
     tools.sessionRequest({
       method: 'delete',
@@ -276,7 +276,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logged in (admin) - update own password', (t) => {
+  tape('user routes -> (as admin) update own password', (t) => {
 
     ADMIN_USER.password = 'newpassword'
 
@@ -298,7 +298,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logout', (t) => {
+  tape('user routes -> (as admin) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -313,7 +313,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> not logged in status', (t) => {
+  tape('user routes -> (not logged in) status', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -328,7 +328,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> login with new password', (t) => {
+  tape('user routes -> (as admin) login with new password', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -347,7 +347,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> register read only user', (t) => {
+  tape('user routes -> (as admin) register read only user', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -365,7 +365,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> allow update other user role', (t) => {
+  tape('user routes -> (as admin) allow update other user role', (t) => {
 
     tools.sessionRequest({
       method: 'put',
@@ -384,7 +384,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> get other user record as admin but cannot see token', (t) => {
+  tape('user routes -> (as admin) get other user record as admin but cannot see token', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -399,7 +399,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logout', (t) => {
+  tape('user routes -> (as admin) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -414,7 +414,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> login read user', (t) => {
+  tape('user routes -> (as read user) login', (t) => {
 
     tools.sessionRequest({
       method: 'post',
@@ -433,7 +433,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> non admin user', (t) => {
+  tape('user routes -> (as read user) check route access', (t) => {
     const routes = [{
       method: 'get',
       url: `${url}/user`,
@@ -482,7 +482,7 @@ app.testSuiteWithApp(({
     })
   })
 
-  tape('user routes -> get own record', (t) => {
+  tape('user routes -> (as read user) get own record', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -499,7 +499,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> update own record', (t) => {
+  tape('user routes -> (as read user) update own record', (t) => {
 
     tools.sessionRequest({
       method: 'put',
@@ -527,7 +527,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> attempt to update token via update method', (t) => {
+  tape('user routes -> (as read user) attempt to update token via update method', (t) => {
 
     tools.sessionRequest({
       method: 'put',
@@ -545,7 +545,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> logout', (t) => {
+  tape('user routes -> (as read user) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
