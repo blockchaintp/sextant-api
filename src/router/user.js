@@ -76,9 +76,18 @@ const UserRoutes = (controllers) => {
       id: req.params.id,
     }, (err, user) => {
       if(err) return next(err)
+
+      const safeData = userUtils.safe(user)
+
+      // if the user is the same as the logged in user
+      // include the token (so they can see it)
+      if(req.params.id == req.user.id) {
+        safeData.token = user.token
+      }
+      
       res
         .status(200)
-        .json(userUtils.safe(user))
+        .json(safeData)
     })
   }
 

@@ -237,6 +237,7 @@ app.testSuiteWithApp(({
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
       t.equal(body.username, ADMIN_USER.username, `username correct`)
+      t.ok(body.token, `the token is present for reading your own record`)
       t.end()
     })
     
@@ -375,9 +376,24 @@ app.testSuiteWithApp(({
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
-      t.equal(res.statusCode, 200, `201 code`)
+      t.equal(res.statusCode, 200, `200 code`)
       t.equal(body.username, READ_USER.username, `the username is correct`)
       t.equal(body.role, 'write', 'the user is updated with write role')
+      t.end()
+    })
+    
+  })
+
+  tape('user routes -> get other user record as admin but cannot see token', (t) => {
+
+    tools.sessionRequest({
+      method: 'get',
+      url: `${url}/user/${USER_RECORDS.read.id}`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 200, `200 code`)
+      t.notok(body.token, 'there is no token in the reply')
       t.end()
     })
     
@@ -477,6 +493,7 @@ app.testSuiteWithApp(({
       t.equal(res.statusCode, 200, `200 code`)
       t.equal(body.username, READ_USER.username, 'username is correct')
       t.equal(body.id, USER_RECORDS.read.id, 'id is correct')
+      t.ok(body.token, `can see token for read user reading own record`)
       t.end()
     })
     
