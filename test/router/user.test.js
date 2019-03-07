@@ -25,6 +25,56 @@ app.testSuiteWithApp(({
 
   const USER_RECORDS = {}
 
+  const updateToken = (t, id) => {
+
+    let TOKEN = null
+    async.series([
+      next => {
+        tools.sessionRequest({
+          method: 'get',
+          url: `${url}/user/${id}`,
+          json: true,
+        }, (err, res, body) => {
+          t.notok(err, `there is no error`)
+          t.equal(res.statusCode, 200, `200 status`)
+          t.ok(body.token, `the token is present`)
+          TOKEN = body.token
+          next()
+        })
+      },
+
+      next => {
+        tools.sessionRequest({
+          method: 'put',
+          url: `${url}/user/${id}/token`,
+          json: true,
+        }, (err, res, body) => {
+          t.notok(err, `there is no error`)
+          t.equal(res.statusCode, 201, `201 code`)
+          t.equal(body.ok, true, `the result is ok`)
+          next()
+        })
+      },
+
+      next => {
+        tools.sessionRequest({
+          method: 'get',
+          url: `${url}/user/${id}`,
+          json: true,
+        }, (err, res, body) => {
+          t.notok(err, `there is no error`)
+          t.equal(res.statusCode, 200, `200 status`)
+          t.ok(body.token, `the token is present`)
+          t.notEqual(body.token, TOKEN, `the token is different than before`)
+          next()
+        })
+      },
+    ], (err) => {
+      t.notok(err, `there is no error`)
+      t.end()
+    })
+  }
+
   tape('user routes -> (not logged in) status', (t) => {
 
     tools.sessionRequest({
@@ -399,6 +449,27 @@ app.testSuiteWithApp(({
     
   })
 
+  tape('user routes -> (as admin) attempt to update other users token', (t) => {
+
+    tools.sessionRequest({
+      method: 'put',
+      url: `${url}/user/${USER_RECORDS.read.id}/token`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 code`)
+      t.equal(body.error, `access denied`, `correct error`)
+      t.end()
+    })
+    
+  })
+
+  tape('user routes -> (as admin) update own token', (t) => {
+
+    updateToken(t, USER_RECORDS.admin.id)
+    
+  })
+
   tape('user routes -> (as admin) logout', (t) => {
 
     tools.sessionRequest({
@@ -543,6 +614,25 @@ app.testSuiteWithApp(({
       t.end()
     })
     
+  })
+
+  tape('user routes -> (as read user) attempt to update other users token', (t) => {
+
+    tools.sessionRequest({
+      method: 'put',
+      url: `${url}/user/${USER_RECORDS.admin.id}/token`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 code`)
+      t.equal(body.error, `access denied`, `correct error`)
+      t.end()
+    })
+    
+  })
+
+  tape('user routes -> (as read user) update own token', (t) => {
+    updateToken(t, USER_RECORDS.read.id)
   })
 
   tape('user routes -> (as read user) logout', (t) => {

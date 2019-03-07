@@ -104,6 +104,8 @@ const UserRoutes = (controllers) => {
       return next(`cannot change own role`)
     }
 
+    // a user cannot attempt to update tokens using the normal update method
+    // otherwise we might get broken tokens
     if(req.body.token || req.body.token_salt) {
       res._code = 403
       return next(`cannot change token via update`)
@@ -117,6 +119,19 @@ const UserRoutes = (controllers) => {
       res
         .status(200)
         .json(userUtils.safe(user))
+    })
+  }
+
+  const updateToken = (req, res, next) => {
+    controllers.user.updateToken({
+      id: req.params.id,
+    }, (err) => {
+      if(err) return next(err)
+      res
+        .status(201)
+        .json({
+          ok: true,
+        })
     })
   }
 
@@ -157,6 +172,7 @@ const UserRoutes = (controllers) => {
     list,
     get,
     update,
+    updateToken,
     create,
     del,
   }
