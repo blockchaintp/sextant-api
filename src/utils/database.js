@@ -37,7 +37,7 @@ const transaction = (knex, handler, done) => {
             done(null, results)
           })
       }
-    })
+    })  
   })
 }
 

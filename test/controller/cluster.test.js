@@ -16,6 +16,7 @@ database.testSuiteWithDatabase(getConnection => {
   }
 
   let userMap = {}
+  let testCluster = null
 
   tape('cluster controller -> create users', (t) => {
   
@@ -26,16 +27,27 @@ database.testSuiteWithDatabase(getConnection => {
     })
   
   })
-/*
+
   tape('cluster controller -> create cluster', (t) => {
   
     const controller = getController()
 
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
+
     controller.create({
-      
+      user: userMap.write,
+      data: clusterData,
+    }, (err, cluster) => {
+      t.notok(err, `there was no error`)
+      t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
+      t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
+      testCluster = cluster
+      console.log('--------------------------------------------')
+      console.dir(cluster)
+      t.end()
     })
     
   
   })
-  */
+  
 })

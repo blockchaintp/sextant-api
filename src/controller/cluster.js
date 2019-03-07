@@ -1,3 +1,5 @@
+const async = require('async')
+
 const ClusterController = ({ store, settings }) => {
   
   /*
@@ -42,11 +44,16 @@ const ClusterController = ({ store, settings }) => {
   */
   const create = (params, done) => {
 
-    if(!params.user) return done(`user required for controllers.cluster.create`)
-    if(!params.data) return done(`data required for controllers.cluster.create`)
-    if(!params.data.name) return done(`data.name required for controllers.cluster.create`)
-    if(!params.data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
-    if(!params.data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
+    const {
+      user,
+      data,
+    } = params
+    
+    if(!user) return done(`user required for controllers.cluster.create`)
+    if(!data) return done(`data required for controllers.cluster.create`)
+    if(!data.name) return done(`data.name required for controllers.cluster.create`)
+    if(!data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
+    if(!data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
 
     store.transaction((transaction, finished) => {
 
@@ -55,19 +62,55 @@ const ClusterController = ({ store, settings }) => {
         // create the cluster record
         (next) => store.cluster.create({
           data: {
-            name: params.name,
-            provision_type: params.provision_type,
-            desired_state: params.desired_state,
-            capabilities: params.capabilities,
-          }
+            name: data.name,
+            provision_type: data.provision_type,
+            desired_state: data.desired_state,
+            capabilities: data.capabilities,
+          },
+          transaction,
         }, next),
 
         // create the user role if needed
         (cluster, next) => {
           if(user.role == 'admin') return next(null, cluster)
 
-          next(null, cluster)
+          store.role.create({
+            data: {
+              user: user.id,
+              permission: 'write',
+              resource_type: 'cluster',
+              resource_id: cluster.id,
+            },
+            transaction,
+          }, (err, role) => {
+            if(err) return next(err)
+            next(null, cluster)
+          })
         },
+
+        // create the task to create the cluster
+        (cluster, next) => {
+          store.task.create({
+            data: {
+              user: user.id,
+              resource_type: 'cluster',
+              resource_id: cluster.id,
+              restartable: true,
+              payload: {
+                type: 'cluster.create',
+                clusterid: cluster.id,
+                provision_type: cluster.provision_type,
+                desired_state: cluster.desired_state,
+                capabilities: cluster.capabilities,
+              }
+            },
+            transaction,
+          }, (err, task) => {
+            if(err) return next(err)
+            next(null, cluster)
+          })
+        },
+
       ], finished)
     }, done)
     
