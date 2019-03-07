@@ -246,12 +246,21 @@ const ClusterController = ({ store, settings }) => {
 
     params:
 
+     * user - the user that is creating the cluster  
      * id
     
   */
   const del = (params, done) => {
-    if(!params.id) return done(`id must be given to controller.cluster.delete`) 
 
+    const {
+      user,
+      id,
+    } = params
+
+    if(!user) return done(`user required for controllers.cluster.delete`)
+    if(!id) return done(`id must be given to controller.cluster.delete`) 
+
+    
     store.cluster.delete({
       id: params.id,
     }, done)

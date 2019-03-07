@@ -255,5 +255,19 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
+  tape('cluster controller -> cannot delete a cluster with a running task', (t) => {
+
+    const controller = getController()
+
+    controller.delete({
+      user: userMap.write,
+      id: testClusters.write.id,
+    }, (err, cluster) => {
+      t.ok(err, `there was an error`)
+      t.equal(err, `there are active tasks for this cluster`)
+      t.end()
+    })
+  })
+
   
 })

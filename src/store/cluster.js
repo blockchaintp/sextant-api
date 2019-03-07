@@ -5,13 +5,24 @@ const ClusterStore = (knex) => {
   /*
   
     list all clusters
+
+    params:
+
+      * deleted - include the deleted clusters in the list
   
   */
   const list = (params, done) => {
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from('cluster')
       .orderBy('name')
-      .asCallback(databaseTools.allExtractor(done))
+
+    if(!params.deleted) {
+      sqlQuery.where({
+        deleted: false,
+      })
+    }
+
+    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -92,14 +103,20 @@ const ClusterStore = (knex) => {
   
   */
   const update = (params, done) => {
-    if(!params.id) return done(`id must be given to store.cluster.update`)
-    if(!params.data) return done(`data param must be given to store.cluster.update`)
+
+    const {
+      id,
+      data,
+    } = params
+
+    if(!id) return done(`id must be given to store.cluster.update`)
+    if(!data) return done(`data param must be given to store.cluster.update`)
 
     const query = knex('cluster')
       .where({
         id: params.id,
       })
-      .update(params.data)
+      .update(data)
       .returning('*')
 
     if(params.transaction) {
@@ -112,6 +129,8 @@ const ClusterStore = (knex) => {
   /*
   
     delete a single cluster
+
+    this means updating the 'deleted' flag to true
 
     params:
 
@@ -127,7 +146,9 @@ const ClusterStore = (knex) => {
       .where({
         id: params.id,
       })
-      .del()
+      .update({
+        deleted: true,
+      })
       .returning('*')
 
     if(params.transaction) {

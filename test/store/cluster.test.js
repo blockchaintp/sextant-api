@@ -170,5 +170,19 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('cluster store -> list with deleted', (t) => {
+  
+    const store = ClusterStore(getConnection())
+  
+    store.list({
+      deleted: true,
+    },(err, clusters) => {
+      t.notok(err, `there was no error`)
+      t.equal(clusters.length, 2, `there are 2 clusters`)
+      t.end()
+    })
+    
+  })
+
 
 })
