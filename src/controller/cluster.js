@@ -147,13 +147,32 @@ const ClusterController = ({ store, settings }) => {
     if(!params.id) return done(`id must be given to controller.cluster.update`)
     if(!params.data) return done(`data must be given to controller.cluster.update`)
 
-    store.cluster.update({
-      id: params.id,
-      data: {
-        desired_state: params.desired_state,
-        maintenance_flag: params.maintenance_flag,
-      }
-    }, done)
+    // check to see if there is a running,cancelling task for the given cluster
+    // if there is, don't allow the update
+
+    store.transaction((transaction, finished) => {
+
+      async.series([
+        next => {
+          store.task.list({
+            cluster: params.id,
+          })
+        },
+
+        next => {
+          store.cluster.update({
+            id: params.id,
+            data: {
+              desired_state: params.desired_state,
+              maintenance_flag: params.maintenance_flag,
+            }
+          }, done)
+        }
+      ], finished)
+
+    })
+
+    
     
   }
 

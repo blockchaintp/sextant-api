@@ -97,5 +97,9 @@ database.testSuiteWithDatabase(getConnection => {
       t.end()
     })    
   })
+
+  tape('cluster controller -> cannot update a cluster with a running task', (t) => {
+    
+  })
   
 })

@@ -35,14 +35,35 @@ const TaskStore = (knex) => {
       query.user = params.user
     }
 
+    let status = []
+
     if(params.status) {
-      if(enumerations.TASK_STATUS.indexOf(params.status) < 0) return done(`bad task status: ${params.status}`)
-      query.status = params.status
+      status = typeof(params.status) === 'string' ? [params.status] : params.status
+
+      const badStatuses = status.filter(status => enumerations.TASK_STATUS.indexOf(status) < 0)
+
+      if(badStatuses.length > 0) {
+        return done(`bad task status: ${badStatuses.join(', ')}`)
+      }
     }
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from('task')
-      .where(query)
+
+    if(Object.keys(query).length > 0 && status.length > 0) {
+      sqlQuery
+        .whereIn('status', status)
+        .andWhere(query)
+    }
+    else if(Object.keys(query).length > 0) {
+      sqlQuery.where(query)
+    }
+    else if(status.length > 0) {
+      sqlQuery
+        .whereIn('status', status)
+    }
+
+    sqlQuery
       .orderBy('created_at', 'desc')
       .asCallback(databaseTools.allExtractor(done))
   }

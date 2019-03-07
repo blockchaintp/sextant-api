@@ -146,6 +146,24 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('task store -> update bad status', (t) => {
+
+    const store = TaskStore(getConnection())
+
+    const ids = Object.keys(taskMap)
+
+    store.update({
+      id: ids[0],
+      data: {
+        status: 'apples'
+      }
+    }, (err, task) => {
+      t.ok(err, `there was an error`)
+      t.end()
+    })
+    
+  })
+
   tape('task store -> update status', (t) => {
 
     const store = TaskStore(getConnection())
@@ -170,21 +188,28 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('task store -> update bad status', (t) => {
+  tape('task store -> list by multiple status', (t) => {
 
     const store = TaskStore(getConnection())
 
-    const ids = Object.keys(taskMap)
+    const ids = Object.keys(taskMap).map(i => parseInt(i))
 
-    store.update({
-      id: ids[0],
-      data: {
-        status: 'apples'
-      }
-    }, (err, task) => {
-      t.ok(err, `there was an error`)
+    store.list({
+      cluster: 10,
+      status: [
+        'running',
+        'cancelling',
+      ]
+    }, (err, tasks) => {
+      t.notok(err, `there was no error`)
+      t.equal(tasks.length, 1, `there was 1 task`)
+      t.deepEqual(tasks.map(task => task.resource_type), ['cluster'], `the resource_types are correct`)
+      t.deepEqual(tasks.map(task => task.id), [ids[0]], `the resource_ids are correct`)
+      t.deepEqual(tasks.map(task => task.resource_id), [10], `the resource_ids are correct`)
       t.end()
     })
     
   })
+
+  
 })
