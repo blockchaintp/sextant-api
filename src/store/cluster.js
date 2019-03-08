@@ -17,8 +17,8 @@ const ClusterStore = (knex) => {
       .orderBy('name')
 
     if(!params.deleted) {
-      sqlQuery.where({
-        deleted: false,
+      sqlQuery.whereNot({
+        status: 'deleted',
       })
     }
 
@@ -147,7 +147,7 @@ const ClusterStore = (knex) => {
         id: params.id,
       })
       .update({
-        deleted: true,
+        status: 'deleted',
       })
       .returning('*')
 

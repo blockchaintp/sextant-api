@@ -12,7 +12,6 @@ const up = (knex, Promise) => {
       table.json('desired_state').defaultTo('{}')
       table.json('applied_state').defaultTo('{}')
       table.boolean('maintenance_flag').defaultTo('false')
-      table.boolean('deleted').defaultTo('false')
     })
   ])
 }

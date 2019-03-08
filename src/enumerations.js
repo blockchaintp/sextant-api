@@ -17,6 +17,7 @@ const CLUSTER_STATUS = [
   'created',
   'provisioned',
   'error',
+  'deleted',
 ]
 
 const CLUSTER_STATUS_DEFAULT = 'created'
@@ -25,6 +26,7 @@ const DEPLOYMENT_STATUS = [
   'created',
   'provisioned',
   'error',
+  'deleted',
 ]
 
 const DEPLOYMENT_STATUS_DEFAULT = 'created'
