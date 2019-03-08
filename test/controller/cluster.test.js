@@ -195,6 +195,21 @@ database.testSuiteWithDatabase(getConnection => {
  
   })
 
+  tape('cluster controller -> get cluster', (t) => {
+  
+    const controller = getController()
+
+    controller.get({
+      id: testClusters.admin.id,
+    }, (err, cluster) => {
+      t.notok(err, `there was no error`)
+      t.equal(cluster.name, testClusters.admin.name, `the cluster name is correct`)
+      t.deepEqual(cluster.desired_state, testClusters.admin.desired_state, `the cluster desired_state is correct`)
+      t.end()
+    })
+ 
+  })
+
   tape('cluster controller -> list clusters for admin user', (t) => {
 
     const controller = getController()

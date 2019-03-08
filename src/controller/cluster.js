@@ -158,6 +158,8 @@ const ClusterController = ({ store, settings }) => {
     
   */
   const get = (params, done) => {
+    if(!params.id) return done(`id must be given to controller.cluster.update`)
+    
     store.cluster.get({
       id: params.id,
     }, done)
