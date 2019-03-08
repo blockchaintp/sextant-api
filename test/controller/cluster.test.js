@@ -307,8 +307,8 @@ database.testSuiteWithDatabase(getConnection => {
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length, 3, `there are 3 tasks`)
-          t.deepEqual(tasks.map(task => task.status), ['created', 'finished', 'finished'], `the tasks are correct`)
-          t.equal(tasks[0].payload.action, 'cluster.delete', `the new task has the correct type`)
+          t.deepEqual(tasks.map(task => task.status), ['created', 'finished', 'finished'], `the task statuses are correct`)
+          t.deepEqual(tasks.map(task => task.payload.action), ['cluster.delete', 'cluster.update', 'cluster.create'], `the task actions are correct`)
           next()
         })
       },
