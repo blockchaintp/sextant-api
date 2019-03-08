@@ -24,7 +24,7 @@ const ClusterStore = (knex) => {
 
     sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
-
+  
   /*
   
     get a single cluster
