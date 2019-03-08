@@ -35,6 +35,8 @@ const ClusterController = ({ store, settings }) => {
       if(err) return done(err)
 
       // if it's an admin - they can see all clusters
+
+      // TODO - should be using a constant from enumerations or rbac here
       if(user.role == 'admin') return done(null, clusters)
 
       // we need to load the roles that are for a cluster for the user
@@ -43,6 +45,7 @@ const ClusterController = ({ store, settings }) => {
       }, (err, roles) => {
         if(err) return done(err)
 
+        // TODO - should be using a constant from somewhere
         const roleMap = roles
           .filter(role => role.resource_type == 'cluster')
           .reduce((all, role) => {

@@ -31,6 +31,11 @@ const DEPLOYMENT_STATUS = [
 
 const DEPLOYMENT_STATUS_DEFAULT = 'created'
 
+// should be:
+//
+// superuser
+// admin
+// user
 const PERMISSION_ROLE = [
   'admin',
   'read',

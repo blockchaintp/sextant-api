@@ -29,7 +29,29 @@
 
   the 'cancelTask' is a function returned by the handler
 
-  we 
+  we run this function if we notice the task is switched to cancel whilst it's running
+
+  control loop
+  ------------
+
+  loops doing the following actions:
+
+   * check for tasks with 'created' status
+   * for any created tasks found
+      * switch them to 'running'
+      * invoke the task handler
+      * store the running task with it's cancel handler in memory
+      * if callback is error - switch task to 'error'
+      * if callback has result - switch task to 'finished'
+  
+   * check for tasks with 'cancelling' status
+      * if the task is in the 'currentlyRunning' memory store
+      * if yes - then invoke the cancelTask handler
+      
+   * check for each currently running task if it's been cancelled
+   * for each cancelled tasks that was running:
+      * switch it to 'cancelling'
+      * invoke the cancelTask handler
 
 
 */

@@ -7,7 +7,9 @@ const up = (knex, Promise) => {
       table.specificType('created_at', 'timestamp default now()')
       table.string('username').unique().notNullable()
       table.string('hashed_password').notNullable()
+      // todo: we don't need this
       table.string('token').notNullable()
+      // todo: change this to server_side_key
       table.string('token_salt').notNullable()
       table.enu('role', enumerations.PERMISSION_ROLE).notNullable()
       table.json('meta').defaultTo('{}')
