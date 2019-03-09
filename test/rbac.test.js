@@ -6,20 +6,20 @@ const tools = require('./tools')
 
 const Store = require('../src/store')
 const rbac = require('../src/rbac')
+const config = require('../src/config')
 
 const database = require('./database')
 const fixtures = require('./fixtures')
 
+const {
+  RESOURCE_TYPES,
+  PERMISSION_ROLE,
+  PERMISSION_USER,
+} = config
+
 database.testSuiteWithDatabase(getConnection => {
 
-  const INSERT_USERS = fixtures.SIMPLE_USER_DATA.concat([{
-    username: 'readuser',
-    password: 'readuser1',
-    role: 'read',
-  }])
-
   let userMap = {}
-  let userMapByRole = {}
   let roleMap = {}
 
   tape('rbac -> test initial account creation (no users) with no logged in user', (t) => {
@@ -27,7 +27,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'user',
+      resource_type: RESOURCE_TYPES.user,
       method: 'create',
     }, (err) => {
       t.notok(err, `there was no error`)
@@ -41,7 +41,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, {id: 1}, {
-      resource_type: 'user',
+      resource_type: RESOURCE_TYPES.user,
       method: 'create',
     }, (err) => {
       t.ok(err, `there was an error`)
@@ -52,13 +52,9 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('rbac -> insert users', (t) => {
 
-    fixtures.insertTestUsers(getConnection(), INSERT_USERS, (err, users) => {
+    fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
       userMap = users
-      Object.keys(users).forEach(key => {
-        const user = users[key]
-        userMapByRole[user.role] = user
-      })
       t.end()
     })
     
@@ -69,7 +65,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
+    rbac(store, userMap.superuser, {
       resource_type: 'apples',
       method: 'list',
     }, (err) => {
@@ -83,8 +79,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'cluster',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.cluster,
       method: 'apples',
     }, (err) => {
       t.ok(err, `there was an error`)
@@ -98,7 +94,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'user',
+      resource_type: RESOURCE_TYPES.user,
       method: 'create',
     }, (err) => {
       t.ok(err, `there was an error`)
@@ -112,7 +108,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     async.eachSeries(Object.keys(expectedResults), (userType, nextUser) => {
       const expectedResult = expectedResults[userType]
-      rbac(store, userMapByRole[userType], {
+      rbac(store, userMap[userType], {
         resource_type,
         method,
       }, (err) => {
@@ -131,47 +127,47 @@ database.testSuiteWithDatabase(getConnection => {
   }
 
   tape('rbac -> user.list', (t) => {
-    testWithUserTypes(t, 'user', 'list', {
+    testWithUserTypes(t, RESOURCE_TYPES.user, 'list', {
       none: false,
-      read: false,
-      write: false,
-      admin: true,
+      user: false,
+      admin: false,
+      superuser: true,
     })
   })
 
   tape('rbac -> user.get', (t) => {
-    testWithUserTypes(t, 'user', 'get', {
+    testWithUserTypes(t, RESOURCE_TYPES.user, 'get', {
       none: false,
-      read: false,
-      write: false,
-      admin: true,
+      user: false,
+      admin: false,
+      superuser: true,
     })
   })
 
   tape('rbac -> user.create', (t) => {
-    testWithUserTypes(t, 'user', 'create', {
+    testWithUserTypes(t, RESOURCE_TYPES.user, 'create', {
       none: false,
-      read: false,
-      write: false,
-      admin: true,
+      user: false,
+      admin: false,
+      superuser: true,
     })
   })
 
   tape('rbac -> user.update', (t) => {
-    testWithUserTypes(t, 'user', 'update', {
+    testWithUserTypes(t, RESOURCE_TYPES.user, 'update', {
       none: false,
-      read: false,
-      write: false,
-      admin: true,
+      user: false,
+      admin: false,
+      superuser: true,
     })
   })
 
   tape('rbac -> user.delete', (t) => {
-    testWithUserTypes(t, 'user', 'delete', {
+    testWithUserTypes(t, RESOURCE_TYPES.user, 'delete', {
       none: false,
-      read: false,
-      write: false,
-      admin: true,
+      user: false,
+      admin: false,
+      superuser: true,
     })
   })
 
@@ -179,9 +175,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'user',
-      resource_id: userMapByRole.read.id,
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.user,
+      resource_id: userMap.user.id,
       method: 'get',
     }, (err) => {
       t.notok(err, `there was no error`)
@@ -194,9 +190,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'user',
-      resource_id: userMapByRole.admin.id,
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.user,
+      resource_id: userMap.superuser.id,
       method: 'get',
     }, (err) => {
       t.ok(err, `there was an error`)
@@ -209,9 +205,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'user',
-      resource_id: userMapByRole.read.id,
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.user,
+      resource_id: userMap.user.id,
       method: 'update',
     }, (err) => {
       t.notok(err, `there was no error`)
@@ -224,9 +220,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'user',
-      resource_id: userMapByRole.admin.id,
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.user,
+      resource_id: userMap.superuser.id,
       method: 'update',
     }, (err) => {
       t.ok(err, `there was an error`)
@@ -235,14 +231,14 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('rbac -> user.updateToken allowed for own record', (t) => {
+  tape('rbac -> user.token allowed for own record', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'user',
-      resource_id: userMapByRole.read.id,
-      method: 'updateToken',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.user,
+      resource_id: userMap.user.id,
+      method: 'token',
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
@@ -250,14 +246,14 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('rbac -> user.updateToken not allowed for other record even when user is admin', (t) => {
+  tape('rbac -> user.token not allowed for other record even when user is admin', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'user',
-      resource_id: userMapByRole.read.id,
-      method: 'updateToken',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.user,
+      resource_id: userMap.user.id,
+      method: 'token',
     }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
@@ -267,21 +263,21 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('rbac -> cluster.list', (t) => {
 
-    testWithUserTypes(t, 'cluster', 'list', {
+    testWithUserTypes(t, RESOURCE_TYPES.cluster, 'list', {
       none: false,
-      read: true,
-      write: true,
+      user: true,
       admin: true,
+      superuser: true,
     })
     
   })
 
-  tape('rbac -> cluster.get allowed for admin', (t) => {
+  tape('rbac -> cluster.get allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'cluster',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -291,12 +287,12 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('rbac -> deployment.list allowed for admin', (t) => {
+  tape('rbac -> deployment.list allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'deployment',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'list',
     }, (err) => {
@@ -311,7 +307,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'deployment',
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'list',
     }, (err) => {
@@ -325,8 +321,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'deployment',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'list',
     }, (err) => {
@@ -340,8 +336,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'cluster',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -358,9 +354,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.role.create({
       data: {
-        user: userMapByRole.read.id,
-        permission: 'read',
-        resource_type: 'cluster',
+        user: userMap.user.id,
+        permission: PERMISSION_ROLE.read,
+        resource_type: RESOURCE_TYPES.cluster,
         resource_id: 1,
       }
     }, (err) => {
@@ -373,8 +369,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'cluster',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -384,12 +380,12 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('rbac -> deplpyment.list allowed for read with role', (t) => {
+  tape('rbac -> deployment.list allowed for read with role', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'deployment',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'list',
     }, (err) => {
@@ -401,21 +397,21 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('rbac -> cluster.create', (t) => {
 
-    testWithUserTypes(t, 'cluster', 'create', {
+    testWithUserTypes(t, RESOURCE_TYPES.cluster, 'create', {
       none: false,
-      read: false,
-      write: true,
+      user: false,
       admin: true,
+      superuser: true,
     })
 
   })
 
-  tape('rbac -> cluster.update allowed for admin', (t) => {
+  tape('rbac -> cluster.update allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'cluster',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -424,12 +420,12 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('rbac -> cluster.delete allowed for admin', (t) => {
+  tape('rbac -> cluster.delete allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'cluster',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'delete',
     }, (err) => {
@@ -442,8 +438,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'cluster',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -456,8 +452,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'deployment',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'create',
     }, (err) => {
@@ -470,8 +466,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'cluster',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'delete',
     }, (err) => {
@@ -484,8 +480,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'cluster',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -498,8 +494,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'deployment',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'create',
     }, (err) => {
@@ -512,8 +508,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'cluster',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'delete',
     }, (err) => {
@@ -529,9 +525,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.role.create({
       data: {
-        user: userMapByRole.write.id,
-        permission: 'write',
-        resource_type: 'cluster',
+        user: userMap.admin.id,
+        permission: PERMISSION_ROLE.write,
+        resource_type: RESOURCE_TYPES.cluster,
         resource_id: 1,
       }
     }, (err) => {
@@ -544,8 +540,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'cluster',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -558,8 +554,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'deployment',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'create',
     }, (err) => {
@@ -572,8 +568,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'cluster',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 1,
       method: 'delete',
     }, (err) => {
@@ -582,12 +578,12 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('rbac -> deployment.get allowed for admin', (t) => {
+  tape('rbac -> deployment.get allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'deployment',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -601,7 +597,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'deployment',
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -610,12 +606,12 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('rbac -> deployment.create allowed for admin', (t) => {
+  tape('rbac -> deployment.create allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'deployment',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'create',
     }, (err) => {
@@ -629,7 +625,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'deployment',
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'create',
     }, (err) => {
@@ -638,12 +634,12 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('rbac -> deployment.update allowed for admin', (t) => {
+  tape('rbac -> deployment.update allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'deployment',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -657,7 +653,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'deployment',
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -666,12 +662,12 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('rbac -> deployment.delete allowed for admin', (t) => {
+  tape('rbac -> deployment.delete allowed for superuser', (t) => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.admin, {
-      resource_type: 'deployment',
+    rbac(store, userMap.superuser, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'delete',
     }, (err) => {
@@ -685,7 +681,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     rbac(store, null, {
-      resource_type: 'deployment',
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'delete',
     }, (err) => {
@@ -698,8 +694,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'deployment',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -715,9 +711,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.role.create({
       data: {
-        user: userMapByRole.read.id,
-        permission: 'read',
-        resource_type: 'deployment',
+        user: userMap.user.id,
+        permission: PERMISSION_ROLE.read,
+        resource_type: RESOURCE_TYPES.deployment,
         resource_id: 1,
       }
     }, (err) => {
@@ -730,8 +726,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'deployment',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'get',
     }, (err) => {
@@ -744,8 +740,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'deployment',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -761,9 +757,9 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.role.create({
       data: {
-        user: userMapByRole.write.id,
-        permission: 'write',
-        resource_type: 'deployment',
+        user: userMap.admin.id,
+        permission: PERMISSION_ROLE.write,
+        resource_type: RESOURCE_TYPES.deployment,
         resource_id: 1,
       }
     }, (err) => {
@@ -776,8 +772,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.write, {
-      resource_type: 'deployment',
+    rbac(store, userMap.admin, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'update',
     }, (err) => {
@@ -790,8 +786,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    rbac(store, userMapByRole.read, {
-      resource_type: 'deployment',
+    rbac(store, userMap.user, {
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 1,
       method: 'update',
     }, (err) => {

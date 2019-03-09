@@ -61,14 +61,19 @@ const PassportHandlers = ({
           // no user if we have an error or no decoded token
           if(err || !decoded) return next()
 
+          // no user if we don't have an id in the token
+          if(!decoded.id) return next()
+
+          // no user if we don't have a server_side_key in the token
+          if(!decoded.server_side_key) return next()
+
           controllers.user.get({
-            username: decoded.username,
+            id: decoded.id,
           }, (err, user) => {
-            if(err || !user || user.token_salt != decoded.salt) {
+            if(err || !user || user.server_side_key != decoded.server_side_key) {
               res._code = 403
               return next(`access denied`)
             }
-
             req.user = userUtils.safe(user)
             return next()
           })

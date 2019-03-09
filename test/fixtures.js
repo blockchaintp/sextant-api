@@ -9,25 +9,27 @@ const DeployentStore = require('../src/store/deployment')
 const RoleStore = require('../src/store/role')
 const TaskStore = require('../src/store/task')
 
-const SIMPLE_USER_DATA = [{
-  username: 'admin',
-  password: 'admin1',
-  role: 'admin',
-},{
-  username: 'write',
-  password: 'write1',
-  role: 'write',
-}]
+const {
+  PERMISSION_USER,
+  CLUSTER_PROVISION_TYPE,
+  PERMISSION_ROLE,
+  RESOURCE_TYPES,
+  TASK_ACTION,
+} = config
 
-const EXTRA_USER_DATA = SIMPLE_USER_DATA.concat([{
-  username: 'read',
-  password: 'read1',
-  role: 'read',
-}])
+const SIMPLE_USER_DATA = [
+  PERMISSION_USER.superuser,
+  PERMISSION_USER.admin,
+  PERMISSION_USER.user,
+].map(permission => ({
+  username: permission,
+  password: `${permission}password`,
+  permission,
+}))
 
 const SIMPLE_CLUSTER_DATA = [{
   name: 'testcluster',
-  provision_type: 'aws_ec2',
+  provision_type: CLUSTER_PROVISION_TYPE.aws_ec2,
   desired_state: {
     apples: 10,
   },
@@ -36,7 +38,7 @@ const SIMPLE_CLUSTER_DATA = [{
   },
 },{
   name: 'othercluster',
-  provision_type: 'google_gke',
+  provision_type: CLUSTER_PROVISION_TYPE.google_gke,
   desired_state: {
     oranges: 10,
   },
@@ -58,26 +60,28 @@ const SIMPLE_DEPLOYMENT_DATA = [{
 }]
 
 const SIMPLE_ROLE_DATA = [{
-  permission: 'read',
-  resource_type: 'cluster',
+  permission: PERMISSION_ROLE.read,
+  resource_type: RESOURCE_TYPES.cluster,
   resource_id: 10,
 }, {
-  permission: 'write',
-  resource_type: 'deployment',
+  permission: PERMISSION_ROLE.write,
+  resource_type: RESOURCE_TYPES.deployment,
   resource_id: 11,
 }]
 
 const SIMPLE_TASK_DATA = [{
-  resource_type: 'cluster',
+  resource_type: RESOURCE_TYPES.cluster,
   resource_id: 10,
   restartable: true,
+  action: TASK_ACTION['cluster.create'],
   payload: {
     apples: 10,
   },
 }, {
-  resource_type: 'deployment',
+  resource_type: RESOURCE_TYPES.deployment,
   resource_id: 11,
   restartable: false,
+  action: TASK_ACTION['deployment.create'],
   payload: {
     oranges: 10,
   },
@@ -86,15 +90,13 @@ const SIMPLE_TASK_DATA = [{
 const getTestUserData = (data, done) => {
   async.parallel({
     hashed_password: (next) => userUtils.getPasswordHash(data.password, next),
-    generated_token: (next) => userUtils.generateToken(data.username, config.tokenSecret, next),
   }, (err, values) => {
     if(err) return done(err)
     const userData = {
       username: data.username,
-      role: data.role,
+      permission: data.permission,
       hashed_password: values.hashed_password,
-      token: values.generated_token.token,
-      token_salt: values.generated_token.salt,
+      server_side_key: userUtils.getTokenServerSideKey()
     }
     done(null, userData)
   })
@@ -244,7 +246,6 @@ const insertTestTasks = (databaseConnection, user, data, done) => {
 
 module.exports = {
   SIMPLE_USER_DATA,
-  EXTRA_USER_DATA,
   SIMPLE_CLUSTER_DATA,
   SIMPLE_DEPLOYMENT_DATA,
   SIMPLE_ROLE_DATA,

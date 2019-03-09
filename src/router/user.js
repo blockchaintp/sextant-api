@@ -76,18 +76,9 @@ const UserRoutes = (controllers) => {
       id: req.params.id,
     }, (err, user) => {
       if(err) return next(err)
-
-      const safeData = userUtils.safe(user)
-
-      // if the user is the same as the logged in user
-      // include the token (so they can see it)
-      if(req.params.id == req.user.id) {
-        safeData.token = user.token
-      }
-      
       res
         .status(200)
-        .json(safeData)
+        .json(userUtils.safe(user))
     })
   }
 
@@ -97,18 +88,18 @@ const UserRoutes = (controllers) => {
     // a  user is not changing their own role
     // this is to prevent:
     //
-    //  * an admin user locking themselves out of the system (by downgrading)
-    //  * a normal user giving themselves admin access
-    if(req.user.id == req.params.id && req.body.role) {
+    //  * an superuser user locking themselves out of the system (by downgrading)
+    //  * a normal user giving themselves superuser access
+    if(req.user.id == req.params.id && req.body.permission) {
       res._code = 403
-      return next(`cannot change own role`)
+      return next(`cannot change own permission`)
     }
 
     // a user cannot attempt to update tokens using the normal update method
     // otherwise we might get broken tokens
-    if(req.body.token || req.body.token_salt) {
+    if(req.body.server_side_key) {
       res._code = 403
-      return next(`cannot change token via update`)
+      return next(`cannot change server_side_key via update`)
     }
     
     controllers.user.update({
@@ -119,6 +110,19 @@ const UserRoutes = (controllers) => {
       res
         .status(200)
         .json(userUtils.safe(user))
+    })
+  }
+
+  const getToken = (req, res, next) => {
+    controllers.user.getToken({
+      id: req.params.id,
+    }, (err, token) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json({
+          token,
+        })
     })
   }
 
@@ -172,6 +176,7 @@ const UserRoutes = (controllers) => {
     list,
     get,
     update,
+    getToken,
     updateToken,
     create,
     del,

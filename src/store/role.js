@@ -1,3 +1,4 @@
+const config = require('../config')
 const databaseTools = require('../utils/database')
 
 const RoleStore = (knex) => {
@@ -16,7 +17,7 @@ const RoleStore = (knex) => {
     if(!params.user) return done(`user must be given to store.role.list`)
 
     knex.select('*')
-      .from('role')
+      .from(config.TABLES.role)
       .where({
         user: params.user,
       })
@@ -41,7 +42,7 @@ const RoleStore = (knex) => {
   if(!params.resource_id) return done(`resource_id must be given to store.role.listForUser`)
 
   knex.select('*')
-    .from('role')
+    .from(config.TABLES.role)
     .where({
       user: params.user,
       resource_type: params.resource_type,
@@ -72,7 +73,7 @@ const RoleStore = (knex) => {
     if(!params.data.resource_type) return done(`data.resource_type param must be given to store.role.add`)
     if(!params.data.resource_id) return done(`data.resource_id param must be given to store.role.add`)
 
-    const query = knex('role')
+    const query = knex(config.TABLES.role)
       .insert({
         user: params.data.user,
         permission: params.data.permission,
@@ -101,7 +102,7 @@ const RoleStore = (knex) => {
   */
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.role.delete`)
-    const query = knex('role')
+    const query = knex(config.TABLES.role)
       .where({
         id: params.id,
       })

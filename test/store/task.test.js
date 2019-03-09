@@ -7,7 +7,13 @@ const fixtures = require('../fixtures')
 const tools = require('../tools')
 
 const TaskStore = require('../../src/store/task')
-const enumerations = require('../../src/enumerations')
+const config = require('../../src/config')
+
+const {
+  RESOURCE_TYPES,
+  PERMISSION_USER,
+  TASK_STATUS,
+} = config
 
 database.testSuiteWithDatabase(getConnection => {
 
@@ -41,8 +47,8 @@ database.testSuiteWithDatabase(getConnection => {
     const store = TaskStore(getConnection())
 
     tools.insertWithMissingValues(t, store, {
-      user: userMap.admin.id,
-      resource_type: 'cluster',
+      user: userMap[PERMISSION_USER.admin].id,
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
       restartable: true,
       payload: {
@@ -53,7 +59,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('task store -> create tasks for admin user', (t) => {
 
-    fixtures.insertTestTasks(getConnection(), userMap.admin.id, (err, tasks) => {
+    fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.admin].id, (err, tasks) => {
       t.notok(err, `there was no error`)
       taskMap = tasks
       t.end()
@@ -67,7 +73,7 @@ database.testSuiteWithDatabase(getConnection => {
         resource_id: task.resource_id + 10,
       })
     })
-    fixtures.insertTestTasks(getConnection(), userMap.write.id, insertData, (err, tasks) => {
+    fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.user].id, insertData, (err, tasks) => {
       t.notok(err, `there was no error`)
       Object.keys(tasks).forEach(key => {
         taskMap[key] = tasks[key]
@@ -80,13 +86,17 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = TaskStore(getConnection())
 
+    // we inserted each set of tasks for 2 users
+    const expectedCount = fixtures.SIMPLE_TASK_DATA.length * 2
+
     store.list({}, (err, tasks) => {
       t.notok(err, `there was no error`)
-      t.equal(tasks.length, 4, `there were 4 tasks`)
+      t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
       t.end()
     })
     
   })
+
 
   tape('task store -> list by cluster', (t) => {
 
@@ -97,13 +107,13 @@ database.testSuiteWithDatabase(getConnection => {
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
       t.equal(tasks.length, 1, `there was 1 task`)
-      t.equal(tasks[0].resource_type, 'cluster', `the resource_type is correct`)
+      t.equal(tasks[0].resource_type, RESOURCE_TYPES.cluster, `the resource_type is correct`)
       t.equal(tasks[0].resource_id, 10, `the resource_id is correct`)
       t.end()
     })
     
   })
-
+  
   tape('task store -> list by deployment', (t) => {
 
     const store = TaskStore(getConnection())
@@ -113,7 +123,7 @@ database.testSuiteWithDatabase(getConnection => {
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
       t.equal(tasks.length, 1, `there was 1 task`)
-      t.equal(tasks[0].resource_type, 'deployment', `the resource_type is correct`)
+      t.equal(tasks[0].resource_type, RESOURCE_TYPES.deployment, `the resource_type is correct`)
       t.equal(tasks[0].resource_id, 11, `the resource_id is correct`)
       t.end()
     })
@@ -124,16 +134,20 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = TaskStore(getConnection())
 
+    const expectedCount = fixtures.SIMPLE_TASK_DATA.length
+    const userId = userMap[PERMISSION_USER.admin].id
+
     store.list({
-      user: userMap.admin.id,
+      user: userId,
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
-      t.equal(tasks.length, 2, `there were 2 tasks`)
-      t.deepEqual(tasks.map(task => task.user), [userMap.admin.id, userMap.admin.id], `the user ids are correct`)
+      t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
+      t.deepEqual(tasks.map(task => task.user), [userId, userId], `the user ids are correct`)
       t.end()
     })
     
   })
+
 
   tape('task store -> get', (t) => {
 
@@ -178,7 +192,7 @@ database.testSuiteWithDatabase(getConnection => {
     store.update({
       id: ids[0],
       data: {
-        status: 'running'
+        status: TASK_STATUS.running,
       }
     }, (err, task) => {
       t.notok(err, `there was no error`)
@@ -186,7 +200,7 @@ database.testSuiteWithDatabase(getConnection => {
         id: ids[0],
       }, (err, task) => {
         t.notok(err, `there was no error`)
-        t.equal(task.status, 'running', `the updated status is ok`)
+        t.equal(task.status, TASK_STATUS.running, `the updated status is ok`)
         t.end()
       })
     })
@@ -204,7 +218,7 @@ database.testSuiteWithDatabase(getConnection => {
     }, (err, tasks) => {
       t.notok(err, `there was no error`)
       t.equal(tasks.length, 1, `there was 1 task`)
-      t.deepEqual(tasks.map(task => task.resource_type), ['cluster'], `the resource_types are correct`)
+      t.deepEqual(tasks.map(task => task.resource_type), [RESOURCE_TYPES.cluster], `the resource_types are correct`)
       t.deepEqual(tasks.map(task => task.id), [ids[0]], `the resource_ids are correct`)
       t.deepEqual(tasks.map(task => task.resource_id), [10], `the resource_ids are correct`)
       t.end()
@@ -212,5 +226,4 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  
 })

@@ -1,4 +1,6 @@
+const config = require('../config')
 const databaseTools = require('../utils/database')
+const base64 = require('../utils/base64')
 
 const ClusterFileStore = (knex) => {
 
@@ -13,12 +15,15 @@ const ClusterFileStore = (knex) => {
   */
   const list = (params, done) => {
     if(!params.cluster) return done(`cluster must be given to store.clusterfile.list`)
+
+    const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
+
     knex.select('*')
-      .from('clusterfile')
+      .from(config.TABLES.clusterfile)
       .where({
         cluster: params.cluster,
       })
-      .orderBy('name')
+      .orderBy(orderBy.field, orderBy.direction)
       .asCallback(databaseTools.allExtractor(done))
   }
   
@@ -44,7 +49,7 @@ const ClusterFileStore = (knex) => {
     if(params.name) queryParams.name = params.name
 
     knex.select('*')
-      .from('clusterfile')
+      .from(config.TABLES.clusterfile)
       .where(queryParams)
       .asCallback(databaseTools.singleExtractor(done))
   }
@@ -58,7 +63,7 @@ const ClusterFileStore = (knex) => {
       * data
         * cluster
         * name
-        * base64data
+        * rawData
       
       * transaction - used if present
     
@@ -67,15 +72,15 @@ const ClusterFileStore = (knex) => {
     if(!params.data) return done(`data param must be given to store.clusterfile.create`)
     if(!params.data.cluster) return done(`data.cluster param must be given to store.clusterfile.create`)
     if(!params.data.name) return done(`data.name param must be given to store.clusterfile.create`)
-    if(!params.data.base64data) return done(`data.base64data param must be given to store.clusterfile.create`)
+    if(!params.data.rawData) return done(`data.rawData param must be given to store.clusterfile.create`)
 
     const insertData = {
       cluster: params.data.cluster,
       name: params.data.name,
-      base64data: params.data.base64data,
+      base64data: base64.encode(params.data.rawData),
     }
 
-    const query = knex('clusterfile')
+    const query = knex(config.TABLES.clusterfile)
       .insert(insertData)
       .returning('*')
 
@@ -95,7 +100,7 @@ const ClusterFileStore = (knex) => {
       * cluster
       * id or name
       * data
-        * base64data
+        * rawData
         
       * transaction - used if present
   
@@ -105,7 +110,7 @@ const ClusterFileStore = (knex) => {
     if(!params.cluster) return done(`cluster must be given to store.clusterfile.update`)
     if(!params.id && !params.name) return done(`id or name must be given to store.clusterfile.update`)
     if(!params.data) return done(`data param must be given to store.clusterfile.update`)
-    if(!params.data.base64data) return done(`data.cluster param must be given to store.clusterfile.update`)
+    if(!params.data.rawData) return done(`data.rawData param must be given to store.clusterfile.update`)
 
     const queryParams = {
       cluster: params.cluster,
@@ -114,10 +119,10 @@ const ClusterFileStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
 
-    const query = knex('clusterfile')
+    const query = knex(config.TABLES.clusterfile)
       .where(queryParams)
       .update({
-        base64data: params.data.base64data,
+        base64data: base64.encode(params.data.rawData),
       })
       .returning('*')
 
@@ -151,7 +156,7 @@ const ClusterFileStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
     
-    const query = knex('clusterfile')
+    const query = knex(config.TABLES.clusterfile)
       .where(queryParams)
       .del()
       .returning('*')

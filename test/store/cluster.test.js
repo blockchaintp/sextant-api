@@ -9,9 +9,18 @@ const tools = require('../tools')
 const ClusterStore = require('../../src/store/cluster')
 const enumerations = require('../../src/enumerations')
 
+const config = require('../../src/config')
+
+const {
+  CLUSTER_STATUS,
+  CLUSTER_PROVISION_TYPE,
+  CLUSTER_STATUS_DEFAULT,
+} = config
+
 database.testSuiteWithDatabase(getConnection => {
 
   let clusterMap = {}
+  let testCluster = null
 
   tape('cluster store -> list no data', (t) => {
 
@@ -31,7 +40,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     tools.insertWithMissingValues(t, store, {
       name: 'testcluster',
-      provision_type: 'aws_ec2',
+      provision_type: CLUSTER_PROVISION_TYPE.aws_ec2,
       desired_state: {
         apples: 10,
       },
@@ -58,16 +67,19 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('cluster store -> create clusters', (t) => {
 
-    const compareCluster = fixtures.SIMPLE_CLUSTER_DATA.filter(cluster => cluster.name == 'testcluster')[0]
+    const compareCluster = fixtures.SIMPLE_CLUSTER_DATA[0]
 
     fixtures.insertTestClusters(getConnection(), (err, clusters) => {
       t.notok(err, `there was no error`)
-      t.deepEqual(clusters.testcluster.applied_state, {}, `the applied_state defaults to empty object`)
-      t.deepEqual(clusters.testcluster.desired_state, compareCluster.desired_state, `the desired_state is correct`)
-      t.equal(clusters.testcluster.name, compareCluster.name, `the name is correct`)
-      t.equal(clusters.testcluster.provision_type, compareCluster.provision_type, `the provision_type is correct`)
-      t.equal(clusters.testcluster.status, enumerations.CLUSTER_STATUS_DEFAULT, `the state defaults to created`)
-      t.equal(clusters.testcluster.maintenance_flag, false, `the maintenance_flag defaults to false`)
+
+      testCluster = clusters[compareCluster.name]
+
+      t.deepEqual(testCluster.applied_state, {}, `the applied_state defaults to empty object`)
+      t.deepEqual(testCluster.desired_state, compareCluster.desired_state, `the desired_state is correct`)
+      t.equal(testCluster.name, compareCluster.name, `the name is correct`)
+      t.equal(testCluster.provision_type, compareCluster.provision_type, `the provision_type is correct`)
+      t.equal(testCluster.status, CLUSTER_STATUS_DEFAULT, `the state defaults to created`)
+      t.equal(testCluster.maintenance_flag, false, `the maintenance_flag defaults to false`)
       clusterMap = clusters
       t.end()
     })
@@ -77,14 +89,16 @@ database.testSuiteWithDatabase(getConnection => {
   tape('cluster store -> list with ordered data', (t) => {
   
     const store = ClusterStore(getConnection())
+
+    const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
+    const expectedOrder = fixtures.SIMPLE_CLUSTER_DATA.map(d => d.name)
+
+    expectedOrder.sort()
   
     store.list({}, (err, clusters) => {
       t.notok(err, `there was no error`)
-      t.equal(clusters.length, 2, `there were 2 clusters`)
-      t.deepEqual(clusters.map(cluster => cluster.name), [
-        'othercluster',
-        'testcluster',
-      ], 'the clusters were in the correct order')
+      t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
+      t.deepEqual(clusters.map(cluster => cluster.name), expectedOrder, 'the clusters were in the correct order')
       t.end()
     })
     
@@ -94,27 +108,22 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = ClusterStore(getConnection())
 
-    const testcluster = clusterMap.testcluster
-  
     store.get({
-      id: testcluster.id,
+      id: testCluster.id,
     }, (err, cluster) => {
       t.notok(err, `there was no error`)
-      t.deepEqual(cluster, testcluster, 'the returned cluster is correct')
+      t.deepEqual(cluster, testCluster, 'the returned cluster is correct')
       t.end()
     })
     
   })
 
-
   tape('cluster store -> update with bad status', (t) => {
   
     const store = ClusterStore(getConnection())
 
-    const testcluster = clusterMap.testcluster
-  
     store.update({
-      id: testcluster.id,
+      id: testCluster.id,
       data: {
         status: 'oranges',
       }
@@ -129,21 +138,19 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = ClusterStore(getConnection())
 
-    const testcluster = clusterMap.testcluster
-  
     store.update({
-      id: testcluster.id,
+      id: testCluster.id,
       data: {
-        status: 'provisioned',
+        status: CLUSTER_STATUS.provisioned,
       }
     }, (err, firstCluster) => {
       t.notok(err, `there was no error`)
-      t.equal(firstCluster.status, 'provisioned', `the new status is correct`)
+      t.equal(firstCluster.status, CLUSTER_STATUS.provisioned, `the new status is correct`)
       store.get({
-        id: testcluster.id,
+        id: testCluster.id,
       }, (err, secondCluster) => {
         t.notok(err, `there was no error`)
-        t.equal(secondCluster.status, 'provisioned', `querying on the updated cluster is working`)
+        t.equal(secondCluster.status, CLUSTER_STATUS.provisioned, `querying on the updated cluster is working`)
         t.end()
       })
     })
@@ -153,17 +160,14 @@ database.testSuiteWithDatabase(getConnection => {
   tape('cluster store -> delete', (t) => {
   
     const store = ClusterStore(getConnection())
-  
-    const testcluster = clusterMap.testcluster
 
     store.delete({
-      id: testcluster.id,
+      id: testCluster.id,
     }, (err) => {
       t.notok(err, `there was no error`)
       store.list({},(err, clusters) => {
         t.notok(err, `there was no error`)
-        t.equal(clusters.length, 1, `there is 1 cluster`)
-        t.equal(clusters[0].name, 'othercluster', 'the remaining cluster is correct')
+        t.equal(clusters.length, fixtures.SIMPLE_CLUSTER_DATA.length-1, `there is 1 less cluster`)
         t.end()
       })
     })
@@ -173,16 +177,17 @@ database.testSuiteWithDatabase(getConnection => {
   tape('cluster store -> list with deleted', (t) => {
   
     const store = ClusterStore(getConnection())
+
+    const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
   
     store.list({
       deleted: true,
     },(err, clusters) => {
       t.notok(err, `there was no error`)
-      t.equal(clusters.length, 2, `there are 2 clusters`)
+      t.equal(clusters.length, expectedCount, `there are ${expectedCount} clusters`)
       t.end()
     })
     
   })
-
 
 })

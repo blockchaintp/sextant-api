@@ -5,22 +5,28 @@ const async = require('async')
 const app = require('../app')
 const tools = require('../tools')
 
+const config = require('../../src/config')
+
+const {
+  PERMISSION_USER,
+} = config
+
 app.testSuiteWithApp(({
   getConnection,
   url,
 }) => {
 
-  const ADMIN_USER = {
+  const SUPER_USER = {
     username: 'admin',
     password: 'apples',
     // we pass the read role as the initial user to ensure it's upgraded to admin
-    role: 'read',
+    permission: PERMISSION_USER.user,
   }
 
-  const READ_USER = {
-    username: 'read',
+  const NORMAL_USER = {
+    username: 'user',
     password: 'oranges',
-    role: 'read',
+    permission: PERMISSION_USER.user,
   }
 
   const USER_RECORDS = {}
@@ -28,11 +34,12 @@ app.testSuiteWithApp(({
   const updateToken = (t, id) => {
 
     let TOKEN = null
+
     async.series([
       next => {
         tools.sessionRequest({
           method: 'get',
-          url: `${url}/user/${id}`,
+          url: `${url}/user/${id}/token`,
           json: true,
         }, (err, res, body) => {
           t.notok(err, `there is no error`)
@@ -59,7 +66,7 @@ app.testSuiteWithApp(({
       next => {
         tools.sessionRequest({
           method: 'get',
-          url: `${url}/user/${id}`,
+          url: `${url}/user/${id}/token`,
           json: true,
         }, (err, res, body) => {
           t.notok(err, `there is no error`)
@@ -161,15 +168,14 @@ app.testSuiteWithApp(({
       method: 'post',
       url: `${url}/user`,
       json: true,
-      body: ADMIN_USER,
+      body: SUPER_USER,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 201, `201 code`)
-      t.equal(body.username, ADMIN_USER.username, `the username is correct`)
-      t.equal(body.role, 'admin', 'the user was created with admin role')
+      t.equal(body.username, SUPER_USER.username, `the username is correct`)
+      t.equal(body.permission, PERMISSION_USER.superuser, 'the user was created with superuser permission')
       t.notok(body.hashed_password, 'the hashed_password is not in the result')
-      t.notok(body.token_salt, 'the token_salt is not in the result')
-      t.notok(body.token, 'the token is not in the result')
+      t.notok(body.server_side_key, 'the server_side_key is not in the result')
       t.end()
     })
     
@@ -184,19 +190,19 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
-      t.equal(body, true, `there is no initial user`)
+      t.equal(body, true, `there is an initial user`)
       t.end()
     })
     
   })
 
-  tape('user routes -> (not logged in) register now there is a user', (t) => {
+  tape('user routes -> (not logged in) try creating a user now there is an existing user', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user`,
       json: true,
-      body: READ_USER,
+      body: NORMAL_USER,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
@@ -225,15 +231,15 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) login', (t) => {
+  tape('user routes -> (as superuser) login', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
       body: {
-        username: ADMIN_USER.username,
-        password: ADMIN_USER.password,
+        username: SUPER_USER.username,
+        password: SUPER_USER.password,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -244,7 +250,7 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) status', (t) => {
+  tape('user routes -> (as superuser) status', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -253,15 +259,15 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
-      t.equal(body.username, ADMIN_USER.username, `username correct`)
-      t.equal(body.role, 'admin', `role correct`)
-      USER_RECORDS.admin = body
+      t.equal(body.username, SUPER_USER.username, `username correct`)
+      t.equal(body.permission, PERMISSION_USER.superuser, `permission correct`)
+      USER_RECORDS.superuser = body
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) list', (t) => {
+  tape('user routes -> (as superuser) list', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -271,51 +277,50 @@ app.testSuiteWithApp(({
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
       t.equal(body.length, 1, `there is one user`)
-      t.equal(body[0].username, ADMIN_USER.username, `username correct`)
+      t.equal(body[0].username, SUPER_USER.username, `username correct`)
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) get user', (t) => {
+  tape('user routes -> (as superuser) get user', (t) => {
 
     tools.sessionRequest({
       method: 'get',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
-      t.equal(body.username, ADMIN_USER.username, `username correct`)
-      t.ok(body.token, `the token is present for reading your own record`)
+      t.equal(body.username, SUPER_USER.username, `username correct`)
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) try to update own role', (t) => {
+  tape('user routes -> (as superuser) try to update own permission', (t) => {
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
       json: true,
       body: {
-        role: 'write',
+        permission: PERMISSION_USER.user,
       }
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, 'cannot change own role', 'correct error message')
+      t.equal(body.error, 'cannot change own permission', 'correct error message')
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) try to delete self', (t) => {
+  tape('user routes -> (as superuser) try to delete self', (t) => {
 
     tools.sessionRequest({
       method: 'delete',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -326,29 +331,29 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) update own password', (t) => {
+  tape('user routes -> (as superuser) update own password', (t) => {
 
-    ADMIN_USER.password = 'newpassword'
+    SUPER_USER.password = 'newpassword'
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
       json: true,
       body: {
-        password: ADMIN_USER.password,
+        password: SUPER_USER.password,
       }
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
-      t.equal(res.statusCode, 200, `403 code`)
-      t.equal(body.id, USER_RECORDS.admin.id, `returned user id is correct`)
-      t.equal(body.username, USER_RECORDS.admin.username, `returned user id is correct`)
-      t.equal(body.hashed_password, undefined, `no hashed_password in response`)
+      t.equal(res.statusCode, 200, `200 code`)
+      t.equal(body.id, USER_RECORDS.superuser.id, `returned user id is correct`)
+      t.equal(body.username, USER_RECORDS.superuser.username, `returned user id is correct`)
+      t.notok(body.hashed_password, `no hashed_password in response`)      
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) logout', (t) => {
+  tape('user routes -> (as superuser) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -378,15 +383,15 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) login with new password', (t) => {
+  tape('user routes -> (as superuser) login with new password', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
       body: {
-        username: ADMIN_USER.username,
-        password: ADMIN_USER.password,
+        username: SUPER_USER.username,
+        password: SUPER_USER.password,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -397,63 +402,63 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) register read only user', (t) => {
+  tape('user routes -> (as superuser) register read only user', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user`,
       json: true,
-      body: READ_USER,
+      body: NORMAL_USER,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 201, `201 code`)
-      t.equal(body.username, READ_USER.username, `the username is correct`)
-      t.equal(body.role, 'read', 'the user was created with read role')
-      USER_RECORDS.read = body
+      t.equal(body.username, NORMAL_USER.username, `the username is correct`)
+      t.equal(body.permission, PERMISSION_USER.user, 'the user was created with user permission')
+      USER_RECORDS.normal = body
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) allow update other user role', (t) => {
+  tape('user routes -> (as superuser) allow update other user role', (t) => {
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.read.id}`,
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
       body: {
-        role: 'write',
+        permission: PERMISSION_USER.admin,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
-      t.equal(body.username, READ_USER.username, `the username is correct`)
-      t.equal(body.role, 'write', 'the user is updated with write role')
+      t.equal(body.username, NORMAL_USER.username, `the username is correct`)
+      t.equal(body.permission, PERMISSION_USER.admin, 'the user is updated with admin permission')
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) get other user record as admin but cannot see token', (t) => {
+  tape('user routes -> (as superuser) get other user record as admin but cannot see server_side_key', (t) => {
 
     tools.sessionRequest({
       method: 'get',
-      url: `${url}/user/${USER_RECORDS.read.id}`,
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
-      t.notok(body.token, 'there is no token in the reply')
+      t.notok(body.server_side_key, 'there is no server_side_key in the reply')
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) attempt to update other users token', (t) => {
+  tape('user routes -> (as superuser) attempt to update other users token', (t) => {
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.read.id}/token`,
+      url: `${url}/user/${USER_RECORDS.normal.id}/token`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -464,13 +469,28 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) update own token', (t) => {
+  tape('user routes -> (as superuser) attempt to get other users token', (t) => {
 
-    updateToken(t, USER_RECORDS.admin.id)
+    tools.sessionRequest({
+      method: 'get',
+      url: `${url}/user/${USER_RECORDS.normal.id}/token`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 403, `403 code`)
+      t.equal(body.error, `access denied`, `correct error`)
+      t.end()
+    })
     
   })
 
-  tape('user routes -> (as admin) logout', (t) => {
+  tape('user routes -> (as superuser) update own token', (t) => {
+
+    updateToken(t, USER_RECORDS.superuser.id)
+    
+  })
+
+  tape('user routes -> (as superuser) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -485,15 +505,15 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as read user) login', (t) => {
+  tape('user routes -> (as normal user) login', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
       body: {
-        username: READ_USER.username,
-        password: READ_USER.password,
+        username: NORMAL_USER.username,
+        password: NORMAL_USER.password,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -504,16 +524,16 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as read user) check route access', (t) => {
+  tape('user routes -> (as normal user) check route access', (t) => {
     const routes = [{
       method: 'get',
       url: `${url}/user`,
     }, {
       method: 'get',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
     }, {
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
       body: {
         meta: {
           apples: 10,
@@ -525,17 +545,17 @@ app.testSuiteWithApp(({
       body: {
         username: 'hacker',
         password: 'hacker',
-        role: 'admin',
+        role: PERMISSION_USER.superuser,
         meta: {
           apples: 10,
         },
       },
     }, {
       method: 'delete',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}`,
     }, {
       method: 'delete',
-      url: `${url}/user/${USER_RECORDS.read.id}`,
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
     }]
 
     async.eachSeries(routes, (route, nextRoute) => {
@@ -553,28 +573,28 @@ app.testSuiteWithApp(({
     })
   })
 
-  tape('user routes -> (as read user) get own record', (t) => {
+  tape('user routes -> (as normal user) get own record', (t) => {
 
     tools.sessionRequest({
       method: 'get',
-      url: `${url}/user/${USER_RECORDS.read.id}`,
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
-      t.equal(body.username, READ_USER.username, 'username is correct')
-      t.equal(body.id, USER_RECORDS.read.id, 'id is correct')
-      t.ok(body.token, `can see token for read user reading own record`)
+      t.equal(body.username, NORMAL_USER.username, 'username is correct')
+      t.equal(body.id, USER_RECORDS.normal.id, 'id is correct')
+      t.notok(body.server_side_key, `cannot see server_side_key for read user reading own record`)
       t.end()
     })
     
   })
 
-  tape('user routes -> (as read user) update own record', (t) => {
+  tape('user routes -> (as normal user) update own record', (t) => {
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.read.id}`,
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
       body: {
         meta: {
@@ -586,7 +606,7 @@ app.testSuiteWithApp(({
       t.equal(res.statusCode, 200, `200 code`)
       tools.sessionRequest({
         method: 'get',
-        url: `${url}/user/${USER_RECORDS.read.id}`,
+        url: `${url}/user/${USER_RECORDS.normal.id}`,
         json: true,
       }, (err, res, body) => {
         t.notok(err, `there is no error`)
@@ -598,29 +618,29 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as read user) attempt to update token via update method', (t) => {
+  tape('user routes -> (as normal user) attempt to update server_side_key via update method', (t) => {
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.read.id}`,
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
       body: {
-        token: 'badtoken',
+        server_side_key: 'badtoken',
       }
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, 'cannot change token via update', `error message was correct`)
+      t.equal(body.error, 'cannot change server_side_key via update', `error message was correct`)
       t.end()
     })
     
   })
 
-  tape('user routes -> (as read user) attempt to update other users token', (t) => {
+  tape('user routes -> (as normal user) attempt to update other users token', (t) => {
 
     tools.sessionRequest({
       method: 'put',
-      url: `${url}/user/${USER_RECORDS.admin.id}/token`,
+      url: `${url}/user/${USER_RECORDS.superuser.id}/token`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -631,11 +651,11 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as read user) update own token', (t) => {
-    updateToken(t, USER_RECORDS.read.id)
+  tape('user routes -> (as normal user) update own token', (t) => {
+    updateToken(t, USER_RECORDS.normal.id)
   })
 
-  tape('user routes -> (as read user) logout', (t) => {
+  tape('user routes -> (as normal user) logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',

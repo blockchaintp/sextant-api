@@ -54,7 +54,8 @@ const Routes = ({
   app.post(basePath('/user'), rbacMiddleware(store, 'user', 'create'), user.create)
   app.get(basePath('/user/:id'), rbacMiddleware(store, 'user', 'get'), user.get)
   app.put(basePath('/user/:id'), rbacMiddleware(store, 'user', 'update'), user.update)
-  app.put(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'updateToken'), user.updateToken)
+  app.get(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.getToken)
+  app.put(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.updateToken)
   app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.del)
 }
 

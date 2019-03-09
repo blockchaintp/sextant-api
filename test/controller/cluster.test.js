@@ -7,6 +7,15 @@ const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
 const Store = require('../../src/store')
 
+const config = require('../../src/config')
+
+const {
+  PERMISSION_USER,
+  RESOURCE_TYPES,
+  TASK_STATUS,
+  TASK_ACTION,
+} = config
+
 database.testSuiteWithDatabase(getConnection => {
 
   const getController = () => {
@@ -21,7 +30,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('cluster controller -> create users', (t) => {
   
-    fixtures.insertTestUsers(getConnection(), fixtures.EXTRA_USER_DATA, (err, users) => {
+    fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
       userMap = users
       t.end()
@@ -29,25 +38,28 @@ database.testSuiteWithDatabase(getConnection => {
   
   })
 
-  tape('cluster controller -> create cluster for write user', (t) => {
+  tape('cluster controller -> create cluster for admin user', (t) => {
   
     const controller = getController()
     const store = Store(getConnection())
 
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
 
+    let testCluster = null
+    const testUser = userMap[PERMISSION_USER.admin]
+
     async.series([
 
       // insert the cluster
       next => {
         controller.create({
-          user: userMap.write,
+          user: testUser,
           data: clusterData,
         }, (err, cluster) => {
           if(err) return next(err)
           t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
           t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
-          testClusters.write = cluster
+          testClusters[PERMISSION_USER.admin] = testCluster = cluster
           next()
         })
       },
@@ -55,14 +67,14 @@ database.testSuiteWithDatabase(getConnection => {
       // check we have a user writable role for the cluster
       next => {
         store.role.get({
-          user: userMap.write.id,
-          resource_type: 'cluster',
-          resource_id: testClusters.write.id
+          user: testUser.id,
+          resource_type: RESOURCE_TYPES.cluster,
+          resource_id: testCluster.id,
         }, (err, role) => {
           if(err) return next(err)
-          t.equal(role.user, userMap.write.id, `the role user id is correct`)
-          t.equal(role.resource_type, 'cluster', `the role resource_type is correct`)
-          t.equal(role.resource_id, testClusters.write.id, `the role resource_id is correct`)
+          t.equal(role.user, testUser.id, `the role user id is correct`)
+          t.equal(role.resource_type, RESOURCE_TYPES.cluster, `the role resource_type is correct`)
+          t.equal(role.resource_id, testCluster.id, `the role resource_id is correct`)
           next()
         })
       },
@@ -70,17 +82,17 @@ database.testSuiteWithDatabase(getConnection => {
       // check we have a task for the cluster.create
       next => {
         store.task.list({
-          cluster: testClusters.write.id
+          cluster: testCluster.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length,1, `there is a create task`)
           const task = tasks[0]
-          t.equal(task.user, userMap.write.id, `the task resource_type is correct`)
-          t.equal(task.resource_type, 'cluster', `the task resource_type is correct`)
-          t.equal(task.resource_id, testClusters.write.id, `the task resource_id is correct`)
-          t.equal(task.status, 'created', `the task status is correct`)
+          t.equal(task.user, testUser.id, `the task resource_type is correct`)
+          t.equal(task.resource_type, RESOURCE_TYPES.cluster, `the task resource_type is correct`)
+          t.equal(task.resource_id, testCluster.id, `the task resource_id is correct`)
+          t.equal(task.status, TASK_STATUS.created, `the task status is correct`)
           t.equal(task.restartable, true, `the task restartable is correct`)
-          t.equal(task.payload.action, 'cluster.create', `the task payload action is correct`)
+          t.equal(task.action, TASK_ACTION['cluster.create'], `the task payload action is correct`)
           next()
         })
       },
@@ -99,8 +111,8 @@ database.testSuiteWithDatabase(getConnection => {
     desired_state.oranges = 11
 
     controller.update({
-      user: userMap.write,
-      id: testClusters.write.id,
+      user: userMap[PERMISSION_USER.admin],
+      id: testClusters[PERMISSION_USER.admin].id,
       data: {
         desired_state,
       },
@@ -117,13 +129,13 @@ database.testSuiteWithDatabase(getConnection => {
 
     async.waterfall([
       (next) => store.task.list({
-        cluster: testClusters.write.id
+        cluster: testClusters[PERMISSION_USER.admin].id
       }, next),
 
       (tasks, next) => store.task.update({
         id: tasks[0].id,
         data: {
-          status: 'finished',
+          status: TASK_STATUS.finished,
         }
       }, next)
 
@@ -143,11 +155,14 @@ database.testSuiteWithDatabase(getConnection => {
       oranges: 11,
     })
 
+    const testCluster = testClusters[PERMISSION_USER.admin]
+    const testUser = userMap[PERMISSION_USER.admin]
+
     async.series([
       next => {
         controller.update({
-          user: userMap.write,
-          id: testClusters.write.id,
+          user: testUser,
+          id: testCluster.id,
           data: {
             desired_state,
           },
@@ -160,12 +175,12 @@ database.testSuiteWithDatabase(getConnection => {
 
       next => {
         store.task.list({
-          cluster: testClusters.write.id
+          cluster: testCluster.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length,2, `there are 2 tasks`)
-          t.deepEqual(tasks.map(task => task.status), ['created', 'finished'], `the tasks are correct`)
-          t.equal(tasks[0].payload.action, 'cluster.update', `the new task has the correct type`)
+          t.deepEqual(tasks.map(task => task.status), [TASK_STATUS.created, TASK_STATUS.finished], `the tasks are correct`)
+          t.equal(tasks[0].action, TASK_ACTION['cluster.update'], `the new task has the correct type`)
           next()
         })
       },
@@ -176,20 +191,21 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('cluster controller -> create cluster for admin user', (t) => {
+  tape('cluster controller -> create cluster for superuser user', (t) => {
   
     const controller = getController()
     
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
+    const testUser = userMap[PERMISSION_USER.superuser]
 
     controller.create({
-      user: userMap.admin,
+      user: testUser,
       data: clusterData,
     }, (err, cluster) => {
       t.notok(err, `there was no error`)
       t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
       t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
-      testClusters.admin = cluster
+      testClusters[PERMISSION_USER.superuser] = cluster
       t.end()
     })
  
@@ -199,23 +215,27 @@ database.testSuiteWithDatabase(getConnection => {
   
     const controller = getController()
 
+    const testCluster = testClusters[PERMISSION_USER.superuser]
+
     controller.get({
-      id: testClusters.admin.id,
+      id: testCluster.id,
     }, (err, cluster) => {
       t.notok(err, `there was no error`)
-      t.equal(cluster.name, testClusters.admin.name, `the cluster name is correct`)
-      t.deepEqual(cluster.desired_state, testClusters.admin.desired_state, `the cluster desired_state is correct`)
+      t.equal(cluster.name, testCluster.name, `the cluster name is correct`)
+      t.deepEqual(cluster.desired_state, testCluster.desired_state, `the cluster desired_state is correct`)
       t.end()
     })
  
   })
 
-  tape('cluster controller -> list clusters for admin user', (t) => {
+  tape('cluster controller -> list clusters for superuser user', (t) => {
 
     const controller = getController()
 
+    const testUser = userMap[PERMISSION_USER.superuser]
+
     controller.list({
-      user: userMap.admin,
+      user: testUser,
     }, (err, clusters) => {
       t.notok(err, `there was no error`)
       t.equal(clusters.length, 2, `there are 2 clusters`)
@@ -223,12 +243,14 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> list clusters for write user', (t) => {
+  tape('cluster controller -> list clusters for admin user', (t) => {
 
     const controller = getController()
 
+    const testUser = userMap[PERMISSION_USER.admin]
+
     controller.list({
-      user: userMap.write,
+      user: testUser,
     }, (err, clusters) => {
       t.notok(err, `there was no error`)
       t.equal(clusters.length, 1, `there is 1 cluster`)
@@ -236,12 +258,14 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> list clusters for read user', (t) => {
+  tape('cluster controller -> list clusters for normal user', (t) => {
 
     const controller = getController()
 
+    const testUser = userMap[PERMISSION_USER.user]
+
     controller.list({
-      user: userMap.read,
+      user: testUser,
     }, (err, clusters) => {
       t.notok(err, `there was no error`)
       t.equal(clusters.length, 0, `there are no clusters`)
@@ -265,9 +289,12 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
+    const testCluster = testClusters[PERMISSION_USER.admin]
+    const testUser = userMap[PERMISSION_USER.admin]
+
     controller.delete({
-      user: userMap.write,
-      id: testClusters.write.id,
+      user: testUser,
+      id: testCluster.id,
     }, (err, cluster) => {
       t.ok(err, `there was an error`)
       t.equal(err, `there are active tasks for this cluster`)
@@ -279,16 +306,18 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
+    const testCluster = testClusters[PERMISSION_USER.admin]
+
     async.waterfall([
       (next) => store.task.list({
-        cluster: testClusters.write.id
+        cluster: testCluster.id
       }, next),
 
       (tasks, next) => {
         store.task.update({
           id: tasks[0].id,
           data: {
-            status: 'finished',
+            status: TASK_STATUS.finished,
           }
         }, next)
       },
@@ -305,11 +334,14 @@ database.testSuiteWithDatabase(getConnection => {
     const controller = getController()
     const store = Store(getConnection())
 
+    const testCluster = testClusters[PERMISSION_USER.admin]
+    const testUser = userMap[PERMISSION_USER.admin]
+
     async.series([
       next => {
         controller.delete({
-          user: userMap.write,
-          id: testClusters.write.id,
+          user: testUser,
+          id: testCluster.id,
         }, (err, cluster) => {
           if(err) return next(err)
           next()
@@ -318,12 +350,20 @@ database.testSuiteWithDatabase(getConnection => {
 
       next => {
         store.task.list({
-          cluster: testClusters.write.id
+          cluster: testCluster.id
         }, (err, tasks) => {
           if(err) return next(err)
           t.equal(tasks.length, 3, `there are 3 tasks`)
-          t.deepEqual(tasks.map(task => task.status), ['created', 'finished', 'finished'], `the task statuses are correct`)
-          t.deepEqual(tasks.map(task => task.payload.action), ['cluster.delete', 'cluster.update', 'cluster.create'], `the task actions are correct`)
+          t.deepEqual(tasks.map(task => task.status), [
+            TASK_STATUS.created,
+            TASK_STATUS.finished,
+            TASK_STATUS.finished
+          ], `the task statuses are correct`)
+          t.deepEqual(tasks.map(task => task.action), [
+            TASK_ACTION['cluster.delete'],
+            TASK_ACTION['cluster.update'],
+            TASK_ACTION['cluster.create']
+          ], `the task actions are correct`)
           next()
         })
       },

@@ -1,3 +1,4 @@
+const config = require('../config')
 const databaseTools = require('../utils/database')
 
 const ClusterStore = (knex) => {
@@ -12,13 +13,16 @@ const ClusterStore = (knex) => {
   
   */
   const list = (params, done) => {
+
+    const orderBy = config.LIST_ORDER_BY_FIELDS.cluster
+
     const sqlQuery = knex.select('*')
-      .from('cluster')
-      .orderBy('name')
+      .from(config.TABLES.cluster)
+      .orderBy(orderBy.field, orderBy.direction)
 
     if(!params.deleted) {
       sqlQuery.whereNot({
-        status: 'deleted',
+        status: config.CLUSTER_STATUS.deleted,
       })
     }
 
@@ -38,7 +42,7 @@ const ClusterStore = (knex) => {
     if(!params.id) return done(`id must be given to store.cluster.get`)
 
     knex.select('*')
-      .from('cluster')
+      .from(config.TABLES.cluster)
       .where({
         id: params.id,
       })
@@ -73,7 +77,7 @@ const ClusterStore = (knex) => {
       desired_state: params.data.desired_state,
     }
 
-    const query = knex('cluster')
+    const query = knex(config.TABLES.cluster)
       .insert(insertData)
       .returning('*')
 
@@ -112,7 +116,7 @@ const ClusterStore = (knex) => {
     if(!id) return done(`id must be given to store.cluster.update`)
     if(!data) return done(`data param must be given to store.cluster.update`)
 
-    const query = knex('cluster')
+    const query = knex(config.TABLES.cluster)
       .where({
         id: params.id,
       })
@@ -142,12 +146,12 @@ const ClusterStore = (knex) => {
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.cluster.delete`)
     
-    const query = knex('cluster')
+    const query = knex(config.TABLES.cluster)
       .where({
         id: params.id,
       })
       .update({
-        status: 'deleted',
+        status: config.CLUSTER_STATUS.deleted,
       })
       .returning('*')
 

@@ -1,4 +1,5 @@
 const async = require('async')
+const config = require('../config')
 const utils = require('../utils/user')
 
 const UserController = ({ store, settings }) => {
@@ -82,34 +83,31 @@ const UserController = ({ store, settings }) => {
 
      * username - string
      * password - string
-     * role - {admin,user}
+     * permission - enumerations.PERMISSION_USER
     
   */
   const create = (params, done) => {
 
     if(!params.username) return done(`username required for controller.user.create`)
     if(!params.password) return done(`password required for controller.user.create`)
-    if(!params.role) return done(`role required for controller.user.create`)
+    if(!params.permission) return done(`permission required for controller.user.create`)
 
     count({}, (err, existingUsers) => {
       if(err) return done(err)
 
-      // if there are no current users - force the role to be 'admin'
+      // if there are no current users - force the role to be 'superuser'
       // this is to avoid the initial user being created who cannot then add more users
-      const role = existingUsers == 0 ? 'admin' : params.role
-
+      const permission = existingUsers == 0 ? config.PERMISSION_USER.superuser : params.permission
       async.parallel({
         hashed_password: (next) => utils.getPasswordHash(params.password, next),
-        generated_token: (next) => utils.generateToken(params.username, settings.tokenSecret, next),
       }, (err, values) => {
         if(err) return done(err)
         store.user.create({
           data: {
             username: params.username,
-            role,
+            permission,
             hashed_password: values.hashed_password,
-            token: values.generated_token.token,
-            token_salt: values.generated_token.salt,
+            server_side_key: utils.getTokenServerSideKey(),
           }
         }, done)
       })
@@ -135,8 +133,8 @@ const UserController = ({ store, settings }) => {
     if(!params.id) return done(`id must be given to controller.user.update`)
     if(!params.data) return done(`data param must be given to controller.user.update`)
 
-    // check someone is not trying to manually overwrite a users token
-    if(params.data.token || params.data.token_salt) return done(`access denied`)
+    // check someone is not trying to manually overwrite a users server_side_key
+    if(params.data.server_side_key) return done(`access denied`)
 
     const { 
       id,
@@ -171,7 +169,31 @@ const UserController = ({ store, settings }) => {
 
   /*
   
-    update a users token
+    get a users token
+
+    params:
+
+      * id
+    
+  */
+  const getToken = (params, done) => {
+
+    if(!params.id) return done(`id must be given to controller.user.getToken`)
+
+    async.waterfall([
+      (next) => get({
+        id: params.id,
+      }, next),
+
+      (user, next) => utils.getToken(user.id, user.server_side_key, settings.tokenSecret, next),
+        
+    ], done)
+
+  }
+
+  /*
+  
+    update a users token server_side_key
 
     params:
 
@@ -180,26 +202,19 @@ const UserController = ({ store, settings }) => {
   */
   const updateToken = (params, done) => {
 
-    if(!params.id) return done(`id must be given to controller.user.update`)
+    if(!params.id) return done(`id must be given to controller.user.updateToken`)
 
-    async.waterfall([
-      (next) => get({
+    store.user.update({
+      id: params.id,
+      data: {
+        server_side_key: utils.getTokenServerSideKey()
+      },
+    }, (err) => {
+      if(err) return done(err)
+      getToken({
         id: params.id,
-      }, next),
-
-      (user, next) => utils.generateToken(user.username, settings.tokenSecret, next),
-        
-      (generatedToken, next) => {
-        store.user.update({
-          id: params.id,
-          data: {
-            token: generatedToken.token,
-            token_salt: generatedToken.salt,
-          },
-        }, next)
-      }
-    ], done)
-
+      }, done)
+    })
   }
 
   /*
@@ -225,6 +240,7 @@ const UserController = ({ store, settings }) => {
     checkPassword,
     create,
     update,
+    getToken,
     updateToken,
     delete: del,
   }

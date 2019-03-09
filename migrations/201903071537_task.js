@@ -1,3 +1,4 @@
+const config = require('../src/config')
 const enumerations = require('../src/enumerations')
 
 const up = (knex, Promise) => {
@@ -9,12 +10,13 @@ const up = (knex, Promise) => {
         .references('id')
         .inTable('useraccount')
         .notNullable()
-      table.enu('status', enumerations.TASK_STATUS).notNullable()
+      table.enu('status', enumerations.TASK_STATUS).notNullable().defaultTo(config.TASK_STATUS_DEFAULT)
       table.enu('resource_type', enumerations.RESOURCE_TYPES).notNullable()
+      table.enu('action', enumerations.TASK_ACTION).notNullable()
       table.integer('resource_id')
         .notNullable()
       table.boolean('restartable').notNullable()
-      table.json('payload')
+      table.json('payload').defaultTo('{}')
     })
   ])
 }

@@ -7,6 +7,9 @@ const tools = require('../tools')
 const database = require('../database')
 const fixtures = require('../fixtures')
 
+const config = require('../../src/config')
+const enumerations = require('../../src/enumerations')
+
 const UserStore = require('../../src/store/user')
 
 database.testSuiteWithDatabase(getConnection => {
@@ -31,9 +34,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     tools.insertWithMissingValues(t, store, {
       username: 'apples',
-      role: 'admin',
-      token: 'na',
-      token_salt: 'na',
+      permission: 'admin',
+      server_side_key: 'na',
       hashed_password: 'na',
     })
   })
@@ -46,9 +48,8 @@ database.testSuiteWithDatabase(getConnection => {
       data: {
         username: 'apples',
         hashed_password: 'na',
-        token: 'na',
-        token_salt: 'na',
-        role: 'apples'
+        server_side_key: 'na',
+        permission: 'apples'
       }
     }, (err, user) => {
       t.ok(err, `there was an error`)
@@ -70,14 +71,14 @@ database.testSuiteWithDatabase(getConnection => {
   tape('user store -> list with ordered data', (t) => {
   
     const store = UserStore(getConnection())
+
+    const correctOrder = [].concat(enumerations.PERMISSION_USER)
+    correctOrder.sort()
   
     store.list({}, (err, users) => {
       t.notok(err, `there was no error`)
-      t.equal(users.length, 2, `there were 2 users`)
-      t.deepEqual(users.map(user => user.username), [
-        'admin',
-        'write',
-      ], 'the users were in the correct order')
+      t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
+      t.deepEqual(users.map(user => user.username), correctOrder, 'the users were in the correct order')
       t.end()
     })
     
@@ -89,18 +90,18 @@ database.testSuiteWithDatabase(getConnection => {
   
     async.waterfall([
       (next) => store.get({
-        username: 'write',
+        username: config.PERMISSION_USER.admin,
       }, next),
   
       (usernameUser, next) => {
-        t.equal(usernameUser.username, 'write', `the returned username is correct`)
+        t.equal(usernameUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
         store.get({
           id: usernameUser.id,
         }, next)
       },
   
       (idUser, next) => {
-        t.equal(idUser.username, 'write', `the returned username is correct`)
+        t.equal(idUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
         next()
       },
   
@@ -110,13 +111,12 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
   
-  
   tape('user store -> update user', (t) => {
   
     const store = UserStore(getConnection())
   
     store.update({
-      id: userMap.write.id,
+      id: userMap[config.PERMISSION_USER.admin].id,
       data: {
         username: 'oranges',
       }
@@ -139,16 +139,16 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     store.delete({
-      id: userMap.write.id,
+      id: userMap[config.PERMISSION_USER.admin].id,
     }, (err, user) => {
       t.notok(err, `there was no error`)
       store.list({},(err, users) => {
         t.notok(err, `there was no error`)
-        t.equal(users.length, 1, `there is 1 user`)
-        t.equal(users[0].username, 'admin', 'the remaining username is correct')
+        t.equal(users.length, fixtures.SIMPLE_USER_DATA.length - 1, `there is 1 less user`)
         t.end()
       })
     })
     
   })
+  
 })

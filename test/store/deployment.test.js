@@ -8,18 +8,24 @@ const fixtures = require('../fixtures')
 const tools = require('../tools')
 
 const DeploymentStore = require('../../src/store/deployment')
-const enumerations = require('../../src/enumerations')
+const config = require('../../src/config')
+
+const {
+  DEPLOYMENT_STATUS,
+  DEPLOYMENT_STATUS_DEFAULT,
+} = config
 
 database.testSuiteWithDatabase(getConnection => {
 
   let testCluster = null
+  let testDeployment = null
   let deploymentMap = {}
 
   tape('deployment store -> create clusters', (t) => {
 
     fixtures.insertTestClusters(getConnection(), (err, clusters) => {
       t.notok(err, `there was no error`)
-      testCluster = clusters.testcluster
+      testCluster = clusters[fixtures.SIMPLE_CLUSTER_DATA[0].name]
       t.end()
     })
   
@@ -65,16 +71,18 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('deployment store -> create deployments', (t) => {
 
-    const compareDeployment = fixtures.SIMPLE_DEPLOYMENT_DATA.filter(deployment => deployment.name == 'testdeployment')[0]
+    const compareDeployment = fixtures.SIMPLE_DEPLOYMENT_DATA[0]
 
     fixtures.insertTestDeployments(getConnection(), testCluster.id, (err, deployments) => {
       t.notok(err, `there was no error`)
-      t.equal(deployments.testdeployment.cluster, testCluster.id, `the cluster is the correct id`)
-      t.deepEqual(deployments.testdeployment.applied_state, {}, `the applied_state defaults to empty object`)
-      t.deepEqual(deployments.testdeployment.desired_state, compareDeployment.desired_state, `the desired_state is correct`)
-      t.equal(deployments.testdeployment.name, compareDeployment.name, `the name is correct`)
-      t.equal(deployments.testdeployment.status, enumerations.DEPLOYMENT_STATUS_DEFAULT, `the state defaults to created`)
-      t.equal(deployments.testdeployment.maintenance_flag, false, `the maintenance_flag defaults to false`)
+
+      testDeployment = deployments[compareDeployment.name]
+      t.equal(testDeployment.cluster, testCluster.id, `the cluster is the correct id`)
+      t.deepEqual(testDeployment.applied_state, {}, `the applied_state defaults to empty object`)
+      t.deepEqual(testDeployment.desired_state, compareDeployment.desired_state, `the desired_state is correct`)
+      t.equal(testDeployment.name, compareDeployment.name, `the name is correct`)
+      t.equal(testDeployment.status, DEPLOYMENT_STATUS_DEFAULT, `the state defaults to created`)
+      t.equal(testDeployment.maintenance_flag, false, `the maintenance_flag defaults to false`)
       deploymentMap = deployments
       t.end()
     })
@@ -84,16 +92,18 @@ database.testSuiteWithDatabase(getConnection => {
   tape('deployment store -> list with ordered data', (t) => {
   
     const store = DeploymentStore(getConnection())
+
+    const expectedCount = fixtures.SIMPLE_DEPLOYMENT_DATA.length
+    const expectedOrder = fixtures.SIMPLE_DEPLOYMENT_DATA.map(d => d.name)
+
+    expectedOrder.sort()
   
     store.list({
       cluster: testCluster.id,
     }, (err, deployments) => {
       t.notok(err, `there was no error`)
-      t.equal(deployments.length, 2, `there were 2 deployments`)
-      t.deepEqual(deployments.map(deployment => deployment.name), [
-        'otherdeployment',
-        'testdeployment',
-      ], 'the deployments were in the correct order')
+      t.equal(deployments.length, expectedCount, `there were ${expectedCount} deployments`)
+      t.deepEqual(deployments.map(deployment => deployment.name), expectedOrder, 'the deployments were in the correct order')
       t.end()
     })
     
@@ -103,13 +113,11 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = DeploymentStore(getConnection())
 
-    const testdeployment = deploymentMap.testdeployment
-  
     store.get({
-      id: testdeployment.id,
+      id: testDeployment.id,
     }, (err, deployment) => {
       t.notok(err, `there was no error`)
-      t.deepEqual(deployment, testdeployment, 'the returned deployment is correct')
+      t.deepEqual(deployment, testDeployment, 'the returned deployment is correct')
       t.end()
     })
     
@@ -119,10 +127,8 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = DeploymentStore(getConnection())
 
-    const testdeployment = deploymentMap.testdeployment
-  
     store.update({
-      id: testdeployment.id,
+      id: testDeployment.id,
       data: {
         status: 'oranges',
       }
@@ -137,21 +143,19 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = DeploymentStore(getConnection())
 
-    const testdeployment = deploymentMap.testdeployment
-  
     store.update({
-      id: testdeployment.id,
+      id: testDeployment.id,
       data: {
-        status: 'provisioned',
+        status: DEPLOYMENT_STATUS.provisioned,
       }
     }, (err, firstDeployment) => {
       t.notok(err, `there was no error`)
-      t.equal(firstDeployment.status, 'provisioned', `the new status is correct`)
+      t.equal(firstDeployment.status, DEPLOYMENT_STATUS.provisioned, `the new status is correct`)
       store.get({
-        id: testdeployment.id,
+        id: testDeployment.id,
       }, (err, secondDeployment) => {
         t.notok(err, `there was no error`)
-        t.equal(secondDeployment.status, 'provisioned', `querying on the updated cluster is working`)
+        t.equal(secondDeployment.status, DEPLOYMENT_STATUS.provisioned, `querying on the updated cluster is working`)
         t.end()
       })
     })
@@ -161,24 +165,20 @@ database.testSuiteWithDatabase(getConnection => {
   tape('deployment store -> delete', (t) => {
   
     const store = DeploymentStore(getConnection())
-  
-    const testdeployment = deploymentMap.testdeployment
 
     store.delete({
-      id: testdeployment.id,
+      id: testDeployment.id,
     }, (err) => {
       t.notok(err, `there was no error`)
       store.list({
         cluster: testCluster.id,
       },(err, deployments) => {
         t.notok(err, `there was no error`)
-        t.equal(deployments.length, 1, `there is 1 deployment`)
-        t.equal(deployments[0].name, 'otherdeployment', 'the remaining deployment is correct')
+        t.equal(deployments.length, fixtures.SIMPLE_DEPLOYMENT_DATA.length-1, `there is 1 less deployment`)
         t.end()
       })
     })
     
   })
-
 
 })

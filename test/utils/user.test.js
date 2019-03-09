@@ -37,21 +37,18 @@ tape('user utils -> get and compare hash (incorrect)', (t) => {
 
 tape('user utils -> get and compare token (correct)', (t) => {
 
-  const USERNAME = 'apples'
+  const ID = 10
   const SECRET = 'oranges'
-  let SALT = null
+  const KEY = userUtils.getTokenServerSideKey()
 
   async.waterfall([
-    (next) => userUtils.generateToken(USERNAME, SECRET, (err, generatedToken) => {
-      if(err) return next(err)
-      SALT = generatedToken.salt
-      next(null, generatedToken.token)
-    }),
+    (next) => userUtils.getToken(ID, KEY, SECRET, next),
     (token, next) => userUtils.decodeToken(token, SECRET, next),
   ], (err, decoded) => {
     t.notok(err, `there was no error`)
-    t.equal(decoded.username, USERNAME, `the username was correct`)
-    t.equal(decoded.salt, SALT, `the salt was correct`)
+    t.equal(decoded.id, ID, `the username was correct`)
+    t.ok(decoded.server_side_key, `there is a server_side_key`)
+    t.equal(decoded.server_side_key, KEY, `the server_side_key was correct`)
     t.end()
   })
 
@@ -59,11 +56,12 @@ tape('user utils -> get and compare token (correct)', (t) => {
 
 tape('user utils -> get and compare token no secret', (t) => {
 
-  const USERNAME = 'apples'
+  const ID = 10
   const SECRET = ''
+  const KEY = userUtils.getTokenServerSideKey()
 
   async.waterfall([
-    (next) => userUtils.generateToken(USERNAME, SECRET, next),
+    (next) => userUtils.getToken(ID, KEY, SECRET, next),
     (token, next) => userUtils.decodeToken(token, SECRET, next),
   ], (err, decoded) => {
     t.ok(err, `there was no error`)
@@ -75,11 +73,12 @@ tape('user utils -> get and compare token no secret', (t) => {
 
 tape('user utils -> get and compare token (incorrect secret)', (t) => {
 
-  const USERNAME = 'apples'
+  const ID = 10
   const SECRET = 'oranges'
+  const KEY = userUtils.getTokenServerSideKey()
 
   async.waterfall([
-    (next) => userUtils.generateToken(USERNAME, SECRET, next),
+    (next) => userUtils.getToken(ID, KEY, SECRET, next),
     (token, next) => userUtils.decodeToken(token, SECRET + 'bad', next),
   ], (err, decoded) => {
     t.ok(err, `there was no error`)
@@ -91,11 +90,12 @@ tape('user utils -> get and compare token (incorrect secret)', (t) => {
 
 tape('user utils -> get and compare token (incorrect token)', (t) => {
 
-  const USERNAME = 'apples'
+  const ID = 10
   const SECRET = 'oranges'
+  const KEY = userUtils.getTokenServerSideKey()
 
   async.waterfall([
-    (next) => userUtils.generateToken(USERNAME, SECRET, next),
+    (next) => userUtils.getToken(ID, KEY, SECRET, next),
     (token, next) => userUtils.decodeToken(token + 'bad', SECRET, next),
   ], (err, decoded) => {
     t.ok(err, `there was no error`)
@@ -103,4 +103,21 @@ tape('user utils -> get and compare token (incorrect token)', (t) => {
     t.end()
   })
 
+})
+
+tape('user utils -> check tokens are generated the same way twice', (t) => {
+
+  const ID = 10
+  const SECRET = 'oranges'
+  const KEY = userUtils.getTokenServerSideKey()
+
+  userUtils.getToken(ID, KEY, SECRET, (err, firstToken) => {
+    t.notok(err, `there was no initial error`)
+
+    userUtils.getToken(ID, KEY, SECRET, (err, secondToken) => {
+      t.notok(err, `there was no initial error`)
+      t.equal(firstToken, secondToken, `the two tokens are the same`)
+      t.end()
+    })
+  })
 })

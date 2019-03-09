@@ -1,3 +1,4 @@
+const config = require('../config')
 const databaseTools = require('../utils/database')
 const enumerations = require('../enumerations')
 
@@ -22,12 +23,12 @@ const TaskStore = (knex) => {
     const query = {}
 
     if(params.cluster) {
-      query.resource_type = 'cluster'
+      query.resource_type = config.RESOURCE_TYPES.cluster
       query.resource_id = params.cluster
     }
 
     if(params.deployment) {
-      query.resource_type = 'deployment'
+      query.resource_type = config.RESOURCE_TYPES.deployment
       query.resource_id = params.deployment
     }
 
@@ -48,7 +49,7 @@ const TaskStore = (knex) => {
     }
 
     const sqlQuery = knex.select('*')
-      .from('task')
+      .from(config.TABLES.task)
 
     if(Object.keys(query).length > 0 && status.length > 0) {
       sqlQuery
@@ -63,8 +64,10 @@ const TaskStore = (knex) => {
         .whereIn('status', status)
     }
 
+    const orderBy = config.LIST_ORDER_BY_FIELDS.task
+
     sqlQuery
-      .orderBy('created_at', 'desc')
+      .orderBy(orderBy.field, orderBy.direction)
       .asCallback(databaseTools.allExtractor(done))
   }
 
@@ -84,13 +87,9 @@ const TaskStore = (knex) => {
     if(!params.cluster && !params.deployment) return done(`cluster or deployment required for controller.task.activeForResource`)
 
     const query = {
-      status: [
-        // created tasks are expected to be picked up by the worker any moment
-        // so count as active
-        'created',
-        'running',
-        'cancelling',
-      ]
+      // created tasks are expected to be picked up by the worker any moment
+      // so count as active
+      status: config.TASK_ACTIVE_STATUSES,
     }
 
     if(params.cluster) {
@@ -118,7 +117,7 @@ const TaskStore = (knex) => {
     if(!params.id) return done(`id must be given to store.task.get`)
 
     knex.select('*')
-      .from('task')
+      .from(config.TABLES.task)
       .where({
         id: params.id,
       })
@@ -135,6 +134,7 @@ const TaskStore = (knex) => {
         * user
         * resource_type
         * resource_id
+        * action
         * restartable
         * payload
       
@@ -146,6 +146,7 @@ const TaskStore = (knex) => {
     if(!params.data.user) return done(`data.user param must be given to store.task.create`)
     if(!params.data.resource_type) return done(`data.resource_type param must be given to store.task.create`)
     if(!params.data.resource_id) return done(`data.resource_id param must be given to store.task.create`)
+    if(!params.data.action) return done(`data.action param must be given to store.task.create`)
     if(typeof(params.data.restartable) !== 'boolean') return done(`data.restartable param must be given to store.task.create`)
     if(!params.data.payload) return done(`data.payload param must be given to store.task.create`)
 
@@ -153,12 +154,13 @@ const TaskStore = (knex) => {
       user: params.data.user,
       resource_type: params.data.resource_type,
       resource_id: params.data.resource_id,
+      action: params.data.action,
       restartable: params.data.restartable,
       payload: params.data.payload,
-      status: 'created',
+      status: config.TASK_STATUS_DEFAULT,
     }
 
-    const query = knex('task')
+    const query = knex(config.TABLES.task)
       .insert(insertData)
       .returning('*')
 
@@ -189,7 +191,7 @@ const TaskStore = (knex) => {
 
     if(enumerations.TASK_STATUS.indexOf(params.data.status) < 0) return done(`bad status: ${params.data.status}`)
 
-    const query = knex('task')
+    const query = knex(config.TABLES.task)
       .where({
         id: params.id,
       })

@@ -7,6 +7,13 @@ const database = require('../database')
 const fixtures = require('../fixtures')
 
 const RoleStore = require('../../src/store/role')
+const config = require('../../src/config')
+
+const {
+  RESOURCE_TYPES,
+  PERMISSION_USER,
+  PERMISSION_ROLE,
+} = config
 
 database.testSuiteWithDatabase(getConnection => {
 
@@ -19,7 +26,7 @@ database.testSuiteWithDatabase(getConnection => {
     fixtures.insertTestUsers(getConnection(), (err, users) => {
       t.notok(err, `there was no error`)
       userMap = users
-      testUser = users.write
+      testUser = users[PERMISSION_USER.admin]
       t.end()
     })
   
@@ -56,8 +63,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     tools.insertWithMissingValues(t, store, {
       user: testUser.id,
-      permission: 'read',
-      resource_type: 'cluster',
+      permission: PERMISSION_ROLE.read,
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
     })
   })
@@ -69,7 +76,7 @@ database.testSuiteWithDatabase(getConnection => {
     store.create({
       data: {
         user: testUser.id,
-        permission: 'read',
+        permission: PERMISSION_ROLE.read,
         resource_type: 'oranges',
         resource_id: 10,
       }
@@ -97,12 +104,14 @@ database.testSuiteWithDatabase(getConnection => {
   tape('role store -> list', (t) => {
   
     const store = RoleStore(getConnection())
+
+    const expectedCount = fixtures.SIMPLE_ROLE_DATA.length
   
     store.list({
       user: testUser.id,
     }, (err, roles) => {
       t.notok(err, `there was no error`)
-      t.equal(roles.length, 2, `there were 2 roles`)
+      t.equal(roles.length, expectedCount, `there were ${expectedCount} roles`)
 
       const loadedRoleMap = roles.reduce((all, role) => {
         all[role.resource_type] = role
@@ -121,7 +130,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const baseObject = {
       user: testUser.id,
-      resource_type: 'cluster',
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
     }
 
@@ -146,7 +155,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.get({
       user: testUser.id,
-      resource_type: 'cluster',
+      resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
     }, (err, role) => {
       t.notok(err, `there was no error`)
@@ -162,7 +171,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.get({
       user: testUser.id,
-      resource_type: 'deployment',
+      resource_type: RESOURCE_TYPES.deployment,
       resource_id: 11,
     }, (err, role) => {
       t.notok(err, `there was no error`)
@@ -176,6 +185,8 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = RoleStore(getConnection())
 
+    const expectedCount = fixtures.SIMPLE_ROLE_DATA.length - 1
+
     store.delete({
       id: roleMap.cluster.id,
     }, (err) => {
@@ -184,7 +195,7 @@ database.testSuiteWithDatabase(getConnection => {
         user: testUser.id,
       },(err, roles) => {
         t.notok(err, `there was no error`)
-        t.equal(roles.length, 1, `there is 1 role`)
+        t.equal(roles.length, expectedCount, `there is 1 less role`)
         t.deepEqual(roles[0], roleMap.deployment, 'the remaining role is correct')
         t.end()
       })

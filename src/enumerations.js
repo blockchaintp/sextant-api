@@ -1,63 +1,15 @@
-const RESOURCE_TYPES = [
-  'cluster',
-  'deployment',
-]
+const config = require('./config')
 
-const CLUSTER_PROVISION_TYPE = [
-  'aws_ec2',
-  'aws_eks',
-  'google_gcp',
-  'google_gke',
-  'azure_compute',
-  'azure_aks',
-  'byok',
-]
-
-const CLUSTER_STATUS = [
-  'created',
-  'provisioned',
-  'error',
-  'deleted',
-]
-
-const CLUSTER_STATUS_DEFAULT = 'created'
-
-const DEPLOYMENT_STATUS = [
-  'created',
-  'provisioned',
-  'error',
-  'deleted',
-]
-
-const DEPLOYMENT_STATUS_DEFAULT = 'created'
-
-// should be:
-//
-// superuser
-// admin
-// user
-const PERMISSION_ROLE = [
-  'admin',
-  'read',
-  'write',
-]
-
-const TASK_STATUS = [
-  'created',
-  'running',
-  'finished',
-  'cancelling',
-  'cancelled',
-  'error',
-]
+// turn an object of keys into an array of the values
+const getEnumeration = (configMap) => Object.values(configMap)
 
 module.exports = {
-  RESOURCE_TYPES,
-  CLUSTER_PROVISION_TYPE,
-  CLUSTER_STATUS,
-  CLUSTER_STATUS_DEFAULT,
-  DEPLOYMENT_STATUS,
-  DEPLOYMENT_STATUS_DEFAULT,
-  PERMISSION_ROLE,
-  TASK_STATUS,
+  RESOURCE_TYPES: getEnumeration(config.RESOURCE_TYPES),
+  CLUSTER_PROVISION_TYPE: getEnumeration(config.CLUSTER_PROVISION_TYPE),
+  CLUSTER_STATUS: getEnumeration(config.CLUSTER_STATUS),
+  DEPLOYMENT_STATUS: getEnumeration(config.DEPLOYMENT_STATUS),
+  TASK_STATUS: getEnumeration(config.TASK_STATUS),
+  TASK_ACTION: getEnumeration(config.TASK_ACTION),
+  PERMISSION_USER: getEnumeration(config.PERMISSION_USER),
+  PERMISSION_ROLE: getEnumeration(config.PERMISSION_ROLE),
 }

@@ -2,9 +2,14 @@
 
 const tape = require('tape')
 const database = require('../database')
-const config = require('../../src/config')
 const UserController = require('../../src/controller/user')
 const Store = require('../../src/store')
+const userUtils = require('../../src/utils/user')
+const config = require('../../src/config')
+
+const {
+  PERMISSION_USER,
+} = config
 
 database.testSuiteWithDatabase(getConnection => {
 
@@ -21,7 +26,7 @@ database.testSuiteWithDatabase(getConnection => {
   const TEST_USER = {
     username: 'apples',
     password: 'oranges',
-    role: 'read',
+    permission: PERMISSION_USER.user,
   }
 
   let TEST_USER_RECORD = null
@@ -57,11 +62,10 @@ database.testSuiteWithDatabase(getConnection => {
       t.notok(err, `there was no error`)
       t.equal(user.username, TEST_USER.username)
 
-      // make sure the role is forced to admin as the initial user
-      t.equal(user.role, 'admin')
+      // make sure the permission is forced to superuser as the initial user
+      t.equal(user.permission, PERMISSION_USER.superuser)
       t.ok(user.hashed_password, 'there is a hashed password')
-      t.ok(user.token, 'there is a token')
-      t.ok(user.token_salt, 'there is a token_salt')
+      t.ok(user.server_side_key, 'there is a server_side_key')
 
       TEST_USER_RECORD = user
       t.end()
@@ -121,8 +125,7 @@ database.testSuiteWithDatabase(getConnection => {
       t.notok(err, `there was no error`)
       t.equal(user.username, TEST_USER.username, `the result was correct`)
       t.equal(user.hashed_password, TEST_USER_RECORD.hashed_password, 'there is a hashed password')
-      t.equal(user.token, TEST_USER_RECORD.token, 'there is a token')
-      t.equal(user.token_salt, TEST_USER_RECORD.token_salt, 'there is a token_salt')
+      t.equal(user.server_side_key, TEST_USER_RECORD.server_side_key, 'there is a server_side_key')
       t.end()
     })
   })
@@ -181,13 +184,37 @@ database.testSuiteWithDatabase(getConnection => {
     controller.update({
       id: TEST_USER_RECORD.id,
       data: {
-        token: 'badtoken',
-        token_salt: 'badsalt',
+        server_side_key: 'notallowed',
       }
     }, (err) => {
       t.ok(err, `there was an error`)
       t.equal(err, `access denied`, `error message is correct`)
       t.end()
+    })
+  })
+
+  tape('user controller -> get token', (t) => {
+
+    const controller = getController()
+
+    controller.getToken({
+      id: TEST_USER_RECORD.id,
+    }, (err, token) => {
+      t.notok(err, `there was no error`)
+      controller.get({
+        id: TEST_USER_RECORD.id,
+      }, (err, user) => {
+        t.notok(err, `there was no error`)
+
+        userUtils.decodeToken(token, config.tokenSecret, (err, decoded) => {
+          t.notok(err, `there was no error`)
+
+          t.equal(decoded.id, user.id, `the id in the token is correct`)
+          t.equal(decoded.server_side_key, user.server_side_key, `the server_side_key in the token is correct`)
+          t.end()
+        })
+        
+      })
     })
   })
 
@@ -203,8 +230,7 @@ database.testSuiteWithDatabase(getConnection => {
         id: TEST_USER_RECORD.id,
       }, (err, result) => {
         t.notok(err, `there was no error`)
-        t.notEqual(result.token, TEST_USER_RECORD.token, 'the token is now different')
-        t.notEqual(result.token_salt, TEST_USER_RECORD.token_salt, 'the token_salt is now different')
+        t.notEqual(result.server_side_key, TEST_USER_RECORD.server_side_key, 'the server_side_key is now different')
         t.end()
       })
     })

@@ -1,7 +1,10 @@
 const async = require('async')
 const config = require('../config')
+const userUtils = require('../utils/user')
 
-const ACCESS_LEVELS = config.ACCESS_LEVELS
+const {
+  PERMISSION_ROLE_ACCESS_LEVELS,
+} = config
 
 const ClusterController = ({ store, settings }) => {
   
@@ -14,7 +17,7 @@ const ClusterController = ({ store, settings }) => {
      * user - the user that is viewing the list
      * deleted - include deleted clusters in the list
 
-    if the is an admin role - then load all clusters
+    if the is an superuser role - then load all clusters
 
     otherwise, load clusters that have at least a read role for the
     given user
@@ -34,10 +37,8 @@ const ClusterController = ({ store, settings }) => {
     }, (err, clusters) => {
       if(err) return done(err)
 
-      // if it's an admin - they can see all clusters
-
-      // TODO - should be using a constant from enumerations or rbac here
-      if(user.role == 'admin') return done(null, clusters)
+      // if it's a superuser - they can see all clusters
+      if(userUtils.isSuperuser(user)) return done(null, clusters)
 
       // we need to load the roles that are for a cluster for the user
       store.role.list({
@@ -45,9 +46,8 @@ const ClusterController = ({ store, settings }) => {
       }, (err, roles) => {
         if(err) return done(err)
 
-        // TODO - should be using a constant from somewhere
         const roleMap = roles
-          .filter(role => role.resource_type == 'cluster')
+          .filter(role => role.resource_type == config.RESOURCE_TYPES.cluster)
           .reduce((all, role) => {
             all[role.resource_id] = role
             return all
@@ -56,7 +56,7 @@ const ClusterController = ({ store, settings }) => {
         clusters = clusters.filter(cluster => {
           const clusterRole = roleMap[cluster.id]
           if(!clusterRole) return false
-          return ACCESS_LEVELS[clusterRole.permission] >= ACCESS_LEVELS.read
+          return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
         })
 
         done(null, clusters)
@@ -77,7 +77,7 @@ const ClusterController = ({ store, settings }) => {
        * desired_state
        * capabilities
     
-    if the user is not an admin - we create a write role for that
+    if the user is not an superuser - we create a write role for that
     user on this cluster
     
   */
@@ -111,13 +111,13 @@ const ClusterController = ({ store, settings }) => {
 
         // create the user role if needed
         (cluster, next) => {
-          if(user.role == 'admin') return next(null, cluster)
+          if(userUtils.isSuperuser(user)) return next(null, cluster)
 
           store.role.create({
             data: {
               user: user.id,
-              permission: 'write',
-              resource_type: 'cluster',
+              permission: config.PERMISSION_ROLE.write,
+              resource_type: config.RESOURCE_TYPES.cluster,
               resource_id: cluster.id,
             },
             transaction,
@@ -132,12 +132,11 @@ const ClusterController = ({ store, settings }) => {
           store.task.create({
             data: {
               user: user.id,
-              resource_type: 'cluster',
+              resource_type: config.RESOURCE_TYPES.cluster,
               resource_id: cluster.id,
+              action: config.TASK_ACTION['cluster.create'],
               restartable: true,
-              payload: {
-                action: 'cluster.create',
-              }
+              payload: {},
             },
             transaction,
           }, (err, task) => {
@@ -222,12 +221,11 @@ const ClusterController = ({ store, settings }) => {
           store.task.create({
             data: {
               user: params.user.id,
-              resource_type: 'cluster',
+              resource_type: config.RESOURCE_TYPES.cluster,
               resource_id: cluster.id,
+              action: config.TASK_ACTION['cluster.update'],
               restartable: true,
-              payload: {
-                action: 'cluster.update',
-              }
+              payload: {},
             },
             transaction,
           }, (err, task) => {
@@ -296,12 +294,11 @@ const ClusterController = ({ store, settings }) => {
           store.task.create({
             data: {
               user: params.user.id,
-              resource_type: 'cluster',
+              resource_type: config.RESOURCE_TYPES.cluster,
               resource_id: cluster.id,
+              action: config.TASK_ACTION['cluster.delete'],
               restartable: true,
-              payload: {
-                action: 'cluster.delete',
-              }
+              payload: {},
             },
             transaction,
           }, (err, task) => {

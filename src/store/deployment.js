@@ -1,3 +1,4 @@
+const config = require('../config')
 const databaseTools = require('../utils/database')
 
 const DeploymentStore = (knex) => {
@@ -14,12 +15,14 @@ const DeploymentStore = (knex) => {
   const list = (params, done) => {
     if(!params.cluster) return done(`cluster must be given to store.deployment.list`)
     
+    const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
+
     knex.select('*')
-      .from('deployment')
+      .from(config.TABLES.deployment)
       .where({
         cluster: params.cluster,
       })
-      .orderBy('name')
+      .orderBy(orderBy.field, orderBy.direction)
       .asCallback(databaseTools.allExtractor(done))
   }
 
@@ -36,7 +39,7 @@ const DeploymentStore = (knex) => {
     if(!params.id) return done(`id must be given to store.deployment.get`)
 
     knex.select('*')
-      .from('deployment')
+      .from(config.TABLES.deployment)
       .where({
         id: params.id,
       })
@@ -71,7 +74,7 @@ const DeploymentStore = (knex) => {
       desired_state: params.data.desired_state,
     }
 
-    const query = knex('deployment')
+    const query = knex(config.TABLES.deployment)
       .insert(insertData)
       .returning('*')
 
@@ -103,7 +106,7 @@ const DeploymentStore = (knex) => {
     if(!params.id) return done(`id must be given to store.cluster.update`)
     if(!params.data) return done(`data param must be given to store.cluster.update`)
 
-    const query = knex('deployment')
+    const query = knex(config.TABLES.deployment)
       .where({
         id: params.id,
       })
@@ -131,7 +134,7 @@ const DeploymentStore = (knex) => {
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.deployment.delete`)
 
-    const query = knex('deployment')
+    const query = knex(config.TABLES.deployment)
       .where({
         id: params.id,
       })

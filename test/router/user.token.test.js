@@ -1,56 +1,55 @@
 'use strict'
 
 const tape = require('tape')
-const async = require('async')
+const request = require('request')
 const app = require('../app')
 const tools = require('../tools')
+
+const config = require('../../src/config')
+
+const {
+  PERMISSION_USER,
+} = config
 
 app.testSuiteWithApp(({
   getConnection,
   url,
 }) => {
 
-  const ADMIN_USER = {
-    username: 'admin',
+  const USER_DATA = {
+    username: 'superuser',
     password: 'apples',
-    // we pass the read role as the initial user to ensure it's upgraded to admin
-    role: 'read',
+    permission: PERMISSION_USER.superuser,
   }
 
-  const READ_USER = {
-    username: 'read',
-    password: 'oranges',
-    role: 'read',
-  }
+  let USER_RECORD = null
+  let USER_TOKEN = null
 
-  const USER_RECORDS = {}
-  const USER_TOKENS = {}
-
-  tape('user routes -> register initial admin user', (t) => {
+  tape('user token routes -> register user', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user`,
       json: true,
-      body: ADMIN_USER,
+      body: USER_DATA,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 201, `201 code`)
-      USER_RECORDS.admin = body
+      USER_RECORD = body
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) login', (t) => {
+  tape('user token routes -> login', (t) => {
 
     tools.sessionRequest({
       method: 'post',
       url: `${url}/user/login`,
       json: true,
       body: {
-        username: ADMIN_USER.username,
-        password: ADMIN_USER.password,
+        username: USER_DATA.username,
+        password: USER_DATA.password,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -61,24 +60,38 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> (as admin) get token', (t) => {
+  tape('user token routes -> get', (t) => {
 
     tools.sessionRequest({
       method: 'get',
-      url: `${url}/user/${USER_RECORDS.admin.id}`,
+      url: `${url}/user/${USER_RECORD.id}`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
-      t.equal(body.username, ADMIN_USER.username, `username correct`)
-      t.ok(body.token, `the token is present for reading your own record`)
-      USER_TOKENS.admin = body.token
+      t.equal(body.username, USER_DATA.username, `username correct`)
       t.end()
     })
     
   })
 
-  tape('user routes -> (as admin) logout', (t) => {
+  tape('user token routes -> (as admin) get token', (t) => {
+
+    tools.sessionRequest({
+      method: 'get',
+      url: `${url}/user/${USER_RECORD.id}/token`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 200, `200 status`)
+      t.ok(body.token, `the token is present for reading your own record`)
+      USER_TOKEN = body.token
+      t.end()
+    })
+    
+  })
+
+  tape('user token routes -> logout', (t) => {
 
     tools.sessionRequest({
       method: 'get',
@@ -93,9 +106,9 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> list users with no token', (t) => {
+  tape('user token routes -> list users with no token', (t) => {
 
-    tools.sessionRequest({
+    request({
       method: 'get',
       url: `${url}/user`,
       json: true,
@@ -108,14 +121,14 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> list users with bad header', (t) => {
+  tape('user token routes -> list users with bad header', (t) => {
 
-    tools.sessionRequest({
+    request({
       method: 'get',
       url: `${url}/user`,
       json: true,
       headers: {
-        'Authorization': `BearerBad ${USER_TOKENS.admin}`,
+        'Authorization': `BearerBad ${USER_TOKEN}`,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -126,14 +139,14 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> list users with extra header value', (t) => {
+  tape('user token routes -> list users with extra header value', (t) => {
 
-    tools.sessionRequest({
+    request({
       method: 'get',
       url: `${url}/user`,
       json: true,
       headers: {
-        'Authorization': `BearerBad ${USER_TOKENS.admin} bad`,
+        'Authorization': `BearerBad ${USER_TOKEN} bad`,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -144,14 +157,14 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> list users with bad token', (t) => {
+  tape('user token routes -> list users with bad token', (t) => {
 
-    tools.sessionRequest({
+    request({
       method: 'get',
       url: `${url}/user`,
       json: true,
       headers: {
-        'Authorization': `Bearer ${USER_TOKENS.admin}bad`,
+        'Authorization': `Bearer ${USER_TOKEN}bad`,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -162,14 +175,14 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> list users with token', (t) => {
+  tape('user token routes -> list users with token', (t) => {
 
-    tools.sessionRequest({
+    request({
       method: 'get',
       url: `${url}/user`,
       json: true,
       headers: {
-        'Authorization': `Bearer ${USER_TOKENS.admin}`,
+        'Authorization': `Bearer ${USER_TOKEN}`,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -180,19 +193,19 @@ app.testSuiteWithApp(({
     
   })
 
-  tape('user routes -> get user status with token', (t) => {
+  tape('user token routes -> get user status with token', (t) => {
 
-    tools.sessionRequest({
+    request({
       method: 'get',
       url: `${url}/user/status`,
       json: true,
       headers: {
-        'Authorization': `Bearer ${USER_TOKENS.admin}`,
+        'Authorization': `Bearer ${USER_TOKEN}`,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
-      t.equal(body.username, ADMIN_USER.username, `username correct`)
+      t.equal(body.username, USER_DATA.username, `username correct`)
       t.end()
     })
     

@@ -18,7 +18,7 @@
 
     * resource_id - the resource id we require a role for
       
-  admin users are automatically allowed access to all methods
+  superuser users are automatically allowed access to all methods
 
   METHOD CONFIG
 
@@ -27,20 +27,20 @@
     * if it is an object
       * it contains a config for how to authorize the method
       * a logged in user is automatically required
-      * an admin user is automatically allowed
+      * an superuser user is automatically allowed
     * if the method config is a function it looks after it's own case
       
   here are the meanings of the various config values for each method:
 
-    * admin
-        * if the user is not an admin - deny
-    * userRole
-        * the user role must be at least the given level
-    * resourceRole
+    * superuser
+        * if the user is not an superuser - deny
+    * userPermission
+        * the user permission must be at least the given level
+    * resourcePermission
         * use the role_resource_type and role_resource_id to check the user 
           has at least the given level for the resource
         * required a role_resource_id in the action 
-    * resourceRoleForType
+    * resourcePermissionForType
         * ensure the role_resource_type being asked for is the given type
         * used when we are performing an action for a resource that needs a certain
           role for another type - for example when creating deployments for a cluster
@@ -49,8 +49,15 @@
 */
 
 const config = require('./config')
+const userUtils = require('./utils/user')
 
-const ACCESS_LEVELS = config.ACCESS_LEVELS
+const {
+  RESOURCE_TYPES,
+  PERMISSION_USER,
+  PERMISSION_ROLE,
+  PERMISSION_USER_ACCESS_LEVELS,
+  PERMISSION_ROLE_ACCESS_LEVELS,
+} = config
 
 const HELPERS = {
 
@@ -60,11 +67,12 @@ const HELPERS = {
     // requires a user
     if(!user) return done(`access denied`)
 
-    // admin gets access if configured
-    if(user && user.role == 'admin' && opts.allowAdmin) return done()
+    // superuser gets access if configured
+    if(user && userUtils.isSuperuser(user) && opts.allowSuperuser) return done()
   
     // if the user is getting it's own data - allow
-    if(action.resource_type == 'user' && action.resource_id == user.id) return done()
+    if(action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return done()
+
     else return done(`access denied`)
   },
 
@@ -72,7 +80,7 @@ const HELPERS = {
     // if there is a user - they must be an admin
   allowInitialAccountCreation: (opts) => (store, user, action, done) => {
     if(user) {
-      if(user.role == 'admin') return done()
+      if(userUtils.isSuperuser(user)) return done()
       else return done(`access denied`)
     }
     else {
@@ -88,20 +96,20 @@ const HELPERS = {
 const METHOD_CONFIG = {
   user: {
     list: {
-      admin: true,
+      superuser: true,
     },
     get: HELPERS.allowUserAccessToOwnRecord({
-      allowAdmin: true,
+      allowSuperuser: true,
     }),
     create: HELPERS.allowInitialAccountCreation(),
     update: HELPERS.allowUserAccessToOwnRecord({
-      allowAdmin: true,
+      allowSuperuser: true,
     }),
-    updateToken: HELPERS.allowUserAccessToOwnRecord({
-      allowAdmin: false,
+    token: HELPERS.allowUserAccessToOwnRecord({
+      allowSuperuser: false,
     }),
     delete: {
-      admin: true,
+      superuser: true,
     },
   },
 
@@ -109,38 +117,38 @@ const METHOD_CONFIG = {
     // the controller will only list clusters the user has access to
     list: {},
     get: {
-      resourceRole: 'read',
+      resourcePermission: PERMISSION_ROLE.read,
     },
     create: {
-      userRole: 'write',
+      userPermission: PERMISSION_USER.admin,
     },
     update: {
-      resourceRole: 'write',
+      resourcePermission: PERMISSION_ROLE.write,
     },
     delete: {
-      resourceRole: 'write',
+      resourcePermission: PERMISSION_ROLE.write,
     }
   },
 
   deployment: {
     // ask for read access to the given cluster
     list: {
-      resourceRole: 'read',
-      resourceRoleForType: 'cluster',
+      resourcePermission: PERMISSION_ROLE.read,
+      resourcePermissionForType: RESOURCE_TYPES.cluster,
     },
     get: {
-      resourceRole: 'read',
+      resourcePermission: PERMISSION_ROLE.read,
     },
     // the resource_id, resource_type for deployment create will be cluster
     create: {
-      resourceRole: 'write',
-      resourceRoleForType: 'cluster',
+      resourcePermission: PERMISSION_ROLE.write,
+      resourcePermissionForType: RESOURCE_TYPES.cluster,
     },
     update: {
-      resourceRole: 'write',
+      resourcePermission: PERMISSION_ROLE.write,
     },
     delete: {
-      resourceRole: 'write',
+      resourcePermission: PERMISSION_ROLE.write,
     }
   }
 }
@@ -171,22 +179,23 @@ const RBAC = (store, user, action, done) => {
     // no logged in user - deny
     if(!user) return done(`access denied`)
 
-    // if they are an admin - allow
-    if(user.role == 'admin') return done()
+    // if they are an superuser - allow
+    if(userUtils.isSuperuser(user)) return done()
 
-    // require admin and they are not - deny
-    if(methodConfig.admin && user.role != 'admin') return done(`access denied`)
+    // require superuser and they are not - deny
+    if(methodConfig.superuser && !userUtils.isSuperuser(user)) return done(`access denied`)
 
-    // require at least X user role - deny
-    if(methodConfig.userRole && ACCESS_LEVELS[user.role] < ACCESS_LEVELS[methodConfig.userRole]) return done(`access denied`)
+    // require at least X user permission - deny
+    if(methodConfig.userPermission && !userUtils.hasPermission(user, methodConfig.userPermission)) return done(`access denied`)
+      
+    // require a resource role with the given permission
+    if(methodConfig.resourcePermission) {
 
-    // require the action resource type be 
-    if(methodConfig.resourceRole) {
-      // we need a resource_id if we are performing a resourceRole check
+      // we need a resource_id if we are performing a resourcePermission check
       if(!resource_id) return done(`access denied`)
 
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
-      const resourceType = methodConfig.resourceRoleForType || resource_type
+      const resourceType = methodConfig.resourcePermissionForType || resource_type
 
       const roleQuery = {
         user: user.id,
@@ -202,10 +211,10 @@ const RBAC = (store, user, action, done) => {
         if(!role) return done(`access denied`)
 
         // ensure the role has a correct permission value
-        if(!ACCESS_LEVELS[role.permission]) return done(`access denied`)
+        if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) return done(`access denied`)
 
         // check the granted role is at least the required type
-        if(ACCESS_LEVELS[role.permission] < ACCESS_LEVELS[methodConfig.resourceRole]) return done(`access denied`)
+        if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) return done(`access denied`)
 
         // ok - we are allowed
         return done()

@@ -1,3 +1,4 @@
+const config = require('../config')
 const databaseTools = require('../utils/database')
 
 const UserStore = (knex) => {
@@ -10,9 +11,12 @@ const UserStore = (knex) => {
   
   */
   const list = (params, done) => {
+
+    const orderBy = config.LIST_ORDER_BY_FIELDS.user
+
     knex.select('*')
-      .from('useraccount')
-      .orderBy('username')
+      .from(config.TABLES.user)
+      .orderBy(orderBy.field, orderBy.direction)
       .asCallback(databaseTools.allExtractor(done))
   }
 
@@ -35,7 +39,7 @@ const UserStore = (knex) => {
     if(params.username) query.username = params.username
     
     knex.select('*')
-      .from('useraccount')
+      .from(config.TABLES.user)
       .where(query)
       .asCallback(databaseTools.singleExtractor(done))
   }
@@ -49,7 +53,8 @@ const UserStore = (knex) => {
       * data
         * username
         * hashed_password
-        * role
+        * server_side_key
+        * permission
         * meta
       
       * transaction - used if present
@@ -58,20 +63,18 @@ const UserStore = (knex) => {
     if(!params.data) return done(`data param must be given to store.user.create`)
     if(!params.data.username) return done(`data.username param must be given to store.user.create`)
     if(!params.data.hashed_password) return done(`data.hashed_password param must be given to store.user.create`)
-    if(!params.data.token) return done(`data.token param must be given to store.user.create`)
-    if(!params.data.token_salt) return done(`data.token_salt param must be given to store.user.create`)
-    if(!params.data.role) return done(`data.role param must be given to store.user.create`)
+    if(!params.data.server_side_key) return done(`data.server_side_key param must be given to store.user.create`)
+    if(!params.data.permission) return done(`data.permission param must be given to store.user.create`)
 
     const insertData = {
       username: params.data.username,
       hashed_password: params.data.hashed_password,
-      token: params.data.token,
-      token_salt: params.data.token_salt,
-      role: params.data.role,
+      server_side_key: params.data.server_side_key,
+      permission: params.data.permission,
       meta: params.data.meta,
     }
 
-    const query = knex('useraccount')
+    const query = knex(config.TABLES.user)
       .insert(insertData)
       .returning('*')
     
@@ -92,7 +95,7 @@ const UserStore = (knex) => {
       * data (all optional)
         * username
         * hashed_password
-        * role
+        * permission
         * meta
       
       * transaction - used if present
@@ -104,7 +107,7 @@ const UserStore = (knex) => {
     if(!params.id) return done(`id must be given to store.user.update`)
     if(!params.data) return done(`data param must be given to store.user.update`)
 
-    const query = knex('useraccount')
+    const query = knex(config.TABLES.user)
       .where({
         id: params.id,
       })
@@ -132,7 +135,7 @@ const UserStore = (knex) => {
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.user.delete`)
 
-    const query = knex('useraccount')
+    const query = knex(config.TABLES.user)
       .where({
         id: params.id,
       })
