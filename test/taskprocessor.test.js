@@ -73,6 +73,7 @@ database.testSuiteWithDatabase(getConnection => {
   const testTaskHandler = (t, {
     taskData,
     handler,
+    whilstRunningHandler,
     checkFinalTask,
     store,
   }, done) => {
@@ -92,6 +93,7 @@ database.testSuiteWithDatabase(getConnection => {
         t.ok(store, `the store was passed to the task handler`)
         t.deepEqual(compareTask, taskData, `the task data is correct`)
         t.equal(typeof(checkCancelStatus), 'function', `the checkCancelStatus function was passed to the handler`)
+        t.equal(task.status, TASK_STATUS.running, `the task is in running status`)
 
         sawTaskHandler = true
 
@@ -124,9 +126,14 @@ database.testSuiteWithDatabase(getConnection => {
         })
       },
 
+      // wait for the task to have got picked up
+      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
+      
+      // if we've been given a function to run once we know the task
+      // has been picked up - run it, otherwise continue
       next => {
-        // wait for the task to have got picked up
-        setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2)
+        if(whilstRunningHandler) whilstRunningHandler(next)
+        else next()
       },
 
       next => {

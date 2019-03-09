@@ -202,17 +202,17 @@ const TaskProcessor = ({
       return errorTask(task, `no handler was found for task: ${task.action}`, done)
     }
 
-    async.series([
+    async.waterfall([
 
       // mark the task as running
-      next => updateTaskStatus(task, TASK_STATUS.running, {started: true}, next),
+      (next) => updateTaskStatus(task, TASK_STATUS.running, {started: true}, next),
 
       // invoke the task handler
-      next => {
+      (runningTask, next) => {
         handler({
           store,
-          task,
-          checkCancelStatus: getCancelTaskHandler(task),
+          task: runningTask,
+          checkCancelStatus: getCancelTaskHandler(runningTask),
           logging,
         }, (err) => {
     
