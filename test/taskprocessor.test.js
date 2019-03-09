@@ -67,6 +67,9 @@ database.testSuiteWithDatabase(getConnection => {
     })
   }
 
+  // wrap the creation of the task processor
+  // initial task and loading of final task in a handler
+  // to make it easier to test different outcomes for a task
   const testTaskHandler = (t, {
     taskData,
     handler,
@@ -156,6 +159,36 @@ database.testSuiteWithDatabase(getConnection => {
 
       const checkFinalTask = (task, done) => {
         t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
+        t.ok(task.started_at, `there is a started at timestamp`)
+        t.ok(task.ended_at, `there is a ended at timestamp`)
+        done()
+      }
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        checkFinalTask,
+      }, finished)
+    })
+    
+  })
+
+  tape('task processor -> test an error task handler', (t) => {
+
+    const store = Store(getConnection())
+
+    const ERROR_TEXT = `this is a test error`
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+      
+      const handler = (params, done) => done(ERROR_TEXT)
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.error, `the task has error status`)
+        t.equal(task.error, ERROR_TEXT, `the error text of the task is correct`)
         t.ok(task.started_at, `there is a started at timestamp`)
         t.ok(task.ended_at, `there is a ended at timestamp`)
         done()
