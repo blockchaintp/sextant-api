@@ -15,6 +15,7 @@ const {
   RESOURCE_TYPES,
   TASK_ACTION,
   TASK_CONTROLLER_LOOP_DELAY,
+  TASK_STATUS,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -115,6 +116,9 @@ database.testSuiteWithDatabase(getConnection => {
         }, (err, task) => {
           if(err) return next(err)
           t.ok(sawTaskHandler, `the task handler was run`)
+          t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
+          t.ok(task.started_at, `there is a started at timestamp`)
+          t.ok(task.ended_at, `there is a ended at timestamp`)
           next()
         })
         

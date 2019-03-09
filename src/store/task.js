@@ -197,6 +197,8 @@ const TaskStore = (knex) => {
     }
 
     if(params.data.error) updateData.error = params.data.error
+    if(params.data.started_at) updateData.started_at = params.data.started_at
+    if(params.data.ended_at) updateData.ended_at = params.data.ended_at
 
     const query = knex(config.TABLES.task)
       .where({

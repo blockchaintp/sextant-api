@@ -17,6 +17,7 @@ const Store = (knex) => {
   const transaction = (handler, done) => databaseTools.transaction(knex, handler, done)
 
   return {
+    knex,
     user,
     role,
     cluster,

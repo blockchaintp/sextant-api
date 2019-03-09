@@ -6,6 +6,8 @@ const up = (knex, Promise) => {
     knex.schema.createTable('task', (table) => {
       table.specificType('id', 'serial primary key not null')
       table.specificType('created_at', 'timestamp default now()')
+      table.specificType('started_at', 'timestamp')
+      table.specificType('ended_at', 'timestamp')
       table.integer('user')
         .references('id')
         .inTable('useraccount')
