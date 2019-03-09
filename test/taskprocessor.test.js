@@ -14,6 +14,7 @@ const {
   PERMISSION_USER,
   RESOURCE_TYPES,
   TASK_ACTION,
+  TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -33,7 +34,7 @@ database.testSuiteWithDatabase(getConnection => {
   tape('task processor -> test create cluster task', (t) => {
 
     const store = Store(getConnection())
-    
+
     const payload = {
       apples: 10,
     }
@@ -46,6 +47,8 @@ database.testSuiteWithDatabase(getConnection => {
       action: TASK_ACTION['cluster.create'],
       payload,
     }
+
+    let createdTask = null
 
     let sawTaskHandler = false
 
@@ -84,18 +87,22 @@ database.testSuiteWithDatabase(getConnection => {
     async.series([
 
       next => {
-        store.task.create({
-          data: taskData
-        }, next)
-      },
-
-      next => {
         taskProcessor.start(next)
       },
 
       next => {
+        store.task.create({
+          data: taskData
+        }, (err, task) => {
+          if(err) return next(err)
+          createdTask = task
+          next()
+        })
+      },
+
+      next => {
         // wait for the task to have got picked up
-        setTimeout(next, 5000)
+        setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2)
       },
 
       next => {
@@ -103,8 +110,14 @@ database.testSuiteWithDatabase(getConnection => {
       },
 
       next => {
-        t.ok(sawTaskHandler, `the task handler was run`)
-        next()
+        store.task.get({
+          id: createdTask.id,
+        }, (err, task) => {
+          if(err) return next(err)
+          t.ok(sawTaskHandler, `the task handler was run`)
+          next()
+        })
+        
       }
 
     ], (err) => {

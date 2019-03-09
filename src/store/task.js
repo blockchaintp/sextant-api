@@ -180,6 +180,7 @@ const TaskStore = (knex) => {
       * id
       * data
         * status
+        * error
       
       * transaction - used if present
   
@@ -191,13 +192,17 @@ const TaskStore = (knex) => {
 
     if(enumerations.TASK_STATUS.indexOf(params.data.status) < 0) return done(`bad status: ${params.data.status}`)
 
+    const updateData = {
+      status: params.data.status,
+    }
+
+    if(params.data.error) updateData.error = params.data.error
+
     const query = knex(config.TABLES.task)
       .where({
         id: params.id,
       })
-      .update({
-        status: params.data.status,
-      })
+      .update(updateData)
       .returning('*')
     
     if(params.transaction) {

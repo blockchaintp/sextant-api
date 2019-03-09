@@ -56,18 +56,28 @@
     store,                  // the store
     task,                   // the task database record
     checkCancelStatus,      // a function to check if the task has been cancelled
+    logging,                // if the task handler should log
   }, done) => {
 
   }
 */
 
+const async = require('async')
 const pino = require('pino')({
   name: 'task',
 })
 
+const config = require('./config')
+
+const {
+  TASK_STATUS,
+  TASK_CONTROLLER_LOOP_DELAY,
+} = config
+
 const TaskProcessor = ({
   store,
   handlers,
+  logging,
 }) => {
   if(!store) {
     throw new Error(`store required`)
@@ -77,13 +87,215 @@ const TaskProcessor = ({
     throw new Error(`handlers required`)
   }
 
-  // start the listener loop for new tasks
-  const start = (done) => {
-    done()
+  let controlLoopRunning = false
+
+  const loadTaskStatus = (id, done) => {
+    store.task.get({
+      id,
+    }, (err, task) => {
+      if(err) return done(err)
+      done(null, task.status)
+    })
   }
 
-  // stop the listener loop for new tasks
+  const updateTaskStatus = (task, status, done) => {
+
+    if(logging) {
+      pino.error({
+        action: 'updatestatus',
+        task: task,
+        status,
+      })
+    }
+
+    store.task.update({
+      id: task.id,
+      data: {
+        status,
+      }
+    }, done)
+  }
+
+  const errorTask = (task, error, done) => {
+
+    if(logging) {
+      pino.error({
+        action: 'error',
+        error: err.toString(),
+        task: task,
+      })
+    }
+
+    store.task.update({
+      id: task.id,
+      data: {
+        status: TASK_STATUS.error,
+        error,
+      }
+    }, done)
+  }
+
+
+  const loadTasksWithStatus = (status, done) => {
+    store.task.list({
+      status,
+    }, done)
+  }
+
+  const loadRunningTasks = (done) => loadTasksWithStatus(TASK_STATUS.running, done)
+  const loadCreatedTasks = (done) => loadTasksWithStatus(TASK_STATUS.created, done)
+
+  // return a function that will check a running task cancel status
+  const getCancelTaskHandler = (task) => (done) => {
+    loadTaskStatus(task.id, (err, status) => {
+
+      // if there was an error loading the task status
+      // error the task and return true to the handler so it stops immediately
+      if(err) {
+        errorTask(task, `there was an error loading the task status for task ${task.id}: ${err.toString()}`, () => {
+          // this cancels the task
+          return done(null, true)
+        })
+      }
+      else {
+        // check to see if the task status is cancelling
+        if(status == TASK_STATUS.cancelling) {
+          // flag the task as cancelled
+          updateTaskStatus(task, TASK_STATUS.cancelled, (err) => {
+            // if there was an error updating the task status to cancelled
+            // error the task and return true to the handler so it stops immediately
+            if(err) {
+              errorTask(task, `there was an error updating the task status for task ${task.id}: ${err.toString()}`, () => {
+                // this cancels the task
+                return done(null, true)
+              })
+            }
+            else {
+              // this cancels the task
+              return done(null, true)
+            }
+          })
+        }
+        // the task is ok - carry on
+        else {
+          done(null, false)
+        }
+      }
+    })
+  }
+
+  const runTask = (task, done) => {
+    const handler = handlers[task.action]
+
+    if(!handler) {
+      return errorTask(task, `no handler was found for task: ${task.action}`, done)
+    }
+
+    async.series([
+
+      // mark the task as running
+      next => updateTaskStatus(task, TASK_STATUS.running, next),
+
+      // invoke the task handler
+      next => {
+        handler({
+          store,
+          task,
+          checkCancelStatus: getCancelTaskHandler(task),
+          logging,
+        }, (err) => {
+    
+          // the task has errored - mark it
+          if(err) {
+            errorTask(task, err.toString(), () => {})
+          }
+          // the task has finished - mark it
+          else {
+            updateTaskStatus(task, TASK_STATUS.finished, () => {
+              if(logging) {
+                pino.info({
+                  action: 'finished',
+                  task: task,
+                })
+              }
+            })
+          }
+        })
+
+        next()
+      }
+
+    ], done)
+
+  }
+
+  // this is called on initial startup
+  // load all tasks that are in a running state
+  // for those that are restartable - restart them
+  // for that are not restartable - error them
+  const restartTasks = (done) => {
+    loadRunningTasks((err, tasks) => {
+      if(err) return done(err)
+
+      const runTasks = tasks.filter(task => task.restartable)
+      const errorTasks = tasks.filter(task => !task.restartable)
+
+      async.parallel({
+        runTasks: next => {
+          async.each(runTasks, (task, nextTask) => {
+            runTask(task, nextTask)
+          }, next)
+        },
+
+        errorTasks: next => {
+          async.each(errorTasks, (task, nextTask) => {
+            errorTask(task, `the server restarted whilst this task was running and the task is not restartable`, nextTask)
+          }, next)
+        },
+      }, done)
+    })
+  }
+
+  // called on each loop
+  const controlLoop = (done) => {
+    loadCreatedTasks((err, runTasks) => {
+      if(err) return done(err)
+      async.each(runTasks, (task, nextTask) => {
+        runTask(task, nextTask)
+      }, done)
+    })
+  }
+
+  // start the control loop waiting for tasks in 'created' state
+  const startControlLoop = (started) => {
+    controlLoopRunning = true
+    async.whilst(
+      () => controlLoopRunning,
+      (next) => controlLoop(err => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY)),
+      // if we get an error from the control loop something has gone horribly wrong
+      // if a task handler errors - it should update the task record with the error
+      (err) => {
+        if(err && logging) {
+          pino.error({
+            type: 'controlloop',
+            error: err.toString(),
+          })
+        }
+      },
+    )
+    // we return immediately because the control loop has started
+    started()
+  }
+
+  const start = (done) => {
+    async.series([
+      next => restartTasks(next),
+      next => startControlLoop(next),
+    ], done)
+  }
+
   const stop = (done) => {
+    controlLoopRunning = false
     done()
   }
 

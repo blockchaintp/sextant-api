@@ -17,6 +17,7 @@ const up = (knex, Promise) => {
         .notNullable()
       table.boolean('restartable').notNullable()
       table.json('payload').defaultTo('{}')
+      table.string('error')
     })
   ])
 }

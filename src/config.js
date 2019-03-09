@@ -106,6 +106,9 @@ const TASK_ACTION = {
   'deployment.delete': 'deployment.delete',
 }
 
+// how much time to wait between checking for new tasks
+const TASK_CONTROLLER_LOOP_DELAY = 500
+
 /*
 
   auth
@@ -161,6 +164,7 @@ const config = {
   TASK_ACTION,
   TASK_ACTIVE_STATUSES,
   TASK_STATUS_DEFAULT,
+  TASK_CONTROLLER_LOOP_DELAY,
   ACCESS_LEVELS,
   PERMISSION_USER,
   PERMISSION_USER_ACCESS_LEVELS,
