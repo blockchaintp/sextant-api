@@ -16,6 +16,7 @@ const {
   TASK_ACTION,
   TASK_CONTROLLER_LOOP_DELAY,
   TASK_STATUS,
+  TABLES,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -32,25 +33,48 @@ database.testSuiteWithDatabase(getConnection => {
   
   })
 
-  tape('task processor -> test create cluster task', (t) => {
-
-    const store = Store(getConnection())
-
-    const payload = {
+  const getTaskFixture = () => ({
+    user: userMap[PERMISSION_USER.superuser].id,
+    resource_type: RESOURCE_TYPES.cluster,
+    resource_id: 10,
+    restartable: true,
+    action: TASK_ACTION['cluster.create'],
+    payload: {
       apples: 10,
-    }
+    },
+  })
 
-    const taskData = {
-      user: userMap[PERMISSION_USER.superuser].id,
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 10,
-      restartable: true,
-      action: TASK_ACTION['cluster.create'],
-      payload,
-    }
+  const getCompareTask = (task) => ({
+    user: task.user,
+    resource_type: task.resource_type,
+    resource_id: task.resource_id,
+    restartable: task.restartable,
+    action: task.action,
+    payload: task.payload,
+  })
+
+  // clean up all tasks from the database after each test
+  const cleanUpWrapper = (t, store, handler) => {
+    handler((err) => {
+      t.notok(err, `there was no error`)
+      store.knex(TABLES.task)
+        .del()
+        .returning('*')
+        .asCallback((err) => {
+          t.notok(err, `there was no error`)
+          t.end()
+        })
+    })
+  }
+
+  const testTaskHandler = (t, {
+    taskData,
+    handler,
+    checkFinalTask,
+    store,
+  }, done) => {
 
     let createdTask = null
-
     let sawTaskHandler = false
 
     const handlers = {
@@ -60,23 +84,19 @@ database.testSuiteWithDatabase(getConnection => {
         checkCancelStatus
       }, done) => {
 
-        const compareTask = {
-          user: task.user,
-          resource_type: task.resource_type,
-          resource_id: task.resource_id,
-          restartable: task.restartable,
-          action: task.action,
-          payload: task.payload,
-        }
-
+        const compareTask = getCompareTask(task)
+          
         t.ok(store, `the store was passed to the task handler`)
         t.deepEqual(compareTask, taskData, `the task data is correct`)
         t.equal(typeof(checkCancelStatus), 'function', `the checkCancelStatus function was passed to the handler`)
 
         sawTaskHandler = true
 
-        done()
-        
+        handler({
+          store,
+          task,
+          checkCancelStatus
+        }, done)
       }
     }
 
@@ -116,20 +136,38 @@ database.testSuiteWithDatabase(getConnection => {
         }, (err, task) => {
           if(err) return next(err)
           t.ok(sawTaskHandler, `the task handler was run`)
-          t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
-          t.ok(task.started_at, `there is a started at timestamp`)
-          t.ok(task.ended_at, `there is a ended at timestamp`)
-          next()
+          checkFinalTask(task, next)
         })
         
       }
 
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
-    })
-    
+    ], done)
+  }
 
+  tape('task processor -> test create cluster task', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+      
+      const handler = (params, done) => done()
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
+        t.ok(task.started_at, `there is a started at timestamp`)
+        t.ok(task.ended_at, `there is a ended at timestamp`)
+        done()
+      }
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        checkFinalTask,
+      }, finished)
+    })
     
   })
 
