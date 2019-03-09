@@ -14,22 +14,22 @@
   ----------
 
   a task can be marked as 'cancelling' whilst it's running
-  a task handler must be capable of cancelling itself but shoudn't have to worry about
-  knowing if the cancel action has been triggered
 
-  so - a task handler is invoked as follows:
+  a task handler should be checking the status of the task at each step
+  to see if it has been cancelled
 
-  const handler = allTasks[task.payload.action]
-  if(!handler) mark the task as error (no handler found)
+  when invoking a task, we provide it with a function to run to check if
+  the task has been switched to a 'cancelling' state
 
-  const cancelTask = handler(task, store, (err) => {
-    if(err) mark the task as error
-    else mark the task as finished
-  })
+  the 'checkCancelStatus(callback)' function is called at each step of the handler
 
-  the 'cancelTask' is a function returned by the handler
+  if it returns true - the handler should just stop in it's track and do nothing
 
-  we run this function if we notice the task is switched to cancel whilst it's running
+  checkCancelStatus will update the task status to cancelled if called and the task
+  was in the 'cancelling' status
+
+  it is assumed that whilst the checkCancelStatus is running, the task handler is not
+  progressing (as it's waiting for confirmation that the task has not been cancelled)
 
   control loop
   ------------
@@ -40,20 +40,25 @@
    * for any created tasks found
       * switch them to 'running'
       * invoke the task handler
-      * store the running task with it's cancel handler in memory
       * if callback is error - switch task to 'error'
       * if callback has result - switch task to 'finished'
   
-   * check for tasks with 'cancelling' status
-      * if the task is in the 'currentlyRunning' memory store
-      * if yes - then invoke the cancelTask handler
-      
-   * check for each currently running task if it's been cancelled
-   * for each cancelled tasks that was running:
-      * switch it to 'cancelling'
-      * invoke the cancelTask handler
+  
+  task handlers
+  -------------
 
+  the 'task.action' property controls what handler is run when
+  the task is created
 
+  the handler for this task has the following signature:
+
+  const taskHandler = ({
+    store,                  // the store
+    task,                   // the task database record
+    checkCancelStatus,      // a function to check if the task has been cancelled
+  }, done) => {
+
+  }
 */
 
 const pino = require('pino')({
@@ -62,27 +67,29 @@ const pino = require('pino')({
 
 const TaskProcessor = ({
   store,
-  settings,
   handlers,
 }) => {
   if(!store) {
     throw new Error(`store required`)
   }
 
-  if(!settings) {
-    throw new Error(`settings required`)
-  }
-
   if(!handlers) {
     throw new Error(`handlers required`)
   }
 
-  return {
-    // start the listener loop for new tasks
-    start: (done) => done(),
+  // start the listener loop for new tasks
+  const start = (done) => {
+    done()
+  }
 
-    // stop the listener loop for new tasks
-    stop: (done) => done(),
+  // stop the listener loop for new tasks
+  const stop = (done) => {
+    done()
+  }
+
+  return {
+    start,
+    stop,
   }
 }
 
