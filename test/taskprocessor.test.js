@@ -76,6 +76,7 @@ database.testSuiteWithDatabase(getConnection => {
     whilstRunningHandler,
     checkFinalTask,
     store,
+    jobWillNotFinish,
   }, done) => {
 
     let createdTask = null
@@ -148,6 +149,9 @@ database.testSuiteWithDatabase(getConnection => {
 
       // wait for the task to have finished
       next => {
+
+        if(jobWillNotFinish) return next()
+
         async.whilst(
           () => taskFinished ? false : true,
           (nextw) => setTimeout(nextw, 100),
@@ -170,7 +174,11 @@ database.testSuiteWithDatabase(getConnection => {
         }, (err, task) => {
           if(err) return next(err)
           t.ok(taskStarted, `the task handler was run`)
-          t.ok(taskFinished, `the task handler finished`)
+
+          if(!jobWillNotFinish) {
+            t.ok(taskFinished, `the task handler finished`)
+          }
+          
           t.ok(task.started_at, `there is a started at timestamp`)
           t.ok(task.ended_at, `there is a ended at timestamp`)
           checkFinalTask(task, next)
@@ -246,7 +254,7 @@ database.testSuiteWithDatabase(getConnection => {
         // wait for longer than the test will wait before calling
         // the whilstRunningHandler to make sure we cancel the task
         // before the task completes
-        setTimeout(done, TASK_CONTROLLER_LOOP_DELAY * 4)
+        setTimeout(done, TASK_CONTROLLER_LOOP_DELAY)
       }
 
       const whilstRunningHandler = (task, done) => {
@@ -270,6 +278,57 @@ database.testSuiteWithDatabase(getConnection => {
         handler,
         whilstRunningHandler,
         checkFinalTask,
+      }, finished)
+    })
+    
+  })
+
+  tape('task processor -> cancel a task with checking the checkCancelStatus', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+
+      const handler = (params, done) => {
+
+        async.series([
+
+          // wait a short while for the task to get cancelled from outside
+          next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
+
+          // call the check cancel handler - we should get true
+          next => params.checkCancelStatus((err, cancelled) => {
+            t.ok(cancelled, `the task should have been cancelled`)
+            return
+          })
+
+        ], () => {})
+      }
+
+      const whilstRunningHandler = (task, done) => {
+        store.task.update({
+          id: task.id,
+          data: {
+            status: TASK_STATUS.cancelling,
+          }
+        }, done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
+        done()
+      }
+
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        whilstRunningHandler,
+        checkFinalTask,
+        jobWillNotFinish: true,
       }, finished)
     })
     

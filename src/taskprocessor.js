@@ -55,8 +55,13 @@
   const taskHandler = ({
     store,                  // the store
     task,                   // the task database record
-    checkCancelStatus,      // a function to check if the task has been cancelled
     logging,                // if the task handler should log
+    checkCancelStatus,      // a function to check if the task has been cancelled
+    cancelSeries,           // a modified version of async.series that will check
+                            // if the task has been cancelled before calling the next function
+    cancelWaterfall,        // a modified version of async.waterfall that will check
+                            // if the task has been cancelled before calling the next function
+    
   }, done) => {
 
   }
@@ -68,6 +73,7 @@ const pino = require('pino')({
 })
 
 const config = require('./config')
+const cancelAsync = require('./utils/cancelAsync')
 
 const {
   TASK_STATUS,
@@ -203,6 +209,8 @@ const TaskProcessor = ({
     }
 
     const checkCancelStatus = getCancelTaskHandler(task)
+    const cancelSeries = cancelAsync.series(checkCancelStatus)
+    const cancelWaterfall = cancelAsync.waterfall(checkCancelStatus)
 
     async.waterfall([
 
@@ -215,6 +223,8 @@ const TaskProcessor = ({
           store,
           task: runningTask,
           checkCancelStatus,
+          cancelSeries,
+          cancelWaterfall,
           logging,
         }, (err) => {
     
