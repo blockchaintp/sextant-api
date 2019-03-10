@@ -38,8 +38,10 @@ const createTestKnex = (databaseName, done) => {
       .then(() => {
         masterKnex.destroy()
         done(null, testKnex)
+        return null
       })
       .catch(done)
+      return null
     })
     .catch(done)
 }
@@ -52,6 +54,7 @@ const destroyTestKnex = (databaseName, done) => {
     .then(() => {
       masterKnex.destroy()
       done()
+      return null
     })
     .catch(done)
 }
@@ -94,6 +97,8 @@ const testSuiteWithDatabase = (handler) => {
             t.end()
           })
         }
+
+        return null
         
       })
       .catch(err => {
