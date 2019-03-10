@@ -84,26 +84,20 @@ database.testSuiteWithDatabase(getConnection => {
     let taskFinished = false
 
     const handlers = {
-      [TASK_ACTION['cluster.create']]: ({
-        store,
-        task,
-        checkCancelStatus
-      }, done) => {
+      [TASK_ACTION['cluster.create']]: (params, done) => {
 
-        const compareTask = getCompareTask(task)
+        const compareTask = getCompareTask(params.task)
           
-        t.ok(store, `the store was passed to the task handler`)
+        t.ok(params.store, `the store was passed to the task handler`)
         t.deepEqual(compareTask, taskData, `the task data is correct`)
-        t.equal(typeof(checkCancelStatus), 'function', `the checkCancelStatus function was passed to the handler`)
-        t.equal(task.status, TASK_STATUS.running, `the task is in running status`)
+        t.equal(typeof(params.checkCancelStatus), 'function', `the checkCancelStatus function was passed to the handler`)
+        t.equal(typeof(params.cancelSeries), 'function', `the cancelSeries function was passed to the handler`)
+        t.equal(typeof(params.cancelWaterfall), 'function', `the cancelWaterfall function was passed to the handler`)
+        t.equal(params.task.status, TASK_STATUS.running, `the task is in running status`)
 
         taskStarted = true
 
-        handler({
-          store,
-          task,
-          checkCancelStatus
-        }, (err) => {
+        handler(params, (err) => {
           taskFinished = true
           done(err)
         })
@@ -376,6 +370,54 @@ database.testSuiteWithDatabase(getConnection => {
         taskData,
         handler,
         whilstRunningHandler,
+        checkFinalTask,
+      }, finished)
+    })
+    
+  })
+
+  tape('task processor -> use the cancelSeries function without cancelling', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+
+      const stepsSeen = {
+        step1: false,
+        step2: false,
+      }
+
+      const handler = (params, done) => {
+
+        params.cancelSeries([
+
+          // wait a short while for the task to get cancelled from outside
+          next => {
+            stepsSeen.step1 = true
+            next()
+          },
+
+          next => {
+            stepsSeen.step2 = true
+            next()
+          },
+
+        ], done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
+        t.ok(stepsSeen.step1, `step1 was seen`)
+        t.ok(stepsSeen.step2, `step2 was seen`)
+        done()
+      }
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
         checkFinalTask,
       }, finished)
     })
