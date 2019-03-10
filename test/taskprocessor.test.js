@@ -473,4 +473,137 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('task processor -> cancel a task whilst using cancelSeries', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+
+      const stepsSeen = {
+        step1: false,
+        step2: false,
+      }
+
+      const handler = (params, done) => {
+
+        params.cancelSeries([
+
+          // wait a short while for the task to get cancelled from outside
+          next => {
+            stepsSeen.step1 = true
+            next()
+          },
+
+          // wait a short while for the task to get cancelled from outside
+          next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
+
+          next => {
+            stepsSeen.step2 = true
+            next()
+          },
+
+        ], done)
+      }
+
+      const whilstRunningHandler = (task, done) => {
+        store.task.update({
+          id: task.id,
+          data: {
+            status: TASK_STATUS.cancelling,
+          }
+        }, done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
+        t.ok(stepsSeen.step1, `step1 was seen`)
+        t.notok(stepsSeen.step2, `step2 was not seen`)
+        done()
+      }
+
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        whilstRunningHandler,
+        checkFinalTask,
+        jobWillNotFinish: true,
+      }, finished)
+    })
+    
+  })
+
+  tape('task processor -> cancel a task whilst using cancelWaterfall', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+
+      const stepsSeen = {
+        step1: false,
+        step2: false,
+        step3: false,
+      }
+
+      const handler = (params, done) => {
+
+        params.cancelWaterfall([
+
+          // wait a short while for the task to get cancelled from outside
+          (next) => {
+            stepsSeen.step1 = true
+            next(null, 10)
+          },
+
+          (prev, next) => {
+            t.equal(prev, 10, `the previous value passed was 10`)
+            stepsSeen.step2 = true
+            setTimeout(() => next(null, 20), TASK_CONTROLLER_LOOP_DELAY)
+          },
+
+          (prev, next) => {
+            stepsSeen.step3 = true
+            t.error(`this step should never be reached`)
+            next()
+          }
+
+        ], done)
+
+      }
+
+      const whilstRunningHandler = (task, done) => {
+        store.task.update({
+          id: task.id,
+          data: {
+            status: TASK_STATUS.cancelling,
+          }
+        }, done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
+        t.ok(stepsSeen.step1, `step1 was seen`)
+        t.ok(stepsSeen.step2, `step2 was seen`)
+        t.notok(stepsSeen.step3, `step3 was not seen`)
+        done()
+      }
+
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        whilstRunningHandler,
+        checkFinalTask,
+        jobWillNotFinish: true,
+      }, finished)
+    })
+    
+  })
+
 })
