@@ -160,14 +160,11 @@ database.testSuiteWithDatabase(getConnection => {
       },
 
       // pause so the processor has a chance to finish the task
-      next => {
-        setTimeout(next, TASK_CONTROLLER_LOOP_DELAY)
-      },
+      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
 
-      next => {
-        taskProcessor.stop(next)
-      },
-
+      // stop the task processor
+      next => taskProcessor.stop(next),
+        
       next => {
         store.task.get({
           id: createdTask.id,
@@ -329,6 +326,57 @@ database.testSuiteWithDatabase(getConnection => {
         whilstRunningHandler,
         checkFinalTask,
         jobWillNotFinish: true,
+      }, finished)
+    })
+    
+  })
+
+  // this checks what happens if we cancel a task but still finish the job
+  tape('task processor -> cancel a task with checking the checkCancelStatus but still finish the task', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+
+      const handler = (params, done) => {
+
+        async.series([
+
+          // wait a short while for the task to get cancelled from outside
+          next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
+
+          // call the check cancel handler - we should get true
+          next => params.checkCancelStatus((err, cancelled) => {
+            t.ok(cancelled, `the task should have been cancelled`)
+            next()
+          })
+
+        ], done)
+      }
+
+      const whilstRunningHandler = (task, done) => {
+        store.task.update({
+          id: task.id,
+          data: {
+            status: TASK_STATUS.cancelling,
+          }
+        }, done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
+        done()
+      }
+
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        whilstRunningHandler,
+        checkFinalTask,
       }, finished)
     })
     

@@ -193,6 +193,10 @@ const TaskProcessor = ({
             }
           })
         }
+        // the task has already been cancelled
+        else if(status == TASK_STATUS.cancelled) {
+          return done(null, true)
+        }
         // the task is ok - carry on
         else {
           done(null, false)
