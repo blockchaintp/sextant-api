@@ -159,7 +159,6 @@ const TaskProcessor = ({
   // return a function that will check a running task cancel status
   const getCancelTaskHandler = (task) => (done) => {
     loadTaskStatus(task.id, (err, status) => {
-
       // if there was an error loading the task status
       // error the task and return true to the handler so it stops immediately
       if(err) {
@@ -171,6 +170,7 @@ const TaskProcessor = ({
       else {
         // check to see if the task status is cancelling
         if(status == TASK_STATUS.cancelling) {
+
           // flag the task as cancelled
           updateTaskStatus(task, TASK_STATUS.cancelled, {ended: true}, (err) => {
             // if there was an error updating the task status to cancelled
@@ -202,6 +202,8 @@ const TaskProcessor = ({
       return errorTask(task, `no handler was found for task: ${task.action}`, done)
     }
 
+    const checkCancelStatus = getCancelTaskHandler(task)
+
     async.waterfall([
 
       // mark the task as running
@@ -212,7 +214,7 @@ const TaskProcessor = ({
         handler({
           store,
           task: runningTask,
-          checkCancelStatus: getCancelTaskHandler(runningTask),
+          checkCancelStatus,
           logging,
         }, (err) => {
     
@@ -220,15 +222,19 @@ const TaskProcessor = ({
           if(err) {
             errorTask(task, err.toString(), () => {})
           }
-          // the task has finished - mark it
+          // the task has finished - check if it's been cancelled, otherwise, mark it as finished
           else {
-            updateTaskStatus(task, TASK_STATUS.finished, {ended: true}, () => {
-              if(logging) {
-                pino.info({
-                  action: 'finished',
-                  task: task,
-                })
-              }
+            checkCancelStatus((err, cancelled) => {
+              if(err || cancelled) return
+
+              updateTaskStatus(task, TASK_STATUS.finished, {ended: true}, () => {
+                if(logging) {
+                  pino.info({
+                    action: 'finished',
+                    task: task,
+                  })
+                }
+              })
             })
           }
         })

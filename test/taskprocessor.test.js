@@ -79,7 +79,8 @@ database.testSuiteWithDatabase(getConnection => {
   }, done) => {
 
     let createdTask = null
-    let sawTaskHandler = false
+    let taskStarted = false
+    let taskFinished = false
 
     const handlers = {
       [TASK_ACTION['cluster.create']]: ({
@@ -95,13 +96,16 @@ database.testSuiteWithDatabase(getConnection => {
         t.equal(typeof(checkCancelStatus), 'function', `the checkCancelStatus function was passed to the handler`)
         t.equal(task.status, TASK_STATUS.running, `the task is in running status`)
 
-        sawTaskHandler = true
+        taskStarted = true
 
         handler({
           store,
           task,
           checkCancelStatus
-        }, done)
+        }, (err) => {
+          taskFinished = true
+          done(err)
+        })
       }
     }
 
@@ -127,13 +131,33 @@ database.testSuiteWithDatabase(getConnection => {
       },
 
       // wait for the task to have got picked up
-      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
+      next => {
+        async.whilst(
+          () => taskStarted ? false : true,
+          (nextw) => setTimeout(nextw, 100),
+          next,
+        )
+      },
       
       // if we've been given a function to run once we know the task
       // has been picked up - run it, otherwise continue
       next => {
-        if(whilstRunningHandler) whilstRunningHandler(next)
+        if(whilstRunningHandler) whilstRunningHandler(createdTask, next)
         else next()
+      },
+
+      // wait for the task to have finished
+      next => {
+        async.whilst(
+          () => taskFinished ? false : true,
+          (nextw) => setTimeout(nextw, 100),
+          next,
+        )
+      },
+
+      // pause so the processor has a chance to finish the task
+      next => {
+        setTimeout(next, TASK_CONTROLLER_LOOP_DELAY)
       },
 
       next => {
@@ -145,7 +169,10 @@ database.testSuiteWithDatabase(getConnection => {
           id: createdTask.id,
         }, (err, task) => {
           if(err) return next(err)
-          t.ok(sawTaskHandler, `the task handler was run`)
+          t.ok(taskStarted, `the task handler was run`)
+          t.ok(taskFinished, `the task handler finished`)
+          t.ok(task.started_at, `there is a started at timestamp`)
+          t.ok(task.ended_at, `there is a ended at timestamp`)
           checkFinalTask(task, next)
         })
         
@@ -154,7 +181,7 @@ database.testSuiteWithDatabase(getConnection => {
     ], done)
   }
 
-  tape('task processor -> test create cluster task', (t) => {
+  tape('task processor -> create cluster task', (t) => {
 
     const store = Store(getConnection())
 
@@ -166,8 +193,6 @@ database.testSuiteWithDatabase(getConnection => {
 
       const checkFinalTask = (task, done) => {
         t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
-        t.ok(task.started_at, `there is a started at timestamp`)
-        t.ok(task.ended_at, `there is a ended at timestamp`)
         done()
       }
 
@@ -181,7 +206,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('task processor -> test an error task handler', (t) => {
+  tape('task processor -> error task handler', (t) => {
 
     const store = Store(getConnection())
 
@@ -196,8 +221,6 @@ database.testSuiteWithDatabase(getConnection => {
       const checkFinalTask = (task, done) => {
         t.equal(task.status, TASK_STATUS.error, `the task has error status`)
         t.equal(task.error, ERROR_TEXT, `the error text of the task is correct`)
-        t.ok(task.started_at, `there is a started at timestamp`)
-        t.ok(task.ended_at, `there is a ended at timestamp`)
         done()
       }
 
@@ -211,5 +234,45 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('task processor -> cancel a task without checking the checkCancelStatus', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+      
+      const handler = (params, done) => {
+        // wait for longer than the test will wait before calling
+        // the whilstRunningHandler to make sure we cancel the task
+        // before the task completes
+        setTimeout(done, TASK_CONTROLLER_LOOP_DELAY * 4)
+      }
+
+      const whilstRunningHandler = (task, done) => {
+        store.task.update({
+          id: task.id,
+          data: {
+            status: TASK_STATUS.cancelling,
+          }
+        }, done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
+        done()
+      }
+
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        whilstRunningHandler,
+        checkFinalTask,
+      }, finished)
+    })
+    
+  })
 
 })
