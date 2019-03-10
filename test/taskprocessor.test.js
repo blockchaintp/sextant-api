@@ -424,4 +424,53 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('task processor -> use the cancelWaterfall function without cancelling', (t) => {
+
+    const store = Store(getConnection())
+
+    cleanUpWrapper(t, store, (finished) => {
+
+      const taskData = getTaskFixture()
+
+      const stepsSeen = {
+        step1: false,
+        step2: false,
+      }
+
+      const handler = (params, done) => {
+
+        params.cancelWaterfall([
+
+          // wait a short while for the task to get cancelled from outside
+          (next) => {
+            stepsSeen.step1 = true
+            next(null, 10)
+          },
+
+          (prev, next) => {
+            t.equal(prev, 10, `the previous value passed was 10`)
+            stepsSeen.step2 = true
+            next()
+          },
+
+        ], done)
+      }
+
+      const checkFinalTask = (task, done) => {
+        t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
+        t.ok(stepsSeen.step1, `step1 was seen`)
+        t.ok(stepsSeen.step2, `step2 was seen`)
+        done()
+      }
+
+      testTaskHandler(t, {
+        store,
+        taskData,
+        handler,
+        checkFinalTask,
+      }, finished)
+    })
+    
+  })
+
 })
