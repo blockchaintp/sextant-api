@@ -21,13 +21,18 @@ node {
                 done
             '''
 	} 
-	
+
+  // Run the tests
+  stage("Test Sextant") {
+	    sh "test.sh"
+	}
+
 	// Build 
 	stage("Build Sextant") {
 	    sh "docker-compose -f docker-compose.yml build"
 	}
 	
-	// Run the tests
+	
 	
 	// Build docs
 	
