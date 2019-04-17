@@ -124,7 +124,7 @@ const UserController = ({ store, settings }) => {
       * data (all optional)
         * username
         * password
-        * role
+        * permission
         * meta
     
   */
@@ -158,9 +158,24 @@ const UserController = ({ store, settings }) => {
       },
 
       (updateData, next) => {
+
+        const sqlData = {
+          username: updateData.username,
+          hashed_password: updateData.hashed_password,
+          permission: updateData.permission,
+          meta: updateData.meta,
+        }
+
+        const useSqlData = Object.keys(sqlData).reduce((all, field) => {
+          if(sqlData[field]) {
+            all[field] = sqlData[field]
+          }
+          return all
+        }, {})
+
         store.user.update({
           id: params.id,
-          data: updateData,
+          data: useSqlData,
         }, next)
       },
     ], done)
