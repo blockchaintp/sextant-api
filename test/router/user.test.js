@@ -420,6 +420,25 @@ app.testSuiteWithApp(({
     
   })
 
+  tape('user routes -> (as superuser) update with empty password', (t) => {
+
+    tools.sessionRequest({
+      method: 'put',
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
+      json: true,
+      body: {
+        username: USER_RECORDS.normal.username,
+        permission: USER_RECORDS.normal.permission,
+        password: '',
+      },
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 200, `200 code`)
+      t.end()
+    })
+    
+  })
+
   tape('user routes -> (as superuser) allow update other user role', (t) => {
 
     tools.sessionRequest({
