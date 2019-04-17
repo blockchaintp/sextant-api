@@ -689,5 +689,80 @@ app.testSuiteWithApp(({
     
   })
 
+  tape('user routes -> (as superuser) login', (t) => {
+
+    tools.sessionRequest({
+      method: 'post',
+      url: `${url}/user/login`,
+      json: true,
+      body: {
+        username: SUPER_USER.username,
+        password: SUPER_USER.password,
+      },
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 200, `200 code`)
+      t.equal(body.ok, true, 'result was ok')
+      t.end()
+    })
+    
+  })
+
+  tape('user routes -> (as superuser) delete user', (t) => {
+
+    const counts = {}
+
+    const countUsers = (name) => (done) => {
+      tools.sessionRequest({
+        method: 'get',
+        url: `${url}/user`,
+        json: true,
+      }, (err, res, body) => {
+        if(err) return done(err)
+        t.equal(res.statusCode, 200, `200 status`)
+        counts[name] = body.length
+        done()
+      })
+    }
+
+    async.series([
+      countUsers('beforeDelete'),
+
+      next => {
+        tools.sessionRequest({
+          method: 'delete',
+          url: `${url}/user/${USER_RECORDS.normal.id}`,
+          json: true,
+        }, (err, res, body) => {
+          if(err) return next(err)
+          t.equal(res.statusCode, 200, `200 code`)
+          next()
+        })
+      },
+
+      countUsers('afterDelete'),
+    ], (err) => {
+      t.notok(err, `there is no error`)
+      t.equal(counts.afterDelete, counts.beforeDelete-1, `there is one less user`)
+      t.end()
+    })
+
+  })
+
+
+  tape('user routes -> (as normal user) logout', (t) => {
+
+    tools.sessionRequest({
+      method: 'get',
+      url: `${url}/user/logout`,
+      json: true,
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 200, `200 code`)
+      t.equal(body.ok, true, `ok was true`)
+      t.end()
+    })
+    
+  })
 
 })
