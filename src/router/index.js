@@ -41,8 +41,7 @@ const Routes = ({
 
   const config = ConfigRoutes(controllers)
   const user = UserRoutes(controllers)
-  
-  app.get(basePath('/config/version'), config.version)
+
   app.get(basePath('/config/values'), config.values)
 
   app.get(basePath('/user/status'), user.status)

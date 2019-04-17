@@ -11,11 +11,11 @@ app.testSuiteWithApp(({
   url,
 }) => {
 
-  tape('config routes -> get version', (t) => {
+  tape('config routes -> get values', (t) => {
 
     request({
       method: 'get',
-      url: `${url}/config/version`,
+      url: `${url}/config/values`,
       json: true,
     }, (err, res, body) => {
       t.notok(err, `there is no error`)

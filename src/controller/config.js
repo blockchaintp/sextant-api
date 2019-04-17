@@ -1,21 +1,6 @@
 const packageJSON = require('../../package.json')
 
 const ConfigBackend = () => {
-  
-  /*
-  
-    return the current version as defined in package.json
-
-    params:
-
-    returns:
-
-      version (string)
-
-  */
-  const version = (params, done) => {
-    done(null, packageJSON.version)
-  }
 
   /*
   
@@ -36,7 +21,6 @@ const ConfigBackend = () => {
   }
 
   return {
-    version,
     values,
   }
 

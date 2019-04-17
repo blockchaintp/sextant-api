@@ -1,16 +1,5 @@
 const ConfigRoutes = (controllers) => {
 
-  const version = (req, res, next) => {
-
-    controllers.config.version({}, (err, version) => {
-      res
-        .status(200)
-        .json({
-          version
-        })
-    })
-  }
-
   const values = (req, res, next) => {
 
     controllers.config.values({}, (err, result) => {
@@ -21,7 +10,6 @@ const ConfigRoutes = (controllers) => {
   }
 
   return {
-    version,
     values,
   }
 }
