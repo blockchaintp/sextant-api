@@ -54,7 +54,7 @@ const UserForm = ({
       }
     },
     {
-      id: 'accessLevel',
+      id: 'permission',
       helperText: 'Access level',
       component: 'select',
       options: [{
