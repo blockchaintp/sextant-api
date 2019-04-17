@@ -1,3 +1,4 @@
+const forms = require('../forms')
 const packageJSON = require('../../package.json')
 
 const ConfigBackend = () => {
@@ -17,6 +18,7 @@ const ConfigBackend = () => {
   const values = (params, done) => {
     done(null, {
       version: packageJSON.version,
+      forms,
     })
   }
 
