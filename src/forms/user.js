@@ -18,41 +18,63 @@
 
 //   * requirePasswords
 //   * accessLevelDisabled
+
+const validators = {
+  username: () => [
+    ['matches', '^\\S+$', 'Cannot contain spaces'],
+    ['min', 3, 'Must be at least 3 characters'],
+    ['required', 'The username is required'], 
+  ],
+  password: () => [
+    ['min', 6, 'Must be at least 6 characters'],
+    ['matches', '^\\S+$', 'Cannot contain spaces'],
+  ],
+  optionalPassword: () => validators.password(),
+  requiredPassword: () => validators.password().concat([
+    ['required', 'The password is required'],
+  ])
+}
+
+const getUsernameField = () => ({
+  id: 'username',
+  title: 'Username',
+  helperText: 'Enter your username',
+  component: 'text',
+  inputProps: {
+    type: 'text',
+  },
+  validate: {
+    type: 'string',
+    methods: validators.username(),
+  }
+})
+
+const getPasswordValidators = (required) => {
+  return required ? 
+    validators.requiredPassword() :
+    validators.optionalPassword()
+}
+
+const getPasswordField = (required) => ({
+  id: 'password',
+  title: 'Password',
+  helperText: 'Enter your password',
+  component: 'text',
+  inputProps: {
+    type: 'password',
+  },
+  validate: {
+    type: 'string',
+    methods: getPasswordValidators(required)
+  }
+})
   
 const UserForm = ({
   requirePasswords,
   accessLevelDisabled,
 }) => {
-
-  const getPasswordValidators = (title, extra = []) => {
-    const requireValidators = requirePasswords ?
-      [['required', title]] :
-      []
-    const baseValidators = [
-      ['min', 6, 'Must be at least 6 characters'],
-      ['matches', '^\\S+$', 'Cannot contain spaces'],
-    ]
-    return requireValidators.concat(baseValidators).concat(extra)
-  }
-
   return [
-    {
-      id: 'username',
-      title: 'Username',
-      helperText: 'Enter your username',
-      component: 'text',
-      inputProps: {
-        type: 'text',
-      },
-      validate: {
-        type: 'string',
-        methods: [
-          ['matches', '^\\S+$', 'Cannot contain spaces'],
-          ['min', 3, 'Must be at least 3 characters'],
-          ['required', 'The username is required'], 
-        ]
-      }
-    },
+    getUsernameField(),
     {
       id: 'permission',
       helperText: 'Access level',
@@ -71,19 +93,7 @@ const UserForm = ({
         disabled: accessLevelDisabled,
       }
     },
-    {
-      id: 'password',
-      title: 'Password',
-      helperText: 'Enter your password (min 6 chars - alphanumeric)',
-      component: 'text',
-      inputProps: {
-        type: 'password',
-      },
-      validate: {
-        type: 'string',
-        methods: getPasswordValidators('The password is required'),
-      }
-    },
+    getPasswordField(requirePasswords),
     {
       id: 'confirmPassword',
       title: 'Confirm Password',
@@ -94,14 +104,18 @@ const UserForm = ({
       },
       validate: {
         type: 'string',
-        methods: getPasswordValidators(
-          'The confirm password is required',
-          [
-            ['sameAs', 'password', 'Must be equal to password'],
-          ]
-        )
+        methods: getPasswordValidators(requirePasswords).concat([
+          ['sameAs', 'password', 'Must be equal to password'],
+        ])
       }
     },
+  ]
+}
+
+const LoginForm = () => {
+  return [
+    getUsernameField(),
+    getPasswordField(true),
   ]
 }
 
@@ -122,6 +136,7 @@ const userForms = {
     requirePasswords: false,
     accessLevelDisabled: true,
   }),
+  login: LoginForm(),
 }
 
 module.exports = userForms
