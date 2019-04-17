@@ -156,7 +156,7 @@ const UserRoutes = (controllers) => {
       return next(`cannot delete yourself`)
     }
 
-    controllers.user.del({
+    controllers.user.delete({
       id: req.params.id,
     }, (err) => {
       if(err) return next(err)
@@ -179,7 +179,7 @@ const UserRoutes = (controllers) => {
     getToken,
     updateToken,
     create,
-    del,
+    delete: del,
   }
 }
 

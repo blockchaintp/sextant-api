@@ -55,7 +55,7 @@ const Routes = ({
   app.put(basePath('/user/:id'), rbacMiddleware(store, 'user', 'update'), user.update)
   app.get(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.getToken)
   app.put(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.updateToken)
-  app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.del)
+  app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.delete)
 }
 
 module.exports = Routes
