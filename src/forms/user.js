@@ -55,9 +55,9 @@ const getPasswordValidators = (required) => {
     validators.optionalPassword()
 }
 
-const getPasswordField = (required) => ({
+const getPasswordField = (required, title) => ({
   id: 'password',
-  title: 'Password',
+  title: title || 'Password',
   helperText: 'Enter your password',
   component: 'text',
   inputProps: {
@@ -72,6 +72,7 @@ const getPasswordField = (required) => ({
 const UserForm = ({
   requirePasswords,
   accessLevelDisabled,
+  passwordTitle,
 }) => {
   return [
     getUsernameField(),
@@ -93,10 +94,10 @@ const UserForm = ({
         disabled: accessLevelDisabled,
       }
     },
-    getPasswordField(requirePasswords),
+    getPasswordField(requirePasswords, passwordTitle),
     {
       id: 'confirmPassword',
-      title: 'Confirm Password',
+      title: `Confirm ${passwordTitle || 'Password'}`,
       helperText: 'Confirm your password',
       component: 'text',
       inputProps: {
@@ -131,10 +132,12 @@ const userForms = {
   userEdit: UserForm({
     requirePasswords: false,
     accessLevelDisabled: false,
+    passwordTitle: 'Change Password',
   }),
   userSelf: UserForm({
     requirePasswords: false,
     accessLevelDisabled: true,
+    passwordTitle: 'Change Password',
   }),
   login: LoginForm(),
 }
