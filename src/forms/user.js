@@ -48,7 +48,7 @@ const UserForm = ({
         type: 'string',
         methods: [
           ['matches', '^\\S+$', 'Cannot contain spaces'],
-          ['min', 6, 'Must be at least 6 characters'],
+          ['min', 3, 'Must be at least 3 characters'],
           ['required', 'The username is required'], 
         ]
       }
