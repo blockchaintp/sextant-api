@@ -1,4 +1,5 @@
 const forms = require('../forms')
+const config = require('../config')
 const packageJSON = require('../../package.json')
 
 const ConfigBackend = () => {
@@ -19,6 +20,8 @@ const ConfigBackend = () => {
     done(null, {
       version: packageJSON.version,
       forms,
+      userAccessLevels: config.PERMISSION_USER_ACCESS_LEVELS,
+      roleAccessLevels: config.PERMISSION_ROLE_ACCESS_LEVELS,
     })
   }
 
