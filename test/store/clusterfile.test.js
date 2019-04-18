@@ -9,10 +9,6 @@ const ClusterFileStore = require('../../src/store/clusterfile')
 const base64 = require('../../src/utils/base64')
 const config = require('../../src/config')
 
-const {
-  DEPLOYMENT_STATUS,
-} = config
-
 database.testSuiteWithDatabase(getConnection => {
 
   let clusterMap = {}
@@ -60,6 +56,27 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('clusterfile store -> create file with base64 data', (t) => {
+  
+    const store = ClusterFileStore(getConnection())
+
+    store.create({
+      data: {
+        cluster: testCluster.id,
+        name: `base64-${testFile.name}`,
+        base64Data: testFile.base64data,
+      }
+    }, (err, file) => {
+      t.notok(err, `there was no error`)
+      t.equal(file.cluster, testCluster.id, `the cluster is correct`)
+      t.equal(file.name, `base64-${testFile.name}`, `the name is correct`)
+      t.equal(file.base64data, testFile.base64data, `the base64data is correct`)
+      t.equal(base64.decodeToString(file.base64data), testFile.rawData, `the plainData is correct`)
+      t.end()
+    })
+    
+  })
+
   tape('clusterfile store -> list files', (t) => {
   
     const store = ClusterFileStore(getConnection())
@@ -68,7 +85,7 @@ database.testSuiteWithDatabase(getConnection => {
       cluster: testCluster.id,
     }, (err, files) => {
       t.notok(err, `there was no error`)
-      t.equal(files.length, 1, `there is one file`)
+      t.equal(files.length, 2, `there are two files`)
       t.equal(files[0].cluster, testCluster.id, `the cluster is correct`)
       t.equal(files[0].name, testFile.name, `the name is correct`)
       t.equal(files[0].base64data, testFile.base64data, `the base64data is correct`)
@@ -125,14 +142,39 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
+  tape('clusterfile store -> update file with base64 data', (t) => {
+  
+    const store = ClusterFileStore(getConnection())
+
+    const testCluster = clusterMap.testcluster
+
+    store.update({
+      cluster: testCluster.id,
+      name: testFile.name,
+      data: {
+        base64Data: testFile.updatedBase64Data,
+      }
+    }, (err, file) => {
+      t.notok(err, `there was no error`)
+      store.get({
+        cluster: testCluster.id,
+        name: testFile.name,
+      }, (err, file) => {
+        t.notok(err, `there was no error`)
+        t.equal(file.base64data, testFile.updatedBase64Data, `the base64data is correct`)
+        t.equal(base64.decodeToString(file.base64data), testFile.updatedRawData, `the plainData is correct`)
+        t.end()
+      })
+    })
+    
+  })
+
   tape('clusterfile store -> delete file', (t) => {
   
     const store = ClusterFileStore(getConnection())
 
     const testCluster = clusterMap.testcluster
 
-    const name = 'apples.txt'
-  
     store.delete({
       cluster: testCluster.id,
       name: testFile.name,
@@ -142,7 +184,7 @@ database.testSuiteWithDatabase(getConnection => {
         cluster: testCluster.id,
       }, (err, files) => {
         t.notok(err, `there was no error`)
-        t.equal(files.length, 0, `there are no files`)
+        t.equal(files.length, 1, `there is only 1 file`)
         t.end()
       })
     })

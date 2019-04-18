@@ -64,6 +64,7 @@ const ClusterFileStore = (knex) => {
         * cluster
         * name
         * rawData
+        * base64Data
       
       * transaction - used if present
     
@@ -72,12 +73,12 @@ const ClusterFileStore = (knex) => {
     if(!params.data) return done(`data param must be given to store.clusterfile.create`)
     if(!params.data.cluster) return done(`data.cluster param must be given to store.clusterfile.create`)
     if(!params.data.name) return done(`data.name param must be given to store.clusterfile.create`)
-    if(!params.data.rawData) return done(`data.rawData param must be given to store.clusterfile.create`)
+    if(!params.data.rawData && !params.data.base64Data) return done(`data.rawData or data.base64Data param must be given to store.clusterfile.create`)
 
     const insertData = {
       cluster: params.data.cluster,
       name: params.data.name,
-      base64data: base64.encode(params.data.rawData),
+      base64data: params.data.base64Data || base64.encode(params.data.rawData),
     }
 
     const query = knex(config.TABLES.clusterfile)
@@ -110,7 +111,7 @@ const ClusterFileStore = (knex) => {
     if(!params.cluster) return done(`cluster must be given to store.clusterfile.update`)
     if(!params.id && !params.name) return done(`id or name must be given to store.clusterfile.update`)
     if(!params.data) return done(`data param must be given to store.clusterfile.update`)
-    if(!params.data.rawData) return done(`data.rawData param must be given to store.clusterfile.update`)
+    if(!params.data.rawData && !params.data.base64Data) return done(`data.rawData or data.base64Data param must be given to store.clusterfile.update`)
 
     const queryParams = {
       cluster: params.cluster,
@@ -122,7 +123,7 @@ const ClusterFileStore = (knex) => {
     const query = knex(config.TABLES.clusterfile)
       .where(queryParams)
       .update({
-        base64data: base64.encode(params.data.rawData),
+        base64data: params.data.base64Data || base64.encode(params.data.rawData),
       })
       .returning('*')
 
