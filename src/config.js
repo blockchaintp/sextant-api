@@ -15,6 +15,7 @@ const TABLES = {
   role: 'role',
   task: 'task',
   clusterfile: 'clusterfile',
+  clustersecret: 'clustersecret',
 }
 
 const LIST_ORDER_BY_FIELDS = {
@@ -23,6 +24,10 @@ const LIST_ORDER_BY_FIELDS = {
     direction: 'asc',
   },
   clusterfile: {
+    field: 'name',
+    direction: 'asc',
+  },
+  clustersecret: {
     field: 'name',
     direction: 'asc',
   },
