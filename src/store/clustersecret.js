@@ -79,12 +79,12 @@ const ClusterSecretStore = (knex) => {
     if(!params.data) return done(`data param must be given to store.clustersecret.create`)
     if(!params.data.cluster) return done(`data.cluster param must be given to store.clustersecret.create`)
     if(!params.data.name) return done(`data.name param must be given to store.clustersecret.create`)
-    if(!params.data.rawData) return done(`data.rawData param must be given to store.clustersecret.create`)
+    if(!params.data.rawData && !params.data.base64Data) return done(`data.rawData or data.base64Data param must be given to store.clustersecret.create`)
 
     const insertData = {
       cluster: params.data.cluster,
       name: params.data.name,
-      base64data: base64.encode(params.data.rawData),
+      base64data: params.data.base64Data || base64.encode(params.data.rawData),
     }
 
     const query = knex(config.TABLES.clustersecret)
@@ -117,7 +117,7 @@ const ClusterSecretStore = (knex) => {
     if(!params.cluster) return done(`cluster must be given to store.clustersecret.update`)
     if(!params.id && !params.name) return done(`id or name must be given to store.clustersecret.update`)
     if(!params.data) return done(`data param must be given to store.clustersecret.update`)
-    if(!params.data.rawData) return done(`data.rawData param must be given to store.clustersecret.update`)
+    if(!params.data.rawData && !params.data.base64Data) return done(`data.rawData or data.base64Data param must be given to store.clustersecret.update`)
 
     const queryParams = {
       cluster: params.cluster,
@@ -129,7 +129,7 @@ const ClusterSecretStore = (knex) => {
     const query = knex(config.TABLES.clustersecret)
       .where(queryParams)
       .update({
-        base64data: base64.encode(params.data.rawData),
+        base64data: params.data.base64Data || base64.encode(params.data.rawData),
       })
       .returning('*')
 
