@@ -1,5 +1,3 @@
-const enumerations = require('../src/enumerations')
-
 const up = (knex, Promise) => {
   return Promise.all([
     knex.schema.createTable('clusterfile', (table) => {
