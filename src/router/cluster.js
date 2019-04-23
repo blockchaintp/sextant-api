@@ -9,8 +9,21 @@ const ClusterRoutes = (controllers) => {
     })
   }
 
+  const create = (req, res, next) => {
+    controllers.cluster.list({
+      user: req.user,
+      data: req.body,
+    }, (err, data) => {
+      if(err) return next(err)
+      res
+        .status(201)
+        .json(data)
+    })
+  }
+
   return {
     list,
+    create,
   }
 }
 

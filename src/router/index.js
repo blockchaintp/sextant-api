@@ -59,6 +59,7 @@ const Routes = ({
   app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.delete)
 
   app.get(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'list'), cluster.list)
+  app.post(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'create'), cluster.create)
 }
 
 module.exports = Routes

@@ -65,8 +65,8 @@ app.testSuiteWithApp(({
         json: true,
         body: clusterData,
       }, (err, res, body) => {
-        console.log('--------------------------------------------')
-        console.dir(body)
+        t.notok(err, `there was no error`)
+        t.equal(res.statusCode, 403, `the request was denied`)
         next()
       })
     }, (err) => {
@@ -74,6 +74,5 @@ app.testSuiteWithApp(({
       t.end()
     })
   })
-
 
 })
