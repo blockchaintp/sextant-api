@@ -192,6 +192,32 @@ app.testSuiteWithApp(({
     })
   })
 
+  tape('cluster routes -> get roles', (t) => {
+
+    const createdCluster = createdClusters.admin
+
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.admin,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'get',
+        url: `${url}/clusters/${createdCluster.id}/roles`,
+        json: true,
+      }, (err, res, body) => {
+        t.equal(res.statusCode, 200, `the status code was correct`)
+        t.equal(body.length, 2, `there are 2 roles for this cluster`)
+        next()
+      })
+    },
+    (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
   tape('cluster routes -> delete role for normal user', (t) => {
 
     const createdCluster = createdClusters.admin
