@@ -41,7 +41,7 @@ const ClusterController = ({ store, settings }) => {
       if(userUtils.isSuperuser(user)) return done(null, clusters)
 
       // we need to load the roles that are for a cluster for the user
-      store.role.list({
+      store.role.listForUser({
         user: user.id,
       }, (err, roles) => {
         if(err) return done(err)
@@ -312,12 +312,50 @@ const ClusterController = ({ store, settings }) => {
     }, done)
   }
 
+  /*
+  
+    get the roles for a given cluster
+
+    params:
+
+     * id
+    
+  */
+  const getRoles = (params, done) => {
+    const {
+      id,
+    } = params
+
+    if(!id) return done(`id must be given to controller.cluster.getRoles`)
+
+    async.waterfall([
+      (next) => store.role.listForResource({
+        resource_type: 'cluster',
+        resource_id: id,
+      }, next),
+
+      // load the user for each role
+      (roles, next) => {
+        async.map(roles, (role, nextRole) => {
+          store.user.get({
+            id: role.user,
+          }, (err, user) => {
+            if(err) return nextRole(err)
+            role.userRecord = userUtils.safe(user)
+            nextRole(null, role)
+          })
+        }, next)
+      }
+    ], done)
+  }
+
   return {
     list,
     get,
     create,
     update,
     delete: del,
+    getRoles,
   }
 
 }

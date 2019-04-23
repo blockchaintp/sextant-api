@@ -103,6 +103,26 @@ database.testSuiteWithDatabase(getConnection => {
     })    
   })
 
+  tape('cluster controller -> get roles for created cluster', (t) => {
+  
+    const testUser = userMap[PERMISSION_USER.admin]
+    const controller = getController()
+
+    const createdCluster = testClusters[PERMISSION_USER.admin]
+    
+    controller.getRoles({
+      id: createdCluster.id,
+    }, (err, roles) => {
+      t.notok(err, `there was no error`)
+      t.equal(roles.length, 1, `there was a single role`)
+      t.equal(roles[0].resource_type, 'cluster', `the role resource_type was correct`)
+      t.equal(roles[0].resource_id, createdCluster.id, `the role resource_id was correct`)
+      t.equal(roles[0].user, testUser.id, `the role user was correct`)
+      t.equal(roles[0].userRecord.id, testUser.id, `there was a userRecord in the role`)
+      t.end()
+    })
+  })
+
   tape('cluster controller -> cannot update a cluster with a running task', (t) => {
 
     const controller = getController()
