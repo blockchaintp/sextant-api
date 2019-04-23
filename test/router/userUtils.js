@@ -88,13 +88,19 @@ const setupUsers = ({
   url,
   t,
 }, done) => {
+
+  const users = {}
   async.series([
     next => {
       registerUser({
         url,
         user: USERS.superuser,
         t,
-      }, next)
+      }, (err, user) => {
+        if(err) return next(err)
+        users.superuser = user
+        next()
+      })
     },
 
     next => {
@@ -110,7 +116,11 @@ const setupUsers = ({
         url,
         user: USERS.admin,
         t,
-      }, next)
+      }, (err, user) => {
+        if(err) return next(err)
+        users.admin = user
+        next()
+      })
     },
 
     next => {
@@ -118,7 +128,11 @@ const setupUsers = ({
         url,
         user: USERS.user,
         t,
-      }, next)
+      }, (err, user) => {
+        if(err) return next(err)
+        users.user = user
+        next()
+      })
     },
 
     next => {
@@ -128,7 +142,10 @@ const setupUsers = ({
       }, next)
     }
 
-  ], done)
+  ], (err) => {
+    if(err) return done(err)
+    done(null, users)
+  })
 }
 
 const withUser = ({

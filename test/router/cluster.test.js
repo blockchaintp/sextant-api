@@ -14,13 +14,15 @@ app.testSuiteWithApp(({
 }) => {
 
   const createdClusters = {}
+  let createdUsers = {}
 
   tape('cluster routes -> setup users', (t) => {
     userUtils.setupUsers({
       url,
       t,
-    }, (err) => {
+    }, (err, users) => {
       t.notok(err, `there was no error`)
+      createdUsers = users
       t.end()
     })
   })
@@ -133,7 +135,109 @@ app.testSuiteWithApp(({
     })
   })
 
+  tape('cluster routes -> add role to normal user', (t) => {
 
-  
+    const createdCluster = createdClusters.admin
 
+    async.series([
+      nextSeries => {
+        userUtils.withUser({
+          url,
+          t,
+          user: userUtils.USERS.admin,
+        }, 
+        (next) => {
+          tools.sessionRequest({
+            method: 'post',
+            url: `${url}/clusters/${createdCluster.id}/roles`,
+            json: true,
+            body: {
+              user: createdUsers.user.id,
+              permission: 'write',
+            },
+          }, (err, res, body) => {
+            t.equal(res.statusCode, 201, `the status code was correct`)
+            t.equal(body.resource_id, createdCluster.id, `the role resource_id was correct`)
+            t.equal(body.user, createdUsers.user.id, `the role user was correct`)
+            t.equal(body.permission, 'write', `the role permission was correct`)
+            next()
+          })
+        },
+        nextSeries)
+      },
+
+      nextSeries => {
+        userUtils.withUser({
+          url,
+          t,
+          user: userUtils.USERS.user,
+        }, 
+        (next) => {
+          tools.sessionRequest({
+            method: 'get',
+            url: `${url}/clusters`,
+            json: true,
+          }, (err, res, body) => {
+            t.equal(res.statusCode, 200, `the status code was correct`)
+            t.equal(body.length, 1, `there was one cluster`)
+            t.equal(body[0].id, createdCluster.id, `the cluster id was correct`)
+            next()
+          })
+        },
+        nextSeries)
+      }
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('cluster routes -> delete role for normal user', (t) => {
+
+    const createdCluster = createdClusters.admin
+
+    async.series([
+      nextSeries => {
+        userUtils.withUser({
+          url,
+          t,
+          user: userUtils.USERS.admin,
+        }, 
+        (next) => {
+          tools.sessionRequest({
+            method: 'delete',
+            url: `${url}/clusters/${createdCluster.id}/roles/${createdUsers.user.id}`,
+            json: true,
+          }, (err, res, body) => {
+            t.equal(res.statusCode, 200, `the status code was correct`)
+            next()
+          })
+        },
+        nextSeries)
+      },
+
+      nextSeries => {
+        userUtils.withUser({
+          url,
+          t,
+          user: userUtils.USERS.user,
+        }, 
+        (next) => {
+          tools.sessionRequest({
+            method: 'get',
+            url: `${url}/clusters`,
+            json: true,
+          }, (err, res, body) => {
+            t.equal(res.statusCode, 200, `the status code was correct`)
+            t.equal(body.length, 0, `there are no clusters`)
+            next()
+          })
+        },
+        nextSeries)
+      }
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
 })
