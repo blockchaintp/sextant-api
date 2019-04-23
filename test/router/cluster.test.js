@@ -75,4 +75,34 @@ app.testSuiteWithApp(({
     })
   })
 
+  tape('cluster routes -> create cluster as admin user', (t) => {
+
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
+
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.admin,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'post',
+        url: `${url}/clusters`,
+        json: true,
+        body: clusterData,
+      }, (err, res, body) => {
+        t.notok(err, `there was no error`)
+        t.equal(res.statusCode, 201, `the cluster was created`)
+        const createdCluster = Object.keys(clusterData).reduce((all, key) => {
+          all[key] = body[key]
+          return all
+        }, {})
+        t.deepEqual(createdCluster, clusterData, `the returned cluster data was correct`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
 })

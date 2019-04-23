@@ -10,7 +10,7 @@ const ClusterRoutes = (controllers) => {
   }
 
   const create = (req, res, next) => {
-    controllers.cluster.list({
+    controllers.cluster.create({
       user: req.user,
       data: req.body,
     }, (err, data) => {
