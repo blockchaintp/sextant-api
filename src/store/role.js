@@ -91,11 +91,11 @@ const RoleStore = (knex) => {
   
   */
   const create = (params, done) => {
-    if(!params.data) return done(`data param must be given to store.role.add`)
-    if(!params.data.user) return done(`data.user param must be given to store.role.add`)
-    if(!params.data.permission) return done(`data.permission param must be given to store.role.add`)
-    if(!params.data.resource_type) return done(`data.resource_type param must be given to store.role.add`)
-    if(!params.data.resource_id) return done(`data.resource_id param must be given to store.role.add`)
+    if(!params.data) return done(`data param must be given to store.role.create`)
+    if(!params.data.user) return done(`data.user param must be given to store.role.create`)
+    if(!params.data.permission) return done(`data.permission param must be given to store.role.create`)
+    if(!params.data.resource_type) return done(`data.resource_type param must be given to store.role.create`)
+    if(!params.data.resource_id) return done(`data.resource_id param must be given to store.role.create`)
 
     const query = knex(config.TABLES.role)
       .insert({

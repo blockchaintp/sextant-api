@@ -349,6 +349,74 @@ const ClusterController = ({ store, settings }) => {
     ], done)
   }
 
+  /*
+  
+    create a role for a given cluster
+
+    params:
+
+     * id
+     * user
+     * permission
+    
+  */
+  const createRole = (params, done) => {
+    const {
+      id,
+      user,
+      permission,
+    } = params
+
+    if(!id) return done(`id must be given to controller.cluster.createRole`)
+    if(!user) return done(`user must be given to controller.cluster.createRole`)
+    if(!permission) return done(`permission must be given to controller.cluster.createRole`)
+
+    store.role.create({
+      data: {
+        resource_type: 'cluster',
+        resource_id: id,
+        user,
+        permission,
+      },
+    }, done)
+  }
+
+  /*
+  
+    delete a role for a given cluster
+
+    params:
+
+     * id
+     * user
+    
+  */
+  const deleteRole = (params, done) => {
+    const {
+      id,
+      user,
+    } = params
+
+    if(!id) return done(`id must be given to controller.cluster.createRole`)
+    if(!user) return done(`user must be given to controller.cluster.createRole`)
+
+    async.waterfall([
+      (next) => store.role.listForResource({
+        resource_type: 'cluster',
+        resource_id: id,
+      }, next),
+
+      // find the role for the given user
+      (roles, next) => {
+        const role = roles.find(role => role.user == user)
+        if(!role) return next(`no role for user ${user} found for cluster ${id}`)
+        store.role.delete({
+          id: role.id,
+        }, next)
+      }
+    ], done)
+  }
+
   return {
     list,
     get,
@@ -356,6 +424,8 @@ const ClusterController = ({ store, settings }) => {
     update,
     delete: del,
     getRoles,
+    createRole,
+    deleteRole,
   }
 
 }

@@ -11,6 +11,7 @@ const config = require('../../src/config')
 
 const {
   PERMISSION_USER,
+  PERMISSION_ROLE,
   RESOURCE_TYPES,
   TASK_STATUS,
   TASK_ACTION,
@@ -119,6 +120,69 @@ database.testSuiteWithDatabase(getConnection => {
       t.equal(roles[0].resource_id, createdCluster.id, `the role resource_id was correct`)
       t.equal(roles[0].user, testUser.id, `the role user was correct`)
       t.equal(roles[0].userRecord.id, testUser.id, `there was a userRecord in the role`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> create additional role for created cluster', (t) => {
+    const normalUser = userMap[PERMISSION_USER.user]
+
+    const controller = getController()
+
+    const createdCluster = testClusters[PERMISSION_USER.admin]
+    
+    controller.createRole({
+      id: createdCluster.id,
+      user: normalUser.id,
+      permission: PERMISSION_ROLE.write,
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> get roles for created cluster', (t) => {
+  
+    const controller = getController()
+
+    const createdCluster = testClusters[PERMISSION_USER.admin]
+    
+    controller.getRoles({
+      id: createdCluster.id,
+    }, (err, roles) => {
+      t.notok(err, `there was no error`)
+      t.equal(roles.length, 2, `there were two roles`)    
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> delete additional role for created cluster', (t) => {
+    const normalUser = userMap[PERMISSION_USER.user]
+
+    const controller = getController()
+
+    const createdCluster = testClusters[PERMISSION_USER.admin]
+    
+    controller.deleteRole({
+      id: createdCluster.id,
+      user: normalUser.id,
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('cluster controller -> get roles for created cluster', (t) => {
+  
+    const controller = getController()
+
+    const createdCluster = testClusters[PERMISSION_USER.admin]
+    
+    controller.getRoles({
+      id: createdCluster.id,
+    }, (err, roles) => {
+      t.notok(err, `there was no error`)
+      t.equal(roles.length, 1, `there were one roles`)    
       t.end()
     })
   })
