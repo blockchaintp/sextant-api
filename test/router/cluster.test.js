@@ -38,9 +38,7 @@ app.testSuiteWithApp(({
       }, (err, res, body) => {
         t.notok(err, `there is no error`)
         t.equal(res.statusCode, 200, `200 code`)
-        console.log('--------------------------------------------')
-        console.log('--------------------------------------------')
-        console.dir(body)
+        t.deepEqual(body, [], `the body is an empty list of clusters`)
         next()
       })
     },

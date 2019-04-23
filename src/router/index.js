@@ -1,8 +1,8 @@
-const userUtils = require('../utils/user')
 const rbac = require('../rbac')
 
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
+const ClusterRoutes = require('./cluster')
 
 const rbacMiddleware = (store, resource_type, method) => (req, res, next) => {
   rbac(store, req.user, {
@@ -41,6 +41,7 @@ const Routes = ({
 
   const config = ConfigRoutes(controllers)
   const user = UserRoutes(controllers)
+  const cluster = ClusterRoutes(controllers)
 
   app.get(basePath('/config/values'), config.values)
 
@@ -56,6 +57,8 @@ const Routes = ({
   app.get(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.getToken)
   app.put(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.updateToken)
   app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.delete)
+
+  app.get(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'list'), cluster.list)
 }
 
 module.exports = Routes
