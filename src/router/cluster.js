@@ -9,6 +9,15 @@ const ClusterRoutes = (controllers) => {
     })
   }
 
+  const get = (req, res, next) => {
+    controllers.cluster.get({
+      id: req.params.id,
+    }, (err, data) => {
+      if(err) return next(err)
+      res.json(data)
+    })
+  }
+
   const create = (req, res, next) => {
     controllers.cluster.create({
       user: req.user,
@@ -58,6 +67,7 @@ const ClusterRoutes = (controllers) => {
 
   return {
     list,
+    get,
     create,
     listRoles,
     createRole,

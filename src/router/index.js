@@ -59,6 +59,7 @@ const Routes = ({
   app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.delete)
 
   app.get(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'list'), cluster.list)
+  app.get(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'get'), cluster.get)
   app.post(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'create'), cluster.create)
   app.get(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'get'), cluster.listRoles)
   app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'update'), cluster.createRole)

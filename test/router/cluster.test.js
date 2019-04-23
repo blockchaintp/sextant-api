@@ -111,6 +111,30 @@ app.testSuiteWithApp(({
     })
   })
 
+  tape('cluster routes -> get cluster as admin user', (t) => {
+
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.admin,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'get',
+        url: `${url}/clusters/${createdClusters.admin.id}`,
+        json: true,
+      }, (err, res, body) => {
+        t.notok(err, `there was no error`)
+        t.equal(res.statusCode, 200, `the cluster was created`)
+        t.equal(body.id, createdClusters.admin.id, `the cluster id is correct`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
   tape('cluster routes -> list clusters as admin user', (t) => {
     userUtils.withUser({
       url,
