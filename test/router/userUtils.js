@@ -131,10 +131,38 @@ const setupUsers = ({
   ], done)
 }
 
+const withUser = ({
+  url,
+  t,
+  user,
+}, testFunction, done) => {
+  async.series([
+
+    next => {
+      login({
+        url,
+        user,
+        t,
+      }, next)
+    },
+
+    next => testFunction(next),
+
+  ], (err) => {
+    logout({
+      url,
+      t,
+    }, (logouterr) => {
+      done(err || logouterr)
+    })
+  })
+}
+
 module.exports = {
   USERS,
   registerUser,
   login,
   logout,
   setupUsers,
+  withUser,
 }

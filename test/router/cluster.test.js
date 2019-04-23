@@ -9,10 +9,6 @@ const config = require('../../src/config')
 
 const userUtils = require('./userUtils')
 
-const {
-  PERMISSION_USER,
-} = config
-
 app.testSuiteWithApp(({
   getConnection,
   url,
@@ -28,5 +24,30 @@ app.testSuiteWithApp(({
     })
   })
 
+  tape('cluster routes -> list clusters as superuser', (t) => {
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.superuser,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'get',
+        url: `${url}/clusters`,
+        json: true,
+      }, (err, res, body) => {
+        t.notok(err, `there is no error`)
+        t.equal(res.statusCode, 200, `200 code`)
+        console.log('--------------------------------------------')
+        console.log('--------------------------------------------')
+        console.dir(body)
+        next()
+      })
+    },
+    (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
 
 })
