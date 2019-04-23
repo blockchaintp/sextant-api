@@ -13,6 +13,8 @@ app.testSuiteWithApp(({
   url,
 }) => {
 
+  const createdClusters = {}
+
   tape('cluster routes -> setup users', (t) => {
     userUtils.setupUsers({
       url,
@@ -98,6 +100,7 @@ app.testSuiteWithApp(({
           return all
         }, {})
         t.deepEqual(createdCluster, clusterData, `the returned cluster data was correct`)
+        createdClusters.admin = body
         next()
       })
     }, (err) => {
@@ -105,4 +108,32 @@ app.testSuiteWithApp(({
       t.end()
     })
   })
+
+  tape('cluster routes -> list clusters as admin user', (t) => {
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.admin,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'get',
+        url: `${url}/clusters`,
+        json: true,
+      }, (err, res, body) => {
+        t.notok(err, `there is no error`)
+        t.equal(res.statusCode, 200, `200 code`)
+        t.equal(body.length, 1, `there is a single cluster in the response`)
+        t.deepEqual(body[0], createdClusters.admin, `the cluster in the list is the same as the created one`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+
+  
+
 })
