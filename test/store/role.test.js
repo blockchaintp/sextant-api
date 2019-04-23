@@ -36,7 +36,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = RoleStore(getConnection())
   
-    store.list({}, (err) => {
+    store.listForUser({}, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })
@@ -47,7 +47,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = RoleStore(getConnection())
   
-    store.list({
+    store.listForUser({
       user: testUser.id,
     }, (err, roles) => {
       t.notok(err, `there was no error`)
@@ -101,13 +101,13 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('role store -> list', (t) => {
+  tape('role store -> list for user', (t) => {
   
     const store = RoleStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length
   
-    store.list({
+    store.listForUser({
       user: testUser.id,
     }, (err, roles) => {
       t.notok(err, `there was no error`)
@@ -119,6 +119,23 @@ database.testSuiteWithDatabase(getConnection => {
       }, {})
 
       t.deepEqual(loadedRoleMap, roleMap, `the loaded roles are correct`)
+      t.end()
+    })
+    
+  })
+
+  tape('role store -> list for resource', (t) => {
+  
+    const store = RoleStore(getConnection())
+
+    const role = fixtures.SIMPLE_ROLE_DATA[0]
+  
+    store.listForResource({
+      resource_type: role.resource_type,
+      resource_id: role.resource_id,
+    }, (err, roles) => {
+      t.notok(err, `there was no error`)
+      t.equal(roles.length, 1, `there were 1 role`)
       t.end()
     })
     
@@ -191,7 +208,7 @@ database.testSuiteWithDatabase(getConnection => {
       id: roleMap.cluster.id,
     }, (err) => {
       t.notok(err, `there was no error`)
-      store.list({
+      store.listForUser({
         user: testUser.id,
       },(err, roles) => {
         t.notok(err, `there was no error`)

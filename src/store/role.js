@@ -13,13 +13,37 @@ const RoleStore = (knex) => {
   
   */
 
-  const list = (params, done) => {
-    if(!params.user) return done(`user must be given to store.role.list`)
+  const listForUser = (params, done) => {
+    if(!params.user) return done(`user must be given to store.role.listForUser`)
 
     knex.select('*')
       .from(config.TABLES.role)
       .where({
         user: params.user,
+      })
+      .asCallback(databaseTools.allExtractor(done))
+  }
+
+  /*
+  
+    list all roles for a given resource
+
+    params:
+
+      * resource_type
+      * resource_id
+  
+  */
+
+  const listForResource = (params, done) => {
+    if(!params.resource_type) return done(`resource_type must be given to store.role.listForResource`)
+    if(!params.resource_id) return done(`resource_type must be given to store.role.listForResource`)
+
+    knex.select('*')
+      .from(config.TABLES.role)
+      .where({
+        resource_type: params.resource_type,
+        resource_id: params.resource_id,
       })
       .asCallback(databaseTools.allExtractor(done))
   }
@@ -117,7 +141,8 @@ const RoleStore = (knex) => {
   }
 
   return {
-    list,
+    listForUser,
+    listForResource,
     get,
     create,
     delete: del,
