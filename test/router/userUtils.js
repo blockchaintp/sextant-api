@@ -1,5 +1,6 @@
 'use strict'
 
+const async = require('async')
 const tools = require('../tools')
 const config = require('../../src/config')
 
@@ -8,12 +9,17 @@ const {
 } = config
 
 const USERS = {
-  super: {
-    username: 'admin',
+  superuser: {
+    username: 'superuser',
     password: 'apples',
     permission: PERMISSION_USER.superuser,
   },
-  normal: {
+  admin: {
+    username: 'admin',
+    password: 'pears',
+    permission: PERMISSION_USER.admin,
+  },
+  user: {
     username: 'user',
     password: 'oranges',
     permission: PERMISSION_USER.user,
@@ -78,9 +84,57 @@ const logout = ({
   })
 }
 
+const setupUsers = ({
+  url,
+  t,
+}, done) => {
+  async.series([
+    next => {
+      registerUser({
+        url,
+        user: USERS.superuser,
+        t,
+      }, next)
+    },
+
+    next => {
+      login({
+        url,
+        user: USERS.superuser,
+        t,
+      }, next)
+    },
+
+    next => {
+      registerUser({
+        url,
+        user: USERS.admin,
+        t,
+      }, next)
+    },
+
+    next => {
+      registerUser({
+        url,
+        user: USERS.user,
+        t,
+      }, next)
+    },
+
+    next => {
+      logout({
+        url,
+        t,
+      }, next)
+    }
+
+  ], done)
+}
+
 module.exports = {
   USERS,
   registerUser,
   login,
   logout,
+  setupUsers,
 }

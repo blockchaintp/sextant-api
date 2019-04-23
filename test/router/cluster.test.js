@@ -18,60 +18,12 @@ app.testSuiteWithApp(({
   url,
 }) => {
 
-  tape('cluster routes -> register admin user', (t) => {
-    userUtils.registerUser({
-      url,
-      user: userUtils.USERS.super,
-      t,
-    }, (err, user) => {
-      t.end()
-    })
-  })
-
-  tape('cluster routes -> login admin user', (t) => {
-    userUtils.login({
-      url,
-      user: userUtils.USERS.super,
-      t,
-    }, (err, user) => {
-      t.end()
-    })
-  })
-
-  tape('cluster routes -> register normal user', (t) => {
-    userUtils.registerUser({
-      url,
-      user: userUtils.USERS.normal,
-      t,
-    }, (err, user) => {
-      t.end()
-    })
-  })
-
-  tape('cluster routes -> logout superuser', (t) => {
-    userUtils.logout({
+  tape('cluster routes -> setup users', (t) => {
+    userUtils.setupUsers({
       url,
       t,
-    }, (err, user) => {
-      t.end()
-    })
-  })
-
-  tape('cluster routes -> login normal user', (t) => {
-    userUtils.login({
-      url,
-      user: userUtils.USERS.normal,
-      t,
-    }, (err, user) => {
-      t.end()
-    })
-  })
-
-  tape('cluster routes -> logout normal user', (t) => {
-    userUtils.logout({
-      url,
-      t,
-    }, (err, user) => {
+    }, (err) => {
+      t.notok(err, `there was no error`)
       t.end()
     })
   })
