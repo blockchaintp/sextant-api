@@ -5,8 +5,7 @@ const async = require('async')
 const app = require('../app')
 const tools = require('../tools')
 
-const config = require('../../src/config')
-
+const fixtures = require('../fixtures')
 const userUtils = require('./userUtils')
 
 app.testSuiteWithApp(({
@@ -44,6 +43,32 @@ app.testSuiteWithApp(({
           next()
         })
       }, nextUser)
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('cluster routes -> create cluster as normal user', (t) => {
+
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
+
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.user,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'post',
+        url: `${url}/clusters`,
+        json: true,
+        body: clusterData,
+      }, (err, res, body) => {
+        console.log('--------------------------------------------')
+        console.dir(body)
+        next()
+      })
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
