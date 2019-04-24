@@ -12,7 +12,7 @@ const localForm = [{
 }]
 
 const getRemoteForm = ({
-  connectionRequired,
+  existing,
 }) => {
   return [{
     id: 'name',
@@ -32,33 +32,33 @@ const getRemoteForm = ({
     component: 'text',
     validate: {
       type: 'string',
-      methods: connectionRequired ? [
+      methods: existing ? [] : [
         ['required', 'The API Server is required'],
-      ] : [],
+      ],
     }
   }, {
     id: 'desired_state.token',
-    title: `Token`,
+    title: `${ existing ? 'Update ' : ''}Token`,
     helperText: 'Paste the base64 access token',
     component: 'textarea',
     rows: 5,
     validate: {
       type: 'string',
-      methods: connectionRequired ? [
+      methods: existing ? [] : [
         ['required', 'The Token is required'],
-      ] : [],
+      ],
     }
   }, {
     id: 'desired_state.ca',
-    title: `Certificate Authority`,
+    title: `${ existing ? 'Update ' : ''}Certificate Authority`,
     helperText: 'Paste the base64 certificate authority',
     component: 'textarea',
     rows: 5,
     validate: {
       type: 'string',
-      methods: connectionRequired ? [
+      methods: existing ? [] : [
         ['required', 'The Certificate Authority is required'],
-      ] : [],
+      ],
     }
   }]
 }
@@ -67,10 +67,10 @@ const clusterForms = {
   localAdd: localForm,
   localEdit: localForm,
   remoteAdd: getRemoteForm({
-    connectionRequired: true,
+    existing: false,
   }),
   remoteEdit: getRemoteForm({
-    connectionRequired: false,
+    existing: true,
   })
 }
 
