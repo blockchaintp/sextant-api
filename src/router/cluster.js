@@ -14,7 +14,17 @@ const ClusterRoutes = (controllers) => {
       id: req.params.id,
     }, (err, data) => {
       if(err) return next(err)
-      res.json(data)
+      if(!data) {
+        res
+          .status(404)
+          .json({
+            error: `no cluster found with id: ${req.params.id}`,
+          })
+      }
+      else {
+        res.json(data)
+      }
+      
     })
   }
 

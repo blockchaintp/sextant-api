@@ -146,6 +146,29 @@ app.testSuiteWithAppTaskHandlers({
     })
   })
 
+  tape('cluster routes -> get non existing cluster as super user', (t) => {
+
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.superuser,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        method: 'get',
+        url: `${url}/clusters/1234567`,
+        json: true,
+      }, (err, res, body) => {
+        t.notok(err, `there was no error`)
+        t.equal(res.statusCode, 404, `the correct 404 status code is present`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
   tape('cluster routes -> update cluster as admin user', (t) => {
 
     async.series([
