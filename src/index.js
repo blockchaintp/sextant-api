@@ -27,3 +27,10 @@ app.listen(settings.port, () => {
     })
   }
 })
+
+app.taskProcessor.start(() => {
+  pino.info({
+    action: 'taskProcessor.start',
+    message: `taskProcessor started`,
+  })
+})

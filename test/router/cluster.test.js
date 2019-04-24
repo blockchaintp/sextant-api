@@ -8,7 +8,18 @@ const tools = require('../tools')
 const fixtures = require('../fixtures')
 const userUtils = require('./userUtils')
 
-app.testSuiteWithApp(({
+const config = require('../../src/config')
+
+const {
+  TASK_ACTION,
+  TASK_CONTROLLER_LOOP_DELAY,
+} = config
+
+app.testSuiteWithAppTaskHandlers({
+  [TASK_ACTION['cluster.create']]: (params, done) => {
+    done()
+  },
+}, ({
   getConnection,
   url,
 }) => {
@@ -125,11 +136,71 @@ app.testSuiteWithApp(({
         json: true,
       }, (err, res, body) => {
         t.notok(err, `there was no error`)
-        t.equal(res.statusCode, 200, `the cluster was created`)
+        t.equal(res.statusCode, 200, `the cluster was read`)
         t.equal(body.id, createdClusters.admin.id, `the cluster id is correct`)
         next()
       })
     }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('cluster routes -> update cluster as admin user', (t) => {
+
+    async.series([
+
+      // wait for the previous create cluster task to be marked as complete
+      next => {
+        setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2)
+      },
+
+      next => {
+        userUtils.withUser({
+          url,
+          t,
+          user: userUtils.USERS.admin,
+        }, 
+        (next) => {
+          tools.sessionRequest({
+            method: 'put',
+            url: `${url}/clusters/${createdClusters.admin.id}`,
+            json: true,
+            body: {
+              name: 'new cluster name',
+            }
+          }, (err, res, body) => {
+            t.notok(err, `there was no error`)
+            t.equal(res.statusCode, 200, `the cluster was updated`)
+            createdClusters.admin.name = 'new cluster name'
+            next()
+          })
+        }, next)
+      },
+
+      next => {
+        userUtils.withUser({
+          url,
+          t,
+          user: userUtils.USERS.admin,
+        }, 
+        (next) => {
+          tools.sessionRequest({
+            method: 'get',
+            url: `${url}/clusters/${createdClusters.admin.id}`,
+            json: true,
+          }, (err, res, body) => {
+            t.notok(err, `there was no error`)
+            t.equal(res.statusCode, 200, `the cluster was created`)
+            t.equal(body.name, createdClusters.admin.name, `the cluster name is correct`)
+            next()
+          })
+        }, (err) => {
+          t.notok(err, `there was no error`)
+          t.end()
+        })
+      }
+    ], (err) => {
       t.notok(err, `there was no error`)
       t.end()
     })

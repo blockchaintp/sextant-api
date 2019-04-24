@@ -176,6 +176,8 @@ const ClusterController = ({ store, settings }) => {
       * id
       * user - the user that is updating the cluster
       * data
+        * name
+        * provision_type
         * desired_state
         * maintenance_flag
     
@@ -205,10 +207,7 @@ const ClusterController = ({ store, settings }) => {
         (ok, next) => {
           store.cluster.update({
             id: params.id,
-            data: {
-              desired_state: params.data.desired_state,
-              maintenance_flag: params.data.maintenance_flag,
-            },
+            data: params.data,
             transaction,
           }, next)
         },

@@ -7,8 +7,21 @@ const App = require('../src/app')
 
 const TEST_PORT = 8888
 
-const testSuiteWithApp = (handler) => {
+const testSuiteWithAppTaskHandlers = (taskHandlers, handler) => {
+  return testSuiteWithApp(handler, {
+    taskHandlers,
+  })
+}
 
+const testSuiteWithApp = (handler, opts) => {
+
+  opts = opts || {}
+
+  const {
+    taskHandlers,
+  } = opts
+
+  let app = null
   let server = null
 
   database.testSuiteWithDatabase((getConnection, connectionSettings) => {
@@ -19,15 +32,22 @@ const testSuiteWithApp = (handler) => {
       const settings = Object.assign({}, config)
       settings.postgres = connectionSettings
 
-      const app = App({
+      app = App({
         knex,
         settings,
+        taskHandlers,
+      })
+
+      app.taskProcessor.start((err) => {
+        
       })
 
       server = app.listen(TEST_PORT, (err) => {
         t.notok(err, `there was no error`)
         t.end()        
       })
+
+      
     })
 
     handler({
@@ -36,14 +56,20 @@ const testSuiteWithApp = (handler) => {
     })
 
     tape('stop app', (t) => {
-      server.close((err) => {
+
+      app.taskProcessor.stop((err) => {
         t.notok(err, `there was no error`)
-        t.end()
+        server.close((err) => {
+          t.notok(err, `there was no error`)
+          t.end()
+        })
       })
+
     })
   })
 }
 
 module.exports = {
+  testSuiteWithAppTaskHandlers,
   testSuiteWithApp,
 }

@@ -13,6 +13,7 @@ const pino = require('pino')({
 const Store = require('./store')
 const Controller = require('./controller')
 const Router = require('./router')
+const TaskProcessor = require('./taskprocessor')
 
 const App = ({
   knex,
@@ -20,6 +21,7 @@ const App = ({
   controllers,
   settings,
   sessionStore,
+  taskHandlers,
 }) => {
 
   knex = knex || Knex(settings.postgres)
@@ -49,6 +51,11 @@ const App = ({
     store,
     controllers,
     settings,
+  })
+
+  const taskProcessor = TaskProcessor({
+    store,
+    handlers: taskHandlers || {},
   })
 
   /*
@@ -91,6 +98,8 @@ const App = ({
     res.status(res._code || 500)
     res.json({ error: err.toString() })
   })
+
+  app.taskProcessor = taskProcessor
 
   return app
 }

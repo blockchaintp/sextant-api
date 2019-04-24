@@ -30,6 +30,19 @@ const ClusterRoutes = (controllers) => {
     })
   }
 
+  const update = (req, res, next) => {
+    controllers.cluster.update({
+      id: req.params.id,
+      user: req.user,
+      data: req.body,
+    }, (err, data) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json(data)
+    })
+  }
+
   const listRoles = (req, res, next) => {
     controllers.cluster.getRoles({
       id: req.params.id,
@@ -69,6 +82,7 @@ const ClusterRoutes = (controllers) => {
     list,
     get,
     create,
+    update,
     listRoles,
     createRole,
     deleteRole,
