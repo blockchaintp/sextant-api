@@ -9,7 +9,7 @@ const ClusterUpdate = require('./cluster/update')
 const ClusterDelete = require('./cluster/delete')
 
 module.exports = {
-  [TASK_ACTION['cluster.create']]: ClusterCreate(params),
-  [TASK_ACTION['cluster.update']]: ClusterUpdate(params),
-  [TASK_ACTION['cluster.delete']]: ClusterDelete(params),
+  [TASK_ACTION['cluster.create']]: ClusterCreate,
+  [TASK_ACTION['cluster.update']]: ClusterUpdate,
+  [TASK_ACTION['cluster.delete']]: ClusterDelete,
 }
