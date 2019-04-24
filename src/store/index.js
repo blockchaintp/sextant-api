@@ -3,6 +3,7 @@ const UserStore = require('./user')
 const RoleStore = require('./role')
 const ClusterStore = require('./cluster')
 const ClusterFileStore = require('./clusterfile')
+const ClusterSecretStore = require('./clustersecret')
 const DeploymentStore = require('./deployment')
 const TaskStore = require('./task')
 
@@ -11,6 +12,7 @@ const Store = (knex) => {
   const role = RoleStore(knex)
   const cluster = ClusterStore(knex)
   const clusterfile = ClusterFileStore(knex)
+  const clustersecret = ClusterSecretStore(knex)
   const deployment = DeploymentStore(knex)
   const task = TaskStore(knex)
 
@@ -22,6 +24,7 @@ const Store = (knex) => {
     role,
     cluster,
     clusterfile,
+    clustersecret,
     deployment,
     task,
     transaction,
