@@ -67,16 +67,11 @@ const ClusterCreate = (params, done) => {
             }, nextp)
           },
 
-          test: nextp => nextp('this is an error'),
         }, next)
       },
 
       // if the cluster type is remote - delete the token and ca from the desired_state
       next => {
-
-        console.log('--------------------------------------------')
-        console.log('--------------------------------------------')
-        console.log('shoould not get here')
         const {
           cluster,
         } = context
