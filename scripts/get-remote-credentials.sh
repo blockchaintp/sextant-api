@@ -23,8 +23,16 @@ APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.serv
 
 # print out the details:
 echo
-echo "your access credentials are printed below - copy everything below the dotted lines"
+echo "your access credentials are printed below:"
 echo
-echo "------------------------------------------"
+echo "apiServer:"
 echo
-echo '{"apiServer":"'$APISERVER'","token":"'$BASE64_BEARER_TOKEN'","ca":"'$BASE64_CA_FILE'"}'
+echo $APISERVER
+echo
+echo "token:"
+echo
+echo $BASE64_BEARER_TOKEN
+echo
+echo "ca:"
+echo
+echo $BASE64_CA_FILE 
