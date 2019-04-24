@@ -7,9 +7,9 @@ const App = require('../src/app')
 
 const TEST_PORT = 8888
 
-const testSuiteWithAppTaskHandlers = (taskHandlers, handler) => {
+const testSuiteWithAppTaskHandlers = (getTaskHandlers, handler) => {
   return testSuiteWithApp(handler, {
-    taskHandlers,
+    getTaskHandlers,
   })
 }
 
@@ -18,7 +18,7 @@ const testSuiteWithApp = (handler, opts) => {
   opts = opts || {}
 
   const {
-    taskHandlers,
+    getTaskHandlers,
   } = opts
 
   let app = null
@@ -35,7 +35,7 @@ const testSuiteWithApp = (handler, opts) => {
       app = App({
         knex,
         settings,
-        taskHandlers,
+        getTaskHandlers,
       })
 
       app.taskProcessor.start((err) => {

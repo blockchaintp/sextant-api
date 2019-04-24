@@ -1,4 +1,7 @@
-const ClusterCreate = (params, done) => {
+const ClusterCreate = ({
+  store,
+  controllers,
+}) => (params, done) => {
   done()
 }
 

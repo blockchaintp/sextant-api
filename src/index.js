@@ -5,7 +5,7 @@ const pg = require('pg')
 const pgSession = require('connect-pg-simple')(session)
 const settings = require('./settings')
 const App = require('./app')
-const tasks = require('./tasks')
+const TaskHandlers = require('./tasks')
 const pino = require('pino')({
   name: 'app',
 })
@@ -15,12 +15,10 @@ const sessionStore = new pgSession({
   pool: pgPool,
 })
 
-
-
 const app = App({
   settings,
   sessionStore,
-  taskHandlers: tasks,
+  getTaskHandlers: TaskHandlers,
 })
 
 app.listen(settings.port, () => {

@@ -1,4 +1,7 @@
-const ClusterDelete = (params, done) => {
+const ClusterDelete = ({
+  store,
+  controllers,
+}) => (params, done) => {
   done()
 }
 

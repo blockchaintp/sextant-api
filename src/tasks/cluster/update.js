@@ -1,4 +1,7 @@
-const ClusterUpdate = (params, done) => {
+const ClusterUpdate = ({
+  store,
+  controllers,
+}) => (params, done) => {
   done()
 }
 

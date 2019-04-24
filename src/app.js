@@ -21,7 +21,7 @@ const App = ({
   controllers,
   settings,
   sessionStore,
-  taskHandlers,
+  getTaskHandlers,
 }) => {
 
   knex = knex || Knex(settings.postgres)
@@ -53,9 +53,15 @@ const App = ({
     settings,
   })
 
+  const taskHandlers = getTaskHandlers ?
+    getTaskHandlers({
+      controllers,
+      store,
+    }) : {}
+
   const taskProcessor = TaskProcessor({
     store,
-    handlers: taskHandlers || {},
+    handlers: taskHandlers,
   })
 
   /*
