@@ -58,13 +58,8 @@ const RESOURCE_TYPES = {
 }
 
 const CLUSTER_PROVISION_TYPE = {
-  aws_ec2: 'aws_ec2',
-  aws_eks: 'aws_eks',
-  google_gcp: 'google_gcp',
-  google_gke: 'google_gke',
-  azure_compute: 'azure_compute',
-  azure_aks: 'azure_aks',
-  byok: 'byok',
+  remote: 'remote',
+  local: 'local',
 }
 
 const CLUSTER_STATUS = {

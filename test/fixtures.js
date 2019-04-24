@@ -29,7 +29,7 @@ const SIMPLE_USER_DATA = [
 
 const SIMPLE_CLUSTER_DATA = [{
   name: 'testcluster',
-  provision_type: CLUSTER_PROVISION_TYPE.aws_ec2,
+  provision_type: CLUSTER_PROVISION_TYPE.local,
   desired_state: {
     apples: 10,
   },
@@ -38,7 +38,7 @@ const SIMPLE_CLUSTER_DATA = [{
   },
 },{
   name: 'othercluster',
-  provision_type: CLUSTER_PROVISION_TYPE.google_gke,
+  provision_type: CLUSTER_PROVISION_TYPE.remote,
   desired_state: {
     oranges: 10,
   },
