@@ -1,4 +1,4 @@
-const ClusterUpdate = (done) => {
+const ClusterUpdate = (params, done) => {
   done()
 }
 

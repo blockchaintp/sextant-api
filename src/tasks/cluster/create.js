@@ -1,4 +1,4 @@
-const ClusterCreate = (done) => {
+const ClusterCreate = (params, done) => {
   done()
 }
 
