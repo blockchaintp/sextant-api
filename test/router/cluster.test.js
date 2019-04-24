@@ -15,14 +15,9 @@ const {
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
-app.testSuiteWithAppTaskHandlers(({
-  store,
-  controllers,
-}) => {
-  return {
-    [TASK_ACTION['cluster.create']]: (params, done) => {
-      done()
-    }
+app.testSuiteWithAppTaskHandlers({
+  [TASK_ACTION['cluster.create']]: (params, done) => {
+    done()
   }
 }, ({
   getConnection,
