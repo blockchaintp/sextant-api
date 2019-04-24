@@ -25,8 +25,9 @@ const clusterForms = {
   }, {
     id: 'connection',
     title: `Connection`,
-    helperText: 'Enter the connection details for the cluster',
+    helperText: 'Paste the connection details for the cluster',
     component: 'textarea',
+    rows: 10,
     validate: {
       type: 'string',
       methods: [
