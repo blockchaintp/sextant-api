@@ -88,6 +88,16 @@ const ClusterRoutes = (controllers) => {
     })
   }
 
+  const listTasks = (req, res, next) => {
+    controllers.cluster.getTasks({
+      id: req.params.id,
+    }, (err, data) => {
+      if(err) return next(err)
+      res
+        .json(data)
+    })
+  }
+
   return {
     list,
     get,
@@ -96,6 +106,7 @@ const ClusterRoutes = (controllers) => {
     listRoles,
     createRole,
     deleteRole,
+    listTasks,
   }
 }
 

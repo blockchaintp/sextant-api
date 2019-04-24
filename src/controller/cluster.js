@@ -416,6 +416,27 @@ const ClusterController = ({ store, settings }) => {
     ], done)
   }
 
+  /*
+  
+    get the tasks for a given cluster
+
+    params:
+
+     * id
+    
+  */
+  const getTasks = (params, done) => {
+    const {
+      id,
+    } = params
+
+    if(!id) return done(`id must be given to controller.cluster.getTasks`)
+
+    store.task.list({
+      cluster: id,
+    }, done)
+  }
+
   return {
     list,
     get,
@@ -425,6 +446,7 @@ const ClusterController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
+    getTasks,
   }
 
 }
