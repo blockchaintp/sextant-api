@@ -4,6 +4,7 @@ const userUtils = require('../utils/user')
 
 const {
   PERMISSION_ROLE_ACCESS_LEVELS,
+  CLUSTER_STATUS,
 } = config
 
 const ClusterController = ({ store, settings }) => {
