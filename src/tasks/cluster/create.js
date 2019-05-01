@@ -1,6 +1,8 @@
 const async = require('async')
 const config = require('../../config')
 
+const taskCompleter = require('./utils/taskCompleter')
+
 const {
   CLUSTER_STATUS,
 } = config
@@ -14,6 +16,13 @@ const ClusterCreate = (params, done) => {
   } = params
 
   const context = {}
+
+  // writes the end status of the task back to the cluster
+  const completer = taskCompleter({
+    id: task.resource_id,
+    store,
+    completedStatus: CLUSTER_STATUS.provisioned
+  }, done)
 
   store.transaction((transaction, finish) => {
     cancelSeries([
@@ -92,31 +101,7 @@ const ClusterCreate = (params, done) => {
       },
   
     ], finish)
-  }, (err) => {
-    const {
-      cluster,
-    } = context
-    if(err) {
-      store.cluster.update({
-        id: cluster.id,
-        data: {
-          status: CLUSTER_STATUS.error,
-        },
-      }, (statusError) => {
-        done(err || statusError)
-      })
-    }
-    else {
-      store.cluster.update({
-        id: cluster.id,
-        data: {
-          status: CLUSTER_STATUS.provisioned,
-        },
-      }, (statusError) => {
-        done(statusError)
-      })
-    }
-  })
+  }, completer)
 }
 
 module.exports = ClusterCreate

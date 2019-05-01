@@ -1,3 +1,4 @@
+const async = require('async')
 const config = require('../config')
 const databaseTools = require('../utils/database')
 const base64 = require('../utils/base64')
@@ -70,7 +71,7 @@ const ClusterSecretStore = (knex) => {
       * data
         * cluster
         * name
-        * rawData
+        * rawData || base64Data
       
       * transaction - used if present
     
@@ -107,7 +108,7 @@ const ClusterSecretStore = (knex) => {
       * cluster
       * id or name
       * data
-        * rawData
+        * rawData || base64Data
         
       * transaction - used if present
   
@@ -175,12 +176,54 @@ const ClusterSecretStore = (knex) => {
     query.asCallback(databaseTools.singleExtractor(done))
   }
 
+  /*
+  
+    replace a single clustersecret
+
+    i.e. one of create or update
+
+    params:
+
+      * data
+        * cluster
+        * name
+        * rawData || base64Data
+      
+      * transaction - used if present
+    
+  */
+  const replace = (params, done) => {
+    const {
+      cluster,
+      name,
+      rawData,
+      base64Data,
+    } = params.data
+
+    async.series([
+      next => del({
+        cluster,
+        name,
+      }, next),
+
+      next => create({
+        data: {
+          cluster,
+          name,
+          rawData,
+          base64Data,
+        }
+      }, next)
+    ], done)
+  }
+
   return {
     list,
     get,
     create,
     update,
     delete: del,
+    replace,
   }
 }
 
