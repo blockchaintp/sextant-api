@@ -39,7 +39,11 @@ const ClusterController = ({ store, settings }) => {
       if(err) return done(err)
 
       // if it's a superuser - they can see all clusters
-      if(userUtils.isSuperuser(user)) return done(null, clusters)
+      if(userUtils.isSuperuser(user)) {
+        return loadTasksForClusters({
+          clusters,
+        }, done)
+      }
 
       // we need to load the roles that are for a cluster for the user
       store.role.listForUser({
@@ -60,9 +64,38 @@ const ClusterController = ({ store, settings }) => {
           return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
         })
 
-        done(null, clusters)
+        loadTasksForClusters({
+          clusters,
+        }, done)
+
+        
+        
       })       
     })
+  }
+
+  /*
+  
+    load the most recent task for each cluster so the frontend can display
+    the task status of clusters in the table
+
+    params:
+
+     * clusters
+    
+  */
+  const loadTasksForClusters = ({
+    clusters,
+  }, done) => {
+    async.map(clusters, (cluster, nextCluster) => {
+      store.task.mostRecentForResource({
+        cluster: cluster.id,
+      }, (err, task) => {
+        if(err) return nextCluster(err)
+        cluster.task = task
+        nextCluster(null, cluster)
+      })
+    }, done)
   }
 
   /*

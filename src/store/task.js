@@ -14,6 +14,7 @@ const TaskStore = (knex) => {
      * deployment - list all tasks for a deployment
      * user - list all tasks started by a user
      * status - list all tasks that have the given status
+     * limit - whether the limit the number of results
     
     all the above are optional - if nothing is defined we list all tasks across the system
   
@@ -64,6 +65,10 @@ const TaskStore = (knex) => {
         .whereIn('status', status)
     }
 
+    if(params.limit) {
+      sqlQuery.limit(params.limit)
+    }
+
     const orderBy = config.LIST_ORDER_BY_FIELDS.task
 
     sqlQuery
@@ -101,6 +106,37 @@ const TaskStore = (knex) => {
     }
 
     list(query, done)
+  }
+
+  /*
+  
+    load the most recent task for a given resource
+
+    params:
+
+     * cluster - we want active tasks for a cluster
+     * deployment - we want active tasks for a deployment
+
+  */
+  const mostRecentForResource = (params, done) => {
+    if(!params.cluster && !params.deployment) return done(`cluster or deployment required for controller.task.activeForResource`)
+
+    const query = {}
+
+    if(params.cluster) {
+      query.cluster = params.cluster
+    }
+
+    if(params.deployment) {
+      query.deployment = params.deployment
+    }
+
+    query.limit = 1
+
+    list(query, (err, results) => {
+      if(err) return done(err)
+      done(null, results[0])
+    })
   }
 
 
@@ -217,6 +253,7 @@ const TaskStore = (knex) => {
   return {
     list,
     activeForResource,
+    mostRecentForResource,
     get,
     create,
     update,
