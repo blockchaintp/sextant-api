@@ -40,7 +40,7 @@ const ClusterController = ({ store, settings }) => {
 
       // if it's a superuser - they can see all clusters
       if(userUtils.isSuperuser(user)) {
-        return loadTasksForClusters({
+        return loadMostRecentTasksForClusters({
           clusters,
         }, done)
       }
@@ -64,7 +64,7 @@ const ClusterController = ({ store, settings }) => {
           return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
         })
 
-        loadTasksForClusters({
+        loadMostRecentTasksForClusters({
           clusters,
         }, done)
 
@@ -84,7 +84,7 @@ const ClusterController = ({ store, settings }) => {
      * clusters
     
   */
-  const loadTasksForClusters = ({
+  const loadMostRecentTasksForClusters = ({
     clusters,
   }, done) => {
     async.map(clusters, (cluster, nextCluster) => {
@@ -196,9 +196,25 @@ const ClusterController = ({ store, settings }) => {
   const get = (params, done) => {
     if(!params.id) return done(`id must be given to controller.cluster.update`)
     
-    store.cluster.get({
-      id: params.id,
-    }, done)
+    async.parallel({
+      cluster: next => store.cluster.get({
+        id: params.id,
+      }, next),
+
+      task: next => store.task.mostRecentForResource({
+        cluster: params.id,
+      }, next),
+
+    }, (err, results) => {
+      if(err) return done(err)
+      const {
+        cluster,
+        task,
+      } = results
+      cluster.task = task
+      done(null, cluster)
+    })
+    
   }
 
   /*
