@@ -317,6 +317,14 @@ const ClusterController = ({ store, settings }) => {
           data,
         }, next),
 
+        // check there is not a cluster with that name already
+        (ok, next) => store.cluster.list({}, (err, clusters) => {
+          if(err) return next(err)
+          const existingCluster = clusters.find(cluster => cluster.name.toLowerCase() == data.name.toLowerCase())
+          if(existingCluster) return next(`there is already a cluster with the name ${data.name}`)
+          next(null, true)
+        }),
+
         // create the cluster record
         (ok, next) => store.cluster.create({
           data: {
