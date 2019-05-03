@@ -80,8 +80,6 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  /*
-
   tape('cluster controller -> create cluster for admin user', (t) => {
   
     const controller = getController()
@@ -678,5 +676,5 @@ database.testSuiteWithDatabase(getConnection => {
       })
     })
   })
-  */
+  
 })
