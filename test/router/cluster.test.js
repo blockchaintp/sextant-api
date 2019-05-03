@@ -15,6 +15,12 @@ const {
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
+const getClusterWithoutTask = (cluster) => {
+  const ret = Object.assign({}, cluster)
+  delete(ret.task)
+  return ret
+}
+
 app.testSuiteWithAppTaskHandlers({
   [TASK_ACTION['cluster.create']]: (params, done) => {
     done()
@@ -244,7 +250,7 @@ app.testSuiteWithAppTaskHandlers({
         t.notok(err, `there is no error`)
         t.equal(res.statusCode, 200, `200 code`)
         t.equal(body.length, 1, `there is a single cluster in the response`)
-        t.deepEqual(body[0], createdClusters.admin, `the cluster in the list is the same as the created one`)
+        t.deepEqual(getClusterWithoutTask(body[0]), createdClusters.admin, `the cluster in the list is the same as the created one`)
         next()
       })
     }, (err) => {
@@ -384,4 +390,5 @@ app.testSuiteWithAppTaskHandlers({
       t.end()
     })
   })
+  
 })

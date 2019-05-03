@@ -42,7 +42,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   
   })
-/*
+
   tape('cluster controller -> create cluster for admin user', (t) => {
   
     const controller = getController()
@@ -460,7 +460,6 @@ database.testSuiteWithDatabase(getConnection => {
       t.end()
     })
   })
-*/
 
   tape('cluster controller -> create remote cluster with secrets and update the secrets', (t) => {
     
@@ -596,10 +595,6 @@ database.testSuiteWithDatabase(getConnection => {
           context.token2 = cluster.desired_state.token
           context.ca2 = cluster.desired_state.ca
           context.cluster = cluster
-
-          console.log('--------------------------------------------')
-          console.log('--------------------------------------------')
-          console.dir(cluster)
           next()
         })
       },

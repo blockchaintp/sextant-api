@@ -102,7 +102,10 @@ const ClusterController = ({ store, settings }) => {
         cluster,
         task,
       } = results
-      cluster.task = task
+
+      if(cluster && task) {
+        cluster.task = task
+      }
       done(null, cluster)
     })
     
