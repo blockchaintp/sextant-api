@@ -12,6 +12,7 @@ const tape = require('tape')
 const database = require('../database')
 const fixtures = require('../fixtures')
 
+const tools = require('../tools')
 const base64 = require('../../src/utils/base64')
 
 const FileSecretStoreTest = ({
@@ -34,12 +35,11 @@ const FileSecretStoreTest = ({
 
   tape(`${title} store -> create clusters`, (t) => {
 
-    fixtures.insertTestClusters(getConnection(), (err, clusters) => {
-      t.notok(err, `there was no error`)      
+    fixtures.insertTestClusters(getConnection(), tools.errorWrapper(t, (clusters) => { 
       clusterMap = clusters
       testCluster = clusters[fixtures.SIMPLE_CLUSTER_DATA[0].name]
       t.end()
-    })
+    }))
   
   })
 
@@ -53,14 +53,13 @@ const FileSecretStoreTest = ({
         name: testFile.name,
         rawData: testFile.rawData,
       }
-    }, (err, file) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (file) => {
       t.equal(file.cluster, testCluster.id, `the cluster is correct`)
       t.equal(file.name, testFile.name, `the name is correct`)
       t.equal(file.base64data, testFile.base64data, `the base64data is correct`)
       t.equal(base64.decodeToString(file.base64data), testFile.rawData, `the plainData is correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -74,14 +73,13 @@ const FileSecretStoreTest = ({
         name: `base64-${testFile.name}`,
         base64Data: testFile.base64data,
       }
-    }, (err, file) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (file) => {
       t.equal(file.cluster, testCluster.id, `the cluster is correct`)
       t.equal(file.name, `base64-${testFile.name}`, `the name is correct`)
       t.equal(file.base64data, testFile.base64data, `the base64data is correct`)
       t.equal(base64.decodeToString(file.base64data), testFile.rawData, `the plainData is correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -91,15 +89,14 @@ const FileSecretStoreTest = ({
 
     store.list({
       cluster: testCluster.id,
-    }, (err, files) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (files) => {
       t.equal(files.length, 2, `there are two files`)
       t.equal(files[0].cluster, testCluster.id, `the cluster is correct`)
       t.equal(files[0].name, testFile.name, `the name is correct`)
       t.equal(files[0].base64data, testFile.base64data, `the base64data is correct`)
       t.equal(base64.decodeToString(files[0].base64data), testFile.rawData, `the plainData is correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -112,14 +109,13 @@ const FileSecretStoreTest = ({
     store.get({
       cluster: testCluster.id,
       name: testFile.name,
-    }, (err, file) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (file) => {
       t.equal(file.cluster, testCluster.id, `the cluster is correct`)
       t.equal(file.name, testFile.name, `the name is correct`)
       t.equal(file.base64data, testFile.base64data, `the base64data is correct`)
       t.equal(base64.decodeToString(file.base64data), testFile.rawData, `the plainData is correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -135,18 +131,16 @@ const FileSecretStoreTest = ({
       data: {
         rawData: testFile.updatedRawData,
       }
-    }, (err, file) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (file) => {
       store.get({
         cluster: testCluster.id,
         name: testFile.name,
-      }, (err, file) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (file) => {
         t.equal(file.base64data, testFile.updatedBase64Data, `the base64data is correct`)
         t.equal(base64.decodeToString(file.base64data), testFile.updatedRawData, `the plainData is correct`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
 
@@ -162,18 +156,16 @@ const FileSecretStoreTest = ({
       data: {
         base64Data: testFile.updatedBase64Data,
       }
-    }, (err, file) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (file) => {
       store.get({
         cluster: testCluster.id,
         name: testFile.name,
-      }, (err, file) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (file) => {
         t.equal(file.base64data, testFile.updatedBase64Data, `the base64data is correct`)
         t.equal(base64.decodeToString(file.base64data), testFile.updatedRawData, `the plainData is correct`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
 
@@ -186,16 +178,14 @@ const FileSecretStoreTest = ({
     store.delete({
       cluster: testCluster.id,
       name: testFile.name,
-    }, (err) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, () => {
       store.list({
         cluster: testCluster.id,
-      }, (err, files) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (files) => {
         t.equal(files.length, 1, `there is only 1 file`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
 
