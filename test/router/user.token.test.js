@@ -28,6 +28,7 @@ app.testSuiteWithApp(({
   tape('user token routes -> register user', (t) => {
 
     tools.sessionRequest({
+      t,
       method: 'post',
       url: `${url}/user`,
       json: true,
@@ -44,6 +45,7 @@ app.testSuiteWithApp(({
   tape('user token routes -> login', (t) => {
 
     tools.sessionRequest({
+      t,
       method: 'post',
       url: `${url}/user/login`,
       json: true,
@@ -63,6 +65,7 @@ app.testSuiteWithApp(({
   tape('user token routes -> get', (t) => {
 
     tools.sessionRequest({
+      t,
       method: 'get',
       url: `${url}/user/${USER_RECORD.id}`,
       json: true,
@@ -78,6 +81,7 @@ app.testSuiteWithApp(({
   tape('user token routes -> (as admin) get token', (t) => {
 
     tools.sessionRequest({
+      t,
       method: 'get',
       url: `${url}/user/${USER_RECORD.id}/token`,
       json: true,
@@ -94,6 +98,7 @@ app.testSuiteWithApp(({
   tape('user token routes -> logout', (t) => {
 
     tools.sessionRequest({
+      t,
       method: 'get',
       url: `${url}/user/logout`,
       json: true,
@@ -112,12 +117,11 @@ app.testSuiteWithApp(({
       method: 'get',
       url: `${url}/user`,
       json: true,
-    }, (err, res, body) => {
-      t.notok(err, `there is no error`)
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.equal(res.statusCode, 403, `403 code`)
       t.equal(body.error, `access denied`, `correct error`)
       t.end()
-    })
+    }))
     
   })
 
@@ -130,12 +134,12 @@ app.testSuiteWithApp(({
       headers: {
         'Authorization': `BearerBad ${USER_TOKEN}`,
       },
-    }, (err, res, body) => {
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 400, `400 code`)
       t.equal(body.error, `bad authorization header format`, `correct error`)
       t.end()
-    })
+    }))
     
   })
 
@@ -148,12 +152,12 @@ app.testSuiteWithApp(({
       headers: {
         'Authorization': `BearerBad ${USER_TOKEN} bad`,
       },
-    }, (err, res, body) => {
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 400, `400 code`)
       t.equal(body.error, `bad authorization header format`, `correct error`)
       t.end()
-    })
+    }))
     
   })
 
@@ -166,12 +170,12 @@ app.testSuiteWithApp(({
       headers: {
         'Authorization': `Bearer ${USER_TOKEN}bad`,
       },
-    }, (err, res, body) => {
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
       t.equal(body.error, `access denied`, `correct error`)
       t.end()
-    })
+    }))
     
   })
 
@@ -184,12 +188,12 @@ app.testSuiteWithApp(({
       headers: {
         'Authorization': `Bearer ${USER_TOKEN}`,
       },
-    }, (err, res, body) => {
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
       t.equal(body.length, 1, `correct number of users`)
       t.end()
-    })
+    }))
     
   })
 
@@ -202,12 +206,12 @@ app.testSuiteWithApp(({
       headers: {
         'Authorization': `Bearer ${USER_TOKEN}`,
       },
-    }, (err, res, body) => {
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
       t.equal(body.username, USER_DATA.username, `username correct`)
       t.end()
-    })
+    }))
     
   })
 
