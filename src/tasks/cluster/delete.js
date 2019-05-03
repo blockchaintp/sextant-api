@@ -1,4 +1,6 @@
-const ClusterDelete = (params, done) => {
+const ClusterDelete = ({
+  
+}) => (params, done) => {
   done()
 }
 
