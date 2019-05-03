@@ -31,6 +31,8 @@ const cleanDesiredState = (state) => {
   const ret = Object.assign({}, state)
   delete(ret.ca)
   delete(ret.token)
+  delete(ret.ca_id)
+  delete(ret.token_id)
   return ret
 }
 
@@ -287,10 +289,12 @@ database.testSuiteWithDatabase(getConnection => {
           id: testCluster.id,
           data: {
             desired_state,
+            shouldNotBeInserted: true,
           },
         }, (err, cluster) => {
           if(err) return next(err)
           t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(desired_state), `the desired_state is correct`)
+          t.notok(cluster.shouldNotBeInserted, `there was no extra value inserted`)
           next()
         })
       },
@@ -312,7 +316,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
     
   })
-
+  
   tape('cluster controller -> create cluster for superuser user', (t) => {
   
     const controller = getController()
@@ -552,8 +556,8 @@ database.testSuiteWithDatabase(getConnection => {
         }, (err, cluster) => {
           if(err) return next(err)
           t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
-          context.token = cluster.desired_state.token
-          context.ca = cluster.desired_state.ca
+          context.token_id = cluster.desired_state.token_id
+          context.ca_id = cluster.desired_state.ca_id
           context.cluster = cluster
           next()
         })
@@ -563,11 +567,11 @@ database.testSuiteWithDatabase(getConnection => {
         async.parallel({
           token: nextp => store.clustersecret.get({
             cluster: context.cluster.id,
-            id: context.cluster.desired_state.token,
+            id: context.cluster.desired_state.token_id,
           }, nextp),
           ca: nextp => store.clustersecret.get({
             cluster: context.cluster.id,
-            id: context.cluster.desired_state.ca,
+            id: context.cluster.desired_state.ca_id,
           }, nextp),
         }, (err, results) => {
           if(err) return next(err)
@@ -595,10 +599,8 @@ database.testSuiteWithDatabase(getConnection => {
 
           t.equal(cluster.name, 'my new name', `the cluster name is correct`)
 
-          t.equal(cluster.desired_state.token, context.token, `the desired_state token id is the same`)
-          t.equal(cluster.desired_state.ca, context.ca, `the desired_state ca id is the same`)
-          t.equal(cluster.applied_state.token, context.token, `the applied_state token id is the same`)
-          t.equal(cluster.applied_state.ca, context.ca, `the applied_state ca id is the same`)
+          t.equal(cluster.desired_state.token_id, context.token_id, `the desired_state token id is the same`)
+          t.equal(cluster.desired_state.ca_id, context.ca_id, `the desired_state ca id is the same`)
           
           next()
         })
@@ -618,8 +620,8 @@ database.testSuiteWithDatabase(getConnection => {
           },
         }, (err, cluster) => {
           if(err) return next(err)
-          context.token2 = cluster.desired_state.token
-          context.ca2 = cluster.desired_state.ca
+          context.token_id2 = cluster.desired_state.token_id
+          context.ca_id2 = cluster.desired_state.ca_id
           context.cluster = cluster
           next()
         })
@@ -629,11 +631,11 @@ database.testSuiteWithDatabase(getConnection => {
         async.parallel({
           token: nextp => store.clustersecret.get({
             cluster: context.cluster.id,
-            id: context.cluster.desired_state.token,
+            id: context.cluster.desired_state.token_id,
           }, nextp),
           ca: nextp => store.clustersecret.get({
             cluster: context.cluster.id,
-            id: context.cluster.desired_state.ca,
+            id: context.cluster.desired_state.ca_id,
           }, nextp),
         }, (err, results) => {
           if(err) return next(err)
@@ -660,10 +662,8 @@ database.testSuiteWithDatabase(getConnection => {
           if(err) return next(err)
           t.equal(cluster.name, 'my new name2', `the cluster name is correct`)
 
-          t.equal(cluster.desired_state.token, context.token2, `the desired_state token id is the same`)
-          t.equal(cluster.desired_state.ca, context.ca2, `the desired_state ca id is the same`)
-          t.equal(cluster.applied_state.token, context.token2, `the applied_state token id is the same`)
-          t.equal(cluster.applied_state.ca, context.ca2, `the applied_state ca id is the same`)
+          t.equal(cluster.desired_state.token_id, context.token_id2, `the desired_state token id is the same`)
+          t.equal(cluster.desired_state.ca_id, context.ca_id2, `the desired_state ca id is the same`)
           
           next()
         })

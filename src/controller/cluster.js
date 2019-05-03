@@ -242,17 +242,17 @@ const ClusterController = ({ store, settings }) => {
         } = cluster
 
         if(secrets.token) {
-          desired_state.token = secrets.token.id
+          desired_state.token_id = secrets.token.id
         }
-        else if(applied_state && applied_state.token) {
-          desired_state.token = applied_state.token
+        else if(applied_state && applied_state.token_id) {
+          desired_state.token_id = applied_state.token_id
         }
 
         if(secrets.ca) {
-          desired_state.ca = secrets.ca.id
+          desired_state.ca_id = secrets.ca.id
         }
-        else if(applied_state && applied_state.ca) {
-          desired_state.ca = applied_state.ca
+        else if(applied_state && applied_state.ca_id) {
+          desired_state.ca_id = applied_state.ca_id
         }
 
         store.cluster.update({
@@ -404,16 +404,26 @@ const ClusterController = ({ store, settings }) => {
     if(!user) return done(`user must be given to controller.cluster.update`)
     if(!data) return done(`data must be given to controller.cluster.update`)
 
+    const formData = ([
+      'name',
+      'provision_type',
+      'desired_state',
+      'maintenance_flag',
+    ]).reduce((all, field) => {
+      if(data[field]) all[field] = data[field]
+      return all
+    }, {})
+
     const {
       desired_state,
       secrets,
     } = extracClusterSecrets({
-      desired_state: data.desired_state,
+      desired_state: formData.desired_state,
     })
 
     // inject the processed desired state into the submission data
     if(desired_state) {
-      data.desired_state = desired_state
+      formData.desired_state = desired_state
     }
 
     store.transaction((transaction, finished) => {
@@ -443,13 +453,13 @@ const ClusterController = ({ store, settings }) => {
           if(!cluster) return next(`no cluster with that id found: ${id}`)
           validate({
             schema: clusterForms.server[cluster.provision_type].edit,
-            data,
+            data: formData,
           }, next)
         },
 
         (ok, next) => store.cluster.update({
           id,
-          data,
+          data: formData,
           transaction,
         }, next),
 
