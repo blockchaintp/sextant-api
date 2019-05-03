@@ -168,6 +168,16 @@ const forms = {
       schema: schema.browser,
       required: required.browser.edit,
     }),
+    login: getUserForm({
+      schema: [
+        'username',
+        'password',
+      ],
+      required: [
+        'username',
+        'password',
+      ],
+    }),
   },
   server: {
     add: getUserForm({
