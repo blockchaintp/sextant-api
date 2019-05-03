@@ -17,6 +17,7 @@
     "body-parser": "^1.17.2",
     "connect-pg-simple": "^5.0.0",
     "cookie-parser": "^1.4.3",
+    "dotty": "^0.1.0",
     "express": "^4.15.3",
     "express-session": "^1.15.6",
     "http-proxy": "^1.17.0",
@@ -35,7 +36,8 @@
     "request": "^2.81.0",
     "rmdir": "^1.2.0",
     "tap-spec": "^5.0.0",
-    "tmp": "^0.0.33"
+    "tmp": "^0.0.33",
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "tape": "^4.9.1"
