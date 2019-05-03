@@ -1,7 +1,6 @@
 const config = require('../../config')
 
 const taskCompleter = require('./utils/taskCompleter')
-const secretExtractor = require('./utils/secretExtractor')
 
 const {
   CLUSTER_STATUS,
@@ -37,13 +36,6 @@ const ClusterCreate = (params, done) => {
           next()
         })
       },
-
-      next => secretExtractor({
-        store,
-        cluster: context.cluster,
-        cancelSeries,
-        transaction,
-      }, next),
   
     ], finish)
   }, completer)

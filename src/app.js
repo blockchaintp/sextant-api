@@ -88,6 +88,7 @@ const App = ({
       pino.error({
         action: 'error',
         error: err.error ? err.error.toString() : err.toString(),
+        stack: err.stack,
         code: res._code || 500
       })
     }

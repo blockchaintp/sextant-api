@@ -5,6 +5,7 @@ const userUtils = require('../utils/user')
 const {
   PERMISSION_ROLE_ACCESS_LEVELS,
   CLUSTER_STATUS,
+  CLUSTER_PROVISION_TYPE,
 } = config
 
 const ClusterController = ({ store, settings }) => {
@@ -76,6 +77,39 @@ const ClusterController = ({ store, settings }) => {
 
   /*
   
+    get a cluster
+
+    params:
+
+     * id
+    
+  */
+  const get = (params, done) => {
+    if(!params.id) return done(`id must be given to controller.cluster.update`)
+    
+    async.parallel({
+      cluster: next => store.cluster.get({
+        id: params.id,
+      }, next),
+
+      task: next => store.task.mostRecentForResource({
+        cluster: params.id,
+      }, next),
+
+    }, (err, results) => {
+      if(err) return done(err)
+      const {
+        cluster,
+        task,
+      } = results
+      cluster.task = task
+      done(null, cluster)
+    })
+    
+  }
+
+  /*
+  
     load the most recent task for each cluster so the frontend can display
     the task status of clusters in the table
 
@@ -96,6 +130,135 @@ const ClusterController = ({ store, settings }) => {
         nextCluster(null, cluster)
       })
     }, done)
+  }
+
+  /*
+  
+    extract the cluster secrets from the desired state
+    this is so we never save secrets inside of tasks or cluster records
+    they are only saved in the clustersecret store (which can be replaced later)
+    the desired_state of the cluster will hold a reference to the id of the secret
+
+    will return an object with these props:
+
+     * desired_state - the desired_state with the secrets extracted
+     * secrets - an object of name onto an object with either base64Data or rawData
+  
+  */
+  const extracClusterSecrets = ({
+    desired_state,
+  }) => {
+
+    const secrets = {}
+
+    if(!desired_state) return {
+      desired_state,
+      secrets,
+    }
+
+    if(desired_state.token) {
+      secrets.token = {
+        base64Data: desired_state.token,
+      }
+      delete(desired_state.token)
+    }
+
+    if(desired_state.ca) {
+      secrets.ca = {
+        base64Data: desired_state.ca,
+      }
+      delete(desired_state.ca)
+    }
+
+    return {
+      desired_state,
+      secrets,
+    }
+  }
+
+  /*
+  
+    insert the cluster secrets into the store
+    and update the cluster desired_state to point at their ids
+
+    params:
+
+     * cluster
+     * secrets
+  
+  */
+  const createClusterSecrets = ({
+    cluster,
+    secrets,
+    transaction,
+  }, done) => {
+
+    async.waterfall([
+
+      // first - insert the cluster secret data into the database
+      (nextw) => {
+        async.parallel({
+          token: nextp => {
+            if(!secrets.token) return nextp()
+            store.clustersecret.create({
+              data: {
+                cluster: cluster.id,
+                name: 'token',
+                base64Data: secrets.token.base64Data,
+              },
+              transaction,
+            }, nextp)
+          },
+    
+          ca: nextp => {
+            if(!secrets.ca) return nextp()
+            store.clustersecret.create({
+              data: {
+                cluster: cluster.id,
+                name: 'ca',
+                base64Data: secrets.ca.base64Data,
+              },
+              transaction,
+            }, nextp)
+          },
+        }, nextw)
+      },
+
+      // if the secrets were provided - update the desired state to point at the
+      // clustersecret id
+      // otherwise - use the existing pointers in the actual state
+      (secrets, nextw) => {
+
+        const {
+          desired_state,
+          applied_state,
+        } = cluster
+
+        if(secrets.token) {
+          desired_state.token = secrets.token.id
+        }
+        else if(applied_state && applied_state.token) {
+          desired_state.token = applied_state.token
+        }
+
+        if(secrets.ca) {
+          desired_state.ca = secrets.ca.id
+        }
+        else if(applied_state && applied_state.ca) {
+          desired_state.ca = applied_state.ca
+        }
+
+        store.cluster.update({
+          id: cluster.id,
+          data: {
+            desired_state,
+          },
+          transaction,
+        }, nextw)
+      },
+
+    ], done)
+    
   }
 
   /*
@@ -128,6 +291,13 @@ const ClusterController = ({ store, settings }) => {
     if(!data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
     if(!data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
 
+    const {
+      desired_state,
+      secrets,
+    } = extracClusterSecrets({
+      desired_state: data.desired_state,
+    })
+
     store.transaction((transaction, finished) => {
 
       async.waterfall([
@@ -137,16 +307,22 @@ const ClusterController = ({ store, settings }) => {
           data: {
             name: data.name,
             provision_type: data.provision_type,
-            desired_state: data.desired_state,
             capabilities: data.capabilities,
+            desired_state,
           },
+          transaction,
+        }, next),
+
+        // create the cluster secrets and update the desired_state pointing to them
+        (cluster, next) => createClusterSecrets({
+          cluster,
+          secrets,
           transaction,
         }, next),
 
         // create the user role if needed
         (cluster, next) => {
           if(userUtils.isSuperuser(user)) return next(null, cluster)
-
           store.role.create({
             data: {
               user: user.id,
@@ -184,38 +360,7 @@ const ClusterController = ({ store, settings }) => {
     
   }
 
-  /*
   
-    get a cluster
-
-    params:
-
-     * id
-    
-  */
-  const get = (params, done) => {
-    if(!params.id) return done(`id must be given to controller.cluster.update`)
-    
-    async.parallel({
-      cluster: next => store.cluster.get({
-        id: params.id,
-      }, next),
-
-      task: next => store.task.mostRecentForResource({
-        cluster: params.id,
-      }, next),
-
-    }, (err, results) => {
-      if(err) return done(err)
-      const {
-        cluster,
-        task,
-      } = results
-      cluster.task = task
-      done(null, cluster)
-    })
-    
-  }
 
   /*
   
@@ -233,20 +378,38 @@ const ClusterController = ({ store, settings }) => {
     
   */
   const update = (params, done) => {
-    if(!params.id) return done(`id must be given to controller.cluster.update`)
-    if(!params.user) return done(`user must be given to controller.cluster.update`)
-    if(!params.data) return done(`data must be given to controller.cluster.update`)
+
+    const {
+      id,
+      user,
+      data,
+    } = params
+
+    if(!id) return done(`id must be given to controller.cluster.update`)
+    if(!user) return done(`user must be given to controller.cluster.update`)
+    if(!data) return done(`data must be given to controller.cluster.update`)
+
+    const {
+      desired_state,
+      secrets,
+    } = extracClusterSecrets({
+      desired_state: data.desired_state,
+    })
+
+    // inject the processed desired state into the submission data
+    if(desired_state) {
+      data.desired_state = desired_state
+    }
 
     // check to see if there is a running or cancelling tasks for the given cluster
     // if there is, don't allow the update
-
     store.transaction((transaction, finished) => {
 
       async.waterfall([
 
         (next) => {
           store.task.activeForResource({
-            cluster: params.id,
+            cluster: id,
           }, (err, activeTasks) => {
             if(err) return next(err)
             if(activeTasks.length > 0) return next(`there are active tasks for this cluster`)
@@ -254,10 +417,16 @@ const ClusterController = ({ store, settings }) => {
           })
         },
 
-        (ok, next) => {
-          store.cluster.update({
-            id: params.id,
-            data: params.data,
+        (ok, next) => store.cluster.update({
+          id,
+          data,
+          transaction,
+        }, next),
+
+        (cluster, next) => {
+          createClusterSecrets({
+            cluster,
+            secrets,
             transaction,
           }, next)
         },
@@ -265,11 +434,11 @@ const ClusterController = ({ store, settings }) => {
         // if desired_state is given - we trigger a new task to update the cluster
         (cluster, next) => {
 
-          if(!params.data.desired_state) return next(null, cluster)
+          if(!data.desired_state) return next(null, cluster)
 
           store.task.create({
             data: {
-              user: params.user.id,
+              user: user.id,
               resource_type: config.RESOURCE_TYPES.cluster,
               resource_id: cluster.id,
               action: config.TASK_ACTION['cluster.update'],

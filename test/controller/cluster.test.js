@@ -7,14 +7,18 @@ const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
 const Store = require('../../src/store')
 
+const TaskProcessor = require('../taskProcessor')
+
 const config = require('../../src/config')
 
 const {
   PERMISSION_USER,
+  CLUSTER_PROVISION_TYPE,
   PERMISSION_ROLE,
   RESOURCE_TYPES,
   TASK_STATUS,
   TASK_ACTION,
+  TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -38,7 +42,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   
   })
-
+/*
   tape('cluster controller -> create cluster for admin user', (t) => {
   
     const controller = getController()
@@ -456,6 +460,200 @@ database.testSuiteWithDatabase(getConnection => {
       t.end()
     })
   })
+*/
 
+  tape('cluster controller -> create remote cluster with secrets and update the secrets', (t) => {
+    
+    const controller = getController()
+    const store = Store(getConnection())
+
+    const saveAppliedState = (params, done) => {
+      async.waterfall([
+        (next) => params.store.cluster.get({
+          id: params.task.resource_id,
+        }, next),
+
+        (cluster, next) => {
+          store.cluster.update({
+            id: cluster.id,
+            data: {
+              applied_state: cluster.desired_state,
+            }
+          }, next)
+        }
+      ], done)
+    }
+
+    const taskProcessor = TaskProcessor({
+      store,
+      handlers: {
+        [TASK_ACTION['cluster.create']]: saveAppliedState,
+        [TASK_ACTION['cluster.update']]: saveAppliedState,
+      }
+    })
+
+    taskProcessor.start()
+
+    const TOKEN = 'apples'
+    const CA = 'oranges'
+
+    const TOKEN2 = 'pears'
+    const CA2 = 'peaches'
+
+    const clusterData = {
+      name: 'remote_cluster_with_secrets',
+      provision_type: CLUSTER_PROVISION_TYPE.remote,
+      desired_state: {
+        apiServer: 'http://localhost',
+        token: TOKEN,
+        ca: CA,
+      },
+      capabilities: {
+        funkyFeature: true,
+      },
+    }
+
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    const context = {}
+
+    async.series([
+
+      // insert the cluster
+      next => {
+        controller.create({
+          user: testUser,
+          data: clusterData,
+        }, (err, cluster) => {
+          if(err) return next(err)
+          t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
+          context.token = cluster.desired_state.token
+          context.ca = cluster.desired_state.ca
+          context.cluster = cluster
+          next()
+        })
+      },
+
+      next => {
+        async.parallel({
+          token: nextp => store.clustersecret.get({
+            cluster: context.cluster.id,
+            id: context.cluster.desired_state.token,
+          }, nextp),
+          ca: nextp => store.clustersecret.get({
+            cluster: context.cluster.id,
+            id: context.cluster.desired_state.ca,
+          }, nextp),
+        }, (err, results) => {
+          if(err) return next(err)
+          t.equal(results.token.name, 'token', 'the token secret name is correct')
+          t.equal(results.token.base64data, TOKEN, 'the token secret value is correct')
+          t.equal(results.ca.name, 'ca', 'the ca secret name is correct')
+          t.equal(results.ca.base64data, CA, 'the ca secret value is correct')
+          next()
+        })
+      },
+
+      // wait for the task processor
+      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
+
+      // update just the name and check we still have the same secrets
+      next => {
+        controller.update({
+          id: context.cluster.id,
+          user: testUser,
+          data: {
+            name: 'my new name',
+          },
+        }, (err, cluster) => {
+          if(err) return next(err)
+
+          t.equal(cluster.name, 'my new name', `the cluster name is correct`)
+
+          t.equal(cluster.desired_state.token, context.token, `the desired_state token id is the same`)
+          t.equal(cluster.desired_state.ca, context.ca, `the desired_state ca id is the same`)
+          t.equal(cluster.applied_state.token, context.token, `the applied_state token id is the same`)
+          t.equal(cluster.applied_state.ca, context.ca, `the applied_state ca id is the same`)
+          
+          next()
+        })
+      },
+
+      // update with new desired state and check we get new secrets
+      next => {
+        controller.update({
+          id: context.cluster.id,
+          user: testUser,
+          data: {
+            desired_state: {
+              apiServer: 'http://localhost',
+              token: TOKEN2,
+              ca: CA2,
+            },
+          },
+        }, (err, cluster) => {
+          if(err) return next(err)
+          context.token2 = cluster.desired_state.token
+          context.ca2 = cluster.desired_state.ca
+          context.cluster = cluster
+
+          console.log('--------------------------------------------')
+          console.log('--------------------------------------------')
+          console.dir(cluster)
+          next()
+        })
+      },
+
+      next => {
+        async.parallel({
+          token: nextp => store.clustersecret.get({
+            cluster: context.cluster.id,
+            id: context.cluster.desired_state.token,
+          }, nextp),
+          ca: nextp => store.clustersecret.get({
+            cluster: context.cluster.id,
+            id: context.cluster.desired_state.ca,
+          }, nextp),
+        }, (err, results) => {
+          if(err) return next(err)
+          t.equal(results.token.name, 'token', 'the token secret name is correct')
+          t.equal(results.token.base64data, TOKEN2, 'the token secret value is correct')
+          t.equal(results.ca.name, 'ca', 'the ca secret name is correct')
+          t.equal(results.ca.base64data, CA2, 'the ca secret value is correct')
+          next()
+        })
+      },
+
+      // wait for the task processor
+      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
+
+      // update just the name and check we still have the same secrets
+      next => {
+        controller.update({
+          id: context.cluster.id,
+          user: testUser,
+          data: {
+            name: 'my new name2',
+          },
+        }, (err, cluster) => {
+          if(err) return next(err)
+          t.equal(cluster.name, 'my new name2', `the cluster name is correct`)
+
+          t.equal(cluster.desired_state.token, context.token2, `the desired_state token id is the same`)
+          t.equal(cluster.desired_state.ca, context.ca2, `the desired_state ca id is the same`)
+          t.equal(cluster.applied_state.token, context.token2, `the applied_state token id is the same`)
+          t.equal(cluster.applied_state.ca, context.ca2, `the applied_state ca id is the same`)
+          
+          next()
+        })
+      },
+
+    ], (err) => {
+      taskProcessor.stop(() => {
+        t.notok(err, `there was no error`)
+        t.end()
+      })
+    })
+  })
   
 })
