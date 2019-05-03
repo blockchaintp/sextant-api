@@ -147,6 +147,28 @@ database.testSuiteWithDatabase(getConnection => {
     })    
   })
 
+  tape('cluster controller -> create cluster with the same name', (t) => {
+  
+    const controller = getController()
+    const store = Store(getConnection())
+
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
+
+    let testCluster = null
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    controller.create({
+      user: testUser,
+      data: clusterData,
+    }, (err) => {
+
+      t.ok(err, `there was an error`)
+      t.equal(err, `there is already a cluster with the name ${clusterData.name}`)
+
+      t.end()
+    }) 
+  })
+
   tape('cluster controller -> get roles for created cluster', (t) => {
   
     const testUser = userMap[PERMISSION_USER.admin]
