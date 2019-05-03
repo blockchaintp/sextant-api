@@ -5,6 +5,7 @@ const Request = require('request')
 const request = Request.defaults({jar: true})
 const app = require('../app')
 const packageJSON = require('../../package.json')
+const tools = require('../tools')
 
 app.testSuiteWithApp(({
   getConnection,
@@ -17,12 +18,11 @@ app.testSuiteWithApp(({
       method: 'get',
       url: `${url}/config/values`,
       json: true,
-    }, (err, res, body) => {
-      t.notok(err, `there is no error`)
+    }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.equal(res.statusCode, 200, `status 200`)
       t.equal(body.version, packageJSON.version, 'the version is correct')
       t.end()
-    })
+    }))
     
   })
 
