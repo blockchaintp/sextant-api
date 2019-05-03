@@ -544,23 +544,13 @@ const ClusterController = ({ store, settings }) => {
           })
         },
 
-        (ok, next) => {
-          store.cluster.update({
-            id: params.id,
-            data: {
-              status: CLUSTER_STATUS.deleted,
-            },
-            transaction,
-          }, next)
-        },
-
         (cluster, next) => {
 
           store.task.create({
             data: {
               user: params.user.id,
               resource_type: config.RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
+              resource_id: id,
               action: config.TASK_ACTION['cluster.delete'],
               restartable: true,
               payload: {},

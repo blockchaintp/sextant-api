@@ -17,6 +17,7 @@ const errorClusters = require('../fixtures/errorClusters')
 const {
   PERMISSION_USER,
   CLUSTER_PROVISION_TYPE,
+  CLUSTER_STATUS,
   PERMISSION_ROLE,
   RESOURCE_TYPES,
   TASK_STATUS,
@@ -480,9 +481,25 @@ database.testSuiteWithDatabase(getConnection => {
     const testCluster = testClusters[PERMISSION_USER.admin]
     const testUser = userMap[PERMISSION_USER.admin]
 
+    const taskProcessor = TaskProcessor({
+      store,
+      handlers: {
+        [TASK_ACTION['cluster.delete']]: (params, done) => {
+          store.cluster.update({
+            id: params.task.resource_id,
+            data: {
+              status: CLUSTER_STATUS.deleted,
+            },
+          }, done)
+        },
+      }
+    })
+
     const context = {}
 
     async.series([
+
+      next => taskProcessor.start(next),
 
       next => controller.list({
         user: testUser,
@@ -497,6 +514,9 @@ database.testSuiteWithDatabase(getConnection => {
         user: testUser,
         id: testCluster.id,
       }, next),
+
+      // wait for the task processor
+      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
 
       next => controller.list({
         user: testUser,
@@ -514,7 +534,7 @@ database.testSuiteWithDatabase(getConnection => {
           if(err) return next(err)
           t.equal(tasks.length, 3, `there are 3 tasks`)
           t.deepEqual(tasks.map(task => task.status), [
-            TASK_STATUS.created,
+            TASK_STATUS.finished,
             TASK_STATUS.finished,
             TASK_STATUS.finished
           ], `the task statuses are correct`)
@@ -527,8 +547,10 @@ database.testSuiteWithDatabase(getConnection => {
         })
       },
     ], (err) => {
-      t.notok(err, `there as no error`)
-      t.end()
+      t.notok(err, `there was no error`)
+      taskProcessor.stop(() => {
+        t.end()
+      })
     })
   })
 
