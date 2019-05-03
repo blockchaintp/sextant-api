@@ -10,6 +10,7 @@ const Store = require('../../src/store')
 const TaskProcessor = require('../taskProcessor')
 
 const config = require('../../src/config')
+const tools = require('../tools')
 
 const {
   PERMISSION_USER,
@@ -20,6 +21,16 @@ const {
   TASK_ACTION,
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
+
+
+// remove the ca and token from the desired state as these will be replaced by clustersecret ids
+// this is so we can compare two values (ignoring the ca and token)
+const cleanDesiredState = (state) => {
+  const ret = Object.assign({}, state)
+  delete(ret.ca)
+  delete(ret.token)
+  return ret
+}
 
 database.testSuiteWithDatabase(getConnection => {
 
@@ -63,7 +74,7 @@ database.testSuiteWithDatabase(getConnection => {
         }, (err, cluster) => {
           if(err) return next(err)
           t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
-          t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
+          t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
           testClusters[PERMISSION_USER.admin] = testCluster = cluster
           next()
         })
@@ -117,15 +128,14 @@ database.testSuiteWithDatabase(getConnection => {
     
     controller.getRoles({
       id: createdCluster.id,
-    }, (err, roles) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (roles) => {
       t.equal(roles.length, 1, `there was a single role`)
       t.equal(roles[0].resource_type, 'cluster', `the role resource_type was correct`)
       t.equal(roles[0].resource_id, createdCluster.id, `the role resource_id was correct`)
       t.equal(roles[0].user, testUser.id, `the role user was correct`)
       t.equal(roles[0].userRecord.id, testUser.id, `there was a userRecord in the role`)
       t.end()
-    })
+    }))
   })
 
   tape('cluster controller -> create additional role for created cluster', (t) => {
@@ -153,11 +163,10 @@ database.testSuiteWithDatabase(getConnection => {
     
     controller.getRoles({
       id: createdCluster.id,
-    }, (err, roles) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (roles) => {
       t.equal(roles.length, 2, `there were two roles`)    
       t.end()
-    })
+    }))
   })
 
   tape('cluster controller -> delete additional role for created cluster', (t) => {
@@ -184,11 +193,10 @@ database.testSuiteWithDatabase(getConnection => {
     
     controller.getRoles({
       id: createdCluster.id,
-    }, (err, roles) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (roles) => {
       t.equal(roles.length, 1, `there were one roles`)    
       t.end()
-    })
+    }))
   })
 
   tape('cluster controller -> cannot update a cluster with a running task', (t) => {
@@ -256,7 +264,7 @@ database.testSuiteWithDatabase(getConnection => {
           },
         }, (err, cluster) => {
           if(err) return next(err)
-          t.deepEqual(cluster.desired_state, desired_state, `the desired_state is correct`)
+          t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(desired_state), `the desired_state is correct`)
           next()
         })
       },
@@ -289,13 +297,12 @@ database.testSuiteWithDatabase(getConnection => {
     controller.create({
       user: testUser,
       data: clusterData,
-    }, (err, cluster) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (cluster) => {
       t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
-      t.deepEqual(cluster.desired_state, clusterData.desired_state, `the cluster desired_state is correct`)
+      t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
       testClusters[PERMISSION_USER.superuser] = cluster
       t.end()
-    })
+    }))
  
   })
 
@@ -307,12 +314,11 @@ database.testSuiteWithDatabase(getConnection => {
 
     controller.get({
       id: testCluster.id,
-    }, (err, cluster) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (cluster) => {
       t.equal(cluster.name, testCluster.name, `the cluster name is correct`)
-      t.deepEqual(cluster.desired_state, testCluster.desired_state, `the cluster desired_state is correct`)
+      t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(testCluster.desired_state), `the cluster desired_state is correct`)
       t.end()
-    })
+    }))
  
   })
 
@@ -324,11 +330,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     controller.list({
       user: testUser,
-    }, (err, clusters) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (clusters) => {
       t.equal(clusters.length, 2, `there are 2 clusters`)
       t.end()
-    })
+    }))
   })
 
   tape('cluster controller -> list clusters for admin user', (t) => {
@@ -339,11 +344,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     controller.list({
       user: testUser,
-    }, (err, clusters) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (clusters) => {
       t.equal(clusters.length, 1, `there is 1 cluster`)
       t.end()
-    })
+    }))
   })
 
   tape('cluster controller -> list clusters for normal user', (t) => {
@@ -354,11 +358,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     controller.list({
       user: testUser,
-    }, (err, clusters) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (clusters) => {
       t.equal(clusters.length, 0, `there are no clusters`)
       t.end()
-    })
+    }))
   })
 
   tape('cluster controller -> list clusters for no user', (t) => {
@@ -367,7 +370,7 @@ database.testSuiteWithDatabase(getConnection => {
     
     controller.list({
 
-    }, (err, clusters) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })
@@ -383,7 +386,7 @@ database.testSuiteWithDatabase(getConnection => {
     controller.delete({
       user: testUser,
       id: testCluster.id,
-    }, (err, cluster) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.equal(err, `there are active tasks for this cluster`)
       t.end()
@@ -426,16 +429,11 @@ database.testSuiteWithDatabase(getConnection => {
     const testUser = userMap[PERMISSION_USER.admin]
 
     async.series([
-      next => {
-        controller.delete({
-          user: testUser,
-          id: testCluster.id,
-        }, (err, cluster) => {
-          if(err) return next(err)
-          next()
-        })
-      },
-
+      next => controller.delete({
+        user: testUser,
+        id: testCluster.id,
+      }, next),
+      
       next => {
         store.task.list({
           cluster: testCluster.id
@@ -491,19 +489,19 @@ database.testSuiteWithDatabase(getConnection => {
       }
     })
 
-    taskProcessor.start()
-
     const TOKEN = 'apples'
     const CA = 'oranges'
 
     const TOKEN2 = 'pears'
     const CA2 = 'peaches'
 
+    const API_SERVER = 'http://localhost.com'
+
     const clusterData = {
       name: 'remote_cluster_with_secrets',
       provision_type: CLUSTER_PROVISION_TYPE.remote,
       desired_state: {
-        apiServer: 'http://localhost',
+        apiServer: API_SERVER,
         token: TOKEN,
         ca: CA,
       },
@@ -517,6 +515,8 @@ database.testSuiteWithDatabase(getConnection => {
     const context = {}
 
     async.series([
+
+      next => taskProcessor.start(next),
 
       // insert the cluster
       next => {
@@ -585,7 +585,7 @@ database.testSuiteWithDatabase(getConnection => {
           user: testUser,
           data: {
             desired_state: {
-              apiServer: 'http://localhost',
+              apiServer: API_SERVER,
               token: TOKEN2,
               ca: CA2,
             },
@@ -644,8 +644,8 @@ database.testSuiteWithDatabase(getConnection => {
       },
 
     ], (err) => {
+      t.notok(err, `there was no error`)
       taskProcessor.stop(() => {
-        t.notok(err, `there was no error`)
         t.end()
       })
     })

@@ -94,6 +94,7 @@ const TaskProcessor = ({
   }
 
   let controlLoopRunning = false
+  let stopped = false
 
   const loadTaskStatus = (id, done) => {
     store.task.get({
@@ -299,6 +300,7 @@ const TaskProcessor = ({
 
   // start the control loop waiting for tasks in 'created' state
   const startControlLoop = (started) => {
+    if(stopped) return started(`the task processor was stopped`)
     controlLoopRunning = true
     async.whilst(
       () => controlLoopRunning,
@@ -319,6 +321,7 @@ const TaskProcessor = ({
   }
 
   const start = (done) => {
+    if(stopped) return done(`the task processor was stopped`)
     async.series([
       next => restartTasks(next),
       next => startControlLoop(next),
@@ -327,6 +330,7 @@ const TaskProcessor = ({
 
   const stop = (done) => {
     controlLoopRunning = false
+    stopped = true
     done()
   }
 

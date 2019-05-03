@@ -41,6 +41,9 @@ const SIMPLE_CLUSTER_DATA = [{
   provision_type: CLUSTER_PROVISION_TYPE.remote,
   desired_state: {
     oranges: 10,
+    apiServer: 'https://apiserver.com',
+    ca: 'oranges_ca',
+    token: 'oranges_token',
   },
   capabilities: {
     otherFunkyFeature: true,

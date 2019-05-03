@@ -26,7 +26,18 @@ const sessionRequest = (opts, done) => {
   request(requestOpts, done)
 }
 
+const errorWrapper = (t, handler) => (err, result) => {
+  if(err) {
+    t.fail(err)
+    t.end()
+  }
+  else {
+    handler(result)
+  }
+}
+
 module.exports = {
   insertWithMissingValues,
   sessionRequest,
+  errorWrapper,
 }

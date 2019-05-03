@@ -2,12 +2,8 @@ const async = require('async')
 const config = require('../config')
 const utils = require('../utils/user')
 
-const UserForms = require('../forms/user')
+const userForms = require('../forms/user')
 const validate = require('../forms/validate')
-
-const userForms = UserForms({
-  withPasswordConfirmation: false,
-})
 
 const UserController = ({ store, settings }) => {
   
@@ -105,21 +101,18 @@ const UserController = ({ store, settings }) => {
       (next) => count({}, next),
 
       (existingUsers, next) => {
-        const isInitialUser = context.isInitialUser = existingUsers == 0
-        const formSchema = isInitialUser ? userForms.initialUser : userForms.userAdd
         context.formData = {
           username: params.username,
           password: params.password,
-          permission: isInitialUser ? config.PERMISSION_USER.superuser : params.permission,
+          permission: existingUsers == 0 ? config.PERMISSION_USER.superuser : params.permission,
         }
-
         validate({
-          schema: formSchema,
+          schema: userForms.server.add,
           data: context.formData,
         }, next)
       },
 
-      (ok, next) => utils.getPasswordHash(params.password, next),
+      (ok, next) => utils.getPasswordHash(context.formData.password, next),
 
       (hashed_password, next) => {
         store.user.create({
@@ -165,7 +158,7 @@ const UserController = ({ store, settings }) => {
     async.waterfall([
 
       (next) => validate({
-        schema: userForms.userEdit,
+        schema: userForms.server.edit,
         data: params.data,
       }, next),
       

@@ -1,5 +1,6 @@
 const yup = require('yup')
 const dotty = require('dotty')
+const bluebird = require('bluebird')
 
 const {
   array,
@@ -180,21 +181,17 @@ const validate = ({
   data,
 }, done) => {
   const validateSchema = getValidationSchema(schema)
-  validateSchema
+  const p = validateSchema
     .validate(data)
-    .then(() => {
-      done(null, true)
-      return true
-    })
     .catch(err => {
-      try {
-        done(err)
-      } catch(err) {
-
-      }
-      return true
+      throw(err.toString())
     })
-
+  bluebird
+    .resolve(p)
+    .asCallback(err => {
+      if(err) return done(err)
+      return done(null, true)
+    })
 }
 
 module.exports = validate

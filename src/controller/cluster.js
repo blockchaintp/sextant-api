@@ -2,10 +2,8 @@ const async = require('async')
 const config = require('../config')
 const userUtils = require('../utils/user')
 
-const ClusterForms = require('../forms/cluster')
+const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
-
-const clusterForms = ClusterForms({})
 
 const {
   CLUSTER_PROVISION_TYPE,
@@ -163,22 +161,24 @@ const ClusterController = ({ store, settings }) => {
       secrets,
     }
 
-    if(desired_state.token) {
+    const returnDesiredState = Object.assign({}, desired_state)
+
+    if(returnDesiredState.token) {
       secrets.token = {
-        base64Data: desired_state.token,
+        base64Data: returnDesiredState.token,
       }
-      delete(desired_state.token)
+      delete(returnDesiredState.token)
     }
 
-    if(desired_state.ca) {
+    if(returnDesiredState.ca) {
       secrets.ca = {
-        base64Data: desired_state.ca,
+        base64Data: returnDesiredState.ca,
       }
-      delete(desired_state.ca)
+      delete(returnDesiredState.ca)
     }
 
     return {
-      desired_state,
+      desired_state: returnDesiredState,
       secrets,
     }
   }
@@ -298,7 +298,7 @@ const ClusterController = ({ store, settings }) => {
     if(!data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
     if(!data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
 
-    if(CLUSTER_PROVISION_TYPE.indexOf(data.provision_type) < 0) return done(`unknown provision_type: ${data.provision_type}`)
+    if(!CLUSTER_PROVISION_TYPE[data.provision_type]) return done(`unknown provision_type: ${data.provision_type}`)
 
     const {
       desired_state,
@@ -313,7 +313,7 @@ const ClusterController = ({ store, settings }) => {
 
         // validate the input data
         (next) => validate({
-          schema: clusterForms[`${data.provision_type}Add`],
+          schema: clusterForms.server[data.provision_type].add,
           data,
         }, next),
 
@@ -442,7 +442,7 @@ const ClusterController = ({ store, settings }) => {
         (cluster, next) => {
           if(!cluster) return next(`no cluster with that id found: ${id}`)
           validate({
-            schema: clusterForms[`${data.provision_type}Edit`],
+            schema: clusterForms.server[cluster.provision_type].edit,
             data,
           }, next)
         },

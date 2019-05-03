@@ -16,6 +16,18 @@ const forms = {
         ['required', 'The name is required'],
       ],
     }
+  }],
+  validateNoRequired: [{
+    id: 'url',
+    title: `Url`,
+    helperText: 'Enter the url of the cluster',
+    component: 'text',
+    validate: {
+      type: 'string',
+      methods: [
+        ['url', 'Must be a valid url - e.g. http://apiserver.com'],
+      ],
+    }
   }]
 }
 
@@ -42,6 +54,33 @@ tape('test basic validation passes', (t) => {
     },
   }, (err) => {
     t.not(err, `there was no error`)
+    t.end()
+  })
+})
+
+
+tape('test validator without required - no value', (t) => {
+  t.ok(true, 'am here')
+  validate({
+    schema: forms.validateNoRequired,
+    data: {
+      url: '',
+    },
+  }, (err) => {
+    t.notok(err, `there was no error`)
+    t.end()
+  })
+})
+
+tape('test validator without required - bad value', (t) => {
+  t.ok(true, 'am here')
+  validate({
+    schema: forms.validateNoRequired,
+    data: {
+      url: 'apples',
+    },
+  }, (err) => {
+    t.ok(err, `there was an error`)
     t.end()
   })
 })

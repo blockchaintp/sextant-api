@@ -1,80 +1,119 @@
-const localForm = [{
-  id: 'name',
-  title: `Name`,
-  helperText: 'Enter the name of the cluster',
-  component: 'text',
-  validate: {
-    type: 'string',
-    methods: [
-      ['required', 'The name is required'],
-    ],
-  }
-}]
+const builder = require('./builder')
 
-const getRemoteForm = ({
-  existing,
-}) => {
-  return [{
+const validators = {
+  url: ['url', 'Must be a valid url - e.g. http://apiserver.com'],
+}
+
+const fields = {
+  name: {
     id: 'name',
     title: `Name`,
     helperText: 'Enter the name of the cluster',
     component: 'text',
     validate: {
       type: 'string',
-      methods: [
-        ['required', 'The name is required'],
-      ],
-    }
-  }, {
+      methods: [],
+    },
+  },
+  apiServer: {
     id: 'desired_state.apiServer',
     title: `API Server`,
     helperText: 'Enter the URL for your API server',
     component: 'text',
     validate: {
       type: 'string',
-      methods: existing ? [] : [
-        ['required', 'The API Server is required'],
-        ['url', 'Must be a valid url - e.g. http://apiserver.com'],
+      methods: [
+        validators.url,
       ],
-    }
-  }, {
+    },
+  },
+  token: {
     id: 'desired_state.token',
-    title: `${ existing ? 'Update ' : ''}Token`,
+    title: `Access Token`,
     helperText: 'Paste the base64 access token',
     component: 'textarea',
     rows: 5,
     validate: {
       type: 'string',
-      methods: existing ? [] : [
-        ['required', 'The Token is required'],
-      ],
-    }
-  }, {
+      methods: [],
+    },
+  },
+  ca: {
     id: 'desired_state.ca',
-    title: `${ existing ? 'Update ' : ''}Certificate Authority`,
+    title: `Certificate Authority`,
     helperText: 'Paste the base64 certificate authority',
     component: 'textarea',
     rows: 5,
     validate: {
       type: 'string',
-      methods: existing ? [] : [
-        ['required', 'The Certificate Authority is required'],
-      ],
+      methods: [],
+    },
+  },
+}
+
+const getLocalForm = (required) => {
+  return builder({
+    fields,
+    schema: [
+      'name',
+    ],
+    required,
+  })
+}
+
+const getRemoteForm = (required) => {
+  return builder({
+    fields,
+    schema: [
+      'name',
+      'apiServer',
+      'token',
+      'ca',
+    ],
+    required,
+  })
+}
+
+const forms = {
+  browser: {
+    local: {
+      add: getLocalForm([
+        'name',
+      ]),
+      edit: getLocalForm([
+        'name',
+      ]),
+    },
+    remote: {
+      add: getRemoteForm([
+        'name',
+        'apiServer',
+        'token',
+        'ca',
+      ]),
+      edit: getRemoteForm([
+        'name',
+        'apiServer',
+      ]),
     }
-  }]
+  },
+  server: {
+    local: {
+      add: getLocalForm([
+        'name',
+      ]),
+      edit: getLocalForm([]),
+    },
+    remote: {
+      add: getRemoteForm([
+        'name',
+        'apiServer',
+        'token',
+        'ca',
+      ]),
+      edit: getRemoteForm([]),
+    },
+  },
 }
 
-const ClusterForms = () => {
-  return {
-    localAdd: localForm,
-    localEdit: localForm,
-    remoteAdd: getRemoteForm({
-      existing: false,
-    }),
-    remoteEdit: getRemoteForm({
-      existing: true,
-    })
-  }
-}
-
-module.exports = ClusterForms
+module.exports = forms
