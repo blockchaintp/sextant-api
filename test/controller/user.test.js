@@ -1,11 +1,13 @@
 'use strict'
 
 const tape = require('tape')
+const async = require('async')
 const database = require('../database')
 const UserController = require('../../src/controller/user')
 const Store = require('../../src/store')
 const userUtils = require('../../src/utils/user')
 const config = require('../../src/config')
+const tools = require('../tools')
 
 const {
   PERMISSION_USER,
@@ -35,11 +37,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
     
-    controller.list({}, (err, users) => {
-      t.notok(err, `there was no error`)
+    controller.list({}, tools.errorWrapper(t, (users) => {
       t.equal(users.length, 0, `there were no users`)
       t.end()
-    })
+    }))
     
   })
 
@@ -47,19 +48,17 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    controller.count({}, (err, count) => {
-      t.notok(err, `there was no error`)
+    controller.count({}, tools.errorWrapper(t, (count) => {
       t.equal(count, 0, `there were no users`)
       t.end()
-    })
+    }))
   })
 
   tape('user controller -> create', (t) => {
   
     const controller = getController()
   
-    controller.create(TEST_USER, (err, user) => {
-      t.notok(err, `there was no error`)
+    controller.create(TEST_USER, tools.errorWrapper(t, (user) => {
       t.equal(user.username, TEST_USER.username)
 
       // make sure the permission is forced to superuser as the initial user
@@ -69,7 +68,7 @@ database.testSuiteWithDatabase(getConnection => {
 
       TEST_USER_RECORD = user
       t.end()
-    })
+    }))
   })
   
   
@@ -80,11 +79,10 @@ database.testSuiteWithDatabase(getConnection => {
     controller.checkPassword({
       username: TEST_USER.username,
       password: TEST_USER.password,
-    }, (err, result) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (result) => {
       t.ok(result, `the result was correct`)
       t.end()
-    })
+    }))
   })
 
   tape('user controller -> check password (wrong user)', (t) => {
@@ -94,11 +92,10 @@ database.testSuiteWithDatabase(getConnection => {
     controller.checkPassword({
       username: 'baduser',
       password: TEST_USER.password,
-    }, (err, result) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (result) => {
       t.notok(result, `the result was correct`)
       t.end()
-    })
+    }))
   })
 
   tape('user controller -> check password (incorrect)', (t) => {
@@ -108,11 +105,10 @@ database.testSuiteWithDatabase(getConnection => {
     controller.checkPassword({
       username: TEST_USER.username,
       password: 'badpassword',
-    }, (err, result) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (result) => {
       t.notok(result, `the result was correct`)
       t.end()
-    })
+    }))
   })
 
   tape('user controller -> get', (t) => {
@@ -121,13 +117,12 @@ database.testSuiteWithDatabase(getConnection => {
 
     controller.get({
       id: TEST_USER_RECORD.id,
-    }, (err, user) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (user) => {
       t.equal(user.username, TEST_USER.username, `the result was correct`)
       t.equal(user.hashed_password, TEST_USER_RECORD.hashed_password, 'there is a hashed password')
       t.equal(user.server_side_key, TEST_USER_RECORD.server_side_key, 'there is a server_side_key')
       t.end()
-    })
+    }))
   })
 
   tape('user controller -> update meta', (t) => {
@@ -138,42 +133,53 @@ database.testSuiteWithDatabase(getConnection => {
       fruit: 'apples',
     }
 
-    controller.update({
-      id: TEST_USER_RECORD.id,
-      data: {
-        meta: updateMeta,
-      }
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      controller.get({
+    async.series([
+      next => controller.update({
+        id: TEST_USER_RECORD.id,
+        data: {
+          meta: updateMeta,
+        }
+      }, next),
+
+      next => controller.get({
         username: TEST_USER.username,
       }, (err, user) => {
-        t.notok(err, `there was no error`)
+        if(err) return next(err)
         t.deepEqual(user.meta, updateMeta, `the metadata update was correct`)
-        t.end()
-      })
+        next()
+      }),
+
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
     })
+
   })
 
   tape('user controller -> update password', (t) => {
 
     const controller = getController()
 
-    controller.update({
-      id: TEST_USER_RECORD.id,
-      data: {
-        password: 'newpassword',
-      }
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      controller.checkPassword({
+    async.series([
+      next => controller.update({
+        id: TEST_USER_RECORD.id,
+        data: {
+          password: 'newpassword',
+        }
+      }, next),
+
+      next => controller.checkPassword({
         username: TEST_USER_RECORD.username,
         password: 'newpassword',
       }, (err, result) => {
-        t.notok(err, `there was no error`)
+        if(err) return next(err)
         t.ok(result, `the result was correct`)
-        t.end()
-      })
+        next()
+      }),
+
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
     })
   })
 
@@ -197,24 +203,31 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    controller.getToken({
-      id: TEST_USER_RECORD.id,
-    }, (err, token) => {
-      t.notok(err, `there was no error`)
-      controller.get({
-        id: TEST_USER_RECORD.id,
-      }, (err, user) => {
-        t.notok(err, `there was no error`)
+    async.waterfall([
+      (next) => async.parallel({
+        token: nextp => controller.getToken({
+          id: TEST_USER_RECORD.id,
+        }, nextp),
+        user: nextp => controller.get({
+          id: TEST_USER_RECORD.id,
+        }, nextp),
+      }, next),
 
+      (results, next) => {
+        const {
+          token,
+          user,
+        } = results
         userUtils.decodeToken(token, config.tokenSecret, (err, decoded) => {
-          t.notok(err, `there was no error`)
-
+          if(err) return next(err)
           t.equal(decoded.id, user.id, `the id in the token is correct`)
           t.equal(decoded.server_side_key, user.server_side_key, `the server_side_key in the token is correct`)
-          t.end()
+          next()
         })
-        
-      })
+      },
+    ], (err) => {
+      t.notOk(err, `there was no error`)
+      t.end()
     })
   })
 
@@ -222,17 +235,23 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    controller.updateToken({
-      id: TEST_USER_RECORD.id,
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      controller.get({
+    async.series([
+      next => controller.updateToken({
         id: TEST_USER_RECORD.id,
-      }, (err, result) => {
-        t.notok(err, `there was no error`)
-        t.notEqual(result.server_side_key, TEST_USER_RECORD.server_side_key, 'the server_side_key is now different')
-        t.end()
-      })
+      }, next),
+
+      next => {
+        controller.get({
+          id: TEST_USER_RECORD.id,
+        }, (err, result) => {
+          if(err) return next(err)
+          t.notEqual(result.server_side_key, TEST_USER_RECORD.server_side_key, 'the server_side_key is now different')
+          next()
+        })
+      }
+    ], (err) => {
+      t.notOk(err, `there was no error`)
+      t.end()
     })
   })
 
@@ -240,16 +259,22 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    controller.delete({
-      id: TEST_USER_RECORD.id,
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      controller.count({}, (err, count) => {
-        t.notok(err, `there was no error`)
+    async.series([
+
+      next => controller.delete({
+        id: TEST_USER_RECORD.id,
+      }, next),
+
+      next => controller.count({}, (err, count) => {
+        if(err) return next(err)
         t.equal(count, 0, `there were no users`)
-        t.end()
+        next()
       })
+    ], (err) => {
+      t.notOk(err, `there was no error`)
+      t.end()
     })
+
   })
   
 })
