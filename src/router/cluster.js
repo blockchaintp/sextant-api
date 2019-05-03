@@ -3,6 +3,7 @@ const ClusterRoutes = (controllers) => {
   const list = (req, res, next) => {
     controllers.cluster.list({
       user: req.user,
+      deleted: req.query.showDeleted == 'y',
     }, (err, data) => {
       if(err) return next(err)
       res.json(data)
@@ -45,6 +46,18 @@ const ClusterRoutes = (controllers) => {
       id: req.params.id,
       user: req.user,
       data: req.body,
+    }, (err, data) => {
+      if(err) return next(err)
+      res
+        .status(200)
+        .json(data)
+    })
+  }
+
+  const del = (req, res, next) => {
+    controllers.cluster.delete({
+      id: req.params.id,
+      user: req.user,
     }, (err, data) => {
       if(err) return next(err)
       res
@@ -103,6 +116,7 @@ const ClusterRoutes = (controllers) => {
     get,
     create,
     update,
+    delete: del,
     listRoles,
     createRole,
     deleteRole,

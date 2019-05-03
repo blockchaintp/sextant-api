@@ -38,6 +38,10 @@ const ClusterDelete = ({
           next()
         })
       },
+
+      next => {
+        setTimeout(next, 10 * 1000)
+      },
   
     ], finish)
   }, completer)
