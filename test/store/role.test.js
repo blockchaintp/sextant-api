@@ -23,12 +23,11 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('role store -> create users', (t) => {
 
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
-      t.notok(err, `there was no error`)
+    fixtures.insertTestUsers(getConnection(), tools.errorWrapper(t, (users) => {
       userMap = users
       testUser = users[PERMISSION_USER.admin]
       t.end()
-    })
+    }))
   
   })
 
@@ -49,11 +48,10 @@ database.testSuiteWithDatabase(getConnection => {
   
     store.listForUser({
       user: testUser.id,
-    }, (err, roles) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (roles) => {
       t.equal(roles.length, 0, `there were no roles`)
       t.end()
-    })
+    }))
     
   })
 
@@ -90,15 +88,14 @@ database.testSuiteWithDatabase(getConnection => {
 
     const compareRole = fixtures.SIMPLE_ROLE_DATA.filter(role => role.resource_type == 'cluster')[0]
 
-    fixtures.insertTestRoles(getConnection(), testUser.id, (err, roles) => {
-      t.notok(err, `there was no error`)
+    fixtures.insertTestRoles(getConnection(), testUser.id, tools.errorWrapper(t, (roles) => {
       t.equal(roles.cluster.user, testUser.id, `the user is the correct id`)
       t.equal(roles.cluster.permission, compareRole.permission, `the permission the correct`)
       t.equal(roles.cluster.resource_type, compareRole.resource_type, `the resource_type the correct`)
       t.equal(roles.cluster.resource_id, compareRole.resource_id, `the resource_id the correct`)
       roleMap = roles
       t.end()
-    })
+    }))
   })
 
   tape('role store -> list for user', (t) => {
@@ -109,8 +106,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     store.listForUser({
       user: testUser.id,
-    }, (err, roles) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (roles) => {
       t.equal(roles.length, expectedCount, `there were ${expectedCount} roles`)
 
       const loadedRoleMap = roles.reduce((all, role) => {
@@ -120,7 +116,7 @@ database.testSuiteWithDatabase(getConnection => {
 
       t.deepEqual(loadedRoleMap, roleMap, `the loaded roles are correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -133,11 +129,10 @@ database.testSuiteWithDatabase(getConnection => {
     store.listForResource({
       resource_type: role.resource_type,
       resource_id: role.resource_id,
-    }, (err, roles) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (roles) => {
       t.equal(roles.length, 1, `there were 1 role`)
       t.end()
-    })
+    }))
     
   })
 
@@ -174,11 +169,10 @@ database.testSuiteWithDatabase(getConnection => {
       user: testUser.id,
       resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
-    }, (err, role) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (role) => {
       t.deepEqual(role, roleMap.cluster, `the loaded cluster role is correct`)
       t.end()
-    })
+    }))
   
   })
 
@@ -190,11 +184,10 @@ database.testSuiteWithDatabase(getConnection => {
       user: testUser.id,
       resource_type: RESOURCE_TYPES.deployment,
       resource_id: 11,
-    }, (err, role) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (role) => {
       t.deepEqual(role, roleMap.deployment, `the loaded deployment role is correct`)
       t.end()
-    })
+    }))
   
   })
 
@@ -206,17 +199,15 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.delete({
       id: roleMap.cluster.id,
-    }, (err) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, () => {
       store.listForUser({
         user: testUser.id,
-      },(err, roles) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (roles) => {
         t.equal(roles.length, expectedCount, `there is 1 less role`)
         t.deepEqual(roles[0], roleMap.deployment, 'the remaining role is correct')
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
 
