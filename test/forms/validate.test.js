@@ -40,7 +40,7 @@ tape('test basic validation fails', (t) => {
     },
   }, (err) => {
     t.ok(err, `there was an error`)
-    t.equal(err.toString(), 'ValidationError: The name is required', `the error text was correct`)
+    t.equal(err.toString(), 'name validation error: the name is required', `the error text was correct`)
     t.end()
   })
 })
