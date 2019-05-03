@@ -8,16 +8,23 @@ const UserStore = (knex) => {
     list all users
 
     params:
+
+      * transaction - used if present
   
   */
   const list = (params, done) => {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.user
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.user)
       .orderBy(orderBy.field, orderBy.direction)
-      .asCallback(databaseTools.allExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
+    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -27,6 +34,8 @@ const UserStore = (knex) => {
     params:
 
       * id or username
+
+      * transaction - used if present
     
     one of id or username must be given
   
@@ -38,10 +47,15 @@ const UserStore = (knex) => {
     if(params.id) query.id = params.id
     if(params.username) query.username = params.username
     
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.user)
       .where(query)
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -74,15 +88,15 @@ const UserStore = (knex) => {
       meta: params.data.meta,
     }
 
-    const query = knex(config.TABLES.user)
+    const sqlQuery = knex(config.TABLES.user)
       .insert(insertData)
       .returning('*')
     
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -107,7 +121,7 @@ const UserStore = (knex) => {
     if(!params.id) return done(`id must be given to store.user.update`)
     if(!params.data) return done(`data param must be given to store.user.update`)
 
-    const query = knex(config.TABLES.user)
+    const sqlQuery = knex(config.TABLES.user)
       .where({
         id: params.id,
       })
@@ -115,10 +129,10 @@ const UserStore = (knex) => {
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -135,7 +149,7 @@ const UserStore = (knex) => {
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.user.delete`)
 
-    const query = knex(config.TABLES.user)
+    const sqlQuery = knex(config.TABLES.user)
       .where({
         id: params.id,
       })
@@ -143,10 +157,10 @@ const UserStore = (knex) => {
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

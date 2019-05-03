@@ -11,17 +11,23 @@ const RoleStore = (knex) => {
 
       * user
   
+      * transaction - used if present
   */
 
   const listForUser = (params, done) => {
     if(!params.user) return done(`user must be given to store.role.listForUser`)
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.role)
       .where({
         user: params.user,
       })
-      .asCallback(databaseTools.allExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+    
+    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -33,19 +39,25 @@ const RoleStore = (knex) => {
       * resource_type
       * resource_id
   
+      * transaction - used if present
   */
 
   const listForResource = (params, done) => {
     if(!params.resource_type) return done(`resource_type must be given to store.role.listForResource`)
     if(!params.resource_id) return done(`resource_type must be given to store.role.listForResource`)
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.role)
       .where({
         resource_type: params.resource_type,
         resource_id: params.resource_id,
       })
-      .asCallback(databaseTools.allExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+    
+    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -58,22 +70,28 @@ const RoleStore = (knex) => {
       * resource_type
       * resource_id
   
+      * transaction - used if present
   */
 
- const get = (params, done) => {
-  if(!params.user) return done(`user must be given to store.role.listForUser`)
-  if(!params.resource_type) return done(`resource_type must be given to store.role.listForUser`)
-  if(!params.resource_id) return done(`resource_id must be given to store.role.listForUser`)
+  const get = (params, done) => {
+    if(!params.user) return done(`user must be given to store.role.listForUser`)
+    if(!params.resource_type) return done(`resource_type must be given to store.role.listForUser`)
+    if(!params.resource_id) return done(`resource_id must be given to store.role.listForUser`)
 
-  knex.select('*')
-    .from(config.TABLES.role)
-    .where({
-      user: params.user,
-      resource_type: params.resource_type,
-      resource_id: params.resource_id,
-    })
-    .asCallback(databaseTools.singleExtractor(done))
-}
+    const sqlQuery = knex.select('*')
+      .from(config.TABLES.role)
+      .where({
+        user: params.user,
+        resource_type: params.resource_type,
+        resource_id: params.resource_id,
+      })
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+  }
 
   /*
   
@@ -97,7 +115,7 @@ const RoleStore = (knex) => {
     if(!params.data.resource_type) return done(`data.resource_type param must be given to store.role.create`)
     if(!params.data.resource_id) return done(`data.resource_id param must be given to store.role.create`)
 
-    const query = knex(config.TABLES.role)
+    const sqlQuery = knex(config.TABLES.role)
       .insert({
         user: params.data.user,
         permission: params.data.permission,
@@ -107,10 +125,10 @@ const RoleStore = (knex) => {
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -126,7 +144,7 @@ const RoleStore = (knex) => {
   */
   const del = (params, done) => {
     if(!params.id) return done(`id must be given to store.role.delete`)
-    const query = knex(config.TABLES.role)
+    const sqlQuery = knex(config.TABLES.role)
       .where({
         id: params.id,
       })
@@ -134,10 +152,10 @@ const RoleStore = (knex) => {
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

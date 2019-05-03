@@ -18,6 +18,7 @@ const TaskStore = (knex) => {
     
     all the above are optional - if nothing is defined we list all tasks across the system
   
+     * transaction - used if present
   */
   const list = (params, done) => {
 
@@ -69,6 +70,10 @@ const TaskStore = (knex) => {
       sqlQuery.limit(params.limit)
     }
 
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
     const orderBy = config.LIST_ORDER_BY_FIELDS.task
 
     sqlQuery
@@ -86,6 +91,7 @@ const TaskStore = (knex) => {
      * cluster - we want active tasks for a cluster
      * deployment - we want active tasks for a deployment
 
+     * transaction - used if present
   */
   const activeForResource = (params, done) => {
 
@@ -105,6 +111,8 @@ const TaskStore = (knex) => {
       query.deployment = params.deployment
     }
 
+    query.transaction = params.transaction
+
     list(query, done)
   }
 
@@ -117,6 +125,7 @@ const TaskStore = (knex) => {
      * cluster - we want active tasks for a cluster
      * deployment - we want active tasks for a deployment
 
+     * transaction - used if present
   */
   const mostRecentForResource = (params, done) => {
     if(!params.cluster && !params.deployment) return done(`cluster or deployment required for controller.task.activeForResource`)
@@ -132,6 +141,7 @@ const TaskStore = (knex) => {
     }
 
     query.limit = 1
+    query.transaction = params.transaction
 
     list(query, (err, results) => {
       if(err) return done(err)
@@ -147,17 +157,24 @@ const TaskStore = (knex) => {
     params:
 
       * id
+
+      * transaction - used if present
     
   */
   const get = (params, done) => {
     if(!params.id) return done(`id must be given to store.task.get`)
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.task)
       .where({
         id: params.id,
       })
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -196,15 +213,15 @@ const TaskStore = (knex) => {
       status: config.TASK_STATUS_DEFAULT,
     }
 
-    const query = knex(config.TABLES.task)
+    const sqlQuery = knex(config.TABLES.task)
       .insert(insertData)
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -236,7 +253,7 @@ const TaskStore = (knex) => {
     if(params.data.started_at) updateData.started_at = params.data.started_at
     if(params.data.ended_at) updateData.ended_at = params.data.ended_at
 
-    const query = knex(config.TABLES.task)
+    const sqlQuery = knex(config.TABLES.task)
       .where({
         id: params.id,
       })
@@ -244,10 +261,10 @@ const TaskStore = (knex) => {
       .returning('*')
     
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

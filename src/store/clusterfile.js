@@ -11,6 +11,8 @@ const ClusterFileStore = (knex) => {
     params:
 
       * cluster
+
+      * transaction - used if present
   
   */
   const list = (params, done) => {
@@ -18,13 +20,18 @@ const ClusterFileStore = (knex) => {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.clusterfile)
       .where({
         cluster: params.cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
-      .asCallback(databaseTools.allExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+    
+    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
   
   /*
@@ -35,6 +42,8 @@ const ClusterFileStore = (knex) => {
 
       * cluster
       * id or name
+      
+      * transaction - used if present
     
   */
   const get = (params, done) => {
@@ -48,10 +57,15 @@ const ClusterFileStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.clusterfile)
       .where(queryParams)
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -81,15 +95,15 @@ const ClusterFileStore = (knex) => {
       base64data: params.data.base64Data || base64.encode(params.data.rawData),
     }
 
-    const query = knex(config.TABLES.clusterfile)
+    const sqlQuery = knex(config.TABLES.clusterfile)
       .insert(insertData)
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
 
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -120,7 +134,7 @@ const ClusterFileStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
 
-    const query = knex(config.TABLES.clusterfile)
+    const sqlQuery = knex(config.TABLES.clusterfile)
       .where(queryParams)
       .update({
         base64data: params.data.base64Data || base64.encode(params.data.rawData),
@@ -128,10 +142,10 @@ const ClusterFileStore = (knex) => {
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -157,16 +171,16 @@ const ClusterFileStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
     
-    const query = knex(config.TABLES.clusterfile)
+    const sqlQuery = knex(config.TABLES.clusterfile)
       .where(queryParams)
       .del()
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   return {

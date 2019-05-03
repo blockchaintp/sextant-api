@@ -19,6 +19,8 @@ const ClusterSecretStore = (knex) => {
     params:
 
       * cluster
+
+      * transaction - used if present
   
   */
   const list = (params, done) => {
@@ -26,13 +28,18 @@ const ClusterSecretStore = (knex) => {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.clustersecret
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.clustersecret)
       .where({
         cluster: params.cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
-      .asCallback(databaseTools.allExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+
+    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
   
   /*
@@ -44,6 +51,7 @@ const ClusterSecretStore = (knex) => {
       * cluster
       * id or name
     
+      * transaction - used if present
   */
   const get = (params, done) => {
     if(!params.cluster) return done(`cluster must be given to store.clustersecret.get`)
@@ -56,10 +64,15 @@ const ClusterSecretStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
 
-    knex.select('*')
+    const sqlQuery = knex.select('*')
       .from(config.TABLES.clustersecret)
       .where(queryParams)
-      .asCallback(databaseTools.singleExtractor(done))
+
+    if(params.transaction) {
+      sqlQuery.transacting(params.transaction)
+    }
+    
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -88,15 +101,15 @@ const ClusterSecretStore = (knex) => {
       base64data: params.data.base64Data || base64.encode(params.data.rawData),
     }
 
-    const query = knex(config.TABLES.clustersecret)
+    const sqlQuery = knex(config.TABLES.clustersecret)
       .insert(insertData)
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
 
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -127,7 +140,7 @@ const ClusterSecretStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
 
-    const query = knex(config.TABLES.clustersecret)
+    const sqlQuery = knex(config.TABLES.clustersecret)
       .where(queryParams)
       .update({
         base64data: params.data.base64Data || base64.encode(params.data.rawData),
@@ -135,10 +148,10 @@ const ClusterSecretStore = (knex) => {
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -164,16 +177,16 @@ const ClusterSecretStore = (knex) => {
     if(params.id) queryParams.id = params.id
     if(params.name) queryParams.name = params.name
     
-    const query = knex(config.TABLES.clustersecret)
+    const sqlQuery = knex(config.TABLES.clustersecret)
       .where(queryParams)
       .del()
       .returning('*')
 
     if(params.transaction) {
-      query.transacting(params.transaction)
+      sqlQuery.transacting(params.transaction)
     }
     
-    query.asCallback(databaseTools.singleExtractor(done))
+    sqlQuery.asCallback(databaseTools.singleExtractor(done))
   }
 
   /*
@@ -204,6 +217,7 @@ const ClusterSecretStore = (knex) => {
       next => del({
         cluster,
         name,
+        transaction,
       }, next),
 
       next => create({
@@ -212,7 +226,8 @@ const ClusterSecretStore = (knex) => {
           name,
           rawData,
           base64Data,
-        }
+        },
+        transaction,
       }, next)
     ], done)
   }
