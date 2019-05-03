@@ -7,8 +7,6 @@ const fixtures = require('../fixtures')
 const tools = require('../tools')
 
 const ClusterStore = require('../../src/store/cluster')
-const enumerations = require('../../src/enumerations')
-
 const config = require('../../src/config')
 
 const {
@@ -18,19 +16,17 @@ const {
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
-
-  let clusterMap = {}
   let testCluster = null
+  let clusterMap = {}
 
   tape('cluster store -> list no data', (t) => {
 
     const store = ClusterStore(getConnection())
   
-    store.list({}, (err, clusters) => {
-      t.notok(err, `there was no error`)
+    store.list({}, tools.errorWrapper(t, (clusters) => {
       t.equal(clusters.length, 0, `there were no clusters`)
       t.end()
-    })
+    }))
     
   })
 
@@ -69,9 +65,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const compareCluster = fixtures.SIMPLE_CLUSTER_DATA[0]
 
-    fixtures.insertTestClusters(getConnection(), (err, clusters) => {
-      t.notok(err, `there was no error`)
-
+    fixtures.insertTestClusters(getConnection(), tools.errorWrapper(t, (clusters) => {
       testCluster = clusters[compareCluster.name]
 
       t.deepEqual(testCluster.applied_state, {}, `the applied_state defaults to empty object`)
@@ -82,7 +76,7 @@ database.testSuiteWithDatabase(getConnection => {
       t.equal(testCluster.maintenance_flag, false, `the maintenance_flag defaults to false`)
       clusterMap = clusters
       t.end()
-    })
+    }))
   
   })
 
@@ -95,12 +89,11 @@ database.testSuiteWithDatabase(getConnection => {
 
     expectedOrder.sort()
   
-    store.list({}, (err, clusters) => {
-      t.notok(err, `there was no error`)
+    store.list({}, tools.errorWrapper(t, (clusters) => {
       t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
       t.deepEqual(clusters.map(cluster => cluster.name), expectedOrder, 'the clusters were in the correct order')
       t.end()
-    })
+    }))
     
   })
 
@@ -110,11 +103,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.get({
       id: testCluster.id,
-    }, (err, cluster) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (cluster) => {
       t.deepEqual(cluster, testCluster, 'the returned cluster is correct')
       t.end()
-    })
+    }))
     
   })
 
@@ -143,17 +135,15 @@ database.testSuiteWithDatabase(getConnection => {
       data: {
         status: CLUSTER_STATUS.provisioned,
       }
-    }, (err, firstCluster) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (firstCluster) => {
       t.equal(firstCluster.status, CLUSTER_STATUS.provisioned, `the new status is correct`)
       store.get({
         id: testCluster.id,
-      }, (err, secondCluster) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (secondCluster) => {
         t.equal(secondCluster.status, CLUSTER_STATUS.provisioned, `querying on the updated cluster is working`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
 
@@ -165,11 +155,10 @@ database.testSuiteWithDatabase(getConnection => {
       id: testCluster.id,
     }, (err) => {
       t.notok(err, `there was no error`)
-      store.list({},(err, clusters) => {
-        t.notok(err, `there was no error`)
+      store.list({}, tools.errorWrapper(t, (clusters) => {
         t.equal(clusters.length, fixtures.SIMPLE_CLUSTER_DATA.length-1, `there is 1 less cluster`)
         t.end()
-      })
+      }))
     })
     
   })
@@ -182,11 +171,10 @@ database.testSuiteWithDatabase(getConnection => {
   
     store.list({
       deleted: true,
-    },(err, clusters) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (clusters) => {
       t.equal(clusters.length, expectedCount, `there are ${expectedCount} clusters`)
       t.end()
-    })
+    }))
     
   })
 
