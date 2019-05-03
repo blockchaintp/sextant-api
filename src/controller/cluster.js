@@ -6,6 +6,7 @@ const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
 
 const {
+  CLUSTER_STATUS,
   CLUSTER_PROVISION_TYPE,
   PERMISSION_ROLE_ACCESS_LEVELS,
 } = config
@@ -547,9 +548,7 @@ const ClusterController = ({ store, settings }) => {
           store.cluster.update({
             id: params.id,
             data: {
-              desired_state: {
-                deleted: true,
-              },
+              status: CLUSTER_STATUS.deleted,
             },
             transaction,
           }, next)
