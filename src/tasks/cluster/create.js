@@ -23,7 +23,7 @@ const ClusterCreate = ({
   const completer = taskCompleter({
     id: task.resource_id,
     store,
-    completedStatus: CLUSTER_STATUS.provisioned
+    completedStatus: CLUSTER_STATUS.provisioned,
   }, done)
 
   store.transaction((transaction, finish) => {
@@ -33,6 +33,7 @@ const ClusterCreate = ({
       next => {
         store.cluster.get({
           id: task.resource_id,
+          transaction,
         }, (err, cluster) => {
           if(err) return next(err)
           context.cluster = cluster
