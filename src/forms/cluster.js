@@ -64,15 +64,17 @@ const getRemoteForm = ({
   }]
 }
 
-const clusterForms = {
-  localAdd: localForm,
-  localEdit: localForm,
-  remoteAdd: getRemoteForm({
-    existing: false,
-  }),
-  remoteEdit: getRemoteForm({
-    existing: true,
-  })
+const ClusterForms = () => {
+  return {
+    localAdd: localForm,
+    localEdit: localForm,
+    remoteAdd: getRemoteForm({
+      existing: false,
+    }),
+    remoteEdit: getRemoteForm({
+      existing: true,
+    })
+  }
 }
 
-module.exports = clusterForms
+module.exports = ClusterForms

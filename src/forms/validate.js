@@ -182,8 +182,18 @@ const validate = ({
   const validateSchema = getValidationSchema(schema)
   validateSchema
     .validate(data)
-    .then(() => done())
-    .catch(err => done(err))
+    .then(() => {
+      done(null, true)
+      return true
+    })
+    .catch(err => {
+      try {
+        done(err)
+      } catch(err) {
+
+      }
+      return true
+    })
 
 }
 

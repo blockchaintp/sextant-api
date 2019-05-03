@@ -1,6 +1,17 @@
-const forms = require('../forms')
 const config = require('../config')
 const packageJSON = require('../../package.json')
+
+const UserForms = require('../forms/user')
+const ClusterForms = require('../forms/cluser')
+
+const forms = {
+  user: UserForms({
+    withPasswordConfirmation: true,
+  }),
+  cluster: ClusterForms({
+
+  }),
+}
 
 const ConfigBackend = () => {
 

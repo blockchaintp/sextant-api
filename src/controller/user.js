@@ -2,6 +2,13 @@ const async = require('async')
 const config = require('../config')
 const utils = require('../utils/user')
 
+const UserForms = require('../forms/user')
+const validate = require('../forms/validate')
+
+const userForms = UserForms({
+  withPasswordConfirmation: false,
+})
+
 const UserController = ({ store, settings }) => {
   
   if(!settings) throw new Error(`settings required for user controller`)
@@ -92,26 +99,40 @@ const UserController = ({ store, settings }) => {
     if(!params.password) return done(`password required for controller.user.create`)
     if(!params.permission) return done(`permission required for controller.user.create`)
 
-    count({}, (err, existingUsers) => {
-      if(err) return done(err)
+    const context = {}
+    async.waterfall([
 
-      // if there are no current users - force the role to be 'superuser'
-      // this is to avoid the initial user being created who cannot then add more users
-      const permission = existingUsers == 0 ? config.PERMISSION_USER.superuser : params.permission
-      async.parallel({
-        hashed_password: (next) => utils.getPasswordHash(params.password, next),
-      }, (err, values) => {
-        if(err) return done(err)
+      (next) => count({}, next),
+
+      (existingUsers, next) => {
+        const isInitialUser = context.isInitialUser = existingUsers == 0
+        const formSchema = isInitialUser ? userForms.initialUser : userForms.userAdd
+        context.formData = {
+          username: params.username,
+          password: params.password,
+          permission: isInitialUser ? config.PERMISSION_USER.superuser : params.permission,
+        }
+
+        validate({
+          schema: formSchema,
+          data: context.formData,
+        }, next)
+      },
+
+      (ok, next) => utils.getPasswordHash(params.password, next),
+
+      (hashed_password, next) => {
         store.user.create({
           data: {
-            username: params.username,
-            permission,
-            hashed_password: values.hashed_password,
+            username: context.formData.username,
+            permission: context.formData.permission,
+            hashed_password,
             server_side_key: utils.getTokenServerSideKey(),
           }
-        }, done)
-      })
-    })
+        }, next)
+      },
+
+    ], done)
   }
 
   /*
@@ -142,7 +163,13 @@ const UserController = ({ store, settings }) => {
     } = params
 
     async.waterfall([
-      (next) => {
+
+      (next) => validate({
+        schema: userForms.userEdit,
+        data: params.data,
+      }, next),
+      
+      (ok, next) => {
         if(data.password) {
           utils.getPasswordHash(data.password, (err, hashed_password) => {
             if(err) return next(err)

@@ -73,8 +73,9 @@ const UserForm = ({
   requirePasswords,
   accessLevelDisabled,
   passwordTitle,
+  withPasswordConfirmation,
 }) => {
-  return [
+  const fields = [
     getUsernameField(),
     {
       id: 'permission',
@@ -95,7 +96,10 @@ const UserForm = ({
       }
     },
     getPasswordField(requirePasswords, passwordTitle),
-    {
+  ]
+
+  if(withPasswordConfirmation) {
+    fields.push({
       id: 'confirmPassword',
       title: `Confirm ${passwordTitle || 'Password'}`,
       helperText: 'Confirm your password',
@@ -109,8 +113,10 @@ const UserForm = ({
           ['sameAs', 'password', 'Must be equal to password'],
         ])
       }
-    },
-  ]
+    })
+  }
+  
+  return fields
 }
 
 const LoginForm = () => {
@@ -120,26 +126,34 @@ const LoginForm = () => {
   ]
 }
 
-const userForms = {
-  initialUser: UserForm({
-    requirePasswords: true,
-    accessLevelDisabled: true,
-  }),
-  userAdd: UserForm({
-    requirePasswords: true,
-    accessLevelDisabled: false,
-  }),
-  userEdit: UserForm({
-    requirePasswords: false,
-    accessLevelDisabled: false,
-    passwordTitle: 'Change Password',
-  }),
-  userSelf: UserForm({
-    requirePasswords: false,
-    accessLevelDisabled: true,
-    passwordTitle: 'Change Password',
-  }),
-  login: LoginForm(),
+const UserForms = ({
+  withPasswordConfirmation,
+}) => {
+  return {
+    initialUser: UserForm({
+      requirePasswords: true,
+      accessLevelDisabled: true,
+      withPasswordConfirmation,
+    }),
+    userAdd: UserForm({
+      requirePasswords: true,
+      accessLevelDisabled: false,
+      withPasswordConfirmation,
+    }),
+    userEdit: UserForm({
+      requirePasswords: false,
+      accessLevelDisabled: false,
+      passwordTitle: 'Change Password',
+      withPasswordConfirmation,
+    }),
+    userSelf: UserForm({
+      requirePasswords: false,
+      accessLevelDisabled: true,
+      passwordTitle: 'Change Password',
+      withPasswordConfirmation,
+    }),
+    login: LoginForm(),
+  }
 }
 
-module.exports = userForms
+module.exports = UserForms

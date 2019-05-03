@@ -2,10 +2,14 @@ const async = require('async')
 const config = require('../config')
 const userUtils = require('../utils/user')
 
+const ClusterForms = require('../forms/cluster')
+const validate = require('../forms/validate')
+
+const clusterForms = ClusterForms({})
+
 const {
-  PERMISSION_ROLE_ACCESS_LEVELS,
-  CLUSTER_STATUS,
   CLUSTER_PROVISION_TYPE,
+  PERMISSION_ROLE_ACCESS_LEVELS,
 } = config
 
 const ClusterController = ({ store, settings }) => {
@@ -294,6 +298,8 @@ const ClusterController = ({ store, settings }) => {
     if(!data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
     if(!data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
 
+    if(CLUSTER_PROVISION_TYPE.indexOf(data.provision_type) < 0) return done(`unknown provision_type: ${data.provision_type}`)
+
     const {
       desired_state,
       secrets,
@@ -305,8 +311,14 @@ const ClusterController = ({ store, settings }) => {
 
       async.waterfall([
 
+        // validate the input data
+        (next) => validate({
+          schema: clusterForms[`${data.provision_type}Add`],
+          data,
+        }, next),
+
         // create the cluster record
-        (next) => store.cluster.create({
+        (ok, next) => store.cluster.create({
           data: {
             name: data.name,
             provision_type: data.provision_type,
@@ -404,12 +416,12 @@ const ClusterController = ({ store, settings }) => {
       data.desired_state = desired_state
     }
 
-    // check to see if there is a running or cancelling tasks for the given cluster
-    // if there is, don't allow the update
     store.transaction((transaction, finished) => {
 
       async.waterfall([
 
+        // check to see if there is a running or cancelling tasks for the given cluster
+        // if there is, don't allow the update
         (next) => {
           store.task.activeForResource({
             cluster: id,
@@ -418,6 +430,21 @@ const ClusterController = ({ store, settings }) => {
             if(activeTasks.length > 0) return next(`there are active tasks for this cluster`)
             next(null, true)
           })
+        },
+
+        // get the cluster to a) make sure it exists and b) to get the provision type
+        // so we know what type of form validation we need to do
+        (ok, next) => store.cluster.get({
+          id,
+        }, next),
+
+        // validate the input data
+        (cluster, next) => {
+          if(!cluster) return next(`no cluster with that id found: ${id}`)
+          validate({
+            schema: clusterForms[`${data.provision_type}Edit`],
+            data,
+          }, next)
         },
 
         (ok, next) => store.cluster.update({
