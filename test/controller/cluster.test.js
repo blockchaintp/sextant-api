@@ -480,11 +480,32 @@ database.testSuiteWithDatabase(getConnection => {
     const testCluster = testClusters[PERMISSION_USER.admin]
     const testUser = userMap[PERMISSION_USER.admin]
 
+    const context = {}
+
     async.series([
+
+      next => controller.list({
+        user: testUser,
+        id: testCluster.id,
+      }, (err, clusters) => {
+        if(err) return next(err)
+        context.clusterCount = clusters.length
+        next()
+      }),
+
       next => controller.delete({
         user: testUser,
         id: testCluster.id,
       }, next),
+
+      next => controller.list({
+        user: testUser,
+        id: testCluster.id,
+      }, (err, clusters) => {
+        if(err) return next(err)
+        t.equal(clusters.length, context.clusterCount - 1, `there is one less cluster in the list`)
+        next()
+      }),
       
       next => {
         store.task.list({
