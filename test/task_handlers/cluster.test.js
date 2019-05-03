@@ -139,5 +139,40 @@ database.testSuiteWithDatabase(getConnection => {
 
   })
 
+  tape('cluster controller -> delete cluster', (t) => {
+  
+    const controller = getController()
+    const taskProcessor = getTaskProcessor({})
+    const testUser = userMap[PERMISSION_USER.admin]
+    
+    async.series([
+
+      next => taskProcessor.start(next),
+
+      next => controller.delete({
+        user: testUser,
+        id: testClusters.admin.id,
+      }, next),
+
+      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
+
+      next => controller.list({
+        user: testUser,
+      }, (err, clusters) => {
+        if(err) return next(err)
+
+        t.equal(clusters.length, 0, `there are no clusters in the list`)
+
+        next()
+      }),
+    ], (err) => {
+      t.notok(err, `there was no error`)
+      taskProcessor.stop(() => {
+        t.end()
+      })
+    })
+
+  })
+
   
 })
