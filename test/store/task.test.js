@@ -22,11 +22,10 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('task store -> create users', (t) => {
   
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
-      t.notok(err, `there was no error`)
+    fixtures.insertTestUsers(getConnection(), tools.errorWrapper(t, (users) => {
       userMap = users
       t.end()
-    })
+    }))
   
   })
 
@@ -34,11 +33,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = TaskStore(getConnection())
   
-    store.list({}, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    store.list({}, tools.errorWrapper(t, (tasks) => {
       t.equal(tasks.length, 0, `there were no tasks`)
       t.end()
-    })
+    }))
     
   })
 
@@ -59,11 +57,10 @@ database.testSuiteWithDatabase(getConnection => {
 
   tape('task store -> create tasks for admin user', (t) => {
 
-    fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.admin].id, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.admin].id, tools.errorWrapper(t, (tasks) => {
       taskMap = tasks
       t.end()
-    })
+    }))
   })
 
   tape('task store -> create tasks for write user', (t) => {
@@ -73,13 +70,12 @@ database.testSuiteWithDatabase(getConnection => {
         resource_id: task.resource_id + 10,
       })
     })
-    fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.user].id, insertData, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.user].id, insertData, tools.errorWrapper(t, (tasks) => {
       Object.keys(tasks).forEach(key => {
         taskMap[key] = tasks[key]
       })
       t.end()
-    })
+    }))
   })
 
   tape('task store -> list all', (t) => {
@@ -89,11 +85,10 @@ database.testSuiteWithDatabase(getConnection => {
     // we inserted each set of tasks for 2 users
     const expectedCount = fixtures.SIMPLE_TASK_DATA.length * 2
 
-    store.list({}, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    store.list({}, tools.errorWrapper(t, (tasks) => {
       t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
       t.end()
-    })
+    }))
     
   })
 
@@ -104,13 +99,12 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.list({
       cluster: 10,
-    }, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (tasks) => {
       t.equal(tasks.length, 1, `there was 1 task`)
       t.equal(tasks[0].resource_type, RESOURCE_TYPES.cluster, `the resource_type is correct`)
       t.equal(tasks[0].resource_id, 10, `the resource_id is correct`)
       t.end()
-    })
+    }))
     
   })
   
@@ -120,13 +114,12 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.list({
       deployment: 11,
-    }, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (tasks) => {
       t.equal(tasks.length, 1, `there was 1 task`)
       t.equal(tasks[0].resource_type, RESOURCE_TYPES.deployment, `the resource_type is correct`)
       t.equal(tasks[0].resource_id, 11, `the resource_id is correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -139,12 +132,11 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.list({
       user: userId,
-    }, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (tasks) => {
       t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
       t.deepEqual(tasks.map(task => task.user), [userId, userId], `the user ids are correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -157,11 +149,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.get({
       id: ids[0],
-    }, (err, task) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (task) => {
       t.deepEqual(task, taskMap[ids[0]], `the returned task is correct`)
       t.end()
-    })
+    }))
     
   })
 
@@ -176,7 +167,7 @@ database.testSuiteWithDatabase(getConnection => {
       data: {
         status: 'apples'
       }
-    }, (err, task) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })
@@ -194,16 +185,14 @@ database.testSuiteWithDatabase(getConnection => {
       data: {
         status: TASK_STATUS.running,
       }
-    }, (err, task) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (task) => {
       store.get({
         id: ids[0],
-      }, (err, task) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (task) => {
         t.equal(task.status, TASK_STATUS.running, `the updated status is ok`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
 
@@ -215,14 +204,13 @@ database.testSuiteWithDatabase(getConnection => {
 
     store.activeForResource({
       cluster: 10,
-    }, (err, tasks) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (tasks) => {
       t.equal(tasks.length, 1, `there was 1 task`)
       t.deepEqual(tasks.map(task => task.resource_type), [RESOURCE_TYPES.cluster], `the resource_types are correct`)
       t.deepEqual(tasks.map(task => task.id), [ids[0]], `the resource_ids are correct`)
       t.deepEqual(tasks.map(task => task.resource_id), [10], `the resource_ids are correct`)
       t.end()
-    })
+    }))
     
   })
 
