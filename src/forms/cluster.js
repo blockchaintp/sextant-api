@@ -75,6 +75,8 @@ const getRemoteForm = (required) => {
 }
 
 const forms = {
+  validators,
+  fields,
   browser: {
     local: {
       add: getLocalForm([

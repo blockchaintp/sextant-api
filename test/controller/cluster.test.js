@@ -12,6 +12,8 @@ const TaskProcessor = require('../taskProcessor')
 const config = require('../../src/config')
 const tools = require('../tools')
 
+const errorClusters = require('../fixtures/errorClusters')
+
 const {
   PERMISSION_USER,
   CLUSTER_PROVISION_TYPE,
@@ -53,6 +55,32 @@ database.testSuiteWithDatabase(getConnection => {
     })
   
   })
+
+  tape('cluster controller -> create cluster with bad values', (t) => {
+  
+    const controller = getController()
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    async.eachSeries(Object.keys(errorClusters), (type, next) => {
+      const {
+        values,
+        error,
+      } = errorClusters[type]
+
+      controller.create({
+        user: testUser,
+        data: values,
+      }, (returnedError) => {
+        t.equal(returnedError, error, `the error was correct for ${type}`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  /*
 
   tape('cluster controller -> create cluster for admin user', (t) => {
   
@@ -650,5 +678,5 @@ database.testSuiteWithDatabase(getConnection => {
       })
     })
   })
-  
+  */
 })

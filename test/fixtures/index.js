@@ -1,13 +1,13 @@
 'use strict'
 
 const async = require('async')
-const config = require('../src/config')
-const userUtils = require('../src/utils/user')
-const UserStore = require('../src/store/user')
-const ClusterStore = require('../src/store/cluster')
-const DeployentStore = require('../src/store/deployment')
-const RoleStore = require('../src/store/role')
-const TaskStore = require('../src/store/task')
+const config = require('../../src/config')
+const userUtils = require('../../src/utils/user')
+const UserStore = require('../../src/store/user')
+const ClusterStore = require('../../src/store/cluster')
+const DeployentStore = require('../../src/store/deployment')
+const RoleStore = require('../../src/store/role')
+const TaskStore = require('../../src/store/task')
 
 const {
   PERMISSION_USER,
