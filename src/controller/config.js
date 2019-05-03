@@ -2,7 +2,7 @@ const config = require('../config')
 const packageJSON = require('../../package.json')
 
 const userForms = require('../forms/user')
-const clusterForms = require('../forms/cluser')
+const clusterForms = require('../forms/cluster')
 
 const forms = {
   user: userForms.browser,

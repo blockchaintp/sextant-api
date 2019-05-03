@@ -37,11 +37,10 @@ app.testSuiteWithAppTaskHandlers({
     userUtils.setupUsers({
       url,
       t,
-    }, (err, users) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (users) => {
       createdUsers = users
       t.end()
-    })
+    }))
   })
 
   tape('cluster routes -> list clusters as all users', (t) => {
@@ -58,7 +57,7 @@ app.testSuiteWithAppTaskHandlers({
           url: `${url}/clusters`,
           json: true,
         }, (err, res, body) => {
-          t.notok(err, `there is no error`)
+          if(err) return next(err)
           t.equal(res.statusCode, 200, `200 code`)
           t.deepEqual(body, [], `the body is an empty list of clusters`)
           next()
@@ -86,7 +85,7 @@ app.testSuiteWithAppTaskHandlers({
         json: true,
         body: clusterData,
       }, (err, res, body) => {
-        t.notok(err, `there was no error`)
+        if(err) return next(err)
         t.equal(res.statusCode, 403, `the request was denied`)
         next()
       })
@@ -112,7 +111,7 @@ app.testSuiteWithAppTaskHandlers({
         json: true,
         body: clusterData,
       }, (err, res, body) => {
-        t.notok(err, `there was no error`)
+        if(err) return next(err)
         t.equal(res.statusCode, 201, `the cluster was created`)
         const createdCluster = Object.keys(clusterData).reduce((all, key) => {
           all[key] = body[key]
@@ -141,7 +140,7 @@ app.testSuiteWithAppTaskHandlers({
         url: `${url}/clusters/${createdClusters.admin.id}`,
         json: true,
       }, (err, res, body) => {
-        t.notok(err, `there was no error`)
+        if(err) return next(err)
         t.equal(res.statusCode, 200, `the cluster was read`)
         t.equal(body.id, createdClusters.admin.id, `the cluster id is correct`)
         next()
@@ -165,7 +164,7 @@ app.testSuiteWithAppTaskHandlers({
         url: `${url}/clusters/1234567`,
         json: true,
       }, (err, res, body) => {
-        t.notok(err, `there was no error`)
+        if(err) return next(err)
         t.equal(res.statusCode, 404, `the correct 404 status code is present`)
         next()
       })
@@ -199,7 +198,7 @@ app.testSuiteWithAppTaskHandlers({
               name: 'new cluster name',
             }
           }, (err, res, body) => {
-            t.notok(err, `there was no error`)
+            if(err) return next(err)
             t.equal(res.statusCode, 200, `the cluster was updated`)
             createdClusters.admin.name = 'new cluster name'
             next()
@@ -219,15 +218,12 @@ app.testSuiteWithAppTaskHandlers({
             url: `${url}/clusters/${createdClusters.admin.id}`,
             json: true,
           }, (err, res, body) => {
-            t.notok(err, `there was no error`)
+            if(err) return next(err)
             t.equal(res.statusCode, 200, `the cluster was created`)
             t.equal(body.name, createdClusters.admin.name, `the cluster name is correct`)
             next()
           })
-        }, (err) => {
-          t.notok(err, `there was no error`)
-          t.end()
-        })
+        }, next)
       }
     ], (err) => {
       t.notok(err, `there was no error`)
@@ -247,7 +243,7 @@ app.testSuiteWithAppTaskHandlers({
         url: `${url}/clusters`,
         json: true,
       }, (err, res, body) => {
-        t.notok(err, `there is no error`)
+        if(err) return next(err)
         t.equal(res.statusCode, 200, `200 code`)
         t.equal(body.length, 1, `there is a single cluster in the response`)
         t.deepEqual(getClusterWithoutTask(body[0]), createdClusters.admin, `the cluster in the list is the same as the created one`)
@@ -280,6 +276,7 @@ app.testSuiteWithAppTaskHandlers({
               permission: 'write',
             },
           }, (err, res, body) => {
+            if(err) return next(err)
             t.equal(res.statusCode, 201, `the status code was correct`)
             t.equal(body.resource_id, createdCluster.id, `the role resource_id was correct`)
             t.equal(body.user, createdUsers.user.id, `the role user was correct`)
@@ -302,6 +299,7 @@ app.testSuiteWithAppTaskHandlers({
             url: `${url}/clusters`,
             json: true,
           }, (err, res, body) => {
+            if(err) return next(err)
             t.equal(res.statusCode, 200, `the status code was correct`)
             t.equal(body.length, 1, `there was one cluster`)
             t.equal(body[0].id, createdCluster.id, `the cluster id was correct`)
@@ -331,6 +329,7 @@ app.testSuiteWithAppTaskHandlers({
         url: `${url}/clusters/${createdCluster.id}/roles`,
         json: true,
       }, (err, res, body) => {
+        if(err) return next(err)
         t.equal(res.statusCode, 200, `the status code was correct`)
         t.equal(body.length, 2, `there are 2 roles for this cluster`)
         next()
@@ -359,6 +358,7 @@ app.testSuiteWithAppTaskHandlers({
             url: `${url}/clusters/${createdCluster.id}/roles/${createdUsers.user.id}`,
             json: true,
           }, (err, res, body) => {
+            if(err) return next(err)
             t.equal(res.statusCode, 200, `the status code was correct`)
             next()
           })
@@ -378,6 +378,7 @@ app.testSuiteWithAppTaskHandlers({
             url: `${url}/clusters`,
             json: true,
           }, (err, res, body) => {
+            if(err) return next(err)
             t.equal(res.statusCode, 200, `the status code was correct`)
             t.equal(body.length, 0, `there are no clusters`)
             next()

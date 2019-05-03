@@ -23,7 +23,7 @@ const sessionRequest = (opts, done) => {
   const requestOpts = Object.assign({}, opts, {
     jar: true
   })
-  request(requestOpts, done)
+  request(requestOpts, httpErrorWrapper(opts.t, done))
 }
 
 const errorWrapper = (t, handler) => (err, result) => {
@@ -36,8 +36,20 @@ const errorWrapper = (t, handler) => (err, result) => {
   }
 }
 
+const httpErrorWrapper = (t, handler) => (err, res, body) => {
+  if(err) {
+    t.fail(err)
+    t.end()
+  }
+  else {
+    handler(err, res, body)
+  }
+}
+
+
 module.exports = {
   insertWithMissingValues,
   sessionRequest,
   errorWrapper,
+  httpErrorWrapper,
 }
