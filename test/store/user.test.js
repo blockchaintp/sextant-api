@@ -20,11 +20,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = UserStore(getConnection())
   
-    store.list({}, (err, users) => {
-      t.notok(err, `there was no error`)
+    store.list({}, tools.errorWrapper(t, (users) => {
       t.equal(users.length, 0, `there were no users`)
       t.end()
-    })
+    }))
     
   })
 
@@ -51,7 +50,7 @@ database.testSuiteWithDatabase(getConnection => {
         server_side_key: 'na',
         permission: 'apples'
       }
-    }, (err, user) => {
+    }, (err) => {
       t.ok(err, `there was an error`)
       t.end()
     })  
@@ -59,12 +58,11 @@ database.testSuiteWithDatabase(getConnection => {
   
   tape('user store -> create users', (t) => {
   
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
-      t.notok(err, `there was no error`)
+    fixtures.insertTestUsers(getConnection(), tools.errorWrapper(t, (users) => {
       t.deepEqual(users.admin.meta, {}, `the metadata defaults to empty object`)
       userMap = users
       t.end()
-    })
+    }))
   
   })
   
@@ -75,12 +73,11 @@ database.testSuiteWithDatabase(getConnection => {
     const correctOrder = [].concat(enumerations.PERMISSION_USER)
     correctOrder.sort()
   
-    store.list({}, (err, users) => {
-      t.notok(err, `there was no error`)
+    store.list({}, tools.errorWrapper(t, (users) => {
       t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
       t.deepEqual(users.map(user => user.username), correctOrder, 'the users were in the correct order')
       t.end()
-    })
+    }))
     
   })
   
@@ -120,17 +117,15 @@ database.testSuiteWithDatabase(getConnection => {
       data: {
         username: 'oranges',
       }
-    }, (err, firstUser) => {
-      t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (firstUser) => {
       t.equal(firstUser.username, 'oranges', `the new username is correct`)
       store.get({
         username: 'oranges',
-      }, (err, secondUser) => {
-        t.notok(err, `there was no error`)
+      }, tools.errorWrapper(t, (secondUser) => {
         t.equal(firstUser.id, secondUser.id, `querying on the updated user is working`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
   
@@ -140,14 +135,12 @@ database.testSuiteWithDatabase(getConnection => {
   
     store.delete({
       id: userMap[config.PERMISSION_USER.admin].id,
-    }, (err, user) => {
-      t.notok(err, `there was no error`)
-      store.list({},(err, users) => {
-        t.notok(err, `there was no error`)
+    }, tools.errorWrapper(t, (user) => {
+      store.list({}, tools.errorWrapper(t, (users) => {
         t.equal(users.length, fixtures.SIMPLE_USER_DATA.length - 1, `there is 1 less user`)
         t.end()
-      })
-    })
+      }))
+    }))
     
   })
   
