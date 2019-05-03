@@ -53,6 +53,7 @@ app.testSuiteWithAppTaskHandlers({
       }, 
       (next) => {
         tools.sessionRequest({
+          t,
           method: 'get',
           url: `${url}/clusters`,
           json: true,
@@ -80,6 +81,7 @@ app.testSuiteWithAppTaskHandlers({
     }, 
     (next) => {
       tools.sessionRequest({
+        t,
         method: 'post',
         url: `${url}/clusters`,
         json: true,
@@ -106,6 +108,7 @@ app.testSuiteWithAppTaskHandlers({
     }, 
     (next) => {
       tools.sessionRequest({
+        t,
         method: 'post',
         url: `${url}/clusters`,
         json: true,
@@ -136,6 +139,7 @@ app.testSuiteWithAppTaskHandlers({
     }, 
     (next) => {
       tools.sessionRequest({
+        t,
         method: 'get',
         url: `${url}/clusters/${createdClusters.admin.id}`,
         json: true,
@@ -160,6 +164,7 @@ app.testSuiteWithAppTaskHandlers({
     }, 
     (next) => {
       tools.sessionRequest({
+        t,
         method: 'get',
         url: `${url}/clusters/1234567`,
         json: true,
@@ -191,6 +196,7 @@ app.testSuiteWithAppTaskHandlers({
         }, 
         (next) => {
           tools.sessionRequest({
+            t,
             method: 'put',
             url: `${url}/clusters/${createdClusters.admin.id}`,
             json: true,
@@ -214,6 +220,7 @@ app.testSuiteWithAppTaskHandlers({
         }, 
         (next) => {
           tools.sessionRequest({
+            t,
             method: 'get',
             url: `${url}/clusters/${createdClusters.admin.id}`,
             json: true,
@@ -239,6 +246,7 @@ app.testSuiteWithAppTaskHandlers({
     }, 
     (next) => {
       tools.sessionRequest({
+        t,
         method: 'get',
         url: `${url}/clusters`,
         json: true,
@@ -268,6 +276,7 @@ app.testSuiteWithAppTaskHandlers({
         }, 
         (next) => {
           tools.sessionRequest({
+            t,
             method: 'post',
             url: `${url}/clusters/${createdCluster.id}/roles`,
             json: true,
@@ -295,6 +304,7 @@ app.testSuiteWithAppTaskHandlers({
         }, 
         (next) => {
           tools.sessionRequest({
+            t,
             method: 'get',
             url: `${url}/clusters`,
             json: true,
@@ -325,6 +335,7 @@ app.testSuiteWithAppTaskHandlers({
     }, 
     (next) => {
       tools.sessionRequest({
+        t,
         method: 'get',
         url: `${url}/clusters/${createdCluster.id}/roles`,
         json: true,
@@ -354,6 +365,7 @@ app.testSuiteWithAppTaskHandlers({
         }, 
         (next) => {
           tools.sessionRequest({
+            t,
             method: 'delete',
             url: `${url}/clusters/${createdCluster.id}/roles/${createdUsers.user.id}`,
             json: true,
@@ -374,6 +386,7 @@ app.testSuiteWithAppTaskHandlers({
         }, 
         (next) => {
           tools.sessionRequest({
+            t,
             method: 'get',
             url: `${url}/clusters`,
             json: true,
@@ -391,5 +404,5 @@ app.testSuiteWithAppTaskHandlers({
       t.end()
     })
   })
-  
+
 })

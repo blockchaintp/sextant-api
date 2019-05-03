@@ -16,7 +16,7 @@ const USERS = {
   },
   admin: {
     username: 'admin',
-    password: 'pears',
+    password: 'peaches',
     permission: PERMISSION_USER.admin,
   },
   user: {
@@ -32,6 +32,7 @@ const registerUser = ({
   t,
 }, done) => {
   tools.sessionRequest({
+    t,
     method: 'post',
     url: `${url}/user`,
     json: true,
@@ -53,6 +54,7 @@ const login = ({
   t,
 }, done) => {
   tools.sessionRequest({
+    t,
     method: 'post',
     url: `${url}/user/login`,
     json: true,
@@ -73,6 +75,7 @@ const logout = ({
   t,
 }, done) => {
   tools.sessionRequest({
+    t,
     method: 'get',
     url: `${url}/user/logout`,
     json: true,

@@ -184,7 +184,11 @@ const validate = ({
   const p = validateSchema
     .validate(data)
     .catch(err => {
-      throw(err.toString())
+      const errorString = 
+        `${err.path} ${err.toString()}`
+          .toLowerCase()
+          .replace('validationerror', 'validation error')
+      throw(errorString)
     })
   bluebird
     .resolve(p)
