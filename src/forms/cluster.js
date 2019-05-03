@@ -34,6 +34,7 @@ const getRemoteForm = ({
       type: 'string',
       methods: existing ? [] : [
         ['required', 'The API Server is required'],
+        ['url', 'Must be a valid url - e.g. http://apiserver.com'],
       ],
     }
   }, {
