@@ -1,12 +1,10 @@
 const ConfigRoutes = (controllers) => {
 
-  const values = (req, res, next) => {
-
-    controllers.config.values({}, (err, result) => {
-      res
-        .status(200)
-        .json(result)
-    })
+  const values = async (req, res, next) => {
+    const result = await controllers.config.values({})
+    res
+      .status(200)
+      .json(result)
   }
 
   return {
