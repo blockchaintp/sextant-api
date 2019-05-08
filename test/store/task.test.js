@@ -176,10 +176,24 @@ database.testSuiteWithDatabase(getConnection => {
     const tasks = await store.activeForResource({
       cluster: 10,
     })
+
     t.equal(tasks.length, 1, `there was 1 task`)
     t.deepEqual(tasks.map(task => task.resource_type), [RESOURCE_TYPES.cluster], `the resource_types are correct`)
     t.deepEqual(tasks.map(task => task.id), [ids[0]], `the resource_ids are correct`)
     t.deepEqual(tasks.map(task => task.resource_id), [10], `the resource_ids are correct`)
+  })
+
+  asyncTest('task store -> load with status', async (t) => {
+
+    const store = TaskStore(getConnection())
+
+    const ids = Object.keys(taskMap).map(i => parseInt(i))
+
+    const tasks = await store.list({
+      status: TASK_STATUS.running,
+    })
+
+    t.equal(tasks.length, 1, `there was 1 task`)
   })
 
 })
