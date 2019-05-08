@@ -24,39 +24,21 @@ const getConnectionSettings = (databaseName) => {
 
 // get a fresh knex connection that is pointing to a new database
 // that has it's schema initialised
-const createTestKnex = (databaseName, done) => {
-  
+const createTestKnex = async (databaseName) => {
   const masterKnex = Knex(getConnectionSettings())
-
-  masterKnex
-    .raw(`create database ${databaseName}`)
-    .then(() => {
-      const testKnex = Knex(getConnectionSettings(databaseName))
-      testKnex.migrate.latest({
-        directory: path.join(__dirname, '..', 'migrations')
-      })
-      .then(() => {
-        masterKnex.destroy()
-        done(null, testKnex)
-        return null
-      })
-      .catch(done)
-      return null
-    })
-    .catch(done)
+  await masterKnex.raw(`create database ${databaseName}`)
+  const testKnex = Knex(getConnectionSettings(databaseName))
+  await testKnex.migrate.latest({
+    directory: path.join(__dirname, '..', 'migrations')
+  })
+  await masterKnex.destroy()
+  return testKnex
 }
 
-const destroyTestKnex = (databaseName, done) => {
+const destroyTestKnex = async (databaseName) => {
   const masterKnex = Knex(getConnectionSettings())
-
-  masterKnex
-    .raw(`drop database ${databaseName}`)
-    .then(() => {
-      masterKnex.destroy()
-      done()
-      return null
-    })
-    .catch(done)
+  await masterKnex.raw(`drop database ${databaseName}`)
+  await masterKnex.destroy()
 }
 
 // wrap a handler function with a test before that creates a database connection
@@ -73,38 +55,33 @@ const testSuiteWithDatabase = (handler) => {
   })
 
   const databaseName = `testdb${randomDatabaseName}`
-  tape('setup database', (t) => {
-    createTestKnex(databaseName, (err, knex) => {
-      t.notok(err, `there was no error`)
-      databaseConnection = knex
-      t.end()
-    })
+  tape('setup database', async (t) => {
+
+    try {
+      databaseConnection = await createTestKnex(databaseName)
+    } catch(err) {
+      t.fail(`database setup error: ${err.toString()}`)
+    }
+
+    t.end()
   })
 
   handler(getDatabaseConnection, getConnectionSettings(databaseName))
 
-  tape('teardown database', (t) => {
-    databaseConnection
-      .destroy()
-      .then(() => {
+  tape('teardown database', async (t) => {
 
-        if(process.env.KEEP_DATABASE) {
-          t.end()
-        }
-        else {
-          destroyTestKnex(databaseName, (err, knex) => {
-            t.notok(err, `there was no error`)
-            t.end()
-          })
-        }
+    try {
+      await databaseConnection.destroy()
+      if(!process.env.KEEP_DATABASE) {
+        await destroyTestKnex(databaseName)
+      }
+      
+    } catch(err) {
+      t.fail(`database teardown error: ${err.toString()}`)
+    }
 
-        return null
-        
-      })
-      .catch(err => {
-        t.error(err)
-        t.end()
-      })
+    t.end()
+
   })
 }
 
