@@ -54,7 +54,7 @@ const PassportHandlers = ({
 
         if(parts.length != 2) {
           res._code = 400
-          return next(`bad authorization header format`)
+          throw new Error(`bad authorization header format`)
         }
 
         const [ scheme, token ] = parts
@@ -78,13 +78,15 @@ const PassportHandlers = ({
             
           if(!user || user.server_side_key != decoded.server_side_key) {
             res._code = 403
-            return next(`access denied`)
+            throw new Error(`access denied`)
           }
 
           req.user = userUtils.safe(user)
+
+          return next()
         } else {
           res._code = 400
-          return next(`bad authorization header format`)
+          throw new Error(`bad authorization header format`)
         }
       }
       else {

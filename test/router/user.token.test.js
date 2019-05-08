@@ -119,7 +119,7 @@ app.testSuiteWithApp(({
       json: true,
     }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, `access denied`, `correct error`)
+      t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     }))
     
@@ -137,7 +137,7 @@ app.testSuiteWithApp(({
     }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 400, `400 code`)
-      t.equal(body.error, `bad authorization header format`, `correct error`)
+      t.equal(body.error, `Error: bad authorization header format`, `correct error`)
       t.end()
     }))
     
@@ -155,7 +155,7 @@ app.testSuiteWithApp(({
     }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 400, `400 code`)
-      t.equal(body.error, `bad authorization header format`, `correct error`)
+      t.equal(body.error, `Error: bad authorization header format`, `correct error`)
       t.end()
     }))
     
@@ -172,8 +172,8 @@ app.testSuiteWithApp(({
       },
     }, tools.httpErrorWrapper(t, (err, res, body) => {
       t.notok(err, `there is no error`)
-      t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, `access denied`, `correct error`)
+      t.equal(res.statusCode, 500, `500 code`)
+      t.equal(body.error, `JsonWebTokenError: invalid signature`, `correct error`)
       t.end()
     }))
     
