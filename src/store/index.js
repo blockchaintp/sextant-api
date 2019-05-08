@@ -16,7 +16,7 @@ const Store = (knex) => {
   const deployment = DeploymentStore(knex)
   const task = TaskStore(knex)
 
-  const transaction = (handler, done) => databaseTools.transaction(knex, handler, done)
+  const transaction = knex.transaction
 
   return {
     knex,
