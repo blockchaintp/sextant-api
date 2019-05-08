@@ -328,16 +328,6 @@ const ClusterController = ({ store, settings }) => {
       return all
     }, {})
 
-    // extract the secrets from the form data
-    const extractedSecrets = clusterUtils.extractClusterSecrets({
-      desired_state: formData.desired_state,
-    })
-
-    // inject the processed desired state into the submission data
-    if(formData.desired_state) {
-      formData.desired_state = extractedSecrets.desired_state
-    }
-
     // check to see if there are active tasks for this cluster
     const activeTasks = await store.task.activeForResource({
       cluster: id,
@@ -358,14 +348,25 @@ const ClusterController = ({ store, settings }) => {
       data: formData,
     })
 
-    // insert the new secrets into the database
-    const updatedDesiredState = await createClusterSecrets({
-      cluster,
-      desired_state: formData.desired_state,
-      secrets: extractedSecrets.secrets,
-    }, trx)
+    
 
-    formData.desired_state = updatedDesiredState
+    // inject the processed desired state into the submission data
+    if(formData.desired_state) {
+
+      // extract the secrets from the form data
+      const extractedSecrets = clusterUtils.extractClusterSecrets({
+        desired_state: formData.desired_state,
+      })
+
+      // insert the new secrets into the database
+      const updatedDesiredState = await createClusterSecrets({
+        cluster,
+        desired_state: formData.desired_state,
+        secrets: extractedSecrets.secrets,
+      }, trx)
+
+      formData.desired_state = updatedDesiredState
+    }
 
     // save the cluster
     const updatedCluster = await store.cluster.update({
