@@ -20,25 +20,45 @@ const safe = (user) => {
   }
 }
 
-const getPasswordHash = (plainTextPassword, done) => bcrypt.hash(plainTextPassword, SALT_ROUNDS, done)
-const compareHashedPasswords = (plainTextPassword, hash, done) => bcrypt.compare(plainTextPassword, hash, done)
+const getPasswordHash = (plainTextPassword) => new Promise((resolve, reject) => {
+  bcrypt.hash(plainTextPassword, SALT_ROUNDS, (err, result) => {
+    if(err) return reject(err)
+    resolve(result)
+  })
+})
+
+const compareHashedPasswords = (plainTextPassword, hash) =>  new Promise((resolve, reject) => {
+  bcrypt.compare(plainTextPassword, hash, (err, result) => {
+    if(err) return reject(err)
+    resolve(result)
+  })
+})
 
 const getTokenServerSideKey = () => randomstring.generate(16)
 
 // create the token given the username and server_side_key
-const getToken = (id, server_side_key, secret, done) => {
-  if(!id) return done(`id required to get token`)
-  if(!server_side_key) return done(`server_side_key required to get token`)
-  if(!secret) return done(`secret required to get token`)
-  jwt.sign({
-    id,
-    server_side_key,
-  }, secret, done)
+const getToken = (id, server_side_key, secret) => {
+  if(!id) throw new Error(`id required to get token`)
+  if(!server_side_key) throw new Error(`server_side_key required to get token`)
+  if(!secret) throw new Error(`secret required to get token`)
+  return new Promise((resolve, reject) => {
+    jwt.sign({
+      id,
+      server_side_key,
+    }, secret, (err, result) => {
+      if(err) return reject(err)
+      resolve(result)
+    })
+  })
+  
 }
 
-const decodeToken = (token, secret, done) => {
-  jwt.verify(token, secret, done)
-}
+const decodeToken = (token, secret) => new Promise((resolve, reject) => {
+  jwt.verify(token, secret, (err, result) => {
+    if(err) return reject(err)
+    resolve(result)
+  })
+})
 
 const hasPermission = (user, permission) => {
   const userAccessLevel = PERMISSION_USER_ACCESS_LEVELS[user.permission]
