@@ -157,91 +157,84 @@ const insertTestClusters = async (databaseConnection, data) => {
   return clusterMap
 }
 
-const insertTestDeployments = (databaseConnection, cluster, data, done) => {
+const insertTestDeployments = async (databaseConnection, cluster, data) => {
 
-  if(!done) {
-    done = data
-    data = SIMPLE_DEPLOYMENT_DATA
-  }
+  data = data || SIMPLE_DEPLOYMENT_DATA
 
   const store = DeployentStore(databaseConnection)
 
   // map of cluster names onto database records
   const deploymentMap = {}
 
-  async.eachSeries(data, (deploymentData, nextDeployment) => {
+  await Promise.each(data, async (deploymentData) => {
+
     const insertData = Object.assign({}, deploymentData, {
       cluster,
     })
-    store.create({
+
+    const deployment = await store.create({
       data: insertData
-    }, (err, deployment) => {
-      if(err) return nextDeployment(err)
-      deploymentMap[deployment.name] = deployment
-      nextDeployment()
     })
-  }, (err) => {
-    if(err) return done(err)
-    done(null, deploymentMap)
+
+    deploymentMap[deployment.name] = deployment
+
+    return deployment
   })
+
+  return deploymentMap
 }
 
-const insertTestRoles = (databaseConnection, user, data, done) => {
+const insertTestRoles = (databaseConnection, user, data) => {
 
-  if(!done) {
-    done = data
-    data = SIMPLE_ROLE_DATA
-  }
+  data = data || SIMPLE_ROLE_DATA
+  
 
   const store = RoleStore(databaseConnection)
 
   // map of resource types onto database records
   const roleMap = {}
 
-  async.eachSeries(data, (roleData, nextRole) => {
+  await Promise.each(data, async (roleData) => {
     const insertData = Object.assign({}, roleData, {
       user,
     })
-    store.create({
+
+    const role = await store.create({
       data: insertData
-    }, (err, role) => {
-      if(err) return nextRole(err)
-      roleMap[role.resource_type] = role
-      nextRole()
     })
-  }, (err) => {
-    if(err) return done(err)
-    done(null, roleMap)
+
+    roleMap[role.resource_type] = role
+
+    return role
   })
+
+  return roleMap
 }
 
-const insertTestTasks = (databaseConnection, user, data, done) => {
+const insertTestTasks = (databaseConnection, user, data) => {
 
-  if(!done) {
-    done = data
-    data = SIMPLE_TASK_DATA
-  }
-
+  data = data || SIMPLE_TASK_DATA
+  
   const store = TaskStore(databaseConnection)
 
   // map of resource types onto database records
   const taskMap = {}
 
-  async.eachSeries(data, (taskData, nextTask) => {
+  await Promise.each(data, async (taskData) => {
     const insertData = Object.assign({}, taskData, {
       user,
     })
-    store.create({
+
+    const task = await store.create({
       data: insertData
-    }, (err, task) => {
-      if(err) return nextTask(err)
-      taskMap[task.id] = task
-      nextTask()
     })
-  }, (err) => {
-    if(err) return done(err)
-    done(null, taskMap)
+
+    taskMap[task.id] = task
+
+    return task
   })
+
+  return taskMap
 }
 
 module.exports = {
