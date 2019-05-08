@@ -1,7 +1,9 @@
 'use strict'
 
+const Promise = require('bluebird')
 const async = require('async')
 const tape = require('tape')
+const asyncTest = require('../asyncTest')
 const database = require('../database')
 const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
@@ -49,128 +51,106 @@ database.testSuiteWithDatabase(getConnection => {
   let userMap = {}
   let testClusters = {}
 
-  tape('cluster controller -> create users', (t) => {
-  
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
-      t.notok(err, `there was no error`)
-      userMap = users
-      t.end()
-    })
-  
+  asyncTest('cluster controller -> create users', async (t) => {
+    const users = await fixtures.insertTestUsers(getConnection())
+    userMap = users
   })
 
-  tape('cluster controller -> create cluster with bad values', (t) => {
+  asyncTest('cluster controller -> create cluster with bad values', async (t) => {
   
     const controller = getController()
     const testUser = userMap[PERMISSION_USER.admin]
 
-    async.eachSeries(Object.keys(errorClusters), (type, next) => {
+    await Promise.each(Object.keys(errorClusters), async type => {
       const {
         values,
         error,
       } = errorClusters[type]
 
-      controller.create({
-        user: testUser,
-        data: values,
-      }, (returnedError) => {
-        t.equal(returnedError, error, `the error was correct for ${type}`)
-        next()
-      })
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
+      let checkError = null
+
+      try {
+        await controller.create({
+          user: testUser,
+          data: values,
+        })
+      } catch(err) {
+        checkError = err 
+      }
+      t.equal(checkError.toString(), `Error: ${error}`, `the error was correct for ${type}`)
     })
   })
 
-  tape('cluster controller -> create cluster for admin user', (t) => {
+  asyncTest('cluster controller -> create cluster for admin user', async (t) => {
   
     const controller = getController()
     const store = Store(getConnection())
 
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
 
-    let testCluster = null
     const testUser = userMap[PERMISSION_USER.admin]
 
-    async.series([
-
-      // insert the cluster
-      next => {
-        controller.create({
-          user: testUser,
-          data: clusterData,
-        }, (err, cluster) => {
-          if(err) return next(err)
-          t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
-          t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
-          testClusters[PERMISSION_USER.admin] = testCluster = cluster
-          next()
-        })
-      },
-
-      // check we have a user writable role for the cluster
-      next => {
-        store.role.get({
-          user: testUser.id,
-          resource_type: RESOURCE_TYPES.cluster,
-          resource_id: testCluster.id,
-        }, (err, role) => {
-          if(err) return next(err)
-          t.equal(role.user, testUser.id, `the role user id is correct`)
-          t.equal(role.resource_type, RESOURCE_TYPES.cluster, `the role resource_type is correct`)
-          t.equal(role.resource_id, testCluster.id, `the role resource_id is correct`)
-          next()
-        })
-      },
-
-      // check we have a task for the cluster.create
-      next => {
-        store.task.list({
-          cluster: testCluster.id
-        }, (err, tasks) => {
-          if(err) return next(err)
-          t.equal(tasks.length,1, `there is a create task`)
-          const task = tasks[0]
-          t.equal(task.user, testUser.id, `the task resource_type is correct`)
-          t.equal(task.resource_type, RESOURCE_TYPES.cluster, `the task resource_type is correct`)
-          t.equal(task.resource_id, testCluster.id, `the task resource_id is correct`)
-          t.equal(task.status, TASK_STATUS.created, `the task status is correct`)
-          t.equal(task.restartable, true, `the task restartable is correct`)
-          t.equal(task.action, TASK_ACTION['cluster.create'], `the task payload action is correct`)
-          next()
-        })
-      },
-
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
-    })    
-  })
-
-  tape('cluster controller -> create cluster with the same name', (t) => {
-  
-    const controller = getController()
-    const store = Store(getConnection())
-
-    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
-
-    let testCluster = null
-    const testUser = userMap[PERMISSION_USER.admin]
-
-    controller.create({
+    const cluster = await controller.create({
       user: testUser,
       data: clusterData,
-    }, (err) => {
+    })
 
-      t.ok(err, `there was an error`)
-      t.equal(err, `there is already a cluster with the name ${clusterData.name}`)
+    const role = await store.role.get({
+      user: testUser.id,
+      resource_type: RESOURCE_TYPES.cluster,
+      resource_id: cluster.id,
+    })
 
-      t.end()
-    }) 
+    const tasks = await store.task.list({
+      cluster: cluster.id
+    })
+
+    testClusters[PERMISSION_USER.admin] = cluster
+    const task = tasks[0]
+
+    t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
+    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
+
+    t.equal(role.user, testUser.id, `the role user id is correct`)
+    t.equal(role.resource_type, RESOURCE_TYPES.cluster, `the role resource_type is correct`)
+    t.equal(role.resource_id, cluster.id, `the role resource_id is correct`)
+
+    t.equal(tasks.length,1, `there is a create task`)
+    t.equal(task.user, testUser.id, `the task resource_type is correct`)
+    t.equal(task.resource_type, RESOURCE_TYPES.cluster, `the task resource_type is correct`)
+    t.equal(task.resource_id, cluster.id, `the task resource_id is correct`)
+    t.equal(task.status, TASK_STATUS.created, `the task status is correct`)
+    t.equal(task.restartable, true, `the task restartable is correct`)
+    t.equal(task.action, TASK_ACTION['cluster.create'], `the task payload action is correct`)
+ 
   })
 
-  tape('cluster controller -> get roles for created cluster', (t) => {
+  asyncTest('cluster controller -> create cluster with the same name', async (t) => {
+  
+    const controller = getController()
+
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    let error = null
+
+    try{
+      await controller.create({
+        user: testUser,
+        data: clusterData,
+      })
+    } catch(err) {
+      error = err
+    }
+
+    t.ok(error, `there was an error`)
+    t.equal(error.toString(), `Error: there is already a cluster with the name ${clusterData.name}`)
+  })
+
+
+
+  /*
+  asyncTest('cluster controller -> get roles for created cluster', async (t) => {
   
     const testUser = userMap[PERMISSION_USER.admin]
     const controller = getController()
@@ -189,7 +169,7 @@ database.testSuiteWithDatabase(getConnection => {
     }))
   })
 
-  tape('cluster controller -> create additional role for created cluster', (t) => {
+  asyncTest('cluster controller -> create additional role for created cluster', async (t) => {
     const normalUser = userMap[PERMISSION_USER.user]
 
     const controller = getController()
@@ -206,7 +186,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> get roles for created cluster', (t) => {
+  asyncTest('cluster controller -> get roles for created cluster', async (t) => {
   
     const controller = getController()
 
@@ -220,7 +200,7 @@ database.testSuiteWithDatabase(getConnection => {
     }))
   })
 
-  tape('cluster controller -> delete additional role for created cluster', (t) => {
+  asyncTest('cluster controller -> delete additional role for created cluster', async (t) => {
     const normalUser = userMap[PERMISSION_USER.user]
 
     const controller = getController()
@@ -236,7 +216,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> get roles for created cluster', (t) => {
+  asyncTest('cluster controller -> get roles for created cluster', async (t) => {
   
     const controller = getController()
 
@@ -250,7 +230,7 @@ database.testSuiteWithDatabase(getConnection => {
     }))
   })
 
-  tape('cluster controller -> cannot update a cluster with a running task', (t) => {
+  asyncTest('cluster controller -> cannot update a cluster with a running task', async (t) => {
 
     const controller = getController()
 
@@ -270,7 +250,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> update task', (t) => {
+  asyncTest('cluster controller -> update task', async (t) => {
 
     const store = Store(getConnection())
 
@@ -293,7 +273,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('cluster controller -> update a cluster', (t) => {
+  asyncTest('cluster controller -> update a cluster', async (t) => {
 
     const controller = getController()
     const store = Store(getConnection())
@@ -340,7 +320,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
   
-  tape('cluster controller -> create cluster for superuser user', (t) => {
+  asyncTest('cluster controller -> create cluster for superuser user', async (t) => {
   
     const controller = getController()
     
@@ -359,7 +339,7 @@ database.testSuiteWithDatabase(getConnection => {
  
   })
 
-  tape('cluster controller -> get cluster', (t) => {
+  asyncTest('cluster controller -> get cluster', async (t) => {
   
     const controller = getController()
 
@@ -375,7 +355,7 @@ database.testSuiteWithDatabase(getConnection => {
  
   })
 
-  tape('cluster controller -> list clusters for superuser user', (t) => {
+  asyncTest('cluster controller -> list clusters for superuser user', async (t) => {
 
     const controller = getController()
 
@@ -389,7 +369,7 @@ database.testSuiteWithDatabase(getConnection => {
     }))
   })
 
-  tape('cluster controller -> list clusters for admin user', (t) => {
+  asyncTest('cluster controller -> list clusters for admin user', async (t) => {
 
     const controller = getController()
 
@@ -403,7 +383,7 @@ database.testSuiteWithDatabase(getConnection => {
     }))
   })
 
-  tape('cluster controller -> list clusters for normal user', (t) => {
+  asyncTest('cluster controller -> list clusters for normal user', async (t) => {
 
     const controller = getController()
 
@@ -417,7 +397,7 @@ database.testSuiteWithDatabase(getConnection => {
     }))
   })
 
-  tape('cluster controller -> list clusters for no user', (t) => {
+  asyncTest('cluster controller -> list clusters for no user', async (t) => {
 
     const controller = getController()
     
@@ -429,7 +409,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> cannot delete a cluster with a running task', (t) => {
+  asyncTest('cluster controller -> cannot delete a cluster with a running task', async (t) => {
 
     const controller = getController()
 
@@ -446,7 +426,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> update task', (t) => {
+  asyncTest('cluster controller -> update task', async (t) => {
 
     const store = Store(getConnection())
 
@@ -473,7 +453,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  tape('cluster controller -> delete a cluster', (t) => {
+  asyncTest('cluster controller -> delete a cluster', async (t) => {
 
     const controller = getController()
     const store = Store(getConnection())
@@ -554,7 +534,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster controller -> create remote cluster with secrets and update the secrets', (t) => {
+  asyncTest('cluster controller -> create remote cluster with secrets and update the secrets', async (t) => {
     
     const controller = getController()
     const store = Store(getConnection())
@@ -741,5 +721,5 @@ database.testSuiteWithDatabase(getConnection => {
       })
     })
   })
-  
+  */
 })
