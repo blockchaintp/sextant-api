@@ -92,7 +92,7 @@ const UserController = ({ store, settings }) => {
      * permission - enumerations.PERMISSION_USER
     
   */
-  const create = ({
+  const create = async ({
     username,
     password,
     permission,
@@ -120,7 +120,7 @@ const UserController = ({ store, settings }) => {
     return store.user.create({
       data: {
         username,
-        permission,
+        permission: formData.permission,
         hashed_password,
         server_side_key: utils.getTokenServerSideKey(),
       }
@@ -141,7 +141,7 @@ const UserController = ({ store, settings }) => {
         * meta
     
   */
-  const update = ({
+  const update = async ({
     id,
     data,
   }) => {
@@ -180,7 +180,7 @@ const UserController = ({ store, settings }) => {
       * id
     
   */
-  const getToken = ({
+  const getToken = async ({
     id,
   }) => {
 
@@ -202,7 +202,7 @@ const UserController = ({ store, settings }) => {
       * id
     
   */
-  const updateToken = ({
+  const updateToken = async ({
     id,
   }) => {
 

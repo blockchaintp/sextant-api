@@ -2,6 +2,7 @@
 
 const tape = require('tape')
 const async = require('async')
+const asyncTest = require('../asyncTest')
 const database = require('../database')
 const UserController = require('../../src/controller/user')
 const Store = require('../../src/store')
@@ -33,99 +34,85 @@ database.testSuiteWithDatabase(getConnection => {
 
   let TEST_USER_RECORD = null
 
-  tape('user controller -> list no data', (t) => {
+  asyncTest('user controller -> list no data', async (t) => {
 
     const controller = getController()
     
-    controller.list({}, tools.errorWrapper(t, (users) => {
-      t.equal(users.length, 0, `there were no users`)
-      t.end()
-    }))
-    
+    const users = await controller.list({})
+    t.equal(users.length, 0, `there were no users`)    
   })
 
-  tape('user controller -> count no data', (t) => {
+  asyncTest('user controller -> count no data', async (t) => {
 
     const controller = getController()
 
-    controller.count({}, tools.errorWrapper(t, (count) => {
-      t.equal(count, 0, `there were no users`)
-      t.end()
-    }))
+    const count = await controller.count({})
+    t.equal(count, 0, `there were no users`)
   })
 
-  tape('user controller -> create', (t) => {
+  asyncTest('user controller -> create', async (t) => {
   
     const controller = getController()
   
-    controller.create(TEST_USER, tools.errorWrapper(t, (user) => {
-      t.equal(user.username, TEST_USER.username)
+    const user = await controller.create(TEST_USER)
+    t.equal(user.username, TEST_USER.username)
 
-      // make sure the permission is forced to superuser as the initial user
-      t.equal(user.permission, PERMISSION_USER.superuser)
-      t.ok(user.hashed_password, 'there is a hashed password')
-      t.ok(user.server_side_key, 'there is a server_side_key')
+    // make sure the permission is forced to superuser as the initial user
+    t.equal(user.permission, PERMISSION_USER.superuser)
+    t.ok(user.hashed_password, 'there is a hashed password')
+    t.ok(user.server_side_key, 'there is a server_side_key')
 
-      TEST_USER_RECORD = user
-      t.end()
-    }))
+    TEST_USER_RECORD = user
   })
   
   
-  tape('user controller -> check password (correct)', (t) => {
+  asyncTest('user controller -> check password (correct)', async (t) => {
 
     const controller = getController()
 
-    controller.checkPassword({
+    const result = await controller.checkPassword({
       username: TEST_USER.username,
       password: TEST_USER.password,
-    }, tools.errorWrapper(t, (result) => {
-      t.ok(result, `the result was correct`)
-      t.end()
-    }))
+    })
+    t.ok(result, `the result was correct`)
   })
 
-  tape('user controller -> check password (wrong user)', (t) => {
+  asyncTest('user controller -> check password (wrong user)', async (t) => {
 
     const controller = getController()
 
-    controller.checkPassword({
+    const result = await controller.checkPassword({
       username: 'baduser',
       password: TEST_USER.password,
-    }, tools.errorWrapper(t, (result) => {
-      t.notok(result, `the result was correct`)
-      t.end()
-    }))
+    })
+    t.notok(result, `the result was correct`)
   })
 
-  tape('user controller -> check password (incorrect)', (t) => {
+  asyncTest('user controller -> check password (incorrect)', async (t) => {
 
     const controller = getController()
 
-    controller.checkPassword({
+    const result = await controller.checkPassword({
       username: TEST_USER.username,
       password: 'badpassword',
-    }, tools.errorWrapper(t, (result) => {
-      t.notok(result, `the result was correct`)
-      t.end()
-    }))
+    })
+    t.notok(result, `the result was correct`)
   })
 
-  tape('user controller -> get', (t) => {
+  asyncTest('user controller -> get', async (t) => {
 
     const controller = getController()
 
-    controller.get({
+    const user = await controller.get({
       id: TEST_USER_RECORD.id,
-    }, tools.errorWrapper(t, (user) => {
-      t.equal(user.username, TEST_USER.username, `the result was correct`)
-      t.equal(user.hashed_password, TEST_USER_RECORD.hashed_password, 'there is a hashed password')
-      t.equal(user.server_side_key, TEST_USER_RECORD.server_side_key, 'there is a server_side_key')
-      t.end()
-    }))
+    })
+    t.equal(user.username, TEST_USER.username, `the result was correct`)
+    t.equal(user.hashed_password, TEST_USER_RECORD.hashed_password, 'there is a hashed password')
+    t.equal(user.server_side_key, TEST_USER_RECORD.server_side_key, 'there is a server_side_key')
+
   })
 
-  tape('user controller -> update meta', (t) => {
+  asyncTest('user controller -> update meta', async (t) => {
 
     const controller = getController()
 
@@ -133,148 +120,102 @@ database.testSuiteWithDatabase(getConnection => {
       fruit: 'apples',
     }
 
-    async.series([
-      next => controller.update({
-        id: TEST_USER_RECORD.id,
-        data: {
-          meta: updateMeta,
-        }
-      }, next),
-
-      next => controller.get({
-        username: TEST_USER.username,
-      }, (err, user) => {
-        if(err) return next(err)
-        t.deepEqual(user.meta, updateMeta, `the metadata update was correct`)
-        next()
-      }),
-
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
-    })
-
-  })
-
-  tape('user controller -> update password', (t) => {
-
-    const controller = getController()
-
-    async.series([
-      next => controller.update({
-        id: TEST_USER_RECORD.id,
-        data: {
-          password: 'newpassword',
-        }
-      }, next),
-
-      next => controller.checkPassword({
-        username: TEST_USER_RECORD.username,
-        password: 'newpassword',
-      }, (err, result) => {
-        if(err) return next(err)
-        t.ok(result, `the result was correct`)
-        next()
-      }),
-
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
-    })
-  })
-
-  tape('user controller -> attempt update token via normal update handler', (t) => {
-
-    const controller = getController()
-
-    controller.update({
+    await controller.update({
       id: TEST_USER_RECORD.id,
       data: {
-        server_side_key: 'notallowed',
+        meta: updateMeta,
       }
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.equal(err, `access denied`, `error message is correct`)
-      t.end()
     })
+
+    const user = await controller.get({
+      username: TEST_USER.username,
+    })
+
+    t.deepEqual(user.meta, updateMeta, `the metadata update was correct`)
   })
 
-  tape('user controller -> get token', (t) => {
+  asyncTest('user controller -> update password', async (t) => {
 
     const controller = getController()
 
-    async.waterfall([
-      (next) => async.parallel({
-        token: nextp => controller.getToken({
-          id: TEST_USER_RECORD.id,
-        }, nextp),
-        user: nextp => controller.get({
-          id: TEST_USER_RECORD.id,
-        }, nextp),
-      }, next),
-
-      (results, next) => {
-        const {
-          token,
-          user,
-        } = results
-        userUtils.decodeToken(token, config.tokenSecret, (err, decoded) => {
-          if(err) return next(err)
-          t.equal(decoded.id, user.id, `the id in the token is correct`)
-          t.equal(decoded.server_side_key, user.server_side_key, `the server_side_key in the token is correct`)
-          next()
-        })
-      },
-    ], (err) => {
-      t.notOk(err, `there was no error`)
-      t.end()
-    })
-  })
-
-  tape('user controller -> update token', (t) => {
-
-    const controller = getController()
-
-    async.series([
-      next => controller.updateToken({
-        id: TEST_USER_RECORD.id,
-      }, next),
-
-      next => {
-        controller.get({
-          id: TEST_USER_RECORD.id,
-        }, (err, result) => {
-          if(err) return next(err)
-          t.notEqual(result.server_side_key, TEST_USER_RECORD.server_side_key, 'the server_side_key is now different')
-          next()
-        })
+    await controller.update({
+      id: TEST_USER_RECORD.id,
+      data: {
+        password: 'newpassword',
       }
-    ], (err) => {
-      t.notOk(err, `there was no error`)
-      t.end()
     })
+
+    const result = await controller.checkPassword({
+      username: TEST_USER_RECORD.username,
+      password: 'newpassword',
+    })
+
+    t.ok(result, `the result was correct`)
   })
 
-  tape('user controller -> delete', (t) => {
+  asyncTest('user controller -> attempt update token via normal update handler', async (t) => {
 
     const controller = getController()
 
-    async.series([
+    let error = null
 
-      next => controller.delete({
+    try {
+      await controller.update({
         id: TEST_USER_RECORD.id,
-      }, next),
-
-      next => controller.count({}, (err, count) => {
-        if(err) return next(err)
-        t.equal(count, 0, `there were no users`)
-        next()
+        data: {
+          server_side_key: 'notallowed',
+        }
       })
-    ], (err) => {
-      t.notOk(err, `there was no error`)
-      t.end()
+    } catch(err) {
+      error = err
+    }
+    t.ok(error, `there was an error`)
+    t.equal(error.toString(), `Error: access denied`, `error message is correct`)
+  })
+
+  asyncTest('user controller -> get token', async (t) => {
+
+    const controller = getController()
+
+    const token = await controller.getToken({
+      id: TEST_USER_RECORD.id,
     })
 
+    const user = await controller.get({
+      id: TEST_USER_RECORD.id,
+    })
+
+    const decoded = await userUtils.decodeToken(token, config.tokenSecret)
+
+    t.equal(decoded.id, user.id, `the id in the token is correct`)
+    t.equal(decoded.server_side_key, user.server_side_key, `the server_side_key in the token is correct`)
+  })
+
+  asyncTest('user controller -> update token', async (t) => {
+
+    const controller = getController()
+
+    await controller.updateToken({
+      id: TEST_USER_RECORD.id,
+    })
+
+    const result = await controller.get({
+      id: TEST_USER_RECORD.id,
+    })
+
+    t.notEqual(result.server_side_key, TEST_USER_RECORD.server_side_key, 'the server_side_key is now different')
+  })
+
+  asyncTest('user controller -> delete', async (t) => {
+
+    const controller = getController()
+
+    await controller.delete({
+      id: TEST_USER_RECORD.id,
+    })
+
+    const count = await controller.count({})  
+    t.equal(count, 0, `there were no users`)
   })
   
 })
