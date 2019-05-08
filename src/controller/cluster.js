@@ -59,14 +59,14 @@ const ClusterController = ({ store, settings }) => {
         return all
       }, {})
 
-    clusters = clusters.filter(cluster => {
+    const filteredClusters = clusters.filter(cluster => {
       const clusterRole = roleMap[cluster.id]
       if(!clusterRole) return false
       return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
     })
 
     return loadMostRecentTasksForClusters({
-      clusters,
+      clusters: filteredClusters,
     })
   }
 

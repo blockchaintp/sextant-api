@@ -270,7 +270,7 @@ database.testSuiteWithDatabase(getConnection => {
     t.equal(tasks[0].action, TASK_ACTION['cluster.update'], `the new task has the correct type`)
     
   })
-  /*
+  
   asyncTest('cluster controller -> create cluster for superuser user', async (t) => {
   
     const controller = getController()
@@ -278,16 +278,13 @@ database.testSuiteWithDatabase(getConnection => {
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
     const testUser = userMap[PERMISSION_USER.superuser]
 
-    controller.create({
+    const cluster = await controller.create({
       user: testUser,
       data: clusterData,
-    }, tools.errorWrapper(t, (cluster) => {
-      t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
-      t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
-      testClusters[PERMISSION_USER.superuser] = cluster
-      t.end()
-    }))
- 
+    })
+    t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
+    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
+    testClusters[PERMISSION_USER.superuser] = cluster
   })
 
   asyncTest('cluster controller -> get cluster', async (t) => {
@@ -296,14 +293,11 @@ database.testSuiteWithDatabase(getConnection => {
 
     const testCluster = testClusters[PERMISSION_USER.superuser]
 
-    controller.get({
+    const cluster = await controller.get({
       id: testCluster.id,
-    }, tools.errorWrapper(t, (cluster) => {
-      t.equal(cluster.name, testCluster.name, `the cluster name is correct`)
-      t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(testCluster.desired_state), `the cluster desired_state is correct`)
-      t.end()
-    }))
- 
+    })
+    t.equal(cluster.name, testCluster.name, `the cluster name is correct`)
+    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(testCluster.desired_state), `the cluster desired_state is correct`)
   })
 
   asyncTest('cluster controller -> list clusters for superuser user', async (t) => {
@@ -312,12 +306,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     const testUser = userMap[PERMISSION_USER.superuser]
 
-    controller.list({
+    const clusters = await controller.list({
       user: testUser,
-    }, tools.errorWrapper(t, (clusters) => {
-      t.equal(clusters.length, 2, `there are 2 clusters`)
-      t.end()
-    }))
+    })
+    t.equal(clusters.length, 2, `there are 2 clusters`)
   })
 
   asyncTest('cluster controller -> list clusters for admin user', async (t) => {
@@ -326,12 +318,10 @@ database.testSuiteWithDatabase(getConnection => {
 
     const testUser = userMap[PERMISSION_USER.admin]
 
-    controller.list({
+    const clusters = await controller.list({
       user: testUser,
-    }, tools.errorWrapper(t, (clusters) => {
-      t.equal(clusters.length, 1, `there is 1 cluster`)
-      t.end()
-    }))
+    })
+    t.equal(clusters.length, 1, `there is 1 cluster`)
   })
 
   asyncTest('cluster controller -> list clusters for normal user', async (t) => {
@@ -340,24 +330,25 @@ database.testSuiteWithDatabase(getConnection => {
 
     const testUser = userMap[PERMISSION_USER.user]
 
-    controller.list({
+    const clusters = await controller.list({
       user: testUser,
-    }, tools.errorWrapper(t, (clusters) => {
-      t.equal(clusters.length, 0, `there are no clusters`)
-      t.end()
-    }))
+    })
+    t.equal(clusters.length, 0, `there are no clusters`)
   })
 
   asyncTest('cluster controller -> list clusters for no user', async (t) => {
 
     const controller = getController()
     
-    controller.list({
+    let error = null
 
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
+    try {
+      await controller.list({})
+    } catch(err) {
+      error = err
+    }
+
+    t.ok(error, `there was an error`)
   })
 
   asyncTest('cluster controller -> cannot delete a cluster with a running task', async (t) => {
@@ -367,43 +358,40 @@ database.testSuiteWithDatabase(getConnection => {
     const testCluster = testClusters[PERMISSION_USER.admin]
     const testUser = userMap[PERMISSION_USER.admin]
 
-    controller.delete({
-      user: testUser,
-      id: testCluster.id,
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.equal(err, `there are active tasks for this cluster`)
-      t.end()
-    })
+    let error = null 
+
+    try {
+      await controller.delete({
+        user: testUser,
+        id: testCluster.id,
+      })
+    } catch(err) {
+      error = err
+    }
+
+    t.ok(error, `there was an error`)
+    t.equal(error.toString(), `Error: there are active tasks for this cluster`)
   })
 
+  
   asyncTest('cluster controller -> update task', async (t) => {
 
     const store = Store(getConnection())
 
     const testCluster = testClusters[PERMISSION_USER.admin]
 
-    async.waterfall([
-      (next) => store.task.list({
-        cluster: testCluster.id
-      }, next),
-
-      (tasks, next) => {
-        store.task.update({
-          id: tasks[0].id,
-          data: {
-            status: TASK_STATUS.finished,
-          }
-        }, next)
-      },
-
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
+    const tasks = await store.task.list({
+      cluster: testCluster.id
     })
-    
-  })
 
+    await store.task.update({
+      id: tasks[0].id,
+      data: {
+        status: TASK_STATUS.finished,
+      }
+    })
+  })
+/*
   asyncTest('cluster controller -> delete a cluster', async (t) => {
 
     const controller = getController()
