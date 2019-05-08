@@ -1,7 +1,6 @@
 'use strict'
 
 const Promise = require('bluebird')
-const async = require('async')
 const config = require('../../src/config')
 const userUtils = require('../../src/utils/user')
 const UserStore = require('../../src/store/user')
