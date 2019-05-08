@@ -91,48 +91,37 @@ const SIMPLE_TASK_DATA = [{
   },
 }]
 
-const getTestUserData = (data, done) => {
-  async.parallel({
-    hashed_password: (next) => userUtils.getPasswordHash(data.password, next),
-  }, (err, values) => {
-    if(err) return done(err)
-    const userData = {
-      username: data.username,
-      permission: data.permission,
-      hashed_password: values.hashed_password,
-      server_side_key: userUtils.getTokenServerSideKey()
-    }
-    done(null, userData)
-  })
+const getTestUserData = async (data) => {
+
+  const hashed_password = await userUtils.getPasswordHash(data.password)
+
+  return {
+    username: data.username,
+    permission: data.permission,
+    hashed_password,
+    server_side_key: userUtils.getTokenServerSideKey()
+  }
 }
 
-const insertTestUsers = (databaseConnection, data, done) => {
+const insertTestUsers = async (databaseConnection, data) => {
 
-  if(!done) {
-    done = data
-    data = SIMPLE_USER_DATA
-  }
+  data = data || SIMPLE_USER_DATA
 
   const store = UserStore(databaseConnection)
 
   // map of usernames onto database records
   const userMap = {}
 
-  async.eachSeries(data, (userData, nextUser) => {
-    getTestUserData(userData, (err, data) => {
-      if(err) return nextUser(err)
-      store.create({
-        data
-      }, (err, user) => {
-        if(err) return nextUser(err)
-        userMap[user.username] = user
-        nextUser()
-      })
+  await Promise.each(data, async (userData) => {
+    const data = await getTestUserData(userData)
+    const user = await store.create({
+      data
     })
-  }, (err) => {
-    if(err) return done(err)
-    done(null, userMap)
+    userMap[user.username] = user
+    return user
   })
+
+  return userMap
 }
 
 const insertTestClusters = async (databaseConnection, data) => {
