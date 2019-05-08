@@ -2,7 +2,7 @@ const userUtils = require('../utils/user')
 
 const UserRoutes = (controllers) => {
 
-  const status = (req, res, next) => {
+  const status = async (req, res, next) => {
     const result = req.user ?
       userUtils.safe(req.user) :
       null
@@ -11,44 +11,43 @@ const UserRoutes = (controllers) => {
       .json(result)
   }
 
-  const hasInitialUser = (req, res, next) => {
-    controllers.user.count({}, (err, userCount) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(userCount > 0 ? true : false)
-    })
+  const hasInitialUser = async (req, res, next) => {
+    const userCount = await controllers.user.count({})
+    res
+      .status(200)
+      .json(userCount > 0 ? true : false)
   }
 
-  const login = (req, res, next) => {
+  const login = async (req, res, next) => {
     const { username, password } = req.body
 
-    controllers.user.checkPassword({
+    const ok = await controllers.user.checkPassword({
       username,
       password,
-    }, (err, ok) => {
-      if(err) return next(err)
-      if(!ok) {
-        res.status(403)
-        res.json({
-          error: `incorrect login details`
-        })
-      }
-      else {
+    })
 
-        controllers.user.get({
-          username,
-        }, (err, user) => {
-          if(err) return next(err)
-          req.login(userUtils.safe(user), (err) => {
-            if(err) return next(err)
-            res.status(200)
-            res.json({
-              ok: true,
-            })
-          })
-        })
-      }
+    if(!ok) {
+      res.status(403)
+      res.json({
+        error: `incorrect login details`
+      })
+      return
+    }
+
+    const user = await controllers.user.get({
+      username,
+    })
+
+    await new Promise((resolve, reject) => {
+      req.login(userUtils.safe(user), err => {
+        if(err) return reject(err)
+        resolve()
+      })
+    })
+
+    res.status(200)
+    res.json({
+      ok: true,
     })
   }
 
@@ -61,29 +60,23 @@ const UserRoutes = (controllers) => {
       })
   }
 
-  const list = (req, res, next) => {
-    controllers.user.list({}, (err, users) => {
-      if(err) return next(err)
-      users = users.map(userUtils.safe)
-      res
-        .status(200)
-        .json(users)
-    })
+  const list = async (req, res, next) => {
+    const users = await controllers.user.list({})
+    res
+      .status(200)
+      .json(users.map(userUtils.safe))
   }
 
-  const get = (req, res, next) => {
-    controllers.user.get({
+  const get = async (req, res, next) => {
+    const user = await controllers.user.get({
       id: req.params.id,
-    }, (err, user) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(userUtils.safe(user))
     })
+    res
+      .status(200)
+      .json(userUtils.safe(user))
   }
 
-  const update = (req, res, next) => {
-
+  const update = async (req, res, next) => {
     // we have already done rbac but we need to check
     // a  user is not changing their own role
     // this is to prevent:
@@ -102,53 +95,46 @@ const UserRoutes = (controllers) => {
       return next(`cannot change server_side_key via update`)
     }
     
-    controllers.user.update({
+    const user = await controllers.user.update({
       id: req.params.id,
       data: req.body,
-    }, (err, user) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(userUtils.safe(user))
     })
+
+    res
+      .status(200)
+      .json(userUtils.safe(user))
   }
 
-  const getToken = (req, res, next) => {
-    controllers.user.getToken({
+  const getToken = async (req, res, next) => {
+    const token = await controllers.user.getToken({
       id: req.params.id,
-    }, (err, token) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json({
-          token,
-        })
     })
+    res
+      .status(200)
+      .json({
+        token,
+      })
   }
 
-  const updateToken = (req, res, next) => {
-    controllers.user.updateToken({
+  const updateToken = async (req, res, next) => {
+    await controllers.user.updateToken({
       id: req.params.id,
-    }, (err) => {
-      if(err) return next(err)
-      res
-        .status(201)
-        .json({
-          ok: true,
-        })
     })
+    res
+      .status(201)
+      .json({
+        ok: true,
+      })
   }
 
-  const create = (req, res, next) => {
-    controllers.user.create(req.body, (err, user) => {
-      if(err) return next(err)
-      res
-        .status(201)
-        .json(userUtils.safe(user))
-    })
+  const create = async (req, res, next) => {
+    const user = await controllers.user.create(req.body)
+    res
+      .status(201)
+      .json(userUtils.safe(user))
   }
 
-  const del = (req, res, next) => {
+  const del = async (req, res, next) => {
 
     // make sure a user cannot delete themselves
     if(req.user.id == req.params.id) {
@@ -156,16 +142,15 @@ const UserRoutes = (controllers) => {
       return next(`cannot delete yourself`)
     }
 
-    controllers.user.delete({
+    await controllers.user.delete({
       id: req.params.id,
-    }, (err) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json({
-          ok: true,
-        })
     })
+      
+    res
+      .status(200)
+      .json({
+        ok: true,
+      })
   }
 
   return {

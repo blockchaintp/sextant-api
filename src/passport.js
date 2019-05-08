@@ -45,21 +45,26 @@ const PassportHandlers = ({
   app.use(passport.session())
 
   // JWT token based access
-  app.use((req, res, next) => {
-    if(req.headers && req.headers.authorization) {
-      const parts = req.headers.authorization.split(' ')
+  app.use(async (req, res, next) => {
 
-      if(parts.length != 2) {
-        res._code = 400
-        return next(`bad authorization header format`)
-      }
+    try {
 
-      const [ scheme, token ] = parts
+      if(req.headers && req.headers.authorization) {
+        const parts = req.headers.authorization.split(' ')
 
-      if (/^Bearer$/i.test(scheme)) {
-        userUtils.decodeToken(token, settings.tokenSecret, (err, decoded) => {
-          // no user if we have an error or no decoded token
-          if(err || !decoded) return next()
+        if(parts.length != 2) {
+          res._code = 400
+          return next(`bad authorization header format`)
+        }
+
+        const [ scheme, token ] = parts
+
+        if (/^Bearer$/i.test(scheme)) {
+
+          const decoded = await userUtils.decodeToken(token, settings.tokenSecret)
+
+          // no user if we have no decoded token
+          if(!decoded) return next()
 
           // no user if we don't have an id in the token
           if(!decoded.id) return next()
@@ -67,24 +72,27 @@ const PassportHandlers = ({
           // no user if we don't have a server_side_key in the token
           if(!decoded.server_side_key) return next()
 
-          controllers.user.get({
+          const user = await controllers.user.get({
             id: decoded.id,
-          }, (err, user) => {
-            if(err || !user || user.server_side_key != decoded.server_side_key) {
-              res._code = 403
-              return next(`access denied`)
-            }
-            req.user = userUtils.safe(user)
-            return next()
           })
-        })
-      } else {
-        res._code = 400
-        return next(`bad authorization header format`)
+            
+          if(!user || user.server_side_key != decoded.server_side_key) {
+            res._code = 403
+            return next(`access denied`)
+          }
+
+          req.user = userUtils.safe(user)
+        } else {
+          res._code = 400
+          return next(`bad authorization header format`)
+        }
+      }
+      else {
+        return next()
       }
     }
-    else {
-      return next()
+    catch(err) {
+      return next(err)
     }
   })
 
@@ -92,19 +100,13 @@ const PassportHandlers = ({
   passport.serializeUser((user, done) => {
     done(null, user.username)
   })
-  passport.deserializeUser((username, done) => {
-    controllers.user.get({
-      username
-    }, (err, user) => {
-      if(err) {
-        const errorInfo = {
-          type: 'deserializeUser',
-          error: err.toString()
-        }
-        pino.error(errorInfo)
-        return done(errorInfo)
-      }
-      else if(!user) {
+  passport.deserializeUser(async (username, done) => {
+    try {
+      const user = await controllers.user.get({
+        username
+      })
+
+      if(!user) {
         const errorInfo = {
           type: 'deserializeUser',
           error: `no user found`
@@ -113,9 +115,16 @@ const PassportHandlers = ({
         return done(errorInfo)
       }
       else {
-        return done(null, userUtils.safe(user))
+        return done(null, userUtils.safe(user)) 
       }
-    })
+    } catch(err) {
+      const errorInfo = {
+        type: 'deserializeUser',
+        error: err.toString()
+      }
+      pino.error(errorInfo)
+      return done(errorInfo)
+    }
   })
 }
 

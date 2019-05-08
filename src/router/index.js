@@ -1,25 +1,24 @@
+const asyncHandler = require('express-async-handler')
 const rbac = require('../rbac')
 
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
 
-const rbacMiddleware = (store, resource_type, method) => (req, res, next) => {
-  rbac(store, req.user, {
-    resource_type,
-    resource_id: req.params.id,
-    method,
-  }, (err) => {
-    if(err) {
-      res.status(403)
-      res.json({
-        error: err.toString(),
-      })
-    }
-    else {
-      return next()
-    }
-  })
+const rbacMiddleware = (store, resource_type, method) => async (req, res, next) => {
+  try {
+    await rbac(store, req.user, {
+      resource_type,
+      resource_id: req.params.id,
+      method,
+    })
+    next()
+  } catch(err) {
+    res.status(403)
+    res.json({
+      error: err.toString(),
+    })
+  }
 }
 
 const requireUser = (req, res, next) => {
@@ -43,30 +42,30 @@ const Routes = ({
   const user = UserRoutes(controllers)
   const cluster = ClusterRoutes(controllers)
 
-  app.get(basePath('/config/values'), config.values)
+  app.get(basePath('/config/values'), asyncHandler(config.values))
 
-  app.get(basePath('/user/status'), user.status)
-  app.get(basePath('/user/hasInitialUser'), user.hasInitialUser)
-  app.post(basePath('/user/login'), user.login)
-  app.get(basePath('/user/logout'), requireUser, user.logout)
+  app.get(basePath('/user/status'), asyncHandler(user.status))
+  app.get(basePath('/user/hasInitialUser'), asyncHandler(user.hasInitialUser))
+  app.post(basePath('/user/login'), asyncHandler(user.login))
+  app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout))
 
-  app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), user.list)
-  app.post(basePath('/user'), rbacMiddleware(store, 'user', 'create'), user.create)
-  app.get(basePath('/user/:id'), rbacMiddleware(store, 'user', 'get'), user.get)
-  app.put(basePath('/user/:id'), rbacMiddleware(store, 'user', 'update'), user.update)
-  app.get(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.getToken)
-  app.put(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), user.updateToken)
-  app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), user.delete)
+  app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), asyncHandler(user.list))
+  app.post(basePath('/user'), rbacMiddleware(store, 'user', 'create'), asyncHandler(user.create))
+  app.get(basePath('/user/:id'), rbacMiddleware(store, 'user', 'get'), asyncHandler(user.get))
+  app.put(basePath('/user/:id'), rbacMiddleware(store, 'user', 'update'), asyncHandler(user.update))
+  app.get(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), asyncHandler(user.getToken))
+  app.put(basePath('/user/:id/token'), rbacMiddleware(store, 'user', 'token'), asyncHandler(user.updateToken))
+  app.delete(basePath('/user/:id'), rbacMiddleware(store, 'user', 'delete'), asyncHandler(user.delete))
 
-  app.get(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'list'), cluster.list)
-  app.get(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'get'), cluster.get)
-  app.post(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'create'), cluster.create)
-  app.put(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'update'), cluster.update)
-  app.delete(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'delete'), cluster.delete)
-  app.get(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'get'), cluster.listRoles)
-  app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'update'), cluster.createRole)
-  app.delete(basePath('/clusters/:id/roles/:userid'), rbacMiddleware(store, 'cluster', 'update'), cluster.deleteRole)
-  app.get(basePath('/clusters/:id/tasks'), rbacMiddleware(store, 'cluster', 'get'), cluster.listTasks)
+  app.get(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'list'), asyncHandler(cluster.list))
+  app.get(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.get))
+  app.post(basePath('/clusters'), rbacMiddleware(store, 'cluster', 'create'), asyncHandler(cluster.create))
+  app.put(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.update))
+  app.delete(basePath('/clusters/:id'), rbacMiddleware(store, 'cluster', 'delete'), asyncHandler(cluster.delete))
+  app.get(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.listRoles))
+  app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.createRole))
+  app.delete(basePath('/clusters/:id/roles/:userid'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.deleteRole))
+  app.get(basePath('/clusters/:id/tasks'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.listTasks))
 }
 
 module.exports = Routes

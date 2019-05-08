@@ -160,7 +160,7 @@ app.testSuiteWithApp(({
       tools.sessionRequest(requestOptions, (err, res, body) => {
         t.notok(err, `there is no error: ${route.url}`)
         t.equal(res.statusCode, 403, `403 status: ${route.url}`)
-        t.equal(body.error, `access denied`, `correct error: ${route.url}`)
+        t.equal(body.error, `Error: access denied`, `correct error: ${route.url}`)
         nextRoute()
       })
     }, (err) => {
@@ -216,7 +216,7 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, 'access denied', 'correct error message')
+      t.equal(body.error, 'Error: access denied', 'correct error message')
       t.end()
     })
     
@@ -263,7 +263,6 @@ app.testSuiteWithApp(({
   })
 
   tape('user routes -> (as superuser) status', (t) => {
-
     tools.sessionRequest({
       t,
       method: 'get',
@@ -507,7 +506,7 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, `access denied`, `correct error`)
+      t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     })
     
@@ -523,7 +522,7 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, `access denied`, `correct error`)
+      t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     })
     
@@ -612,7 +611,7 @@ app.testSuiteWithApp(({
       tools.sessionRequest(requestOptions, (err, res, body) => {
         t.notok(err, `there is no error: ${route.url}`)
         t.equal(res.statusCode, 403, `403 status: ${route.url}`)
-        t.equal(body.error, `access denied`, `correct error: ${route.url}`)
+        t.equal(body.error, `Error: access denied`, `correct error: ${route.url}`)
         nextRoute()
       })
     }, (err) => {
@@ -698,7 +697,7 @@ app.testSuiteWithApp(({
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 403, `403 code`)
-      t.equal(body.error, `access denied`, `correct error`)
+      t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     })
     

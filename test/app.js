@@ -55,16 +55,14 @@ const testSuiteWithApp = (handler, opts) => {
       url: `http://127.0.0.1:${TEST_PORT}${config.baseUrl}`,
     })
 
-    tape('stop app', (t) => {
+    tape('stop app', async (t) => {
 
-      app.taskProcessor.stop((err) => {
+      await app.taskProcessor.stop()
+
+      server.close((err) => {
         t.notok(err, `there was no error`)
-        server.close((err) => {
-          t.notok(err, `there was no error`)
-          t.end()
-        })
+        t.end()
       })
-
     })
   })
 }
