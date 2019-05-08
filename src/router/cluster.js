@@ -1,114 +1,97 @@
 const ClusterRoutes = (controllers) => {
 
-  const list = (req, res, next) => {
-    controllers.cluster.list({
+  const list = async (req, res, next) => {
+    const data = await controllers.cluster.list({
       user: req.user,
       deleted: req.query.showDeleted == 'y',
-    }, (err, data) => {
-      if(err) return next(err)
+    })
+    res.json(data)
+  }
+
+  const get = async (req, res, next) => {
+    const data = await controllers.cluster.get({
+      id: req.params.id,
+    })
+    if(!data) {
+      res
+        .status(404)
+        .json({
+          error: `no cluster found with id: ${req.params.id}`,
+        })
+    }
+    else {
       res.json(data)
-    })
+    }
   }
 
-  const get = (req, res, next) => {
-    controllers.cluster.get({
-      id: req.params.id,
-    }, (err, data) => {
-      if(err) return next(err)
-      if(!data) {
-        res
-          .status(404)
-          .json({
-            error: `no cluster found with id: ${req.params.id}`,
-          })
-      }
-      else {
-        res.json(data)
-      }
-      
-    })
-  }
-
-  const create = (req, res, next) => {
-    controllers.cluster.create({
+  const create = async (req, res, next) => {
+    const data = await controllers.cluster.create({
       user: req.user,
       data: req.body,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .status(201)
-        .json(data)
     })
+    res
+      .status(201)
+      .json(data)
   }
 
-  const update = (req, res, next) => {
-    controllers.cluster.update({
+  const update = async (req, res, next) => {
+    const data = await controllers.cluster.update({
       id: req.params.id,
       user: req.user,
       data: req.body,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(data)
     })
+    res
+      .status(200)
+      .json(data)
   }
 
-  const del = (req, res, next) => {
-    controllers.cluster.delete({
+  const del = async (req, res, next) => {
+    const data = await controllers.cluster.delete({
       id: req.params.id,
       user: req.user,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(data)
     })
+    res
+      .status(200)
+      .json(data)
   }
 
-  const listRoles = (req, res, next) => {
-    controllers.cluster.getRoles({
+  const listRoles = async (req, res, next) => {
+    const data = await controllers.cluster.getRoles({
       id: req.params.id,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .json(data)
     })
+    res
+      .status(200)
+      .json(data)
   }
 
-  const createRole = (req, res, next) => {
-    controllers.cluster.createRole({
+  const createRole = async (req, res, next) => {
+    const data = await controllers.cluster.createRole({
       id: req.params.id,
       user: req.body.user,
       permission: req.body.permission,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .status(201)
-        .json(data)
     })
+    res
+      .status(201)
+      .json(data)
   }
 
-  const deleteRole = (req, res, next) => {
-    controllers.cluster.deleteRole({
+  const deleteRole = async (req, res, next) => {
+    const data = await controllers.cluster.deleteRole({
       id: req.params.id,
       user: req.params.userid,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .status(200)
-        .json(data)
     })
+    res
+      .status(200)
+      .json(data)
   }
 
-  const listTasks = (req, res, next) => {
-    controllers.cluster.getTasks({
+  const listTasks = async (req, res, next) => {
+    const data = await controllers.cluster.getTasks({
       id: req.params.id,
-    }, (err, data) => {
-      if(err) return next(err)
-      res
-        .json(data)
     })
+    res
+      .status(200)
+      .json(data)
   }
 
   return {
