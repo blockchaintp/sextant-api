@@ -1,5 +1,4 @@
 const config = require('../config')
-const databaseTools = require('../utils/database')
 const base64 = require('../utils/base64')
 
 const ClusterFileStore = (knex) => {
@@ -12,26 +11,20 @@ const ClusterFileStore = (knex) => {
 
       * cluster
 
-      * transaction - used if present
-  
   */
-  const list = (params, done) => {
-    if(!params.cluster) return done(`cluster must be given to store.clusterfile.list`)
+  const list = ({
+    cluster,
+  }, trx) => {
+    if(!cluster) throw new Error(`cluster must be given to store.clusterfile.list`)
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
 
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.clusterfile)
       .where({
         cluster: params.cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
   
   /*
@@ -42,30 +35,27 @@ const ClusterFileStore = (knex) => {
 
       * cluster
       * id or name
-      
-      * transaction - used if present
     
   */
-  const get = (params, done) => {
-    if(!params.cluster) return done(`cluster must be given to store.clusterfile.get`)
-    if(!params.id && !params.name) return done(`id or name must be given to store.clusterfile.get`)
+  const get = ({
+    cluster,
+    id,
+    name,
+  }, trx) => {
+    if(!cluster) throw new Error(`cluster must be given to store.clusterfile.get`)
+    if(!id && !name) throw new Error(`id or name must be given to store.clusterfile.get`)
 
     const queryParams = {
-      cluster: params.cluster,
+      cluster,
     }
 
-    if(params.id) queryParams.id = params.id
-    if(params.name) queryParams.name = params.name
+    if(id) queryParams.id = id
+    if(name) queryParams.name = name
 
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.clusterfile)
       .where(queryParams)
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .first()
   }
 
   /*
@@ -79,31 +69,30 @@ const ClusterFileStore = (knex) => {
         * name
         * rawData
         * base64Data
-      
-      * transaction - used if present
     
   */
-  const create = (params, done) => {
-    if(!params.data) return done(`data param must be given to store.clusterfile.create`)
-    if(!params.data.cluster) return done(`data.cluster param must be given to store.clusterfile.create`)
-    if(!params.data.name) return done(`data.name param must be given to store.clusterfile.create`)
-    if(!params.data.rawData && !params.data.base64Data) return done(`data.rawData or data.base64Data param must be given to store.clusterfile.create`)
+  const create = ({
+    data: {
+      cluster,
+      name,
+      rawData,
+      base64Data,
+    }
+  }, trx) => {
+    if(!cluster) throw new Error(`data.cluster param must be given to store.clusterfile.create`)
+    if(!name) throw new Error(`data.name param must be given to store.clusterfile.create`)
+    if(!rawData && !base64Data) throw new Error(`data.rawData or data.base64Data param must be given to store.clusterfile.create`)
 
     const insertData = {
-      cluster: params.data.cluster,
-      name: params.data.name,
-      base64data: params.data.base64Data || base64.encode(params.data.rawData),
+      cluster,
+      name,
+      base64data: base64Data || base64.encode(rawData),
     }
 
-    const sqlQuery = knex(config.TABLES.clusterfile)
+    return (trx || knex)(config.TABLES.clusterfile)
       .insert(insertData)
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -116,36 +105,36 @@ const ClusterFileStore = (knex) => {
       * id or name
       * data
         * rawData
-        
-      * transaction - used if present
-  
+    
   */
-  const update = (params, done) => {
+  const update = ({
+    cluster,
+    id,
+    name,
+    data: {
+      rawData,
+      base64Data,
+    }
+  }, trx) => {
 
-    if(!params.cluster) return done(`cluster must be given to store.clusterfile.update`)
-    if(!params.id && !params.name) return done(`id or name must be given to store.clusterfile.update`)
-    if(!params.data) return done(`data param must be given to store.clusterfile.update`)
-    if(!params.data.rawData && !params.data.base64Data) return done(`data.rawData or data.base64Data param must be given to store.clusterfile.update`)
+    if(!cluster) throw new Error(`cluster must be given to store.clusterfile.update`)
+    if(!id && !name) throw new Error(`id or name must be given to store.clusterfile.update`)
+    if(!rawData && !base64Data) throw new Error(`data.rawData or data.base64Data param must be given to store.clusterfile.update`)
 
     const queryParams = {
       cluster: params.cluster,
     }
 
-    if(params.id) queryParams.id = params.id
-    if(params.name) queryParams.name = params.name
+    if(id) queryParams.id = id
+    if(name) queryParams.name = name
 
-    const sqlQuery = knex(config.TABLES.clusterfile)
+    return (trx || knex)(config.TABLES.clusterfile)
       .where(queryParams)
       .update({
-        base64data: params.data.base64Data || base64.encode(params.data.rawData),
+        base64data: base64Data || base64.encode(rawData),
       })
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -157,30 +146,27 @@ const ClusterFileStore = (knex) => {
       * cluster
       * id or name
 
-      * transaction - used if present
-    
   */
-  const del = (params, done) => {
-    if(!params.cluster) return done(`cluster must be given to store.clusterfile.get`)
-    if(!params.id && !params.name) return done(`id or name must be given to store.clusterfile.get`)
+  const del = ({
+    cluster,
+    id,
+    name,
+  }, trx) => {
+    if(!cluster) throw new Error(`cluster must be given to store.clusterfile.get`)
+    if(!id && !name) throw new Error(`id or name must be given to store.clusterfile.get`)
 
     const queryParams = {
-      cluster: params.cluster,
+      cluster,
     }
 
-    if(params.id) queryParams.id = params.id
-    if(params.name) queryParams.name = params.name
+    if(id) queryParams.id = id
+    if(name) queryParams.name = name
     
-    const sqlQuery = knex(config.TABLES.clusterfile)
+    return (trx || knex)(config.TABLES.clusterfile)
       .where(queryParams)
       .del()
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   return {

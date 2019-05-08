@@ -1,5 +1,4 @@
 const config = require('../config')
-const databaseTools = require('../utils/database')
 
 const ClusterStore = (knex) => {
 
@@ -10,29 +9,25 @@ const ClusterStore = (knex) => {
     params:
 
       * deleted - include the deleted clusters in the list
-
-      * transaction - used if present
   
   */
-  const list = (params, done) => {
+  const list = ({
+    deleted,
+  }, trx) => {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.cluster
 
-    const sqlQuery = knex.select('*')
+    const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.cluster)
       .orderBy(orderBy.field, orderBy.direction)
 
-    if(!params.deleted) {
+    if(!deleted) {
       sqlQuery.whereNot({
         status: config.CLUSTER_STATUS.deleted,
       })
     }
 
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.allExtractor(done))
+    return sqlQuery
   }
   
   /*
@@ -43,23 +38,17 @@ const ClusterStore = (knex) => {
 
       * id
 
-      * transaction - used if present
-    
   */
-  const get = (params, done) => {
-    if(!params.id) return done(`id must be given to store.cluster.get`)
-
-    const sqlQuery = knex.select('*')
+  const get = ({
+    id,
+  }, trx) => {
+    if(!id) throw new Error(`id must be given to store.cluster.get`)
+    return (trx || knex).select('*')
       .from(config.TABLES.cluster)
       .where({
         id: params.id,
       })
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .first()
   }
 
   /*
@@ -73,32 +62,30 @@ const ClusterStore = (knex) => {
         * provision_type
         * capabilities
         * desired_state
-      
-      * transaction - used if present
     
   */
-  const create = (params, done) => {
-    if(!params.data) return done(`data param must be given to store.cluster.create`)
-    if(!params.data.name) return done(`data.name param must be given to store.cluster.create`)
-    if(!params.data.provision_type) return done(`data.provision_type param must be given to store.cluster.create`)
-    if(!params.data.desired_state) return done(`data.desired_state param must be given to store.cluster.create`)
-
-    const insertData = {
-      name: params.data.name,
-      provision_type: params.data.provision_type,
-      capabilities: params.data.capabilities,
-      desired_state: params.data.desired_state,
+  const create = ({
+    data: {
+      name,
+      provision_type,
+      capabilities,
+      desired_state,
     }
+  }, trx) => {
+    
+    if(!name) throw new Error(`data.name param must be given to store.cluster.create`)
+    if(!provision_type) throw new Error(`data.provision_type param must be given to store.cluster.create`)
+    if(!desired_state) throw new Error(`data.desired_state param must be given to store.cluster.create`)
 
-    const sqlQuery = knex(config.TABLES.cluster)
-      .insert(insertData)
+    return (trx || knex)(config.TABLES.cluster)
+      .insert({
+        name,
+        provision_type,
+        capabilities,
+        desired_state,
+      })
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -115,32 +102,23 @@ const ClusterStore = (knex) => {
         * desired_state
         * applied_state
         * maintenance_flag
-        
-        * transaction - used if present
   
   */
-  const update = (params, done) => {
+  const update = ({
+    id,
+    data,
+  }, trx) => {
 
-    const {
-      id,
-      data,
-    } = params
+    if(!id) throw new Error(`id must be given to store.cluster.update`)
+    if(!data) throw new Error(`data param must be given to store.cluster.update`)
 
-    if(!id) return done(`id must be given to store.cluster.update`)
-    if(!data) return done(`data param must be given to store.cluster.update`)
-
-    const sqlQuery = knex(config.TABLES.cluster)
+    return (trx || knex)(config.TABLES.cluster)
       .where({
-        id: params.id,
+        id,
       })
       .update(data)
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -153,26 +131,21 @@ const ClusterStore = (knex) => {
 
       * id
 
-      * transaction - used if present
-    
   */
-  const del = (params, done) => {
-    if(!params.id) return done(`id must be given to store.cluster.delete`)
+  const del = ({
+    id,
+  }, trx) => {
+    if(!id) throw new Error(`id must be given to store.cluster.delete`)
     
-    const sqlQuery = knex(config.TABLES.cluster)
+    return (trx || knex)(config.TABLES.cluster)
       .where({
-        id: params.id,
+        id,
       })
       .update({
         status: config.CLUSTER_STATUS.deleted,
       })
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   return {

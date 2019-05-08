@@ -1,5 +1,4 @@
 const config = require('../config')
-const databaseTools = require('../utils/database')
 
 const UserStore = (knex) => {
 
@@ -9,22 +8,14 @@ const UserStore = (knex) => {
 
     params:
 
-      * transaction - used if present
-  
   */
-  const list = (params, done) => {
+  const list = ({}, trx) => {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.user
 
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.user)
       .orderBy(orderBy.field, orderBy.direction)
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -40,22 +31,20 @@ const UserStore = (knex) => {
     one of id or username must be given
   
   */
-  const get = (params, done) => {
-    if(!params.id && !params.username) return done(`one of id or username must be given to store.user.get`)
+  const get = ({
+    id,
+    username,
+  }, trx) => {
+    if(!id && !username) throw new Error(`one of id or username must be given to store.user.get`)
 
     const query = {}
-    if(params.id) query.id = params.id
-    if(params.username) query.username = params.username
+    if(id) query.id = id
+    if(username) query.username = username
     
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.user)
       .where(query)
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .first()
   }
 
   /*
@@ -70,33 +59,32 @@ const UserStore = (knex) => {
         * server_side_key
         * permission
         * meta
-      
-      * transaction - used if present
+
   */
-  const create = (params, done) => {
-    if(!params.data) return done(`data param must be given to store.user.create`)
-    if(!params.data.username) return done(`data.username param must be given to store.user.create`)
-    if(!params.data.hashed_password) return done(`data.hashed_password param must be given to store.user.create`)
-    if(!params.data.server_side_key) return done(`data.server_side_key param must be given to store.user.create`)
-    if(!params.data.permission) return done(`data.permission param must be given to store.user.create`)
-
-    const insertData = {
-      username: params.data.username,
-      hashed_password: params.data.hashed_password,
-      server_side_key: params.data.server_side_key,
-      permission: params.data.permission,
-      meta: params.data.meta,
+  const create = ({
+    data: {
+      username,
+      hashed_password,
+      server_side_key,
+      permission,
+      meta,
     }
+  }, trx) => {
+    if(!username) throw new Error(`data.username param must be given to store.user.create`)
+    if(!hashed_password) throw new Error(`data.hashed_password param must be given to store.user.create`)
+    if(!server_side_key) throw new Error(`data.server_side_key param must be given to store.user.create`)
+    if(!permission) throw new Error(`data.permission param must be given to store.user.create`)
 
-    const sqlQuery = knex(config.TABLES.user)
-      .insert(insertData)
+    return (trx || knex)(config.TABLES.user)
+      .insert({
+        username,
+        hashed_password,
+        server_side_key,
+        permission,
+        meta,
+      })
       .returning('*')
-    
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -111,28 +99,24 @@ const UserStore = (knex) => {
         * hashed_password
         * permission
         * meta
-      
-      * transaction - used if present
     
     one of id or username must be given
   
   */
-  const update = (params, done) => {
-    if(!params.id) return done(`id must be given to store.user.update`)
-    if(!params.data) return done(`data param must be given to store.user.update`)
+  const update = ({
+    id,
+    data,
+  }, trx) => {
+    if(!id) throw new Error(`id must be given to store.user.update`)
+    if(!data) throw new Error(`data param must be given to store.user.update`)
 
-    const sqlQuery = knex(config.TABLES.user)
+    return (trx || knex)(config.TABLES.user)
       .where({
-        id: params.id,
+        id,
       })
-      .update(params.data)
+      .update(data)
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -142,25 +126,20 @@ const UserStore = (knex) => {
     params:
 
       * id
-
-      * transaction - used if present
     
   */
-  const del = (params, done) => {
-    if(!params.id) return done(`id must be given to store.user.delete`)
+  const del = ({
+    id,
+  }, trx) => {
+    if(!id) throw new Error(`id must be given to store.user.delete`)
 
-    const sqlQuery = knex(config.TABLES.user)
+    return (trx || knex)(config.TABLES.user)
       .where({
-        id: params.id,
+        id,
       })
       .del()
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   return {

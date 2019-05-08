@@ -1,5 +1,4 @@
 const config = require('../config')
-const databaseTools = require('../utils/database')
 
 const RoleStore = (knex) => {
 
@@ -11,23 +10,18 @@ const RoleStore = (knex) => {
 
       * user
   
-      * transaction - used if present
   */
 
-  const listForUser = (params, done) => {
-    if(!params.user) return done(`user must be given to store.role.listForUser`)
+  const listForUser = ({
+    user,
+  }, trx) => {
+    if(!user) throw new Error(`user must be given to store.role.listForUser`)
 
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.role)
       .where({
         user: params.user,
       })
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -39,25 +33,21 @@ const RoleStore = (knex) => {
       * resource_type
       * resource_id
   
-      * transaction - used if present
   */
 
-  const listForResource = (params, done) => {
-    if(!params.resource_type) return done(`resource_type must be given to store.role.listForResource`)
-    if(!params.resource_id) return done(`resource_type must be given to store.role.listForResource`)
+  const listForResource = ({
+    resource_type,
+    resource_id,
+  }, trx) => {
+    if(!resource_type) throw new Error(`resource_type must be given to store.role.listForResource`)
+    if(!resource_id) throw new Error(`resource_type must be given to store.role.listForResource`)
 
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.role)
       .where({
         resource_type: params.resource_type,
         resource_id: params.resource_id,
       })
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.allExtractor(done))
   }
 
   /*
@@ -70,27 +60,25 @@ const RoleStore = (knex) => {
       * resource_type
       * resource_id
   
-      * transaction - used if present
   */
 
-  const get = (params, done) => {
-    if(!params.user) return done(`user must be given to store.role.listForUser`)
-    if(!params.resource_type) return done(`resource_type must be given to store.role.listForUser`)
-    if(!params.resource_id) return done(`resource_id must be given to store.role.listForUser`)
+  const get = ({
+    user,
+    resource_type,
+    resource_id,
+  }, trx) => {
+    if(!user) throw new Error(`user must be given to store.role.listForUser`)
+    if(!resource_type) throw new Error(`resource_type must be given to store.role.listForUser`)
+    if(!resource_id) throw new Error(`resource_id must be given to store.role.listForUser`)
 
-    const sqlQuery = knex.select('*')
+    return (trx || knex).select('*')
       .from(config.TABLES.role)
       .where({
         user: params.user,
         resource_type: params.resource_type,
         resource_id: params.resource_id,
       })
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .first()
   }
 
   /*
@@ -105,30 +93,30 @@ const RoleStore = (knex) => {
         * resource_type
         * resource_id
       
-      * transaction - used if present
   
   */
-  const create = (params, done) => {
-    if(!params.data) return done(`data param must be given to store.role.create`)
-    if(!params.data.user) return done(`data.user param must be given to store.role.create`)
-    if(!params.data.permission) return done(`data.permission param must be given to store.role.create`)
-    if(!params.data.resource_type) return done(`data.resource_type param must be given to store.role.create`)
-    if(!params.data.resource_id) return done(`data.resource_id param must be given to store.role.create`)
+  const create = ({
+    data: {
+      user,
+      permission,
+      resource_type,
+      resource_id,
+    }
+  }, trx) => {
+    if(!user) throw new Error(`data.user param must be given to store.role.create`)
+    if(!permission) throw new Error(`data.permission param must be given to store.role.create`)
+    if(!resource_type) throw new Error(`data.resource_type param must be given to store.role.create`)
+    if(!resource_id) throw new Error(`data.resource_id param must be given to store.role.create`)
 
-    const sqlQuery = knex(config.TABLES.role)
+    return (trx || knex)(config.TABLES.role)
       .insert({
-        user: params.data.user,
-        permission: params.data.permission,
-        resource_type: params.data.resource_type,
-        resource_id: params.data.resource_id,
+        user,
+        permission,
+        resource_type,
+        resource_id,
       })
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   /*
@@ -138,24 +126,19 @@ const RoleStore = (knex) => {
     params:
 
      * id
-
-     * transaction - used if present
   
   */
-  const del = (params, done) => {
-    if(!params.id) return done(`id must be given to store.role.delete`)
-    const sqlQuery = knex(config.TABLES.role)
+  const del = ({
+    id,
+  }, trx) => {
+    if(!id) throw new Error(`id must be given to store.role.delete`)
+    return (trx || knex)(config.TABLES.role)
       .where({
-        id: params.id,
+        id,
       })
       .del()
       .returning('*')
-
-    if(params.transaction) {
-      sqlQuery.transacting(params.transaction)
-    }
-    
-    sqlQuery.asCallback(databaseTools.singleExtractor(done))
+      .get(0)
   }
 
   return {
