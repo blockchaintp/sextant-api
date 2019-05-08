@@ -3,6 +3,7 @@
 const tape = require('tape')
 const async = require('async')
 const tools = require('../tools')
+const asyncTest = require('../asyncTest')
 
 const database = require('../database')
 const fixtures = require('../fixtures')
@@ -16,22 +17,19 @@ database.testSuiteWithDatabase(getConnection => {
 
   let userMap = {}
 
-  tape('user store -> list no data', (t) => {
+  asyncTest('user store -> list no data', async (t) => {
 
     const store = UserStore(getConnection())
   
-    store.list({}, tools.errorWrapper(t, (users) => {
-      t.equal(users.length, 0, `there were no users`)
-      t.end()
-    }))
-    
+    const users = await store.list({})
+    t.equal(users.length, 0, `there were no users`)
   })
 
-  tape('user store -> create with missing values', (t) => {
+  asyncTest('user store -> create with missing values', async (t) => {
 
     const store = UserStore(getConnection())
 
-    tools.insertWithMissingValues(t, store, {
+    await tools.insertWithMissingValues(t, store, {
       username: 'apples',
       permission: 'admin',
       server_side_key: 'na',
@@ -39,109 +37,91 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('user store -> create with bad role', (t) => {
+  asyncTest('user store -> create with bad role', async (t) => {
   
     const store = UserStore(getConnection())
   
-    store.create({
-      data: {
-        username: 'apples',
-        hashed_password: 'na',
-        server_side_key: 'na',
-        permission: 'apples'
-      }
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
+    let error = null
+
+    try {
+      await store.create({
+        data: {
+          username: 'apples',
+          hashed_password: 'na',
+          server_side_key: 'na',
+          permission: 'apples'
+        }
+      })
+    }
+    catch(err) {
+      error = err
+    }
+    t.ok(error, `there was an error`) 
   })
   
-  tape('user store -> create users', (t) => {
-  
-    fixtures.insertTestUsers(getConnection(), tools.errorWrapper(t, (users) => {
-      t.deepEqual(users.admin.meta, {}, `the metadata defaults to empty object`)
-      userMap = users
-      t.end()
-    }))
-  
+  asyncTest('user store -> create users', async (t) => {
+    const users = await fixtures.insertTestUsers(getConnection())
+    t.deepEqual(users.admin.meta, {}, `the metadata defaults to empty object`)
+    userMap = users
   })
   
-  tape('user store -> list with ordered data', (t) => {
+  asyncTest('user store -> list with ordered data', async (t) => {
   
     const store = UserStore(getConnection())
 
     const correctOrder = [].concat(enumerations.PERMISSION_USER)
     correctOrder.sort()
   
-    store.list({}, tools.errorWrapper(t, (users) => {
-      t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
-      t.deepEqual(users.map(user => user.username), correctOrder, 'the users were in the correct order')
-      t.end()
-    }))
-    
+    const users = await store.list({})
+    t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
+    t.deepEqual(users.map(user => user.username), correctOrder, 'the users were in the correct order')
   })
   
-  tape('user store -> get from username then id', (t) => {
+  asyncTest('user store -> get from username then id', async (t) => {
   
     const store = UserStore(getConnection())
-  
-    async.waterfall([
-      (next) => store.get({
-        username: config.PERMISSION_USER.admin,
-      }, next),
-  
-      (usernameUser, next) => {
-        t.equal(usernameUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
-        store.get({
-          id: usernameUser.id,
-        }, next)
-      },
-  
-      (idUser, next) => {
-        t.equal(idUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
-        next()
-      },
-  
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
+
+    const usernameUser = await store.get({
+      username: config.PERMISSION_USER.admin,
     })
+
+    const idUser = await store.get({
+      id: usernameUser.id,
+    })
+
+    t.equal(usernameUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
+    t.equal(idUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
   })
   
-  tape('user store -> update user', (t) => {
+  asyncTest('user store -> update user', async (t) => {
   
     const store = UserStore(getConnection())
   
-    store.update({
+    const updateUser = await store.update({
       id: userMap[config.PERMISSION_USER.admin].id,
       data: {
         username: 'oranges',
       }
-    }, tools.errorWrapper(t, (firstUser) => {
-      t.equal(firstUser.username, 'oranges', `the new username is correct`)
-      store.get({
-        username: 'oranges',
-      }, tools.errorWrapper(t, (secondUser) => {
-        t.equal(firstUser.id, secondUser.id, `querying on the updated user is working`)
-        t.end()
-      }))
-    }))
-    
+    })
+
+    const getUser = await store.get({
+      username: 'oranges',
+    })
+
+    t.equal(updateUser.username, 'oranges', `the new username is correct`)
+    t.equal(updateUser.id, getUser.id, `querying on the updated user is working`)    
   })
   
-  tape('user store -> delete user', (t) => {
+  asyncTest('user store -> delete user', async (t) => {
   
     const store = UserStore(getConnection())
   
-    store.delete({
+    await store.delete({
       id: userMap[config.PERMISSION_USER.admin].id,
-    }, tools.errorWrapper(t, (user) => {
-      store.list({}, tools.errorWrapper(t, (users) => {
-        t.equal(users.length, fixtures.SIMPLE_USER_DATA.length - 1, `there is 1 less user`)
-        t.end()
-      }))
-    }))
+    })
     
+    const users = await store.list({})
+    t.equal(users.length, fixtures.SIMPLE_USER_DATA.length - 1, `there is 1 less user`)
   })
   
 })
