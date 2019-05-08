@@ -1,14 +1,11 @@
 'use strict'
 
-const tape = require('tape')
-const async = require('async')
 const asyncTest = require('../asyncTest')
 const database = require('../database')
 const UserController = require('../../src/controller/user')
 const Store = require('../../src/store')
 const userUtils = require('../../src/utils/user')
 const config = require('../../src/config')
-const tools = require('../tools')
 
 const {
   PERMISSION_USER,
