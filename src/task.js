@@ -5,15 +5,17 @@
   the next step
 */
 
-const Task = (generator, params) => {
+const Task = (generator, params = {}) => {
   
-  let cancelled = false
   const iterator = generator(params)
 
   let lastValue = null
 
   const next = async () => {
-    const yielded = iterator.next()
+    if(task.cancelled) {
+      return
+    }
+    const yielded = iterator.next(lastValue)
     if(yielded.done) {
       return
     }
@@ -28,17 +30,22 @@ const Task = (generator, params) => {
 
   const run = async () => {
     await next()
-    return lastValue
+    return task.cancelled ?
+      null :
+      lastValue
   }
 
   const cancel = () => {
-
+    task.cancelled = true
   }
 
-  return {
+  const task = {
     run,
     cancel,
+    cancelled: false,
   }
+
+  return task
 }
 
 module.exports = Task
