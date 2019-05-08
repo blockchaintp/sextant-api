@@ -1,45 +1,51 @@
 ## connect remote clusters
 
-Create the service account:
+To connect remote clusters we need:
 
-```bash
-kubectl create serviceaccount sextant
+ * the api server address
+ * a service account with `cluster-admin` role
+  * an access token
+  * a certificate authority
+
+Assuming we have `kubectl` access onto a cluster, we first create the service account and assign the cluster-admin role.
+
+TODO: isolate the permissions sextant needs and turn that into a more fine grained RBAC role so we don't need cluster-admin
+
+We decide upon the name of the service account and then namespace it will live in:
+
+```
+export SERVICEACCOUNT=sextant
+export NAMESPACE=default
 ```
 
-If RBAC enabled - assign cluster-admin role to service account:
+Then we run the [create-remote-credentials.sh](../scripts/create-remote-credentials.sh) script.
+
+Then we run the [get-remote-credentials.sh](../scripts/get-remote-credentials.sh) script.
+
+This will print out the apiServer, token and ca values that you need to submit to the sextant-api.
+
+You can test these values.  
+
+Copy the ca value and write it to a file like this:
 
 ```bash
-kubectl create clusterrolebinding sextant-admin \
-  --clusterrole=cluster-admin \
-  --serviceaccount=default:sextant
+echo -n '<BASE64 CA value from get-remote-credentials.sh>' | base64 -d > ca.txt
 ```
 
-Get the secret name for the service account:
+Then - get the decoded token:
 
 ```bash
-export SECRETNAME=$(kubectl get serviceaccounts sextant -o "jsonpath={.secrets[0].name}")
+export TOKEN=$(echo -n '<BASE64 CA value from get-remote-credentials.sh>' | base64 -d)
 ```
 
-Get the base64 bearer token:
+Finally copy the apiserver:
 
 ```bash
-export BASE64_BEARER_TOKEN=$(kubectl get secret $SECRETNAME -o "jsonpath={.data.token}")
+export API_SERVER='<api server value from get-remote-credentials.sh>'
 ```
 
-Get the base64 CA:
+We can use kubectl with these values:
 
 ```bash
-export BASE64_CA_FILE=$(kubectl get secret $SECRETNAME -o "jsonpath={.data['ca\.crt']}")
-```
-
-Get the api server address:
-
-```bash
-export APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-```
-
-Print out the details:
-
-```bash
-echo '{"apiServer":"'$APISERVER'","token":"'$BASE64_BEARER_TOKEN'","ca":"'$BASE64_CA_FILE'"}'
+kubectl --server $API_SERVER --token $TOKEN --certificate-authority ca.txt get no
 ```
