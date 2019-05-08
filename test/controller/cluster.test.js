@@ -541,6 +541,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
     })
 
+    t.equal(updatedNameCluster.desired_state.apiServer, cluster.desired_state.apiServer, `the cluster api server is the same`)
     t.equal(updatedNameCluster.name, 'my new name', `the cluster name is correct`)
     t.equal(updatedNameCluster.desired_state.token_id, token_id, `the desired_state token id is the same`)
     t.equal(updatedNameCluster.desired_state.ca_id, ca_id, `the desired_state ca id is the same`)
