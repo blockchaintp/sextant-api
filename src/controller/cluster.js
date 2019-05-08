@@ -410,14 +410,14 @@ const ClusterController = ({ store, settings }) => {
     // check there are no active tasks for this cluster
     const activeTasks = await store.task.activeForResource({
       cluster: id,
-    })
+    }, trx)
 
     if(activeTasks.length > 0) throw new Error(`there are active tasks for this cluster`)
 
     // create a delete task
-    store.task.create({
+    await store.task.create({
       data: {
-        user: params.user.id,
+        user: user.id,
         resource_type: config.RESOURCE_TYPES.cluster,
         resource_id: id,
         action: config.TASK_ACTION['cluster.delete'],

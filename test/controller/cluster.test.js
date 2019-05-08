@@ -9,7 +9,7 @@ const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
 const Store = require('../../src/store')
 
-const TaskProcessor = require('../taskProcessor')
+const TaskProcessor = require('../../src/taskprocessor')
 
 const config = require('../../src/config')
 const tools = require('../tools')
@@ -391,7 +391,7 @@ database.testSuiteWithDatabase(getConnection => {
       }
     })
   })
-/*
+
   asyncTest('cluster controller -> delete a cluster', async (t) => {
 
     const controller = getController()
@@ -403,76 +403,57 @@ database.testSuiteWithDatabase(getConnection => {
     const taskProcessor = TaskProcessor({
       store,
       handlers: {
-        [TASK_ACTION['cluster.delete']]: (params, done) => {
-          store.cluster.update({
+        [TASK_ACTION['cluster.delete']]: function* (params) {
+          yield store.cluster.update({
             id: params.task.resource_id,
             data: {
               status: CLUSTER_STATUS.deleted,
             },
-          }, done)
+          })
         },
       }
     })
 
-    const context = {}
+    await taskProcessor.start()
 
-    async.series([
-
-      next => taskProcessor.start(next),
-
-      next => controller.list({
-        user: testUser,
-        id: testCluster.id,
-      }, (err, clusters) => {
-        if(err) return next(err)
-        context.clusterCount = clusters.length
-        next()
-      }),
-
-      next => controller.delete({
-        user: testUser,
-        id: testCluster.id,
-      }, next),
-
-      // wait for the task processor
-      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
-
-      next => controller.list({
-        user: testUser,
-        id: testCluster.id,
-      }, (err, clusters) => {
-        if(err) return next(err)
-        t.equal(clusters.length, context.clusterCount - 1, `there is one less cluster in the list`)
-        next()
-      }),
-      
-      next => {
-        store.task.list({
-          cluster: testCluster.id
-        }, (err, tasks) => {
-          if(err) return next(err)
-          t.equal(tasks.length, 3, `there are 3 tasks`)
-          t.deepEqual(tasks.map(task => task.status), [
-            TASK_STATUS.finished,
-            TASK_STATUS.finished,
-            TASK_STATUS.finished
-          ], `the task statuses are correct`)
-          t.deepEqual(tasks.map(task => task.action), [
-            TASK_ACTION['cluster.delete'],
-            TASK_ACTION['cluster.update'],
-            TASK_ACTION['cluster.create']
-          ], `the task actions are correct`)
-          next()
-        })
-      },
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      taskProcessor.stop(() => {
-        t.end()
-      })
+    const clusters = await controller.list({
+      user: testUser,
+      id: testCluster.id,
     })
-  })
 
+    await controller.delete({
+      user: testUser,
+      id: testCluster.id,
+    })
+
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const newClusters = await controller.list({
+      user: testUser,
+      id: testCluster.id,
+    })
+
+    t.equal(newClusters.length, clusters.length - 1, `there is one less cluster in the list`)
+
+    const tasks = await store.task.list({
+      cluster: testCluster.id
+    })
+
+    t.equal(tasks.length, 3, `there are 3 tasks`)
+    t.deepEqual(tasks.map(task => task.status), [
+      TASK_STATUS.finished,
+      TASK_STATUS.finished,
+      TASK_STATUS.finished
+    ], `the task statuses are correct`)
+    t.deepEqual(tasks.map(task => task.action), [
+      TASK_ACTION['cluster.delete'],
+      TASK_ACTION['cluster.update'],
+      TASK_ACTION['cluster.create']
+    ], `the task actions are correct`)
+
+    await taskProcessor.stop()
+  })
+/*
   asyncTest('cluster controller -> create remote cluster with secrets and update the secrets', async (t) => {
     
     const controller = getController()
