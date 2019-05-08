@@ -23,13 +23,13 @@ const ConfigBackend = () => {
         version (string)
 
   */
-  const values = (params, done) => {
-    done(null, {
+  const values = () => {
+    return {
       version: packageJSON.version,
       forms,
       userAccessLevels: config.PERMISSION_USER_ACCESS_LEVELS,
       roleAccessLevels: config.PERMISSION_ROLE_ACCESS_LEVELS,
-    })
+    }
   }
 
   return {
