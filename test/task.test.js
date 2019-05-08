@@ -19,8 +19,11 @@ tape('task -> simple', async (t) => {
     })
   }
 
-  const task = Task(testTask, {
-    message: MESSAGE,
+  const task = Task({
+    generator: testTask, 
+    params: {
+      message: MESSAGE,
+    },
   })
 
   const finalValue = await task.run()
@@ -38,8 +41,11 @@ tape('task -> with error thrown', async (t) => {
     throw new Error('this is a test error')
   }
 
-  const task = Task(testTask, {
-    message: MESSAGE,
+  const task = Task({
+    generator: testTask,
+    params: {
+      message: MESSAGE,
+    },
   })
 
   let error = null
@@ -71,7 +77,9 @@ tape('task -> we get values back from yielding', async (t) => {
     return secondValue
   }
 
-  const task = Task(testTask)
+  const task = Task({
+    generator: testTask,
+  })
   const finalValue = await task.run()
 
   t.equal(finalValue, 2, `the final value is correct`)
@@ -95,7 +103,9 @@ tape('task -> we can cancel a task', async (t) => {
     return secondValue
   }
 
-  const task = Task(testTask)
+  const task = Task({
+    generator: testTask,
+  })
 
   await Promise.all([
     task.run(),
@@ -107,6 +117,47 @@ tape('task -> we can cancel a task', async (t) => {
     })
   ])
 
+  t.equal(didSeeSecondStage, false, `we did not get to the second stage`)
+  t.equal(task.cancelled, true, `the task was cancelled`)
+
+  t.end()
+})
+
+tape('task -> we can cancel a task via an on step complete handler', async (t) => {
+
+  let didSeeFirstStage = false
+  let didSeeSecondStage = false
+
+  function* testTask() {
+    const firstValue = yield new Promise(resolve => {
+      didSeeFirstStage = true
+      setTimeout(() => resolve(1), 1000)
+    })
+
+    const secondValue = yield new Promise(resolve => {
+      didSeeSecondStage = true
+      resolve(firstValue * 2)
+    })
+
+    return secondValue
+  }
+
+  const task = Task({
+    generator: testTask,
+    onStep: task => task.cancel(),
+  })
+
+  await Promise.all([
+    task.run(),
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        task.cancel()
+        resolve()
+      }, 100)
+    })
+  ])
+
+  t.equal(didSeeFirstStage, false, `we did not get to the first stage`)
   t.equal(didSeeSecondStage, false, `we did not get to the second stage`)
   t.equal(task.cancelled, true, `the task was cancelled`)
 
