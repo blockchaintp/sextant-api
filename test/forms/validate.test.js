@@ -1,5 +1,6 @@
 'use strict'
 
+const asyncTest = require('../asyncTest')
 const tape = require('tape')
 
 const validate = require('../../src/forms/validate')
@@ -31,56 +32,58 @@ const forms = {
   }]
 }
 
-tape('test basic validation fails', (t) => {
-  t.ok(true, 'am here')
-  validate({
-    schema: forms.basic,
-    data: {
-      name: '',
-    },
-  }, (err) => {
-    t.ok(err, `there was an error`)
-    t.equal(err.toString(), 'name validation error: the name is required', `the error text was correct`)
-    t.end()
-  })
+asyncTest('test basic validation fails', async (t) => {
+  
+  let error = null
+
+  try {
+    await validate({
+      schema: forms.basic,
+      data: {
+        name: '',
+      },
+    })
+  } catch(err) {
+    error = err
+  }
+
+  t.ok(error, `there was an error`)
+  t.equal(error.toString(), 'Error: name validation error: the name is required', `the error text was correct`)
 })
 
-tape('test basic validation passes', (t) => {
-  t.ok(true, 'am here')
-  validate({
+asyncTest('test basic validation passes', async (t) => {
+  await validate({
     schema: forms.basic,
     data: {
       name: 'hello',
     },
-  }, (err) => {
-    t.not(err, `there was no error`)
-    t.end()
   })
 })
 
 
-tape('test validator without required - no value', (t) => {
-  t.ok(true, 'am here')
-  validate({
+asyncTest('test validator without required - no value', async (t) => {
+  await validate({
     schema: forms.validateNoRequired,
     data: {
       url: '',
     },
-  }, (err) => {
-    t.notok(err, `there was no error`)
-    t.end()
   })
 })
 
-tape('test validator without required - bad value', (t) => {
-  t.ok(true, 'am here')
-  validate({
-    schema: forms.validateNoRequired,
-    data: {
-      url: 'apples',
-    },
-  }, (err) => {
-    t.ok(err, `there was an error`)
-    t.end()
-  })
+asyncTest('test validator without required - bad value', async (t) => {
+  
+  let error = null
+
+  try {
+    await validate({
+      schema: forms.validateNoRequired,
+      data: {
+        url: 'apples',
+      },
+    })
+  } catch(err) {
+    error = err
+  }
+
+  t.ok(error, `there was an error`)
 })
