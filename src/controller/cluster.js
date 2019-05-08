@@ -129,11 +129,13 @@ const ClusterController = ({ store, settings }) => {
     params:
 
      * cluster
+     * desired_state
      * secrets
   
   */
   const createClusterSecrets = async ({
     cluster,
+    desired_state,
     secrets,
   }, trx) => {
 
@@ -160,30 +162,26 @@ const ClusterController = ({ store, settings }) => {
     }
 
     const {
-      desired_state,
       applied_state,
     } = cluster
 
+    const updatedDesiredState = Object.assign({}, desired_state)
+
     if(createdSecrets.token) {
-      desired_state.token_id = createdSecrets.token.id
+      updatedDesiredState.token_id = createdSecrets.token.id
     }
     else if(applied_state && applied_state.token_id) {
-      desired_state.token_id = applied_state.token_id
+      updatedDesiredState.token_id = applied_state.token_id
     }
 
     if(createdSecrets.ca) {
-      desired_state.ca_id = createdSecrets.ca.id
+      updatedDesiredState.ca_id = createdSecrets.ca.id
     }
     else if(applied_state && applied_state.ca_id) {
-      desired_state.ca_id = applied_state.ca_id
+      updatedDesiredState.ca_id = applied_state.ca_id
     }
 
-    return store.cluster.update({
-      id: cluster.id,
-      data: {
-        desired_state,
-      },
-    }, trx)
+    return updatedDesiredState
   }
 
   /*
@@ -247,14 +245,23 @@ const ClusterController = ({ store, settings }) => {
         name,
         provision_type,
         capabilities,
-        desired_state: extractedSecrets.desired_state,
+        desired_state: {},
       },
     }, trx)
 
     // insert the cluster secrets for that cluster
-    await createClusterSecrets({
+    const updatedDesiredState = await createClusterSecrets({
       cluster,
       secrets: extractedSecrets.secrets,
+      desired_state: extractedSecrets.desired_state,
+    }, trx)
+
+    // update the cluster desired state with pointers to the secrets
+    const updatedCluster = await store.cluster.update({
+      id: cluster.id,
+      data: {
+        desired_state: updatedDesiredState,
+      },
     }, trx)
 
     // if the user is not a super-user - create a role for the user against the cluster
@@ -280,7 +287,7 @@ const ClusterController = ({ store, settings }) => {
       },
     }, trx)
 
-    return cluster
+    return updatedCluster
   })
 
   /*
@@ -349,16 +356,19 @@ const ClusterController = ({ store, settings }) => {
       data: formData,
     })
 
-    // save the cluster
-    await store.cluster.update({
-      id,
-      data: formData,
+    // insert the new secrets into the database
+    const updatedDesiredState = await createClusterSecrets({
+      cluster,
+      desired_state: formData.desired_state,
+      secrets: extractedSecrets.secrets,
     }, trx)
 
-    // insert the new secrets into the database
-    await createClusterSecrets({
-      cluster,
-      secrets: extractedSecrets.secrets,
+    formData.desired_state = updatedDesiredState
+
+    // save the cluster
+    const updatedCluster = await store.cluster.update({
+      id,
+      data: formData,
     }, trx)
 
     // if there is an update to the desired state
@@ -376,7 +386,7 @@ const ClusterController = ({ store, settings }) => {
       }, trx)
     }
 
-    return cluster
+    return updatedCluster
   })
 
   /*
