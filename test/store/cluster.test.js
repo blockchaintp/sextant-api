@@ -105,6 +105,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('cluster store -> update with bad status', async (t) => {
     const store = ClusterStore(getConnection())
+    let error = null
     try {
       await store.update({
         id: testCluster.id,
@@ -113,8 +114,9 @@ database.testSuiteWithDatabase(getConnection => {
         }
       })
     } catch(err) {
-      t.ok(err, `there was an error`)
+      error = err
     }
+    t.ok(error, `there was an error`)
   })
 
   asyncTest('cluster store -> update', async (t) => {
