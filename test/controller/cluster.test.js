@@ -1,8 +1,6 @@
 'use strict'
 
 const Promise = require('bluebird')
-const async = require('async')
-const tape = require('tape')
 const asyncTest = require('../asyncTest')
 const database = require('../database')
 const fixtures = require('../fixtures')
@@ -12,7 +10,6 @@ const Store = require('../../src/store')
 const TaskProcessor = require('../../src/taskprocessor')
 
 const config = require('../../src/config')
-const tools = require('../tools')
 
 const errorClusters = require('../fixtures/errorClusters')
 
