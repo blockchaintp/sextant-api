@@ -184,7 +184,7 @@ const insertTestDeployments = async (databaseConnection, cluster, data) => {
   return deploymentMap
 }
 
-const insertTestRoles = (databaseConnection, user, data) => {
+const insertTestRoles = async (databaseConnection, user, data) => {
 
   data = data || SIMPLE_ROLE_DATA
   
@@ -211,7 +211,7 @@ const insertTestRoles = (databaseConnection, user, data) => {
   return roleMap
 }
 
-const insertTestTasks = (databaseConnection, user, data) => {
+const insertTestTasks = async (databaseConnection, user, data) => {
 
   data = data || SIMPLE_TASK_DATA
   
