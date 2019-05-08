@@ -1,6 +1,8 @@
+const Promise = require('bluebird')
 const async = require('async')
 const config = require('../config')
 const userUtils = require('../utils/user')
+const clusterUtils = require('../utils/cluster')
 
 const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
@@ -28,53 +30,43 @@ const ClusterController = ({ store, settings }) => {
     given user
 
   */
-  const list = (params, done) => {
+  const list = async ({
+    user,
+    deleted,
+  }) => {
+    if(!user) throw new Error(`user required for controllers.cluster.list`)
 
-    const {
-      user,
+    const clusters = await store.cluster.list({
       deleted,
-    } = params
+    })
+    
+    // if it's a superuser - they can see all clusters
+    if(userUtils.isSuperuser(user)) {
+      return loadMostRecentTasksForClusters({
+        clusters,
+      })
+    }
 
-    if(!user) return done(`user required for controllers.cluster.list`)
+    // we need to load the roles that are for a cluster for the user
+    const roles = await store.role.listForUser({
+      user: user.id,
+    })
 
-    store.cluster.list({
-      deleted,
-    }, (err, clusters) => {
-      if(err) return done(err)
+    const roleMap = roles
+      .filter(role => role.resource_type == config.RESOURCE_TYPES.cluster)
+      .reduce((all, role) => {
+        all[role.resource_id] = role
+        return all
+      }, {})
 
-      // if it's a superuser - they can see all clusters
-      if(userUtils.isSuperuser(user)) {
-        return loadMostRecentTasksForClusters({
-          clusters,
-        }, done)
-      }
+    clusters = clusters.filter(cluster => {
+      const clusterRole = roleMap[cluster.id]
+      if(!clusterRole) return false
+      return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
+    })
 
-      // we need to load the roles that are for a cluster for the user
-      store.role.listForUser({
-        user: user.id,
-      }, (err, roles) => {
-        if(err) return done(err)
-
-        const roleMap = roles
-          .filter(role => role.resource_type == config.RESOURCE_TYPES.cluster)
-          .reduce((all, role) => {
-            all[role.resource_id] = role
-            return all
-          }, {})
-
-        clusters = clusters.filter(cluster => {
-          const clusterRole = roleMap[cluster.id]
-          if(!clusterRole) return false
-          return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
-        })
-
-        loadMostRecentTasksForClusters({
-          clusters,
-        }, done)
-
-        
-        
-      })       
+    return loadMostRecentTasksForClusters({
+      clusters,
     })
   }
 
@@ -87,31 +79,22 @@ const ClusterController = ({ store, settings }) => {
      * id
     
   */
-  const get = (params, done) => {
-    if(!params.id) return done(`id must be given to controller.cluster.update`)
-    
-    async.parallel({
-      cluster: next => store.cluster.get({
-        id: params.id,
-      }, next),
+  const get = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.update`)
 
-      task: next => store.task.mostRecentForResource({
-        cluster: params.id,
-      }, next),
-
-    }, (err, results) => {
-      if(err) return done(err)
-      const {
-        cluster,
-        task,
-      } = results
-
-      if(cluster && task) {
-        cluster.task = task
-      }
-      done(null, cluster)
+    const cluster = await store.cluster.get({
+      id,
     })
-    
+
+    const task = await store.task.mostRecentForResource({
+      cluster: id,
+    })
+
+    cluster.task = task
+
+    return cluster
   }
 
   /*
@@ -126,63 +109,17 @@ const ClusterController = ({ store, settings }) => {
   */
   const loadMostRecentTasksForClusters = ({
     clusters,
-  }, done) => {
-    async.map(clusters, (cluster, nextCluster) => {
-      store.task.mostRecentForResource({
-        cluster: cluster.id,
-      }, (err, task) => {
-        if(err) return nextCluster(err)
-        cluster.task = task
-        nextCluster(null, cluster)
-      })
-    }, done)
-  }
+  }) => Promise.map(clusters, async cluster => {
+    const task = await store.task.mostRecentForResource({
+      cluster: cluster.id,
+    })
 
-  /*
+    cluster.task = task
+    return cluster
+  })
+    
+
   
-    extract the cluster secrets from the desired state
-    this is so we never save secrets inside of tasks or cluster records
-    they are only saved in the clustersecret store (which can be replaced later)
-    the desired_state of the cluster will hold a reference to the id of the secret
-
-    will return an object with these props:
-
-     * desired_state - the desired_state with the secrets extracted
-     * secrets - an object of name onto an object with either base64Data or rawData
-  
-  */
-  const extracClusterSecrets = ({
-    desired_state,
-  }) => {
-
-    const secrets = {}
-
-    if(!desired_state) return {
-      desired_state,
-      secrets,
-    }
-
-    const returnDesiredState = Object.assign({}, desired_state)
-
-    if(returnDesiredState.token) {
-      secrets.token = {
-        base64Data: returnDesiredState.token,
-      }
-      delete(returnDesiredState.token)
-    }
-
-    if(returnDesiredState.ca) {
-      secrets.ca = {
-        base64Data: returnDesiredState.ca,
-      }
-      delete(returnDesiredState.ca)
-    }
-
-    return {
-      desired_state: returnDesiredState,
-      secrets,
-    }
-  }
 
   /*
   
@@ -195,78 +132,58 @@ const ClusterController = ({ store, settings }) => {
      * secrets
   
   */
-  const createClusterSecrets = ({
+  const createClusterSecrets = async ({
     cluster,
     secrets,
-    transaction,
-  }, done) => {
+  }, trx) => {
 
-    async.waterfall([
+    const createdSecrets = {}
 
-      // first - insert the cluster secret data into the database
-      (nextw) => {
-        async.parallel({
-          token: nextp => {
-            if(!secrets.token) return nextp()
-            store.clustersecret.create({
-              data: {
-                cluster: cluster.id,
-                name: 'token',
-                base64Data: secrets.token.base64Data,
-              },
-              transaction,
-            }, nextp)
-          },
-    
-          ca: nextp => {
-            if(!secrets.ca) return nextp()
-            store.clustersecret.create({
-              data: {
-                cluster: cluster.id,
-                name: 'ca',
-                base64Data: secrets.ca.base64Data,
-              },
-              transaction,
-            }, nextp)
-          },
-        }, nextw)
+    if(secrets.token) {
+      createdSecrets.token = await store.clustersecret.create({
+        data: {
+          cluster: cluster.id,
+          name: 'token',
+          base64Data: secrets.token.base64Data,
+        },
+      }, trx)
+    }
+
+    if(secrets.ca) {
+      createdSecrets.ca = await store.clustersecret.create({
+        data: {
+          cluster: cluster.id,
+          name: 'ca',
+          base64Data: secrets.ca.base64Data,
+        },
+      }, trx)
+    }
+
+    const {
+      desired_state,
+      applied_state,
+    } = cluster
+
+    if(createdSecrets.token) {
+      desired_state.token_id = createdSecrets.token.id
+    }
+    else if(applied_state && applied_state.token_id) {
+      desired_state.token_id = applied_state.token_id
+    }
+
+    if(createdSecrets.ca) {
+      desired_state.ca_id = createdSecrets.ca.id
+    }
+    else if(applied_state && applied_state.ca_id) {
+      desired_state.ca_id = applied_state.ca_id
+    }
+
+    return store.cluster.update({
+      id: cluster.id,
+      data: {
+        desired_state,
       },
-
-      // if the secrets were provided - update the desired state to point at the
-      // clustersecret id
-      // otherwise - use the existing pointers in the actual state
-      (secrets, nextw) => {
-
-        const {
-          desired_state,
-          applied_state,
-        } = cluster
-
-        if(secrets.token) {
-          desired_state.token_id = secrets.token.id
-        }
-        else if(applied_state && applied_state.token_id) {
-          desired_state.token_id = applied_state.token_id
-        }
-
-        if(secrets.ca) {
-          desired_state.ca_id = secrets.ca.id
-        }
-        else if(applied_state && applied_state.ca_id) {
-          desired_state.ca_id = applied_state.ca_id
-        }
-
-        store.cluster.update({
-          id: cluster.id,
-          data: {
-            desired_state,
-          },
-          transaction,
-        }, nextw)
-      },
-
-    ], done)
-    
+    }, trx)
   }
 
   /*
@@ -286,105 +203,85 @@ const ClusterController = ({ store, settings }) => {
     user on this cluster
     
   */
-  const create = (params, done) => {
-
-    const {
-      user,
-      data,
-    } = params
-    
-    if(!user) return done(`user required for controllers.cluster.create`)
-    if(!data) return done(`data required for controllers.cluster.create`)
-    if(!data.name) return done(`data.name required for controllers.cluster.create`)
-    if(!data.provision_type) return done(`data.provision_type required for controllers.cluster.create`)
-    if(!data.desired_state) return done(`data.desired_state required for controllers.cluster.create`)
-
-    if(!CLUSTER_PROVISION_TYPE[data.provision_type]) return done(`unknown provision_type: ${data.provision_type}`)
-
-    const {
+  const create = ({
+    user,
+    data: {
+      name,
+      provision_type,
       desired_state,
-      secrets,
-    } = extracClusterSecrets({
-      desired_state: data.desired_state,
+      capabilities,
+    }
+  }) => store.transaction(async trx => {
+
+    if(!user) throw new Error(`user required for controllers.cluster.create`)
+    if(!name) throw new Error(`data.name required for controllers.cluster.create`)
+    if(!provision_type) throw new Error(`data.provision_type required for controllers.cluster.create`)
+    if(!desired_state) throw new Error(`data.desired_state required for controllers.cluster.create`)
+
+    if(!CLUSTER_PROVISION_TYPE[provision_type]) throw new Error(`unknown provision_type: ${provision_type}`)
+
+    const extractedSecrets = clusterUtils.extractClusterSecrets({
+      desired_state,
     })
 
-    store.transaction((transaction, finished) => {
 
-      async.waterfall([
+    // validate the incoming form data
+    await validate({
+      schema: clusterForms.server[provision_type].add,
+      data: {
+        name,
+        provision_type,
+        desired_state,
+        capabilities,
+      },
+    })
 
-        // validate the input data
-        (next) => validate({
-          schema: clusterForms.server[data.provision_type].add,
-          data,
-        }, next),
+    // check there is no cluster already with that name
+    const clusters = await store.cluster.list({})
+    const existingCluster = clusters.find(cluster => cluster.name.toLowerCase() == name.toLowerCase())
+    if(existingCluster) throw new Error(`there is already a cluster with the name ${name}`)
 
-        // check there is not a cluster with that name already
-        (ok, next) => store.cluster.list({}, (err, clusters) => {
-          if(err) return next(err)
-          const existingCluster = clusters.find(cluster => cluster.name.toLowerCase() == data.name.toLowerCase())
-          if(existingCluster) return next(`there is already a cluster with the name ${data.name}`)
-          next(null, true)
-        }),
+    // create the cluster record
+    const cluster = await store.cluster.create({
+      data: {
+        name,
+        provision_type,
+        capabilities,
+        desired_state: extractedSecrets.desired_state,
+      },
+    }, trx)
 
-        // create the cluster record
-        (ok, next) => store.cluster.create({
-          data: {
-            name: data.name,
-            provision_type: data.provision_type,
-            capabilities: data.capabilities,
-            desired_state,
-          },
-          transaction,
-        }, next),
+    // insert the cluster secrets for that cluster
+    await createClusterSecrets({
+      cluster,
+      secrets: extractedSecrets.secrets,
+    }, trx)
 
-        // create the cluster secrets and update the desired_state pointing to them
-        (cluster, next) => createClusterSecrets({
-          cluster,
-          secrets,
-          transaction,
-        }, next),
-
-        // create the user role if needed
-        (cluster, next) => {
-          if(userUtils.isSuperuser(user)) return next(null, cluster)
-          store.role.create({
-            data: {
-              user: user.id,
-              permission: config.PERMISSION_ROLE.write,
-              resource_type: config.RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
-            },
-            transaction,
-          }, (err, role) => {
-            if(err) return next(err)
-            next(null, cluster)
-          })
+    // if the user is not a super-user - create a role for the user against the cluster
+    if(!userUtils.isSuperuser(user)) {
+      await store.role.create({
+        data: {
+          user: user.id,
+          permission: config.PERMISSION_ROLE.write,
+          resource_type: config.RESOURCE_TYPES.cluster,
+          resource_id: cluster.id,
         },
+      }, trx)
+    }
 
-        // create the task to create the cluster
-        (cluster, next) => {
-          store.task.create({
-            data: {
-              user: user.id,
-              resource_type: config.RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
-              action: config.TASK_ACTION['cluster.create'],
-              restartable: true,
-              payload: {},
-            },
-            transaction,
-          }, (err, task) => {
-            if(err) return next(err)
-            next(null, cluster)
-          })
-        },
+    await store.task.create({
+      data: {
+        user: user.id,
+        resource_type: config.RESOURCE_TYPES.cluster,
+        resource_id: cluster.id,
+        action: config.TASK_ACTION['cluster.create'],
+        restartable: true,
+        payload: {},
+      },
+    }, trx)
 
-      ], finished)
-    }, done)
-    
-  }
-
-  
+    return cluster
+  })
 
   /*
   
@@ -401,18 +298,17 @@ const ClusterController = ({ store, settings }) => {
         * maintenance_flag
     
   */
-  const update = (params, done) => {
+  const update = ({
+    id,
+    user,
+    data,
+  }) => store.transaction(async trx => {
 
-    const {
-      id,
-      user,
-      data,
-    } = params
+    if(!id) throw new Error(`id must be given to controller.cluster.update`)
+    if(!user) throw new Error(`user must be given to controller.cluster.update`)
+    if(!data) throw new Error(`data must be given to controller.cluster.update`)
 
-    if(!id) return done(`id must be given to controller.cluster.update`)
-    if(!user) return done(`user must be given to controller.cluster.update`)
-    if(!data) return done(`data must be given to controller.cluster.update`)
-
+    // extract the fields that are actually given in the payload
     const formData = ([
       'name',
       'provision_type',
@@ -423,88 +319,65 @@ const ClusterController = ({ store, settings }) => {
       return all
     }, {})
 
-    const {
-      desired_state,
-      secrets,
-    } = extracClusterSecrets({
+    // extract the secrets from the form data
+    const extractedSecrets = clusterUtils.extractClusterSecrets({
       desired_state: formData.desired_state,
     })
 
     // inject the processed desired state into the submission data
-    if(desired_state) {
-      formData.desired_state = desired_state
+    if(formData.desired_state) {
+      formData.desired_state = extractedSecrets.desired_state
     }
 
-    store.transaction((transaction, finished) => {
+    // check to see if there are active tasks for this cluster
+    const activeTasks = await store.task.activeForResource({
+      cluster: id,
+    }, trx)
 
-      async.waterfall([
+    if(activeTasks.length > 0) throw new Error(`there are active tasks for this cluster`)
 
-        // check to see if there is a running or cancelling tasks for the given cluster
-        // if there is, don't allow the update
-        (next) => {
-          store.task.activeForResource({
-            cluster: id,
-          }, (err, activeTasks) => {
-            if(err) return next(err)
-            if(activeTasks.length > 0) return next(`there are active tasks for this cluster`)
-            next(null, true)
-          })
+    // get the existing cluster
+    const cluster = await store.cluster.get({
+      id,
+    }, trx)
+
+    if(!cluster) throw new Error(`no cluster with that id found: ${id}`)
+
+    // validate the form data
+    await validate({
+      schema: clusterForms.server[cluster.provision_type].edit,
+      data: formData,
+    })
+
+    // save the cluster
+    await store.cluster.update({
+      id,
+      data: formData,
+    }, trx)
+
+    // insert the new secrets into the database
+    await createClusterSecrets({
+      cluster,
+      secrets: extractedSecrets.secrets,
+    }, trx)
+
+    // if there is an update to the desired state
+    // trigger a task to update it
+    if(data.desired_state) {
+      await store.task.create({
+        data: {
+          user: user.id,
+          resource_type: config.RESOURCE_TYPES.cluster,
+          resource_id: cluster.id,
+          action: config.TASK_ACTION['cluster.update'],
+          restartable: true,
+          payload: {},
         },
+      }, trx)
+    }
 
-        // get the cluster to a) make sure it exists and b) to get the provision type
-        // so we know what type of form validation we need to do
-        (ok, next) => store.cluster.get({
-          id,
-        }, next),
-
-        // validate the input data
-        (cluster, next) => {
-          if(!cluster) return next(`no cluster with that id found: ${id}`)
-          validate({
-            schema: clusterForms.server[cluster.provision_type].edit,
-            data: formData,
-          }, next)
-        },
-
-        (ok, next) => store.cluster.update({
-          id,
-          data: formData,
-          transaction,
-        }, next),
-
-        (cluster, next) => {
-          createClusterSecrets({
-            cluster,
-            secrets,
-            transaction,
-          }, next)
-        },
-
-        // if desired_state is given - we trigger a new task to update the cluster
-        (cluster, next) => {
-
-          if(!data.desired_state) return next(null, cluster)
-
-          store.task.create({
-            data: {
-              user: user.id,
-              resource_type: config.RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
-              action: config.TASK_ACTION['cluster.update'],
-              restartable: true,
-              payload: {},
-            },
-            transaction,
-          }, (err, task) => {
-            if(err) return next(err)
-            next(null, cluster)
-          })
-        },
-
-      ], finished)
-
-    }, done)
-  }
+    return cluster
+  })
 
   /*
   
@@ -516,56 +389,35 @@ const ClusterController = ({ store, settings }) => {
      * id
     
   */
-  const del = (params, done) => {
+  const del = ({
+    user,
+    id,
+  }) => store.transaction(async trx => {
 
-    const {
-      user,
-      id,
-    } = params
+    if(!user) throw new Error(`user required for controllers.cluster.delete`)
+    if(!id) throw new Error(`id must be given to controller.cluster.delete`) 
 
-    if(!user) return done(`user required for controllers.cluster.delete`)
-    if(!id) return done(`id must be given to controller.cluster.delete`) 
+    // check there are no active tasks for this cluster
+    const activeTasks = await store.task.activeForResource({
+      cluster: id,
+    })
 
-    
-    // check to see if there is a running or cancelling tasks for the given cluster
-    // if there is, don't allow the update
+    if(activeTasks.length > 0) throw new Error(`there are active tasks for this cluster`)
 
-    store.transaction((transaction, finished) => {
+    // create a delete task
+    store.task.create({
+      data: {
+        user: params.user.id,
+        resource_type: config.RESOURCE_TYPES.cluster,
+        resource_id: id,
+        action: config.TASK_ACTION['cluster.delete'],
+        restartable: true,
+        payload: {},
+      },
+    }, trx)
 
-      async.waterfall([
-
-        (next) => {
-          store.task.activeForResource({
-            cluster: id,
-          }, (err, activeTasks) => {
-            if(err) return next(err)
-            if(activeTasks.length > 0) return next(`there are active tasks for this cluster`)
-            next(null, true)
-          })
-        },
-
-        (cluster, next) => {
-
-          store.task.create({
-            data: {
-              user: params.user.id,
-              resource_type: config.RESOURCE_TYPES.cluster,
-              resource_id: id,
-              action: config.TASK_ACTION['cluster.delete'],
-              restartable: true,
-              payload: {},
-            },
-            transaction,
-          }, (err, task) => {
-            if(err) return next(err)
-            next(null, cluster)
-          })
-        },
-
-      ], finished)
-
-    }, done)
-  }
+    return true
+  })
 
   /*
   
@@ -576,32 +428,23 @@ const ClusterController = ({ store, settings }) => {
      * id
     
   */
-  const getRoles = (params, done) => {
-    const {
-      id,
-    } = params
+  const getRoles = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.getRoles`)
 
-    if(!id) return done(`id must be given to controller.cluster.getRoles`)
+    const roles = await store.role.listForResource({
+      resource_type: 'cluster',
+      resource_id: id,
+    })
 
-    async.waterfall([
-      (next) => store.role.listForResource({
-        resource_type: 'cluster',
-        resource_id: id,
-      }, next),
-
-      // load the user for each role
-      (roles, next) => {
-        async.map(roles, (role, nextRole) => {
-          store.user.get({
-            id: role.user,
-          }, (err, user) => {
-            if(err) return nextRole(err)
-            role.userRecord = userUtils.safe(user)
-            nextRole(null, role)
-          })
-        }, next)
-      }
-    ], done)
+    return Promise.map(roles, async role => {
+      const user = await store.user.get({
+        id: role.user,
+      })
+      role.userRecord = userUtils.safe(user)
+      return role
+    })
   }
 
   /*
@@ -615,26 +458,24 @@ const ClusterController = ({ store, settings }) => {
      * permission
     
   */
-  const createRole = (params, done) => {
-    const {
-      id,
-      user,
-      permission,
-    } = params
+  const createRole = ({
+    id,
+    user,
+    permission,
+  }) => store.transaction(trx => {
+    if(!id) throw new Error(`id must be given to controller.cluster.createRole`)
+    if(!user) throw new Error(`user must be given to controller.cluster.createRole`)
+    if(!permission) throw new Error(`permission must be given to controller.cluster.createRole`)
 
-    if(!id) return done(`id must be given to controller.cluster.createRole`)
-    if(!user) return done(`user must be given to controller.cluster.createRole`)
-    if(!permission) return done(`permission must be given to controller.cluster.createRole`)
-
-    store.role.create({
+    return store.role.create({
       data: {
         resource_type: 'cluster',
         resource_id: id,
         user,
         permission,
       },
-    }, done)
-  }
+    }, trx)
+  })
 
   /*
   
@@ -646,31 +487,25 @@ const ClusterController = ({ store, settings }) => {
      * user
     
   */
-  const deleteRole = (params, done) => {
-    const {
-      id,
-      user,
-    } = params
+  const deleteRole = ({
+    id,
+    user,
+  }) => store.transaction(async trx => {
+    if(!id) throw new Error(`id must be given to controller.cluster.createRole`)
+    if(!user) throw new Error(`user must be given to controller.cluster.createRole`)
 
-    if(!id) return done(`id must be given to controller.cluster.createRole`)
-    if(!user) return done(`user must be given to controller.cluster.createRole`)
+    const roles = await store.role.listForResource({
+      resource_type: 'cluster',
+      resource_id: id,
+    }, trx)
 
-    async.waterfall([
-      (next) => store.role.listForResource({
-        resource_type: 'cluster',
-        resource_id: id,
-      }, next),
+    const role = roles.find(role => role.user == user)
+    if(!role) throw new Error(`no role for user ${user} found for cluster ${id}`)
 
-      // find the role for the given user
-      (roles, next) => {
-        const role = roles.find(role => role.user == user)
-        if(!role) return next(`no role for user ${user} found for cluster ${id}`)
-        store.role.delete({
-          id: role.id,
-        }, next)
-      }
-    ], done)
-  }
+    return store.role.delete({
+      id: role.id,
+    }, trx)
+  })
 
   /*
   
@@ -681,16 +516,14 @@ const ClusterController = ({ store, settings }) => {
      * id
     
   */
-  const getTasks = (params, done) => {
-    const {
-      id,
-    } = params
+  const getTasks = ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.getTasks`)
 
-    if(!id) return done(`id must be given to controller.cluster.getTasks`)
-
-    store.task.list({
+    return store.task.list({
       cluster: id,
-    }, done)
+    })
   }
 
   return {
