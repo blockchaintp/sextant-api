@@ -25,7 +25,7 @@ const testSuiteWithApp = (handler, opts) => {
   let server = null
 
   database.testSuiteWithDatabase((getConnection, connectionSettings) => {
-    tape('setup app', (t) => {
+    tape('setup app', async (t) => {
 
       const knex = getConnection()
 
@@ -38,9 +38,7 @@ const testSuiteWithApp = (handler, opts) => {
         taskHandlers,
       })
 
-      app.taskProcessor.start((err) => {
-        
-      })
+      await app.taskProcessor.start()
 
       server = app.listen(TEST_PORT, (err) => {
         t.notok(err, `there was no error`)
