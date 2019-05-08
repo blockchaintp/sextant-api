@@ -40,10 +40,10 @@ const TaskStore = (knex) => {
 
     if(user) query.user = user
 
-    let status = []
+    let queryStatus = []
 
     if(status) {
-      status = typeof(status) === 'string' ? [status] : status
+      queryStatus = typeof(status) === 'string' ? [status] : status
 
       const badStatuses = status.filter(status => enumerations.TASK_STATUS.indexOf(status) < 0)
 
@@ -58,17 +58,17 @@ const TaskStore = (knex) => {
       .from(config.TABLES.task)
       .orderBy(orderBy.field, orderBy.direction)
 
-    if(Object.keys(query).length > 0 && status.length > 0) {
+    if(Object.keys(query).length > 0 && queryStatus.length > 0) {
       sqlQuery
-        .whereIn('status', status)
+        .whereIn('status', queryStatus)
         .andWhere(query)
     }
     else if(Object.keys(query).length > 0) {
       sqlQuery.where(query)
     }
-    else if(status.length > 0) {
+    else if(queryStatus.length > 0) {
       sqlQuery
-        .whereIn('status', status)
+        .whereIn('status', queryStatus)
     }
 
     if(limit) {
