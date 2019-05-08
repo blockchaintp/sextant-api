@@ -1,5 +1,6 @@
 'use strict'
 
+const Promise = require('bluebird')
 const async = require('async')
 const config = require('../../src/config')
 const userUtils = require('../../src/utils/user')
@@ -134,30 +135,26 @@ const insertTestUsers = (databaseConnection, data, done) => {
   })
 }
 
-const insertTestClusters = (databaseConnection, data, done) => {
+const insertTestClusters = async (databaseConnection, data) => {
 
-  if(!done) {
-    done = data
-    data = SIMPLE_CLUSTER_DATA
-  }
-
+  data = data || SIMPLE_CLUSTER_DATA
+  
   const store = ClusterStore(databaseConnection)
 
   // map of cluster names onto database records
   const clusterMap = {}
 
-  async.eachSeries(data, (clusterData, nextCluster) => {
-    store.create({
+  await Promise.each(data, async (clusterData) => {
+    const cluster = await store.create({
       data: clusterData
-    }, (err, cluster) => {
-      if(err) return nextCluster(err)
-      clusterMap[cluster.name] = cluster
-      nextCluster()
     })
-  }, (err) => {
-    if(err) return done(err)
-    done(null, clusterMap)
+
+    clusterMap[cluster.name] = cluster
+
+    return cluster
   })
+
+  return clusterMap
 }
 
 const insertTestDeployments = (databaseConnection, cluster, data, done) => {
