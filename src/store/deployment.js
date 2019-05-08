@@ -21,7 +21,7 @@ const DeploymentStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.deployment)
       .where({
-        cluster: params.cluster,
+        cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
   }
@@ -43,7 +43,7 @@ const DeploymentStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.deployment)
       .where({
-        id: params.id,
+        id,
       })
       .first()
   }
@@ -104,7 +104,6 @@ const DeploymentStore = (knex) => {
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.update`)
     if(!data) throw new Error(`data param must be given to store.cluster.update`)
-
     return (trx || knex)(config.TABLES.deployment)
       .where({
         id,
@@ -130,7 +129,7 @@ const DeploymentStore = (knex) => {
 
     return (trx || knex)(config.TABLES.deployment)
       .where({
-        id: params.id,
+        id,
       })
       .del()
       .returning('*')

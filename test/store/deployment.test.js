@@ -7,6 +7,8 @@ const database = require('../database')
 const fixtures = require('../fixtures')
 const tools = require('../tools')
 
+const asyncTest = require('../asyncTest')
+
 const DeploymentStore = require('../../src/store/deployment')
 const config = require('../../src/config')
 
@@ -21,46 +23,40 @@ database.testSuiteWithDatabase(getConnection => {
   let testDeployment = null
   let deploymentMap = {}
 
-  tape('deployment store -> create clusters', (t) => {
-
-    fixtures.insertTestClusters(getConnection(), (err, clusters) => {
-      t.notok(err, `there was no error`)
-      testCluster = clusters[fixtures.SIMPLE_CLUSTER_DATA[0].name]
-      t.end()
-    })
-  
+  asyncTest('deployment store -> create clusters', async (t) => {
+    const clusters = await fixtures.insertTestClusters(getConnection())
+    testCluster = clusters[fixtures.SIMPLE_CLUSTER_DATA[0].name]
   })
 
-  tape('deployment store -> list with no cluster id', (t) => {
+  asyncTest('deployment store -> list with no cluster id', async (t) => {
 
     const store = DeploymentStore(getConnection())
+
+    let error = null
   
-    store.list({}, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
+    try {
+      await store.list({})
+    } catch(err) {
+      error = err
+    }
     
+    t.ok(error, `there was an error`)
   })
 
-  tape('deployment store -> list no data', (t) => {
+  asyncTest('deployment store -> list no data', async (t) => {
 
     const store = DeploymentStore(getConnection())
   
-    store.list({
+    const deployments = await store.list({
       cluster: testCluster.id,
-    }, (err, deployments) => {
-      t.notok(err, `there was no error`)
-      t.equal(deployments.length, 0, `there were no deployments`)
-      t.end()
     })
-    
+      
+    t.equal(deployments.length, 0, `there were no deployments`)
   })
 
-  tape('deployment store -> create with missing values', (t) => {
-
+  asyncTest('deployment store -> create with missing values', async (t) => {
     const store = DeploymentStore(getConnection())
-
-    tools.insertWithMissingValues(t, store, {
+    await tools.insertWithMissingValues(t, store, {
       name: 'testdeployment',
       cluster: testCluster.id,
       desired_state: {
@@ -69,27 +65,23 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('deployment store -> create deployments', (t) => {
+  asyncTest('deployment store -> create deployments', async (t) => {
 
     const compareDeployment = fixtures.SIMPLE_DEPLOYMENT_DATA[0]
 
-    fixtures.insertTestDeployments(getConnection(), testCluster.id, (err, deployments) => {
-      t.notok(err, `there was no error`)
+    const deployments = await fixtures.insertTestDeployments(getConnection(), testCluster.id)
 
-      testDeployment = deployments[compareDeployment.name]
-      t.equal(testDeployment.cluster, testCluster.id, `the cluster is the correct id`)
-      t.deepEqual(testDeployment.applied_state, {}, `the applied_state defaults to empty object`)
-      t.deepEqual(testDeployment.desired_state, compareDeployment.desired_state, `the desired_state is correct`)
-      t.equal(testDeployment.name, compareDeployment.name, `the name is correct`)
-      t.equal(testDeployment.status, DEPLOYMENT_STATUS_DEFAULT, `the state defaults to created`)
-      t.equal(testDeployment.maintenance_flag, false, `the maintenance_flag defaults to false`)
-      deploymentMap = deployments
-      t.end()
-    })
-  
+    testDeployment = deployments[compareDeployment.name]
+    t.equal(testDeployment.cluster, testCluster.id, `the cluster is the correct id`)
+    t.deepEqual(testDeployment.applied_state, {}, `the applied_state defaults to empty object`)
+    t.deepEqual(testDeployment.desired_state, compareDeployment.desired_state, `the desired_state is correct`)
+    t.equal(testDeployment.name, compareDeployment.name, `the name is correct`)
+    t.equal(testDeployment.status, DEPLOYMENT_STATUS_DEFAULT, `the state defaults to created`)
+    t.equal(testDeployment.maintenance_flag, false, `the maintenance_flag defaults to false`)
+    deploymentMap = deployments
   })
 
-  tape('deployment store -> list with ordered data', (t) => {
+  asyncTest('deployment store -> list with ordered data', async (t) => {
   
     const store = DeploymentStore(getConnection())
 
@@ -98,87 +90,75 @@ database.testSuiteWithDatabase(getConnection => {
 
     expectedOrder.sort()
   
-    store.list({
+    const deployments = await store.list({
       cluster: testCluster.id,
-    }, (err, deployments) => {
-      t.notok(err, `there was no error`)
-      t.equal(deployments.length, expectedCount, `there were ${expectedCount} deployments`)
-      t.deepEqual(deployments.map(deployment => deployment.name), expectedOrder, 'the deployments were in the correct order')
-      t.end()
     })
+      
+    t.equal(deployments.length, expectedCount, `there were ${expectedCount} deployments`)
+    t.deepEqual(deployments.map(deployment => deployment.name), expectedOrder, 'the deployments were in the correct order')
     
   })
 
-  tape('deployment store -> get', (t) => {
-  
+  asyncTest('deployment store -> get', async (t) => {
     const store = DeploymentStore(getConnection())
-
-    store.get({
+    const deployment = await store.get({
       id: testDeployment.id,
-    }, (err, deployment) => {
-      t.notok(err, `there was no error`)
-      t.deepEqual(deployment, testDeployment, 'the returned deployment is correct')
-      t.end()
     })
-    
+    t.deepEqual(deployment, testDeployment, 'the returned deployment is correct')
   })
 
-  tape('deployment store -> update with bad status', (t) => {
+  asyncTest('deployment store -> update with bad status', async (t) => {
   
     const store = DeploymentStore(getConnection())
 
-    store.update({
-      id: testDeployment.id,
-      data: {
-        status: 'oranges',
-      }
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
-    
+    let error = null
+    try {
+      await store.update({
+        id: testDeployment.id,
+        data: {
+          status: 'oranges',
+        }
+      })
+    } catch(err) {
+      error = err
+    }
+
+    t.ok(error, `there was an error`)
   })
 
-  tape('deployment store -> update', (t) => {
+  asyncTest('deployment store -> update', async (t) => {
   
     const store = DeploymentStore(getConnection())
 
-    store.update({
+    const createdDeployment = await store.update({
       id: testDeployment.id,
       data: {
         status: DEPLOYMENT_STATUS.provisioned,
       }
-    }, (err, firstDeployment) => {
-      t.notok(err, `there was no error`)
-      t.equal(firstDeployment.status, DEPLOYMENT_STATUS.provisioned, `the new status is correct`)
-      store.get({
-        id: testDeployment.id,
-      }, (err, secondDeployment) => {
-        t.notok(err, `there was no error`)
-        t.equal(secondDeployment.status, DEPLOYMENT_STATUS.provisioned, `querying on the updated cluster is working`)
-        t.end()
-      })
     })
-    
+
+    t.equal(createdDeployment.status, DEPLOYMENT_STATUS.provisioned, `the new status is correct`)
+
+    const getDeployment = await store.get({
+      id: testDeployment.id,
+    })
+
+    t.equal(getDeployment.status, DEPLOYMENT_STATUS.provisioned, `querying on the updated cluster is working`)
   })
 
-  tape('deployment store -> delete', (t) => {
+  asyncTest('deployment store -> delete', async (t) => {
   
     const store = DeploymentStore(getConnection())
 
-    store.delete({
+    await store.delete({
       id: testDeployment.id,
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      store.list({
-        cluster: testCluster.id,
-      },(err, deployments) => {
-        t.notok(err, `there was no error`)
-        t.equal(deployments.length, fixtures.SIMPLE_DEPLOYMENT_DATA.length-1, `there is 1 less deployment`)
-        t.end()
-      })
     })
-    
+
+    const deployments = await store.list({
+        cluster: testCluster.id,
+    })
+        
+    t.equal(deployments.length, fixtures.SIMPLE_DEPLOYMENT_DATA.length-1, `there is 1 less deployment`)
   })
 
 })
