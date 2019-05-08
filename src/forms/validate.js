@@ -179,22 +179,16 @@ const getValidationSchema = (schema) => {
 const validate = ({
   schema,
   data,
-}, done) => {
+}) => {
   const validateSchema = getValidationSchema(schema)
-  const p = validateSchema
+  return validateSchema
     .validate(data)
     .catch(err => {
       const errorString = 
         `${err.path} ${err.toString()}`
           .toLowerCase()
           .replace('validationerror', 'validation error')
-      throw(errorString)
-    })
-  bluebird
-    .resolve(p)
-    .asCallback(err => {
-      if(err) return done(err)
-      return done(null, true)
+      throw new Error(errorString)
     })
 }
 
