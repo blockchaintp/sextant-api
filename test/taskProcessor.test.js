@@ -17,6 +17,7 @@ const {
   TASK_ACTION,
   TASK_STATUS,
   TABLES,
+  CLUSTER_PROVISION_TYPE,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -161,6 +162,71 @@ database.testSuiteWithDatabase(getConnection => {
 
     t.equal(sawStep, false, `we never got to the step after the cancel`)
     t.equal(finalTask.status, TASK_STATUS.cancelled, `the task was cancelled`)
+  }, cleanUp)
+
+  asyncTest('check the transaction rollback is working', async (t) => {
+    const taskData = getTaskFixture()
+
+    const ORIGINAL_NAME = 'testcluster'
+    const NEW_NAME = 'new name'
+    const ERROR_TEXT = 'test error'
+
+    const cluster = await store.cluster.create({
+      data: {
+        name: ORIGINAL_NAME,
+        provision_type: CLUSTER_PROVISION_TYPE.local,
+        desired_state: {
+          apples: 10,
+        },
+        capabilities: {
+          funkyFeature: true,
+        },
+      }
+    })
+
+    let updatedCluster = null
+
+    const handlers = {
+      [TASK_ACTION['cluster.create']]: function* (params) {
+
+        const {
+          trx,
+        } = params
+
+        yield store.cluster.update({
+          id: cluster.id,
+          data: {
+            name: NEW_NAME,
+          },
+        }, trx)
+
+        updatedCluster = yield store.cluster.get({
+          id: cluster.id,
+        }, trx)
+
+        throw new Error(ERROR_TEXT)
+      },
+    }
+
+    const createdTask = await runTaskProcessor({
+      store,
+      taskData,
+      handlers,
+    })
+
+    const finalTask = await store.task.get({
+      id: createdTask.id,
+    })
+
+    const finalCluster = await store.cluster.get({
+      id: cluster.id,
+    })
+
+    t.equal(updatedCluster.name, NEW_NAME, `the name was updated inside the handler`)
+    t.equal(finalCluster.name, ORIGINAL_NAME, `the name was rolled back with the transaction`)
+    t.equal(finalTask.status, TASK_STATUS.error, `the task was errored`)
+    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, `the error message was correct`)
+
   }, cleanUp)
 
 })
