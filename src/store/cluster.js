@@ -46,7 +46,7 @@ const ClusterStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.cluster)
       .where({
-        id: params.id,
+        id,
       })
       .first()
   }

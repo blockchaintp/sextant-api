@@ -6,6 +6,8 @@ const database = require('../database')
 const fixtures = require('../fixtures')
 const tools = require('../tools')
 
+const asyncTest = require('../asyncTest')
+
 const ClusterStore = require('../../src/store/cluster')
 const config = require('../../src/config')
 
@@ -19,22 +21,20 @@ database.testSuiteWithDatabase(getConnection => {
   let testCluster = null
   let clusterMap = {}
 
-  tape('cluster store -> list no data', (t) => {
+  asyncTest('cluster store -> list no data', async (t) => {
 
     const store = ClusterStore(getConnection())
   
-    store.list({}, tools.errorWrapper(t, (clusters) => {
-      t.equal(clusters.length, 0, `there were no clusters`)
-      t.end()
-    }))
+    const clusters = await store.list({})
+    t.equal(clusters.length, 0, `there were no clusters`)
     
   })
 
-  tape('cluster store -> create with missing values', (t) => {
+  asyncTest('cluster store -> create with missing values', async (t) => {
 
     const store = ClusterStore(getConnection())
 
-    tools.insertWithMissingValues(t, store, {
+    await tools.insertWithMissingValues(t, store, {
       name: 'testcluster',
       provision_type: CLUSTER_PROVISION_TYPE.aws_ec2,
       desired_state: {
@@ -43,44 +43,47 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('cluster store -> create with bad provision_type', (t) => {
+  asyncTest('cluster store -> create with bad provision_type', async (t) => {
   
     const store = ClusterStore(getConnection())
   
-    store.create({
-      data: {
-        name: 'testcluster',
-        provision_type: 'silly_provision_type',
-        desired_state: {
-          apples: 10,
-        },
-      }
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })  
+    let error = null
+
+    try {
+      await store.create({
+        data: {
+          name: 'testcluster',
+          provision_type: 'silly_provision_type',
+          desired_state: {
+            apples: 10,
+          },
+        }
+      })
+    } catch(err) {
+      error = err
+    }
+    t.ok(error, `there was an error`)
   })
 
-  tape('cluster store -> create clusters', (t) => {
+  asyncTest('cluster store -> create clusters', async (t) => {
 
     const compareCluster = fixtures.SIMPLE_CLUSTER_DATA[0]
 
-    fixtures.insertTestClusters(getConnection(), tools.errorWrapper(t, (clusters) => {
-      testCluster = clusters[compareCluster.name]
+    const clusters = await fixtures.insertTestClusters(getConnection())
 
-      t.deepEqual(testCluster.applied_state, {}, `the applied_state defaults to empty object`)
-      t.deepEqual(testCluster.desired_state, compareCluster.desired_state, `the desired_state is correct`)
-      t.equal(testCluster.name, compareCluster.name, `the name is correct`)
-      t.equal(testCluster.provision_type, compareCluster.provision_type, `the provision_type is correct`)
-      t.equal(testCluster.status, CLUSTER_STATUS_DEFAULT, `the state defaults to created`)
-      t.equal(testCluster.maintenance_flag, false, `the maintenance_flag defaults to false`)
-      clusterMap = clusters
-      t.end()
-    }))
+    testCluster = clusters[compareCluster.name]
+
+    t.deepEqual(testCluster.applied_state, {}, `the applied_state defaults to empty object`)
+    t.deepEqual(testCluster.desired_state, compareCluster.desired_state, `the desired_state is correct`)
+    t.equal(testCluster.name, compareCluster.name, `the name is correct`)
+    t.equal(testCluster.provision_type, compareCluster.provision_type, `the provision_type is correct`)
+    t.equal(testCluster.status, CLUSTER_STATUS_DEFAULT, `the state defaults to created`)
+    t.equal(testCluster.maintenance_flag, false, `the maintenance_flag defaults to false`)
+    clusterMap = clusters
   
   })
 
-  tape('cluster store -> list with ordered data', (t) => {
+  asyncTest('cluster store -> list with ordered data', async (t) => {
   
     const store = ClusterStore(getConnection())
 
@@ -89,92 +92,75 @@ database.testSuiteWithDatabase(getConnection => {
 
     expectedOrder.sort()
   
-    store.list({}, tools.errorWrapper(t, (clusters) => {
-      t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
-      t.deepEqual(clusters.map(cluster => cluster.name), expectedOrder, 'the clusters were in the correct order')
-      t.end()
-    }))
-    
+    const clusters = await store.list({})
+    t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
+    t.deepEqual(clusters.map(cluster => cluster.name), expectedOrder, 'the clusters were in the correct order')
   })
 
-  tape('cluster store -> get', (t) => {
-  
+  asyncTest('cluster store -> get', async (t) => {
     const store = ClusterStore(getConnection())
-
-    store.get({
+    const cluster = await store.get({
       id: testCluster.id,
-    }, tools.errorWrapper(t, (cluster) => {
-      t.deepEqual(cluster, testCluster, 'the returned cluster is correct')
-      t.end()
-    }))
-    
-  })
-
-  tape('cluster store -> update with bad status', (t) => {
-  
-    const store = ClusterStore(getConnection())
-
-    store.update({
-      id: testCluster.id,
-      data: {
-        status: 'oranges',
-      }
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
     })
-    
+    t.deepEqual(cluster, testCluster, 'the returned cluster is correct')
   })
 
-  tape('cluster store -> update', (t) => {
+  asyncTest('cluster store -> update with bad status', async (t) => {
+    const store = ClusterStore(getConnection())
+    try {
+      await store.update({
+        id: testCluster.id,
+        data: {
+          status: 'oranges',
+        }
+      })
+    } catch(err) {
+      t.ok(err, `there was an error`)
+    }
+  })
+
+  asyncTest('cluster store -> update', async (t) => {
   
     const store = ClusterStore(getConnection())
 
-    store.update({
+    const insertedCluster = await store.update({
       id: testCluster.id,
       data: {
         status: CLUSTER_STATUS.provisioned,
       }
-    }, tools.errorWrapper(t, (firstCluster) => {
-      t.equal(firstCluster.status, CLUSTER_STATUS.provisioned, `the new status is correct`)
-      store.get({
-        id: testCluster.id,
-      }, tools.errorWrapper(t, (secondCluster) => {
-        t.equal(secondCluster.status, CLUSTER_STATUS.provisioned, `querying on the updated cluster is working`)
-        t.end()
-      }))
-    }))
-    
+    })
+
+    t.equal(insertedCluster.status, CLUSTER_STATUS.provisioned, `the new status is correct`)
+
+    const getCluster = await  store.get({
+      id: testCluster.id,
+    })
+
+    t.equal(getCluster.status, CLUSTER_STATUS.provisioned, `querying on the updated cluster is working`)
   })
 
-  tape('cluster store -> delete', (t) => {
+  asyncTest('cluster store -> delete', async (t) => {
   
     const store = ClusterStore(getConnection())
 
-    store.delete({
+    await store.delete({
       id: testCluster.id,
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      store.list({}, tools.errorWrapper(t, (clusters) => {
-        t.equal(clusters.length, fixtures.SIMPLE_CLUSTER_DATA.length-1, `there is 1 less cluster`)
-        t.end()
-      }))
     })
-    
+
+    const clusters = await store.list({})
+    t.equal(clusters.length, fixtures.SIMPLE_CLUSTER_DATA.length-1, `there is 1 less cluster`)
   })
 
-  tape('cluster store -> list with deleted', (t) => {
+  asyncTest('cluster store -> list with deleted', async (t) => {
   
     const store = ClusterStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
   
-    store.list({
+    const clusters = await store.list({
       deleted: true,
-    }, tools.errorWrapper(t, (clusters) => {
-      t.equal(clusters.length, expectedCount, `there are ${expectedCount} clusters`)
-      t.end()
-    }))
+    })
+    t.equal(clusters.length, expectedCount, `there are ${expectedCount} clusters`)
     
   })
 
