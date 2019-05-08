@@ -7,12 +7,9 @@
   this helper runs the same tests against both stores
 
 */
-const tape = require('tape')
-
 const database = require('../database')
 const fixtures = require('../fixtures')
 
-const tools = require('../tools')
 const asyncTest = require('../asyncTest')
 const base64 = require('../../src/utils/base64')
 
