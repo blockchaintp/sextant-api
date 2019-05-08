@@ -88,6 +88,8 @@ const ClusterController = ({ store, settings }) => {
       id,
     })
 
+    if(!cluster) return null
+
     const task = await store.task.mostRecentForResource({
       cluster: id,
     })
