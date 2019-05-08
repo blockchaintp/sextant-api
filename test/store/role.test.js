@@ -1,7 +1,5 @@
 'use strict'
 
-const tape = require('tape')
-const async = require('async')
 const Promise = require('bluebird')
 const tools = require('../tools')
 const database = require('../database')
