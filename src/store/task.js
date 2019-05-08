@@ -130,7 +130,6 @@ const TaskStore = (knex) => {
     if(deployment) query.deployment = deployment
 
     query.limit = 1
-    query.transaction = params.transaction
 
     return list(query, trx).first()
   }
@@ -171,6 +170,7 @@ const TaskStore = (knex) => {
         * action
         * restartable
         * payload
+        * status
     
   */
   const create = ({
@@ -198,7 +198,6 @@ const TaskStore = (knex) => {
         action,
         restartable,
         payload,
-        status,
       })
       .returning('*')
       .get(0)
@@ -230,7 +229,7 @@ const TaskStore = (knex) => {
     if(!id) throw new Error(`id must be given to store.task.update`)
     if(!status) throw new Error(`data.status param must be given to store.task.update`)
 
-    if(enumerations.TASK_STATUS.indexOf(status) < 0) throw new Error(`bad status: ${params.data.status}`)
+    if(enumerations.TASK_STATUS.indexOf(status) < 0) throw new Error(`bad status: ${status}`)
 
     const updateData = {
       status,
@@ -242,7 +241,7 @@ const TaskStore = (knex) => {
 
     return (trx || knex)(config.TABLES.task)
       .where({
-        id: params.id,
+        id,
       })
       .update(updateData)
       .returning('*')
