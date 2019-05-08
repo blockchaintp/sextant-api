@@ -453,27 +453,23 @@ database.testSuiteWithDatabase(getConnection => {
 
     await taskProcessor.stop()
   })
-/*
+
   asyncTest('cluster controller -> create remote cluster with secrets and update the secrets', async (t) => {
     
     const controller = getController()
     const store = Store(getConnection())
 
-    const saveAppliedState = (params, done) => {
-      async.waterfall([
-        (next) => params.store.cluster.get({
-          id: params.task.resource_id,
-        }, next),
+    function* saveAppliedState(params) {
+      const cluster = yield params.store.cluster.get({
+        id: params.task.resource_id,
+      })
 
-        (cluster, next) => {
-          store.cluster.update({
-            id: cluster.id,
-            data: {
-              applied_state: cluster.desired_state,
-            }
-          }, next)
+      yield params.store.cluster.update({
+        id: cluster.id,
+        data: {
+          applied_state: cluster.desired_state,
         }
-      ], done)
+      })
     }
 
     const taskProcessor = TaskProcessor({
@@ -509,137 +505,96 @@ database.testSuiteWithDatabase(getConnection => {
 
     const context = {}
 
-    async.series([
+    await taskProcessor.start()
 
-      next => taskProcessor.start(next),
-
-      // insert the cluster
-      next => {
-        controller.create({
-          user: testUser,
-          data: clusterData,
-        }, (err, cluster) => {
-          if(err) return next(err)
-          t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
-          context.token_id = cluster.desired_state.token_id
-          context.ca_id = cluster.desired_state.ca_id
-          context.cluster = cluster
-          next()
-        })
-      },
-
-      next => {
-        async.parallel({
-          token: nextp => store.clustersecret.get({
-            cluster: context.cluster.id,
-            id: context.cluster.desired_state.token_id,
-          }, nextp),
-          ca: nextp => store.clustersecret.get({
-            cluster: context.cluster.id,
-            id: context.cluster.desired_state.ca_id,
-          }, nextp),
-        }, (err, results) => {
-          if(err) return next(err)
-          t.equal(results.token.name, 'token', 'the token secret name is correct')
-          t.equal(results.token.base64data, TOKEN, 'the token secret value is correct')
-          t.equal(results.ca.name, 'ca', 'the ca secret name is correct')
-          t.equal(results.ca.base64data, CA, 'the ca secret value is correct')
-          next()
-        })
-      },
-
-      // wait for the task processor
-      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
-
-      // update just the name and check we still have the same secrets
-      next => {
-        controller.update({
-          id: context.cluster.id,
-          user: testUser,
-          data: {
-            name: 'my new name',
-          },
-        }, (err, cluster) => {
-          if(err) return next(err)
-
-          t.equal(cluster.name, 'my new name', `the cluster name is correct`)
-
-          t.equal(cluster.desired_state.token_id, context.token_id, `the desired_state token id is the same`)
-          t.equal(cluster.desired_state.ca_id, context.ca_id, `the desired_state ca id is the same`)
-          
-          next()
-        })
-      },
-
-      // update with new desired state and check we get new secrets
-      next => {
-        controller.update({
-          id: context.cluster.id,
-          user: testUser,
-          data: {
-            desired_state: {
-              apiServer: API_SERVER,
-              token: TOKEN2,
-              ca: CA2,
-            },
-          },
-        }, (err, cluster) => {
-          if(err) return next(err)
-          context.token_id2 = cluster.desired_state.token_id
-          context.ca_id2 = cluster.desired_state.ca_id
-          context.cluster = cluster
-          next()
-        })
-      },
-
-      next => {
-        async.parallel({
-          token: nextp => store.clustersecret.get({
-            cluster: context.cluster.id,
-            id: context.cluster.desired_state.token_id,
-          }, nextp),
-          ca: nextp => store.clustersecret.get({
-            cluster: context.cluster.id,
-            id: context.cluster.desired_state.ca_id,
-          }, nextp),
-        }, (err, results) => {
-          if(err) return next(err)
-          t.equal(results.token.name, 'token', 'the token secret name is correct')
-          t.equal(results.token.base64data, TOKEN2, 'the token secret value is correct')
-          t.equal(results.ca.name, 'ca', 'the ca secret name is correct')
-          t.equal(results.ca.base64data, CA2, 'the ca secret value is correct')
-          next()
-        })
-      },
-
-      // wait for the task processor
-      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
-
-      // update just the name and check we still have the same secrets
-      next => {
-        controller.update({
-          id: context.cluster.id,
-          user: testUser,
-          data: {
-            name: 'my new name2',
-          },
-        }, (err, cluster) => {
-          if(err) return next(err)
-          t.equal(cluster.name, 'my new name2', `the cluster name is correct`)
-
-          t.equal(cluster.desired_state.token_id, context.token_id2, `the desired_state token id is the same`)
-          t.equal(cluster.desired_state.ca_id, context.ca_id2, `the desired_state ca id is the same`)
-          
-          next()
-        })
-      },
-
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      taskProcessor.stop(() => {
-        t.end()
-      })
+    const cluster = await controller.create({
+      user: testUser,
+      data: clusterData,
     })
+
+    const {
+      token_id,
+      ca_id,
+    } = cluster.desired_state
+
+    t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
+
+    const token = await store.clustersecret.get({
+      cluster: cluster.id,
+      id: token_id,
+    })
+
+    const ca = await store.clustersecret.get({
+      cluster: cluster.id,
+      id: ca_id,
+    })
+
+    t.equal(token.name, 'token', 'the token secret name is correct')
+    t.equal(token.base64data, TOKEN, 'the token secret value is correct')
+    t.equal(ca.name, 'ca', 'the ca secret name is correct')
+    t.equal(ca.base64data, CA, 'the ca secret value is correct')
+
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedNameCluster = await controller.update({
+      id: cluster.id,
+      user: testUser,
+      data: {
+        name: 'my new name',
+      },
+    })
+
+    t.equal(updatedNameCluster.name, 'my new name', `the cluster name is correct`)
+    t.equal(updatedNameCluster.desired_state.token_id, token_id, `the desired_state token id is the same`)
+    t.equal(updatedNameCluster.desired_state.ca_id, ca_id, `the desired_state ca id is the same`)
+
+    const updatedSecretsCluster = await controller.update({
+      id: cluster.id,
+      user: testUser,
+      data: {
+        desired_state: {
+          apiServer: API_SERVER,
+          token: TOKEN2,
+          ca: CA2,
+        },
+      },
+    })
+
+    const token_id2 = updatedSecretsCluster.desired_state.token_id
+    const ca_id2 = updatedSecretsCluster.desired_state.ca_id
+
+    const token2 = await store.clustersecret.get({
+      cluster: cluster.id,
+      id: token_id2,
+    })
+
+    const ca2 = await store.clustersecret.get({
+      cluster: cluster.id,
+      id: ca_id2,
+    })
+
+    t.equal(token2.name, 'token', 'the token secret name is correct')
+    t.equal(token2.base64data, TOKEN2, 'the token secret value is correct')
+    t.equal(ca2.name, 'ca', 'the ca secret name is correct')
+    t.equal(ca2.base64data, CA2, 'the ca secret value is correct')
+
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedNameCluster2 = await controller.update({
+      id: cluster.id,
+      user: testUser,
+      data: {
+        name: 'my new name2',
+      },
+    })
+
+    t.equal(updatedNameCluster2.name, 'my new name2', `the cluster name is correct`)
+    t.equal(updatedNameCluster2.desired_state.token_id, token_id2, `the desired_state token id is the same`)
+    t.equal(updatedNameCluster2.desired_state.ca_id, ca_id2, `the desired_state ca id is the same`)
+
+
+    await taskProcessor.stop()
+
   })
-  */
+  
 })
