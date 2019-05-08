@@ -1,8 +1,9 @@
 'use strict'
 
 const tape = require('tape')
+const Promise = require('bluebird')
 const async = require('async')
-
+const asyncTest = require('./asyncTest')
 const Store = require('../src/store')
 const TaskProcessor = require('../src/taskprocessor')
 const config = require('../src/config')
@@ -14,7 +15,6 @@ const {
   PERMISSION_USER,
   RESOURCE_TYPES,
   TASK_ACTION,
-  TASK_CONTROLLER_LOOP_DELAY,
   TASK_STATUS,
   TABLES,
 } = config
@@ -23,14 +23,9 @@ database.testSuiteWithDatabase(getConnection => {
 
   let userMap = {}
 
-  tape('task store -> create users', (t) => {
-  
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
-      t.notok(err, `there was no error`)
-      userMap = users
-      t.end()
-    })
-  
+  asyncTest('task store -> create users', async (t) => {
+    const users = await fixtures.insertTestUsers(getConnection())
+    userMap = users
   })
 
   const getTaskFixture = () => ({
@@ -53,557 +48,119 @@ database.testSuiteWithDatabase(getConnection => {
     payload: task.payload,
   })
 
+  let store = null
+
   // clean up all tasks from the database after each test
-  const cleanUpWrapper = (t, store, handler) => {
-    handler((err) => {
-      t.notok(err, `there was no error`)
-      store.knex(TABLES.task)
-        .del()
-        .returning('*')
-        .asCallback((err) => {
-          t.notok(err, `there was no error`)
-          t.end()
-        })
-    })
-  }
+  const cleanUp = () => store.knex(TABLES.task)
+    .del()
+    .returning('*')
 
-  // wrap the creation of the task processor
-  // initial task and loading of final task in a handler
-  // to make it easier to test different outcomes for a task
-  const testTaskHandler = (t, {
-    taskData,
-    handler,
-    whilstRunningHandler,
-    checkFinalTask,
+  const runTaskProcessor = async ({
     store,
-    jobWillNotFinish,
-  }, done) => {
-
-    let createdTask = null
-    let taskStarted = false
-    let taskFinished = false
-
-    const handlers = {
-      [TASK_ACTION['cluster.create']]: (params, done) => {
-
-        const compareTask = getCompareTask(params.task)
-          
-        t.ok(params.store, `the store was passed to the task handler`)
-        t.deepEqual(compareTask, taskData, `the task data is correct`)
-        t.equal(typeof(params.checkCancelStatus), 'function', `the checkCancelStatus function was passed to the handler`)
-        t.equal(typeof(params.cancelSeries), 'function', `the cancelSeries function was passed to the handler`)
-        t.equal(typeof(params.cancelWaterfall), 'function', `the cancelWaterfall function was passed to the handler`)
-        t.equal(params.task.status, TASK_STATUS.running, `the task is in running status`)
-
-        taskStarted = true
-
-        handler(params, (err) => {
-          taskFinished = true
-          done(err)
-        })
-      }
-    }
-
+    taskData,
+    handlers,
+  }) => {
     const taskProcessor = TaskProcessor({
       store,
       handlers,
     })
 
-    async.series([
+    await taskProcessor.start()
 
-      next => {
-        taskProcessor.start(next)
-      },
+    const createdTask = await store.task.create({
+      data: taskData
+    })
 
-      next => {
-        store.task.create({
-          data: taskData
-        }, (err, task) => {
-          if(err) return next(err)
-          createdTask = task
-          next()
-        })
-      },
+    await new Promise(resolve => taskProcessor.on('task.processed', resolve))
+    
+    await taskProcessor.stop()
 
-      // wait for the task to have got picked up
-      next => {
-        async.whilst(
-          () => taskStarted ? false : true,
-          (nextw) => setTimeout(nextw, 100),
-          next,
-        )
-      },
-      
-      // if we've been given a function to run once we know the task
-      // has been picked up - run it, otherwise continue
-      next => {
-        if(whilstRunningHandler) whilstRunningHandler(createdTask, next)
-        else next()
-      },
-
-      // wait for the task to have finished
-      next => {
-
-        if(jobWillNotFinish) return next()
-
-        async.whilst(
-          () => taskFinished ? false : true,
-          (nextw) => setTimeout(nextw, 100),
-          next,
-        )
-      },
-
-      // pause so the processor has a chance to finish the task
-      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
-
-      // stop the task processor
-      next => taskProcessor.stop(next),
-        
-      next => {
-        store.task.get({
-          id: createdTask.id,
-        }, (err, task) => {
-          if(err) return next(err)
-          t.ok(taskStarted, `the task handler was run`)
-
-          if(!jobWillNotFinish) {
-            t.ok(taskFinished, `the task handler finished`)
-          }
-          
-          t.ok(task.started_at, `there is a started at timestamp`)
-          t.ok(task.ended_at, `there is a ended at timestamp`)
-          checkFinalTask(task, next)
-        })
-        
-      }
-
-    ], done)
+    return createdTask
   }
 
-  tape('task processor -> create cluster task', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-      
-      const handler = (params, done) => done()
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
-        done()
-      }
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        checkFinalTask,
-      }, finished)
-    })
-    
+  asyncTest('make store', async (t) => {
+    store = Store(getConnection())
   })
 
-  tape('task processor -> error task handler', (t) => {
+  asyncTest('task processor -> create cluster task', async (t) => {
+    const taskData = getTaskFixture()
 
-    const store = Store(getConnection())
+    let handlerParams = null
 
+    const handlers = {
+      [TASK_ACTION['cluster.create']]: function* (params) {
+        handlerParams = params
+      },
+    }
+
+    const createdTask = await runTaskProcessor({
+      store,
+      taskData,
+      handlers,
+    })
+
+    t.ok(handlerParams.store, `the store was passed to the task handler`)
+    t.deepEqual(getCompareTask(handlerParams.task), taskData, `the task data is correct`)
+    t.equal(handlerParams.task.status, TASK_STATUS.running, `the task is in running status`)
+    t.equal(handlerParams.task.id, createdTask.id, `the created task id is the same`)
+  })
+
+  asyncTest('task processor -> error task handler', async (t) => {
     const ERROR_TEXT = `this is a test error`
 
-    cleanUpWrapper(t, store, (finished) => {
+    const taskData = getTaskFixture()
 
-      const taskData = getTaskFixture()
-      
-      const handler = (params, done) => done(ERROR_TEXT)
+    const handlers = {
+      [TASK_ACTION['cluster.create']]: function* (params) {
+        yield Promise.delay(1000)
+        throw new Error(ERROR_TEXT)
+      },
+    }
 
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.error, `the task has error status`)
-        t.equal(task.error, ERROR_TEXT, `the error text of the task is correct`)
-        done()
-      }
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        checkFinalTask,
-      }, finished)
+    const createdTask = await runTaskProcessor({
+      store,
+      taskData,
+      handlers,
     })
-    
-  })
 
-  tape('task processor -> cancel a task without checking the checkCancelStatus', (t) => {
+    const finalTask = await store.task.get({
+      id: createdTask.id,
+    })
 
-    const store = Store(getConnection())
+    t.equal(finalTask.status, TASK_STATUS.error, `the task was errored`)
+    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, `the error message was correct`)
+  }, cleanUp)
 
-    cleanUpWrapper(t, store, (finished) => {
+  asyncTest('cancel a task halfway through', async (t) => {
+    const taskData = getTaskFixture()
 
-      const taskData = getTaskFixture()
-      
-      const handler = (params, done) => {
-        // wait for longer than the test will wait before calling
-        // the whilstRunningHandler to make sure we cancel the task
-        // before the task completes
-        setTimeout(done, TASK_CONTROLLER_LOOP_DELAY)
-      }
+    let sawStep = false
 
-      const whilstRunningHandler = (task, done) => {
-        store.task.update({
-          id: task.id,
+    const handlers = {
+      [TASK_ACTION['cluster.create']]: function* (params) {
+        yield store.task.update({
+          id: params.task.id,
           data: {
             status: TASK_STATUS.cancelling,
-          }
-        }, done)
-      }
+          },
+        })
+        yield Promise.resolve(true)
+        sawStep = true
+      },
+    }
 
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
-        done()
-      }
-
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        whilstRunningHandler,
-        checkFinalTask,
-      }, finished)
+    const createdTask = await runTaskProcessor({
+      store,
+      taskData,
+      handlers,
     })
-    
-  })
 
-  tape('task processor -> cancel a task with checking the checkCancelStatus', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-
-      const handler = (params, done) => {
-
-        async.series([
-
-          // wait a short while for the task to get cancelled from outside
-          next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
-
-          // call the check cancel handler - we should get true
-          next => params.checkCancelStatus((err, cancelled) => {
-            t.ok(cancelled, `the task should have been cancelled`)
-            return
-          })
-
-        ], () => {})
-      }
-
-      const whilstRunningHandler = (task, done) => {
-        store.task.update({
-          id: task.id,
-          data: {
-            status: TASK_STATUS.cancelling,
-          }
-        }, done)
-      }
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
-        done()
-      }
-
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        whilstRunningHandler,
-        checkFinalTask,
-        jobWillNotFinish: true,
-      }, finished)
+    const finalTask = await store.task.get({
+      id: createdTask.id,
     })
-    
-  })
 
-  // this checks what happens if we cancel a task but still finish the job
-  tape('task processor -> cancel a task with checking the checkCancelStatus but still finish the task', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-
-      const handler = (params, done) => {
-
-        async.series([
-
-          // wait a short while for the task to get cancelled from outside
-          next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
-
-          // call the check cancel handler - we should get true
-          next => params.checkCancelStatus((err, cancelled) => {
-            t.ok(cancelled, `the task should have been cancelled`)
-            next()
-          })
-
-        ], done)
-      }
-
-      const whilstRunningHandler = (task, done) => {
-        store.task.update({
-          id: task.id,
-          data: {
-            status: TASK_STATUS.cancelling,
-          }
-        }, done)
-      }
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
-        done()
-      }
-
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        whilstRunningHandler,
-        checkFinalTask,
-      }, finished)
-    })
-    
-  })
-
-  tape('task processor -> use the cancelSeries function without cancelling', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-
-      const stepsSeen = {
-        step1: false,
-        step2: false,
-      }
-
-      const handler = (params, done) => {
-
-        params.cancelSeries([
-
-          // wait a short while for the task to get cancelled from outside
-          next => {
-            stepsSeen.step1 = true
-            next()
-          },
-
-          next => {
-            stepsSeen.step2 = true
-            next()
-          },
-
-        ], done)
-      }
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
-        t.ok(stepsSeen.step1, `step1 was seen`)
-        t.ok(stepsSeen.step2, `step2 was seen`)
-        done()
-      }
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        checkFinalTask,
-      }, finished)
-    })
-    
-  })
-
-  tape('task processor -> use the cancelWaterfall function without cancelling', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-
-      const stepsSeen = {
-        step1: false,
-        step2: false,
-      }
-
-      const handler = (params, done) => {
-
-        params.cancelWaterfall([
-
-          // wait a short while for the task to get cancelled from outside
-          (next) => {
-            stepsSeen.step1 = true
-            next(null, 10)
-          },
-
-          (prev, next) => {
-            t.equal(prev, 10, `the previous value passed was 10`)
-            stepsSeen.step2 = true
-            next()
-          },
-
-        ], done)
-      }
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.finished, `the task has finished status`)
-        t.ok(stepsSeen.step1, `step1 was seen`)
-        t.ok(stepsSeen.step2, `step2 was seen`)
-        done()
-      }
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        checkFinalTask,
-      }, finished)
-    })
-    
-  })
-
-  tape('task processor -> cancel a task whilst using cancelSeries', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-
-      const stepsSeen = {
-        step1: false,
-        step2: false,
-      }
-
-      const handler = (params, done) => {
-
-        params.cancelSeries([
-
-          // wait a short while for the task to get cancelled from outside
-          next => {
-            stepsSeen.step1 = true
-            next()
-          },
-
-          // wait a short while for the task to get cancelled from outside
-          next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY),
-
-          next => {
-            stepsSeen.step2 = true
-            next()
-          },
-
-        ], done)
-      }
-
-      const whilstRunningHandler = (task, done) => {
-        store.task.update({
-          id: task.id,
-          data: {
-            status: TASK_STATUS.cancelling,
-          }
-        }, done)
-      }
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
-        t.ok(stepsSeen.step1, `step1 was seen`)
-        t.notok(stepsSeen.step2, `step2 was not seen`)
-        done()
-      }
-
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        whilstRunningHandler,
-        checkFinalTask,
-        jobWillNotFinish: true,
-      }, finished)
-    })
-    
-  })
-
-  tape('task processor -> cancel a task whilst using cancelWaterfall', (t) => {
-
-    const store = Store(getConnection())
-
-    cleanUpWrapper(t, store, (finished) => {
-
-      const taskData = getTaskFixture()
-
-      const stepsSeen = {
-        step1: false,
-        step2: false,
-        step3: false,
-      }
-
-      const handler = (params, done) => {
-
-        params.cancelWaterfall([
-
-          // wait a short while for the task to get cancelled from outside
-          (next) => {
-            stepsSeen.step1 = true
-            next(null, 10)
-          },
-
-          (prev, next) => {
-            t.equal(prev, 10, `the previous value passed was 10`)
-            stepsSeen.step2 = true
-            setTimeout(() => next(null, 20), TASK_CONTROLLER_LOOP_DELAY)
-          },
-
-          (prev, next) => {
-            stepsSeen.step3 = true
-            t.error(`this step should never be reached`)
-            next()
-          }
-
-        ], done)
-
-      }
-
-      const whilstRunningHandler = (task, done) => {
-        store.task.update({
-          id: task.id,
-          data: {
-            status: TASK_STATUS.cancelling,
-          }
-        }, done)
-      }
-
-      const checkFinalTask = (task, done) => {
-        t.equal(task.status, TASK_STATUS.cancelled, `the task has cancelled status`)
-        t.ok(stepsSeen.step1, `step1 was seen`)
-        t.ok(stepsSeen.step2, `step2 was seen`)
-        t.notok(stepsSeen.step3, `step3 was not seen`)
-        done()
-      }
-
-
-      testTaskHandler(t, {
-        store,
-        taskData,
-        handler,
-        whilstRunningHandler,
-        checkFinalTask,
-        jobWillNotFinish: true,
-      }, finished)
-    })
-    
-  })
+    t.equal(sawStep, false, `we never got to the step after the cancel`)
+    t.equal(finalTask.status, TASK_STATUS.cancelled, `the task was cancelled`)
+  }, cleanUp)
 
 })

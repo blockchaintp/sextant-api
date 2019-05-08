@@ -9,27 +9,20 @@
 
   if the handler errors - mark the task as 'error'
   if the handler completes - mark the task as 'finished'
+  if the task was cancelled - mark the task as 'cancelled'
 
   cancelling
   ----------
 
   a task can be marked as 'cancelling' whilst it's running
 
-  a task handler should be checking the status of the task at each step
-  to see if it has been cancelled
+  the task handlers are generator functions
 
-  when invoking a task, we provide it with a function to run to check if
-  the task has been switched to a 'cancelling' state
+  each time `yield` is called - we check for the cancelled status of the task
+  and do not continue if it's been cancelled
 
-  the 'checkCancelStatus(callback)' function is called at each step of the handler
-
-  if it returns true - the handler should just stop in it's track and do nothing
-
-  checkCancelStatus will update the task status to cancelled if called and the task
-  was in the 'cancelling' status
-
-  it is assumed that whilst the checkCancelStatus is running, the task handler is not
-  progressing (as it's waiting for confirmation that the task has not been cancelled)
+  YOU MUST CALL `yield` in a task handler for any async functions
+  the yield call should give a promise
 
   control loop
   ------------
@@ -50,30 +43,36 @@
   the 'task.action' property controls what handler is run when
   the task is created
 
+  the task handler must be a generator function and yield any promises
+  so the task can be cancelled if needed
+
   the handler for this task has the following signature:
 
-  const taskHandler = ({
+  function* taskHandler({
     store,                  // the store
     task,                   // the task database record
     logging,                // if the task handler should log
-    checkCancelStatus,      // a function to check if the task has been cancelled
-    cancelSeries,           // a modified version of async.series that will check
-                            // if the task has been cancelled before calling the next function
-    cancelWaterfall,        // a modified version of async.waterfall that will check
-                            // if the task has been cancelled before calling the next function
+  }) {
     
-  }, done) => {
+    const data = yield store.thing.list()
 
+    // this step will never happen if the task was cancelled in the meantime
+    yield store.thing.update({
+      ...
+    })
   }
+  
 */
 
+const EventEmitter = require('events')
+const Promise = require('bluebird')
 const async = require('async')
 const pino = require('pino')({
   name: 'task',
 })
 
 const config = require('./config')
-const cancelAsync = require('./utils/cancelAsync')
+const Task = require('./task')
 
 const {
   TASK_STATUS,
@@ -85,6 +84,7 @@ const TaskProcessor = ({
   handlers,
   logging,
 }) => {
+
   if(!store) {
     throw new Error(`store required`)
   }
@@ -93,19 +93,17 @@ const TaskProcessor = ({
     throw new Error(`handlers required`)
   }
 
+  const taskProcessor = new EventEmitter()
   let controlLoopRunning = false
   let stopped = false
 
-  const loadTaskStatus = (id, done) => {
+  const loadTaskStatus = (id) => 
     store.task.get({
       id,
-    }, (err, task) => {
-      if(err) return done(err)
-      done(null, task.status)
     })
-  }
-
-  const updateTaskStatus = (task, status, timestamps, done) => {
+      .then(task => task.status)
+  
+  const updateTaskStatus = (task, status, timestamps) => {
 
     if(logging) {
       pino.error({
@@ -127,13 +125,13 @@ const TaskProcessor = ({
       updateData.ended_at = store.knex.fn.now()
     }
 
-    store.task.update({
+    return store.task.update({
       id: task.id,
       data: updateData,
-    }, done)
+    })
   }
 
-  const errorTask = (task, error, done) => {
+  const errorTask = (task, error) => {
 
     if(logging) {
       pino.error({
@@ -143,201 +141,145 @@ const TaskProcessor = ({
       })
     }
 
-    store.task.update({
+    return store.task.update({
       id: task.id,
       data: {
         status: TASK_STATUS.error,
         ended_at: store.knex.fn.now(),
         error,
       }
-    }, done)
-  }
-
-
-  const loadTasksWithStatus = (status, done) => {
-    store.task.list({
-      status,
-    }, done)
-  }
-
-  const loadRunningTasks = (done) => loadTasksWithStatus(TASK_STATUS.running, done)
-  const loadCreatedTasks = (done) => loadTasksWithStatus(TASK_STATUS.created, done)
-
-  // return a function that will check a running task cancel status
-  const getCancelTaskHandler = (task) => (done) => {
-    loadTaskStatus(task.id, (err, status) => {
-      // if there was an error loading the task status
-      // error the task and return true to the handler so it stops immediately
-      if(err) {
-        errorTask(task, `there was an error loading the task status for task ${task.id}: ${err.toString()}`, () => {
-          // this cancels the task
-          return done(null, true)
-        })
-      }
-      else {
-        // check to see if the task status is cancelling
-        if(status == TASK_STATUS.cancelling) {
-
-          // flag the task as cancelled
-          updateTaskStatus(task, TASK_STATUS.cancelled, {ended: true}, (err) => {
-            // if there was an error updating the task status to cancelled
-            // error the task and return true to the handler so it stops immediately
-            if(err) {
-              errorTask(task, `there was an error updating the task status for task ${task.id}: ${err.toString()}`, () => {
-                // this cancels the task
-                return done(null, true)
-              })
-            }
-            else {
-              // this cancels the task
-              return done(null, true)
-            }
-          })
-        }
-        // the task has already been cancelled
-        else if(status == TASK_STATUS.cancelled) {
-          return done(null, true)
-        }
-        // the task is ok - carry on
-        else {
-          done(null, false)
-        }
-      }
     })
   }
 
-  const runTask = (task, done) => {
-    const handler = handlers[task.action]
 
-    if(!handler) {
-      return errorTask(task, `no handler was found for task: ${task.action}`, done)
-    }
-
-    const checkCancelStatus = getCancelTaskHandler(task)
-    const cancelSeries = cancelAsync.series(checkCancelStatus)
-    const cancelWaterfall = cancelAsync.waterfall(checkCancelStatus)
-
-    async.waterfall([
-
-      // mark the task as running
-      (next) => updateTaskStatus(task, TASK_STATUS.running, {started: true}, next),
-
-      // invoke the task handler
-      (runningTask, next) => {
-        handler({
-          store,
-          task: runningTask,
-          checkCancelStatus,
-          cancelSeries,
-          cancelWaterfall,
-          logging,
-        }, (err) => {
+  const loadTasksWithStatus = (status) => store.task.list({
+    status,
+  })
     
-          // the task has errored - mark it
-          if(err) {
-            errorTask(task, err.toString(), () => {})
-          }
-          // the task has finished - check if it's been cancelled, otherwise, mark it as finished
-          else {
-            checkCancelStatus((err, cancelled) => {
-              if(err || cancelled) return
 
-              updateTaskStatus(task, TASK_STATUS.finished, {ended: true}, () => {
-                if(logging) {
-                  pino.info({
-                    action: 'finished',
-                    task: task,
-                  })
-                }
-              })
-            })
-          }
-        })
+  const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
+  const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
 
-        next()
+  // return a function that will check a running task cancel status
+  const isTaskCancelled = async (task) => {
+    const status = await loadTaskStatus(task.id)
+    return status == TASK_STATUS.cancelling
+  }
+
+  const runTask = async (task) => {
+    try {
+      const handler = handlers[task.action]
+
+      if(!handler) {
+        throw new Error(task, `no handler was found for task: ${task.action}`)
       }
 
-    ], done)
+      const runningTask = await updateTaskStatus(task, TASK_STATUS.running, {started: true})
 
+      const runner = Task({
+        generator: handler,
+        params: {
+          store,
+          task: runningTask,
+          logging,
+        },
+        onStep: async (task) => {
+          const isCancelled = await isTaskCancelled(runningTask)
+          if(isCancelled) runner.cancel()
+        },
+      })
+
+      taskProcessor.emit('task.start', task)
+
+      await runner.run()
+
+      const finalStatus = runner.cancelled ?
+        TASK_STATUS.cancelled :
+        TASK_STATUS.finished
+      await updateTaskStatus(task, finalStatus, {ended: true})
+      
+      taskProcessor.emit('task.complete', task)
+      if(logging) {
+        pino.info({
+          action: 'finished',
+          task: task,
+        })
+      }
+    } catch(err) {
+      await errorTask(task, err.toString())
+      taskProcessor.emit('task.error', task, err)
+    }
+    taskProcessor.emit('task.processed', task)
   }
 
   // this is called on initial startup
   // load all tasks that are in a running state
   // for those that are restartable - restart them
   // for that are not restartable - error them
-  const restartTasks = (done) => {
-    loadRunningTasks((err, tasks) => {
-      if(err) return done(err)
+  const restartTasks = async () => {
+    const tasks = await loadRunningTasks()
 
-      const runTasks = tasks.filter(task => task.restartable)
-      const errorTasks = tasks.filter(task => !task.restartable)
+    const runTasks = tasks.filter(task => task.restartable)
+    const errorTasks = tasks.filter(task => !task.restartable)
 
-      async.parallel({
-        runTasks: next => {
-          async.each(runTasks, (task, nextTask) => {
-            runTask(task, nextTask)
-          }, next)
-        },
-
-        errorTasks: next => {
-          async.each(errorTasks, (task, nextTask) => {
-            errorTask(task, `the server restarted whilst this task was running and the task is not restartable`, nextTask)
-          }, next)
-        },
-      }, done)
-    })
+    await Promise.all([
+      Promise.each(runTasks, runTask),
+      Promise.each(errorTasks, task => errorTask(task, `the server restarted whilst this task was running and the task is not restartable`)),
+    ])
   }
 
   // called on each loop
-  const controlLoop = (done) => {
-    loadCreatedTasks((err, runTasks) => {
-      if(err) return done(err)
-      async.each(runTasks, (task, nextTask) => {
-        runTask(task, nextTask)
-      }, done)
-    })
+  const controlLoop = async () => {
+    if(!controlLoopRunning) return
+    try {
+      const runTasks = await loadCreatedTasks()
+      await Promise.each(runTasks, runTask)
+      await Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
+      controlLoop()
+    } catch(err) {
+      if(logging) {
+        pino.error({
+          type: 'controlloop',
+          error: err.toString(),
+        })
+      }
+      throw err
+    }
   }
 
   // start the control loop waiting for tasks in 'created' state
-  const startControlLoop = (started) => {
-    if(stopped) return started(`the task processor was stopped`)
+  const startControlLoop = () => {
+    if(stopped) throw new Error(`the task processor was stopped`)
     controlLoopRunning = true
-    async.whilst(
-      () => controlLoopRunning,
-      (next) => controlLoop(err => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY)),
-      // if we get an error from the control loop something has gone horribly wrong
-      // if a task handler errors - it should update the task record with the error
-      (err) => {
-        if(err && logging) {
-          pino.error({
-            type: 'controlloop',
-            error: err.toString(),
-          })
-        }
-      },
-    )
-    // we return immediately because the control loop has started
-    started()
+    controlLoop()
   }
 
-  const start = (done) => {
-    if(stopped) return done(`the task processor was stopped`)
-    async.series([
-      next => restartTasks(next),
-      next => startControlLoop(next),
-    ], done)
+  const start = async () => {
+    if(stopped) throw new Error(`the task processor was stopped`)
+    try {
+      await restartTasks()
+      startControlLoop()
+    } catch(err) {
+      if(logging) {
+        pino.error({
+          type: 'start',
+          error: err.toString(),
+        })
+      }
+      throw err
+    }
   }
 
-  const stop = (done) => {
+  const stop = () => {
     controlLoopRunning = false
     stopped = true
-    done()
+    return Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
-  return {
-    start,
-    stop,
-  }
+  taskProcessor.start = start
+  taskProcessor.stop = stop
+
+  return taskProcessor
 }
 
 module.exports = TaskProcessor
