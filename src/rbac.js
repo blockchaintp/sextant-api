@@ -55,7 +55,6 @@ const {
   RESOURCE_TYPES,
   PERMISSION_USER,
   PERMISSION_ROLE,
-  PERMISSION_USER_ACCESS_LEVELS,
   PERMISSION_ROLE_ACCESS_LEVELS,
 } = config
 
@@ -63,32 +62,29 @@ const HELPERS = {
 
   // allow a logged in user to read or update it's own record
   // this is so a user can read itself or update their password etc
-  allowUserAccessToOwnRecord: (opts) => (store, user, action, done) => {
+  allowUserAccessToOwnRecord: (opts) => async (store, user, action) => {
     // requires a user
-    if(!user) return done(`access denied`)
+    if(!user) throw new Error(`access denied`)
 
     // superuser gets access if configured
-    if(user && userUtils.isSuperuser(user) && opts.allowSuperuser) return done()
+    if(user && userUtils.isSuperuser(user) && opts.allowSuperuser) return true
   
     // if the user is getting it's own data - allow
-    if(action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return done()
-
-    else return done(`access denied`)
+    if(action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
+    else throw new Error(`access denied`)
   },
 
   // if there is no user and zero existing users - allow (so the initial account can be created)
     // if there is a user - they must be an admin
-  allowInitialAccountCreation: (opts) => (store, user, action, done) => {
+  allowInitialAccountCreation: (opts) => async (store, user, action) => {
     if(user) {
-      if(userUtils.isSuperuser(user)) return done()
-      else return done(`access denied`)
+      if(userUtils.isSuperuser(user)) return true
+      else throw new Error(`access denied`)
     }
     else {
-      store.user.list({}, (err, users) => {
-        if(err) return done(err)
-        if(users.length > 0) return done(`access denied`)
-        return done()
-      })
+      const users = await store.user.list({})
+      if(users.length > 0) throw new Error(`access denied`)
+      return true
     }
   }
 }
@@ -153,7 +149,7 @@ const METHOD_CONFIG = {
   }
 }
 
-const RBAC = (store, user, action, done) => {
+const RBAC = async (store, user, action) => {
 
   const {
     resource_type,
@@ -161,38 +157,39 @@ const RBAC = (store, user, action, done) => {
     method,
   } = action
 
-  if(!resource_type) return done(`resource_type required`)
-  if(!method) return done(`method required`)
+  if(!resource_type) throw new Error(`resource_type required`)
+  if(!method) throw new Error(`method required`)
 
   const group = METHOD_CONFIG[resource_type]
-  if(!group) return done(`unknown resource_type ${resource_type}`)
+  if(!group) throw new Error(`unknown resource_type ${resource_type}`)
 
   const methodConfig = group[method]
-  if(!methodConfig) return done(`unknown method ${method}`)
+  if(!methodConfig) throw new Error(`unknown method ${method}`)
 
   // if the method handler is a function - it looks after itself
   if(typeof(methodConfig) === 'function') {
-    methodConfig(store, user, action, done)
+    const result = await methodConfig(store, user, action)
+    return result
   }
   else {
 
     // no logged in user - deny
-    if(!user) return done(`access denied`)
+    if(!user) throw new Error(`access denied`)
 
     // if they are an superuser - allow
-    if(userUtils.isSuperuser(user)) return done()
+    if(userUtils.isSuperuser(user)) return true
 
     // require superuser and they are not - deny
-    if(methodConfig.superuser && !userUtils.isSuperuser(user)) return done(`access denied`)
+    if(methodConfig.superuser && !userUtils.isSuperuser(user)) throw new Error(`access denied`)
 
     // require at least X user permission - deny
-    if(methodConfig.userPermission && !userUtils.hasPermission(user, methodConfig.userPermission)) return done(`access denied`)
+    if(methodConfig.userPermission && !userUtils.hasPermission(user, methodConfig.userPermission)) throw new Error(`access denied`)
       
     // require a resource role with the given permission
     if(methodConfig.resourcePermission) {
 
       // we need a resource_id if we are performing a resourcePermission check
-      if(!resource_id) return done(`access denied`)
+      if(!resource_id) throw new Error(`access denied`)
 
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
       const resourceType = methodConfig.resourcePermissionForType || resource_type
@@ -204,25 +201,23 @@ const RBAC = (store, user, action, done) => {
       }
 
       // load the role and check it
-      store.role.get(roleQuery, (err, role) => {
-        if(err) return done(err)
+      const role = await store.role.get(roleQuery)
+      
+      // if there is no role we can't grant access
+      if(!role) throw new Error(`access denied`)
 
-        // if there is no role we can't grant access
-        if(!role) return done(`access denied`)
+      // ensure the role has a correct permission value
+      if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) throw new Error(`access denied`)
 
-        // ensure the role has a correct permission value
-        if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) return done(`access denied`)
+      // check the granted role is at least the required type
+      if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) return done(`access denied`)
 
-        // check the granted role is at least the required type
-        if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) return done(`access denied`)
-
-        // ok - we are allowed
-        return done()
-      })
+      // ok - we are allowed
+      return true
     }
     else {
       // we assume that there are no checks to perform for this method so allow
-      done()
+      return true
     }
   }
 }
