@@ -20,7 +20,7 @@ const RoleStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.role)
       .where({
-        user: params.user,
+        user,
       })
   }
 
@@ -45,8 +45,8 @@ const RoleStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.role)
       .where({
-        resource_type: params.resource_type,
-        resource_id: params.resource_id,
+        resource_type,
+        resource_id,
       })
   }
 
@@ -74,9 +74,9 @@ const RoleStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.role)
       .where({
-        user: params.user,
-        resource_type: params.resource_type,
-        resource_id: params.resource_id,
+        user,
+        resource_type,
+        resource_id,
       })
       .first()
   }

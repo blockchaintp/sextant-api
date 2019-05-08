@@ -2,9 +2,11 @@
 
 const tape = require('tape')
 const async = require('async')
+const Promise = require('bluebird')
 const tools = require('../tools')
 const database = require('../database')
 const fixtures = require('../fixtures')
+const asyncTest = require('../asyncTest')
 
 const RoleStore = require('../../src/store/role')
 const config = require('../../src/config')
@@ -21,45 +23,40 @@ database.testSuiteWithDatabase(getConnection => {
   let roleMap = {}
   let testUser = null
 
-  tape('role store -> create users', (t) => {
+  asyncTest('role store -> create users', async (t) => {
 
-    fixtures.insertTestUsers(getConnection(), tools.errorWrapper(t, (users) => {
-      userMap = users
-      testUser = users[PERMISSION_USER.admin]
-      t.end()
-    }))
+    const users = await fixtures.insertTestUsers(getConnection())
+    userMap = users
+    testUser = users[PERMISSION_USER.admin]
   
   })
 
-  tape('role store -> list with no user', (t) => {
-
+  asyncTest('role store -> list with no user', async (t) => {
     const store = RoleStore(getConnection())
-  
-    store.listForUser({}, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
-    
+    let error = null
+    try {
+      store.listForUser({})
+    } catch(err) {
+      error = err
+    }
+    t.ok(error, `there was an error`)
   })
 
-  tape('role store -> list no data', (t) => {
+  asyncTest('role store -> list no data', async (t) => {
 
     const store = RoleStore(getConnection())
   
-    store.listForUser({
+    const roles = await store.listForUser({
       user: testUser.id,
-    }, tools.errorWrapper(t, (roles) => {
-      t.equal(roles.length, 0, `there were no roles`)
-      t.end()
-    }))
-    
+    })
+    t.equal(roles.length, 0, `there were no roles`)
   })
 
-  tape('role store -> create with missing values', (t) => {
+  asyncTest('role store -> create with missing values', async (t) => {
 
     const store = RoleStore(getConnection())
 
-    tools.insertWithMissingValues(t, store, {
+    await tools.insertWithMissingValues(t, store, {
       user: testUser.id,
       permission: PERMISSION_ROLE.read,
       resource_type: RESOURCE_TYPES.cluster,
@@ -67,76 +64,71 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  tape('role store -> create with bad resource type', (t) => {
+  asyncTest('role store -> create with bad resource type', async (t) => {
 
     const store = RoleStore(getConnection())
-
-    store.create({
-      data: {
-        user: testUser.id,
-        permission: PERMISSION_ROLE.read,
-        resource_type: 'oranges',
-        resource_id: 10,
-      }
-    }, (err) => {
-      t.ok(err, `there was an error`)
-      t.end()
-    })
+    let error = null
+    try {
+      await store.create({
+        data: {
+          user: testUser.id,
+          permission: PERMISSION_ROLE.read,
+          resource_type: 'oranges',
+          resource_id: 10,
+        }
+      })
+    }
+    catch(err) {
+      error = err
+    }
+    t.ok(error, `there was an error`)
   })
 
-  tape('role store -> create roles', (t) => {
+  asyncTest('role store -> create roles', async (t) => {
 
     const compareRole = fixtures.SIMPLE_ROLE_DATA.filter(role => role.resource_type == 'cluster')[0]
 
-    fixtures.insertTestRoles(getConnection(), testUser.id, tools.errorWrapper(t, (roles) => {
-      t.equal(roles.cluster.user, testUser.id, `the user is the correct id`)
-      t.equal(roles.cluster.permission, compareRole.permission, `the permission the correct`)
-      t.equal(roles.cluster.resource_type, compareRole.resource_type, `the resource_type the correct`)
-      t.equal(roles.cluster.resource_id, compareRole.resource_id, `the resource_id the correct`)
-      roleMap = roles
-      t.end()
-    }))
+    const roles = await fixtures.insertTestRoles(getConnection(), testUser.id)
+    t.equal(roles.cluster.user, testUser.id, `the user is the correct id`)
+    t.equal(roles.cluster.permission, compareRole.permission, `the permission the correct`)
+    t.equal(roles.cluster.resource_type, compareRole.resource_type, `the resource_type the correct`)
+    t.equal(roles.cluster.resource_id, compareRole.resource_id, `the resource_id the correct`)
+    roleMap = roles
   })
 
-  tape('role store -> list for user', (t) => {
+  asyncTest('role store -> list for user', async (t) => {
   
     const store = RoleStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length
   
-    store.listForUser({
+    const roles = await store.listForUser({
       user: testUser.id,
-    }, tools.errorWrapper(t, (roles) => {
-      t.equal(roles.length, expectedCount, `there were ${expectedCount} roles`)
+    })
+    t.equal(roles.length, expectedCount, `there were ${expectedCount} roles`)
 
-      const loadedRoleMap = roles.reduce((all, role) => {
-        all[role.resource_type] = role
-        return all
-      }, {})
+    const loadedRoleMap = roles.reduce((all, role) => {
+      all[role.resource_type] = role
+      return all
+    }, {})
 
-      t.deepEqual(loadedRoleMap, roleMap, `the loaded roles are correct`)
-      t.end()
-    }))
-    
+    t.deepEqual(loadedRoleMap, roleMap, `the loaded roles are correct`)
   })
 
-  tape('role store -> list for resource', (t) => {
+  asyncTest('role store -> list for resource', async (t) => {
   
     const store = RoleStore(getConnection())
 
     const role = fixtures.SIMPLE_ROLE_DATA[0]
   
-    store.listForResource({
+    const roles = await store.listForResource({
       resource_type: role.resource_type,
       resource_id: role.resource_id,
-    }, tools.errorWrapper(t, (roles) => {
-      t.equal(roles.length, 1, `there were 1 role`)
-      t.end()
-    }))
-    
+    })
+    t.equal(roles.length, 1, `there were 1 role`)
   })
 
-  tape('role store -> get with missing values', (t) => {
+  asyncTest('role store -> get with missing values', async (t) => {
   
     const store = RoleStore(getConnection())
 
@@ -146,69 +138,57 @@ database.testSuiteWithDatabase(getConnection => {
       resource_id: 10,
     }
 
-    async.eachSeries(Object.keys(baseObject), (field, nextField) => {
+    Promise.each(Object.keys(baseObject), async field => {
       const query = Object.assign({}, baseObject)
       delete(query[field])
-      store.get(query, (err) => {
-        t.ok(err, `there was an error for missing field: ${field}`)
-        nextField()
-      })
-    }, (err) => {
-      t.notok(err, `there was no error`)
-      t.end()
-    })
-
-  
+      let error = null
+      try {
+        store.get(query)
+      } catch(err) {
+        error = err
+      }
+      t.ok(error, `there was an error for missing field: ${field}`)
+    })  
   })
 
-  tape('role store -> get for cluster', (t) => {
+  asyncTest('role store -> get for cluster', async (t) => {
   
     const store = RoleStore(getConnection())
 
-    store.get({
+    const role = await store.get({
       user: testUser.id,
       resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
-    }, tools.errorWrapper(t, (role) => {
-      t.deepEqual(role, roleMap.cluster, `the loaded cluster role is correct`)
-      t.end()
-    }))
-  
+    })
+    t.deepEqual(role, roleMap.cluster, `the loaded cluster role is correct`)  
   })
 
-  tape('role store -> get for deployment', (t) => {
+  asyncTest('role store -> get for deployment', async (t) => {
   
     const store = RoleStore(getConnection())
 
-    store.get({
+    const role = await store.get({
       user: testUser.id,
       resource_type: RESOURCE_TYPES.deployment,
       resource_id: 11,
-    }, tools.errorWrapper(t, (role) => {
-      t.deepEqual(role, roleMap.deployment, `the loaded deployment role is correct`)
-      t.end()
-    }))
-  
+    })
+    t.deepEqual(role, roleMap.deployment, `the loaded deployment role is correct`)
   })
 
-  tape('role store -> delete', (t) => {
+  asyncTest('role store -> delete', async (t) => {
   
     const store = RoleStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length - 1
 
-    store.delete({
+    await store.delete({
       id: roleMap.cluster.id,
-    }, tools.errorWrapper(t, () => {
-      store.listForUser({
-        user: testUser.id,
-      }, tools.errorWrapper(t, (roles) => {
-        t.equal(roles.length, expectedCount, `there is 1 less role`)
-        t.deepEqual(roles[0], roleMap.deployment, 'the remaining role is correct')
-        t.end()
-      }))
-    }))
-    
+    })
+    const roles = await store.listForUser({
+      user: testUser.id,
+    })
+    t.equal(roles.length, expectedCount, `there is 1 less role`)
+    t.deepEqual(roles[0], roleMap.deployment, 'the remaining role is correct')
   })
 
 })
