@@ -4,7 +4,17 @@
 
   it overrides the 'command' function injecting the KUBECONFIG environment
   variable to any call which connects the kubectl command to the given cluster
+
+  if the `kubeConfigPath` variable is given - we connect using that
+
+  otherwise - we connect using the credentials which are a combination of
+
+   * apiServer
+   * token
+   * ca
   
+  
+
 */
 const tmp = require('tmp')
 const async = require('async')
@@ -14,7 +24,24 @@ const pino = require('pino')({
   name: 'kubectl',
 })
 
-const Kubectl = (kubeconfigPath) => {
+const Kubectl = ({
+
+  // the path to a kubeconfig file
+  kubeConfigPath,
+
+  credentials: {
+    // the value of the api server to connect to
+    //apiServer,
+
+    // the access token
+    //token,
+
+    // the ca
+    //ca,
+  },
+
+}) => {
+
   const command = (cmd, options, done) => {
 
     if(!done) {
