@@ -29,7 +29,7 @@ const ClusterSecretStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.clustersecret)
       .where({
-        cluster: params.cluster,
+        cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
   }
@@ -137,7 +137,7 @@ const ClusterSecretStore = (knex) => {
     return (trx || knex)(config.TABLES.clustersecret)
       .where(queryParams)
       .update({
-        base64data: params.data.base64Data || base64.encode(params.data.rawData),
+        base64data: base64Data || base64.encode(rawData),
       })
       .returning('*')
       .get(0)

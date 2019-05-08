@@ -11,7 +11,7 @@ const TaskCompleter = ({
   id,
   store,
   completedStatus,
-}, done) => (err) => {
+}) => async (err) => {
   if(err) {
     store.cluster.update({
       id,

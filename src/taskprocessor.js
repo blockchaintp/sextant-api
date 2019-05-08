@@ -102,7 +102,7 @@ const TaskProcessor = ({
       id,
     })
       .then(task => task.status)
-  
+
   const updateTaskStatus = (task, status, timestamps) => {
 
     if(logging) {

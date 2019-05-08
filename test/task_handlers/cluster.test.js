@@ -1,13 +1,16 @@
 'use strict'
 
+const Promise = require('bluebird')
 const async = require('async')
 const tape = require('tape')
 const database = require('../database')
 const fixtures = require('../fixtures')
 
+const asyncTest = require('../asyncTest')
+
 const ClusterController = require('../../src/controller/cluster')
 const Store = require('../../src/store')
-const TaskProcessor = require('../taskProcessor')
+const TaskProcessor = require('../../src/taskprocessor')
 const Tasks = require('../../src/tasks')
 
 const config = require('../../src/config')
@@ -28,7 +31,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   }
 
-  const getTaskProcessor = (opts, done) => {
+  const getTaskProcessor = (opts) => {
     const handlers = Tasks(opts)
     const store = Store(getConnection())
     return TaskProcessor({
@@ -40,56 +43,38 @@ database.testSuiteWithDatabase(getConnection => {
   let userMap = {}
   let testClusters = {}
 
-  tape('cluster task_handlers -> create users', (t) => {
-  
-    fixtures.insertTestUsers(getConnection(), (err, users) => {
-      t.notok(err, `there was no error`)
-      userMap = users
-      t.end()
-    })
-  
+  asyncTest('cluster task_handlers -> create users', async (t) => {
+    userMap = await fixtures.insertTestUsers(getConnection())
   })
-
-  tape('cluster controller -> create cluster', (t) => {
+/*
+  asyncTest('cluster controller -> create cluster', async (t) => {
   
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
     const testUser = userMap[PERMISSION_USER.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
-    async.series([
+    await taskProcessor.start()
 
-      next => taskProcessor.start(next),
-
-      next => controller.create({
-        user: testUser,
-        data: clusterData,
-      }, (err, cluster) => {
-        if(err) return next(err)
-        testClusters.admin = cluster
-        next()
-      }),
-
-      next => setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2),
-
-      next => controller.get({
-        id: testClusters.admin.id,
-      }, (err, cluster) => {
-        if(err) return next(err)
-        t.deepEqual(cluster.desired_state, cluster.applied_state, `the applied_state has been updated to the desired_state`)
-        t.equal(cluster.status, CLUSTER_STATUS.provisioned, `the cluster status is provisioned`)
-        next()
-      }),
-    ], (err) => {
-      t.notok(err, `there was no error`)
-      taskProcessor.stop(() => {
-        t.end()
-      })
+    testClusters.admin = await controller.create({
+      user: testUser,
+      data: clusterData,
     })
 
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedCluster = await controller.get({
+      id: testClusters.admin.id,
+    })
+
+    t.deepEqual(updatedCluster.desired_state, testClusters.admin.applied_state, `the applied_state has been updated to the desired_state`)
+    t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, `the cluster status is provisioned`)
+
+    await taskProcessor.stop()
   })
 
-  tape('cluster controller -> update cluster', (t) => {
+  
+  asyncTest('cluster controller -> update cluster', async (t) => {
   
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
@@ -139,7 +124,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   })
 
-  tape('cluster controller -> delete cluster', (t) => {
+  asyncTest('cluster controller -> delete cluster', async (t) => {
   
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
@@ -173,6 +158,6 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
   })
-
+*/
   
 })
