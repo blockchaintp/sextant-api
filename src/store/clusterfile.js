@@ -22,7 +22,7 @@ const ClusterFileStore = (knex) => {
     return (trx || knex).select('*')
       .from(config.TABLES.clusterfile)
       .where({
-        cluster: params.cluster,
+        cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
   }
@@ -122,7 +122,7 @@ const ClusterFileStore = (knex) => {
     if(!rawData && !base64Data) throw new Error(`data.rawData or data.base64Data param must be given to store.clusterfile.update`)
 
     const queryParams = {
-      cluster: params.cluster,
+      cluster,
     }
 
     if(id) queryParams.id = id
