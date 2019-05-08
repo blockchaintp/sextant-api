@@ -167,7 +167,8 @@ const TaskProcessor = ({
   }
 
   const runTask = async (task) => {
-    try {
+    await store.transaction(async trx => {
+      
       const handler = handlers[task.action]
 
       if(!handler) {
@@ -180,6 +181,7 @@ const TaskProcessor = ({
         generator: handler,
         params: {
           store,
+          trx,
           task: runningTask,
           logging,
         },
@@ -199,16 +201,12 @@ const TaskProcessor = ({
       await updateTaskStatus(task, finalStatus, {ended: true})
       
       taskProcessor.emit('task.complete', task)
-      if(logging) {
-        pino.info({
-          action: 'finished',
-          task: task,
-        })
-      }
-    } catch(err) {
-      await errorTask(task, err.toString())
-      taskProcessor.emit('task.error', task, err)
-    }
+    })
+      .catch(async err => {
+        await errorTask(task, err.toString())
+        taskProcessor.emit('task.error', task, err)
+      })
+    
     taskProcessor.emit('task.processed', task)
   }
 
