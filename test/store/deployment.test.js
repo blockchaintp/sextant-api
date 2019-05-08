@@ -1,8 +1,5 @@
 'use strict'
 
-const tape = require('tape')
-const async = require('async')
-
 const database = require('../database')
 const fixtures = require('../fixtures')
 const tools = require('../tools')
