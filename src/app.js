@@ -56,6 +56,7 @@ const App = ({
   const taskProcessor = TaskProcessor({
     store,
     handlers: taskHandlers || {},
+    logging: true,
   })
 
   /*

@@ -163,7 +163,8 @@ const TaskProcessor = ({
     if(logging) {
       pino.error({
         action: 'error',
-        error: err.toString(),
+        error: error.toString(),
+        stack: error.stack,
         task: task,
       })
     }
