@@ -4,6 +4,7 @@ const rbac = require('../rbac')
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
+const DeploymentRoutes = require('./deployment')
 
 const rbacMiddleware = (store, resource_type, method) => async (req, res, next) => {
   try {
@@ -41,6 +42,7 @@ const Routes = ({
   const config = ConfigRoutes(controllers)
   const user = UserRoutes(controllers)
   const cluster = ClusterRoutes(controllers)
+  const deployment = DeploymentRoutes(controllers)
 
   app.get(basePath('/config/values'), asyncHandler(config.values))
 
@@ -66,6 +68,8 @@ const Routes = ({
   app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.createRole))
   app.delete(basePath('/clusters/:id/roles/:userid'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.deleteRole))
   app.get(basePath('/clusters/:id/tasks'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.listTasks))
+
+  app.get(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'list'), asyncHandler(deployment.list))
 }
 
 module.exports = Routes

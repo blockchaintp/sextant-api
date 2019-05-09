@@ -1,6 +1,7 @@
 const ConfigController = require('./config')
 const UserController = require('./user')
 const ClusterController = require('./cluster')
+const DeploymentController = require('./deployment')
 
 const Controllers = ({ 
   store,
@@ -21,11 +22,17 @@ const Controllers = ({
     store,
     settings,
   })
+
+  const deployment = DeploymentController({
+    store,
+    settings,
+  })
   
   return {
     config,
     user,
     cluster,
+    deployment,
   }
 }
 
