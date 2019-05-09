@@ -384,11 +384,6 @@ const ClusterController = ({ store, settings }) => {
         secrets: extractedSecrets.secrets,
       }, trx)
 
-      console.log('--------------------------------------------')
-      console.log('--------------------------------------------')
-      console.log('--------------------------------------------')
-      console.dir(updatedDesiredState)
-
       formData.desired_state = updatedDesiredState
     }
 
