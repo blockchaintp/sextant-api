@@ -29,6 +29,22 @@ const forms = {
         ['url', 'Must be a valid url - e.g. http://apiserver.com'],
       ],
     }
+  }],
+  ca: [{
+    id: 'ca',
+    title: `Ca`,
+    helperText: 'Enter the ca of the cluster',
+    component: 'text',
+    validate: {
+      type: 'string',
+      methods: [
+        [
+          'matches', 
+          ['^-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----$', 's'],
+          'Must be a valid certificate'
+        ]
+      ],
+    }
   }]
 }
 
@@ -86,4 +102,13 @@ asyncTest('test validator without required - bad value', async (t) => {
   }
 
   t.ok(error, `there was an error`)
+})
+
+asyncTest('test validator with multiline value', async (t) => {
+  await validate({
+    schema: forms.ca,
+    data: {
+      ca: "-----BEGIN CERTIFICATE-----\n\n\n-----END CERTIFICATE-----",
+    },
+  })
 })
