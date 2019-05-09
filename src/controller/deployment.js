@@ -4,7 +4,7 @@ const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
 
-const clusterForms = require('../forms/cluster')
+const deploymentForms = require('../forms/deployment')
 const validate = require('../forms/validate')
 
 const {
@@ -13,6 +13,7 @@ const {
   CLUSTER_PROVISION_TYPE,
   PERMISSION_ROLE_ACCESS_LEVELS,
   RESOURCE_TYPES,
+  DEPLOYMENT_TYPE,
 } = config
 
 const DeployentController = ({ store, settings }) => {
@@ -134,16 +135,97 @@ const DeployentController = ({ store, settings }) => {
     deployments,
   }) => Promise.map(deployments, async deployment => {
     const task = await store.task.mostRecentForResource({
-      deployment: deployments.id,
+      deployment: deployment.id,
     })
 
     deployment.task = task
     return deployment
   })
 
+  /*
+  
+    create a new deployment
+
+    params:
+
+     * user - the user that is creating the cluster
+     * cluster - the cluster the deployment is for
+     * data
+       * name
+       * deployment_type
+       * desired_state
+    
+    if the user is not an superuser - we create a write role for that
+    deployment on this cluster
+    
+  */
+  const create = ({
+    user,
+    cluster,
+    data: {
+      name,
+      deployment_type,
+      desired_state,
+    }
+  }) => store.transaction(async trx => {
+
+    if(!user) throw new Error(`user required for controllers.deployment.create`)
+    if(!name) throw new Error(`data.name required for controllers.deployment.create`)
+    if(!deployment_type) throw new Error(`data.deployment_type required for controllers.deployment.create`)
+    if(!desired_state) throw new Error(`data.desired_state required for controllers.deployment.create`)
+
+    if(!DEPLOYMENT_TYPE[deployment_type]) throw new Error(`unknown deployment_type: ${deployment_type}`)
+
+    // validate the incoming form data
+    await validate({
+      schema: deploymentForms.server[deployment_type].add,
+      data: {
+        name,
+        deployment_type,
+        desired_state,
+      },
+    })
+
+    // create the deployment record
+    const deployment = await store.deployment.create({
+      data: {
+        name,
+        cluster,
+        deployment_type,
+        desired_state,
+      },
+    }, trx)
+
+    // if the user is not a super-user - create a role for the user against the cluster
+    if(!userUtils.isSuperuser(user)) {
+      await store.role.create({
+        data: {
+          user: user.id,
+          permission: config.PERMISSION_ROLE.write,
+          resource_type: config.RESOURCE_TYPES.deployment,
+          resource_id: deployment.id,
+        },
+      }, trx)
+    }
+
+    await store.task.create({
+      data: {
+        user: user.id,
+        resource_type: config.RESOURCE_TYPES.deployment,
+        resource_id: deployment.id,
+        action: config.TASK_ACTION['deployment.create'],
+        restartable: true,
+        payload: {},
+      },
+    }, trx)
+
+    return deployment
+  })
+
   return {
     list,
     get,
+    create,
   }
 
 }

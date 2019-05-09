@@ -33,9 +33,21 @@ const DeploymentRoutes = (controllers) => {
     }
   }
 
+  const create = async (req, res, next) => {
+    const data = await controllers.deployment.create({
+      user: req.user,
+      cluster: req.params.cluster,
+      data: req.body,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
   return {
     list,
     get,
+    create,
   }
 }
 
