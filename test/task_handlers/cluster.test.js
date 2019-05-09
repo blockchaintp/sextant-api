@@ -61,7 +61,7 @@ database.testSuiteWithDatabase(getConnection => {
       data: clusterData,
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 4)
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const updatedCluster = await controller.get({
       id: testClusters.admin.id,
