@@ -16,39 +16,62 @@
   
 
 */
+
+const Promise = require('bluebird')
 const tmp = require('tmp')
 const async = require('async')
 const fs = require('fs')
-const exec = require('child_process').exec
+const childProcess = require('child_process')
+
 const pino = require('pino')({
   name: 'kubectl',
 })
 
+const exec = Promise.promisify(childProcess.exec, {
+  multiArgs: true,
+})
+
+const tempFile = Promise.promisify(tmp.file)
+const writeFile = Promise.promisify(fs.writeFile)
+
+/*
+
+  passing in a 'remoteCredentials' object means we are connecting to a remote cluster
+
+  this should have the following properties
+
+   * apiServer
+   * token
+   * ca
+
+*/
 const Kubectl = ({
+  remoteCredentials,
+} = {}) => {
 
-  // the path to a kubeconfig file
-  kubeConfigPath,
+  let isSetup = false
+  let caPath = null
 
-  credentials: {
-    // the value of the api server to connect to
-    //apiServer,
+  /*
+  
+    write the ca data to a tempfile so we can inject it into kubectl commands
+  
+  */
+  const setup = async () => {
+    if(isSetup) return
 
-    // the access token
-    //token,
-
-    // the ca
-    //ca,
-  },
-
-}) => {
-
-  const command = (cmd, options, done) => {
-
-    if(!done) {
-      done = options
-      options = {}
+    if(remoteCredentials) {
+      caPath = await tempFile({
+        postfix: '.txt',
+      })
+  
+      await writeFile(caPath, ca, 'utf8')
     }
 
+    isSetup = true
+  }
+
+  const command = async (cmd, options = {}) => {
     const useOptions = Object.assign({}, options, {
       // allow 5MB back on stdout 
       //(which should not happen but some logs might be longer than 200kb which is the default)
@@ -56,23 +79,10 @@ const Kubectl = ({
     })
 
     useOptions.env = Object.assign({}, process.env, options.env)
-    useOptions.env.KUBECONFIG = kubeconfigPath
 
     const runCommand = `kubectl ${cmd}`
 
-    const logOptions = Object.assign({}, useOptions)
-    delete(logOptions.env)
-
-    pino.info({
-      action: 'command',
-      command: runCommand,
-      options: logOptions,
-    })
-
-    exec(runCommand, useOptions, (err, stdout, stderr) => {
-      if(err) return done(err)
-      done(null, stdout.toString(), stderr.toString())
-    })
+    return exec(runCommand, useOptions)
   }
 
   /*
