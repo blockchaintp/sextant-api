@@ -40,12 +40,17 @@ const ClusterController = ({ store, settings }) => {
     const clusters = await store.cluster.list({
       deleted,
     })
-    
+
     // if it's a superuser - they can see all clusters
     if(userUtils.isSuperuser(user)) {
-      return loadMostRecentTasksForClusters({
-        clusters,
-      })
+      if(withTasks) {
+        return loadMostRecentTasksForClusters({
+          clusters,
+        })
+      }
+      else {
+        return clusters
+      }
     }
 
     // we need to load the roles that are for a cluster for the user
