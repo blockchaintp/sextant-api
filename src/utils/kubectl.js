@@ -137,6 +137,16 @@ const Kubectl = ({
     useOptions.env = Object.assign({}, process.env, options.env)
     const runCommand = `kubectl ${connectionArguments.join(' ')} ${cmd}`
     return exec(runCommand, useOptions)
+      // remove the command itself from the error message so we don't leak credentials
+      .catch(err => {
+        const errorParts = err.toString().split("\n")
+        const okErrorParts = errorParts
+          .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
+          .filter(line => line)
+          .map(line => line.replace(/error: /, ''))
+        err.message = okErrorParts.join("\n")
+        throw err
+      })
   }
 
   // process stdout as JSON

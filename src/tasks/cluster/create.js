@@ -24,11 +24,7 @@ const ClusterCreate = ({
     store,
   })
 
-  try {
-    const [ data, stderr ] = yield clusterKubectl.jsonCommand('get ns')
-  } catch(err) {
-    throw new Error('could not connect to the cluster with those details')
-  }
+  yield clusterKubectl.jsonCommand('get ns')
   
   yield saveAppliedState({
     id,
