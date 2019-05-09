@@ -36,14 +36,14 @@ const extractClusterSecrets = ({
 
   if(returnDesiredState.token) {
     secrets.token = {
-      base64Data: returnDesiredState.token,
+      rawData: returnDesiredState.token,
     }
     delete(returnDesiredState.token)
   }
 
   if(returnDesiredState.ca) {
     secrets.ca = {
-      base64Data: returnDesiredState.ca,
+      rawData: returnDesiredState.ca,
     }
     delete(returnDesiredState.ca)
   }

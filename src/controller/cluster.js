@@ -164,7 +164,7 @@ const ClusterController = ({ store, settings }) => {
         data: {
           cluster: cluster.id,
           name: 'token',
-          base64Data: secrets.token.base64Data,
+          rawData: secrets.token.rawData,
         },
       }, trx)
     }
@@ -174,7 +174,7 @@ const ClusterController = ({ store, settings }) => {
         data: {
           cluster: cluster.id,
           name: 'ca',
-          base64Data: secrets.ca.base64Data,
+          rawData: secrets.ca.rawData,
         },
       }, trx)
     }
