@@ -24,8 +24,9 @@ const ClusterCreate = ({
     store,
   })
 
+  // test we can connect to the remote cluster with the details provided
   yield clusterKubectl.jsonCommand('get ns')
-  
+
   yield saveAppliedState({
     id,
     store,
