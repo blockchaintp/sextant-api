@@ -106,6 +106,19 @@ const TASK_ACTION = {
   'deployment.delete': 'deployment.delete',
 }
 
+// what status we should write to the resources
+// if the task completes successfully
+const TASK_RESOURCE_COMPLETE_STATUS = {
+  'cluster.create': CLUSTER_STATUS.provisioned,
+  'cluster.update': CLUSTER_STATUS.provisioned,
+  'cluster.delete': CLUSTER_STATUS.deleted,
+  'cluster.error': CLUSTER_STATUS.error,
+  'deployment.create': DEPLOYMENT_STATUS.provisioned,
+  'deployment.update': DEPLOYMENT_STATUS.provisioned,
+  'deployment.delete': DEPLOYMENT_STATUS.deleted,
+  'deployment.error': DEPLOYMENT_STATUS.error,
+}
+
 // how much time to wait between checking for new tasks
 const TASK_CONTROLLER_LOOP_DELAY = 500
 
@@ -164,6 +177,7 @@ const config = {
   TASK_ACTION,
   TASK_ACTIVE_STATUSES,
   TASK_STATUS_DEFAULT,
+  TASK_RESOURCE_COMPLETE_STATUS,
   TASK_CONTROLLER_LOOP_DELAY,
   ACCESS_LEVELS,
   PERMISSION_USER,
