@@ -175,7 +175,7 @@ const TaskProcessor = ({
       data: {
         status: TASK_STATUS.error,
         ended_at: store.knex.fn.now(),
-        error,
+        error: error.toString(),
       }
     })
 
@@ -259,7 +259,7 @@ const TaskProcessor = ({
       taskProcessor.emit('task.complete', task)
     })
       .catch(async err => {
-        await errorTask(task, err.toString())
+        await errorTask(task, err)
         taskProcessor.emit('task.error', task, err)
       })
     
