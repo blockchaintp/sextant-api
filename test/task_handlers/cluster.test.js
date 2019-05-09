@@ -46,7 +46,7 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('cluster task_handlers -> create users', async (t) => {
     userMap = await fixtures.insertTestUsers(getConnection())
   })
-/*
+
   asyncTest('cluster controller -> create cluster', async (t) => {
   
     const controller = getController()
@@ -61,19 +61,19 @@ database.testSuiteWithDatabase(getConnection => {
       data: clusterData,
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 4)
 
     const updatedCluster = await controller.get({
       id: testClusters.admin.id,
     })
 
-    t.deepEqual(updatedCluster.desired_state, testClusters.admin.applied_state, `the applied_state has been updated to the desired_state`)
+    t.deepEqual(updatedCluster.desired_state, testClusters.admin.desired_state, `the applied_state has been updated to the desired_state`)
     t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, `the cluster status is provisioned`)
 
     await taskProcessor.stop()
   })
 
-  
+  /*
   asyncTest('cluster controller -> update cluster', async (t) => {
   
     const controller = getController()
