@@ -3,7 +3,8 @@ const ClusterRoutes = (controllers) => {
   const list = async (req, res, next) => {
     const data = await controllers.cluster.list({
       user: req.user,
-      deleted: req.query.showDeleted == 'y',
+      deleted: req.query.showDeleted,
+      withTasks: req.query.withTasks,
     })
     res.json(data)
   }
@@ -11,6 +12,7 @@ const ClusterRoutes = (controllers) => {
   const get = async (req, res, next) => {
     const data = await controllers.cluster.get({
       id: req.params.id,
+      withTask: req.query.withTasks,
     })
     if(!data) {
       res
