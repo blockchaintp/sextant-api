@@ -156,6 +156,31 @@ app.testSuiteWithAppTaskHandlers({
     })
   })
 
+  tape('cluster routes -> get cluster as admin user with tasks', (t) => {
+
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.admin,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        t,
+        method: 'get',
+        url: `${url}/clusters/${createdClusters.admin.id}?withTasks=y`,
+        json: true,
+      }, (err, res, body) => {
+        if(err) return next(err)
+        t.equal(res.statusCode, 200, `the cluster was read`)
+        t.equal(typeof(body.task), 'object', `the cluster was returned with a task`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
   tape('cluster routes -> get non existing cluster as super user', (t) => {
 
     userUtils.withUser({
@@ -259,6 +284,30 @@ app.testSuiteWithAppTaskHandlers({
           status: CLUSTER_STATUS.provisioned,
         })
         t.deepEqual(body[0], checkCluster, `the cluster in the list is the same as the created one`)
+        next()
+      })
+    }, (err) => {
+      t.notok(err, `there was no error`)
+      t.end()
+    })
+  })
+
+  tape('cluster routes -> list clusters as admin user with tasks', (t) => {
+    userUtils.withUser({
+      url,
+      t,
+      user: userUtils.USERS.admin,
+    }, 
+    (next) => {
+      tools.sessionRequest({
+        t,
+        method: 'get',
+        url: `${url}/clusters?withTasks=y`,
+        json: true,
+      }, (err, res, body) => {
+        if(err) return next(err)
+        t.equal(res.statusCode, 200, `200 code`)
+        t.equal(typeof(body[0].task), 'object', `the task was returned with the cluster`)
         next()
       })
     }, (err) => {
