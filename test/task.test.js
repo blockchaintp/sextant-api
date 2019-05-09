@@ -201,8 +201,7 @@ tape('task -> simple', async (t) => {
 })
 
 tape('task -> cancel from inside an inner generator', async (t) => {
-
-  const MESSAGE = 'hello'
+  
   const steps = []
 
   function* innerTask() {
