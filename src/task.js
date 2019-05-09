@@ -19,14 +19,14 @@ const Task = ({
   // pass an isCancelled into the generator function
   // so if it needs to run a long running promise
   // it can check for task cancellation and trigger a cancel itself
-  const useParams = Object.assign({}, {
+  const useParams = Object.assign({}, params, {
     cancel: () => task.cancelled = true,
     isCancelled: () => task.cancelled,
   })
   
   // build a stack of generators so we can call inner generators from
   // the task and the stack will unwind
-  const iterators = [generator(params)]
+  const iterators = [generator(useParams)]
 
   // keep track of the lastValue - this is returned to each yield step
   let lastValue = null
