@@ -1,3 +1,9 @@
+const config = require('../config')
+
+const {
+  CLUSTER_STATUS,
+} = config
+
 const ClusterRoutes = (controllers) => {
 
   const list = async (req, res, next) => {
@@ -48,10 +54,26 @@ const ClusterRoutes = (controllers) => {
   }
 
   const del = async (req, res, next) => {
-    const data = await controllers.cluster.delete({
+
+    const cluster = await controllers.cluster.get({
       id: req.params.id,
-      user: req.user,
     })
+
+    let data = null
+
+    if(cluster.status == CLUSTER_STATUS.deleted) {
+      data = await controllers.cluster.deletePermenantly({
+        id: req.params.id,
+        user: req.user,
+      })
+    }
+    else {
+      data = await controllers.cluster.delete({
+        id: req.params.id,
+        user: req.user,
+      })
+    }
+    
     res
       .status(200)
       .json(data)
