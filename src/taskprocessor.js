@@ -76,6 +76,8 @@ const Task = require('./task')
 
 const {
   TASK_STATUS,
+  RESOURCE_TYPES,
+  TASK_RESOURCE_COMPLETE_STATUS,
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
@@ -97,12 +99,35 @@ const TaskProcessor = ({
   let controlLoopRunning = false
   let stopped = false
 
+  // the store handlers for the resources we can start tasks for
+  const resourceTypeStores = {
+    [RESOURCE_TYPES.cluster]: store.cluster,
+    [RESOURCE_TYPES.deployment]: store.deployment,
+  }
+
+  // get the current status of a task
   const loadTaskStatus = (id) => 
     store.task.get({
       id,
     })
       .then(task => task.status)
 
+  // get a list of tasks with the given status
+  const loadTasksWithStatus = (status) => store.task.list({
+    status,
+  })
+    
+  const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
+  const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
+
+  // return a function that will check a running task cancel status
+  const isTaskCancelled = async (task) => {
+    const status = await loadTaskStatus(task.id)
+    return status == TASK_STATUS.cancelling
+  }
+
+  // update the status of a task
+  // timestamps indicates what fields we should stamp as now
   const updateTaskStatus = (task, status, timestamps) => {
 
     if(logging) {
@@ -131,7 +156,9 @@ const TaskProcessor = ({
     })
   }
 
-  const errorTask = (task, error) => {
+  // mark the task as failed and update the corresponding resource with
+  // the error status
+  const errorTask = async (task, error) => {
 
     if(logging) {
       pino.error({
@@ -141,7 +168,8 @@ const TaskProcessor = ({
       })
     }
 
-    return store.task.update({
+    // update the task store to indicate the task failed
+    await store.task.update({
       id: task.id,
       data: {
         status: TASK_STATUS.error,
@@ -149,34 +177,62 @@ const TaskProcessor = ({
         error,
       }
     })
+
+    // update the corresponding resource to indicate the task failed
+    const resourceTypeStore = resourceTypeStores[task.resource_type]
+    const errorResourceStatus = TASK_RESOURCE_COMPLETE_STATUS[`${task.resource_type}.error`]
+
+    await resourceTypeStore.update({
+      id: task.resource_id,
+      data: {
+        status: errorResourceStatus,
+      },
+    })
   }
 
+  // mark the task as complete and update the corresponding resource with
+  // the correct status - if the task was cancelled - we don't update
+  // the resource status
+  const completeTask = async (task, trx, cancelled) => {
+    // what status are we setting the task to
+    const finalTaskStatus = cancelled ?
+        TASK_STATUS.cancelled :
+        TASK_STATUS.finished
 
-  const loadTasksWithStatus = (status) => store.task.list({
-    status,
-  })
-    
+    await updateTaskStatus(task, finalTaskStatus, {ended: true})
 
-  const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
-  const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
+    // if the task completed - we update the resource to the correct status
+    if(!cancelled) {
+      // get a reference to the store handler for the task resource
+      const resourceTypeStore = resourceTypeStores[task.resource_type]
+      const finalResourceStatus = TASK_RESOURCE_COMPLETE_STATUS[task.action]
 
-  // return a function that will check a running task cancel status
-  const isTaskCancelled = async (task) => {
-    const status = await loadTaskStatus(task.id)
-    return status == TASK_STATUS.cancelling
+      await resourceTypeStore.update({
+        id: task.resource_id,
+        data: {
+          status: finalResourceStatus,
+        },
+      }, trx)
+    }
   }
 
+  // run a task
+  // we create a transaction and pass it as part of the params into the task
+  // this means the task's database updates will get unwound on an error
   const runTask = async (task) => {
     await store.transaction(async trx => {
       
+      // check that we have a handler for the task
       const handler = handlers[task.action]
 
       if(!handler) {
         throw new Error(task, `no handler was found for task: ${task.action}`)
       }
 
+      // update the task be to in running state
       const runningTask = await updateTaskStatus(task, TASK_STATUS.running, {started: true})
 
+      // create the task runner
       const runner = Task({
         generator: handler,
         params: {
@@ -185,6 +241,8 @@ const TaskProcessor = ({
           task: runningTask,
           logging,
         },
+        // before each yielded step of the task - check if the database has a cancel
+        // status and cancel the task if yes
         onStep: async (task) => {
           const isCancelled = await isTaskCancelled(runningTask)
           if(isCancelled) runner.cancel()
@@ -194,11 +252,8 @@ const TaskProcessor = ({
       taskProcessor.emit('task.start', task)
 
       await runner.run()
-
-      const finalStatus = runner.cancelled ?
-        TASK_STATUS.cancelled :
-        TASK_STATUS.finished
-      await updateTaskStatus(task, finalStatus, {ended: true})
+      
+      await completeTask(task, trx, runner.cancelled)
       
       taskProcessor.emit('task.complete', task)
     })
