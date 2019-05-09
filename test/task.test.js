@@ -163,3 +163,39 @@ tape('task -> we can cancel a task via an on step complete handler', async (t) =
 
   t.end()
 })
+
+
+tape('task -> simple', async (t) => {
+
+  const MESSAGE = 'hello'
+  const steps = []
+
+  function* innerTask(params) {
+    steps.push(yield Promise.resolve(2))
+    steps.push(yield Promise.resolve(3))
+  }
+
+  function* testTask(params) {
+    steps.push(yield 1)
+    yield innerTask(params)
+    steps.push(yield Promise.resolve(4))
+  }
+
+  const task = Task({
+    generator: testTask, 
+    params: {
+      message: MESSAGE,
+    },
+  })
+
+  await task.run()
+
+  t.deepEqual(steps, [
+    1,
+    2,
+    3,
+    4,
+  ], `the steps were run in the correct order`)
+
+  t.end()
+})
