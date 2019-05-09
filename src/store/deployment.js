@@ -56,6 +56,7 @@ const DeploymentStore = (knex) => {
 
       * data
         * cluster
+        * deployment_type
         * name
         * desired_state
     
@@ -66,17 +67,20 @@ const DeploymentStore = (knex) => {
     data: {
       cluster,
       name,
+      deployment_type,
       desired_state,
     }
   }, trx) => {
     if(!cluster) throw new Error(`data.cluster param must be given to store.deployment.create`)
     if(!name) throw new Error(`data.name param must be given to store.deployment.create`)
+    if(!deployment_type) throw new Error(`data.deployment_type param must be given to store.deployment.create`)
     if(!desired_state) throw new Error(`data.desired_state param must be given to store.deployment.create`)
 
     return (trx || knex)(config.TABLES.deployment)
       .insert({
         cluster,
         name,
+        deployment_type,
         desired_state,
       })
       .returning('*')
