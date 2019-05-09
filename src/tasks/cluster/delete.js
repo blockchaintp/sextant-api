@@ -1,3 +1,5 @@
+const Promise = require('bluebird')
+
 const ClusterDelete = ({
   
 }) => function* clusterCreateTask(params) {
@@ -8,6 +10,7 @@ const ClusterDelete = ({
     trx,
   } = params
 
+  
 }
 
 module.exports = ClusterDelete

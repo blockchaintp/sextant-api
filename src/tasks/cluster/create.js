@@ -1,3 +1,5 @@
+const Promise = require('bluebird')
+
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const saveAppliedState = require('./utils/saveAppliedState')
 
