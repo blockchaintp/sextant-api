@@ -73,7 +73,7 @@ const Kubectl = ({
   if(MODES.indexOf(mode) < 0) throw new Error(`unknown mode for Kubectl: ${mode}`)
 
   if(mode == 'remote') {
-    if(!remoteCredentials) throw new Error(`remoteCredentials required for Kubectl remote mode`))
+    if(!remoteCredentials) throw new Error(`remoteCredentials required for Kubectl remote mode`)
     if(!remoteCredentials.ca) throw new Error(`ca required for remote credentials`)
     if(!remoteCredentials.token) throw new Error(`token required for remote credentials`)
     if(!remoteCredentials.apiServer) throw new Error(`apiServer required for remote credentials`)
@@ -112,7 +112,7 @@ const Kubectl = ({
     else if(mode == 'local') {
 
       const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
-      
+
       connectionArguments = [
         '--certificate-authority',
         LOCAL_CA_PATH,
