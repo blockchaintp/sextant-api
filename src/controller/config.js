@@ -3,10 +3,12 @@ const packageJSON = require('../../package.json')
 
 const userForms = require('../forms/user')
 const clusterForms = require('../forms/cluster')
+const deploymentForms = require('../forms/deployment')
 
 const forms = {
   user: userForms.browser,
   cluster: clusterForms.browser,
+  deployment: deploymentForms.browser,
 }
 
 const ConfigBackend = () => {
