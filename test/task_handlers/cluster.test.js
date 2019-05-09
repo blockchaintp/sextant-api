@@ -18,6 +18,7 @@ const config = require('../../src/config')
 const {
   CLUSTER_STATUS,
   PERMISSION_USER,
+  TASK_ACTION,
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
@@ -31,8 +32,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
   }
 
-  const getTaskProcessor = (opts) => {
-    const handlers = Tasks(opts)
+  const getTaskProcessor = (handlers) => {
     const store = Store(getConnection())
     return TaskProcessor({
       store,
@@ -49,8 +49,9 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('cluster controller -> create cluster', async (t) => {
   
+    const handlers = Tasks({})
     const controller = getController()
-    const taskProcessor = getTaskProcessor({})
+    const taskProcessor = getTaskProcessor(handlers)
     const testUser = userMap[PERMISSION_USER.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
@@ -69,6 +70,42 @@ database.testSuiteWithDatabase(getConnection => {
 
     t.deepEqual(updatedCluster.desired_state, testClusters.admin.desired_state, `the applied_state has been updated to the desired_state`)
     t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, `the cluster status is provisioned`)
+
+    await taskProcessor.stop()
+  })
+
+  asyncTest('cluster controller -> create cluster error', async (t) => {
+  
+    const handlers = {
+      [TASK_ACTION['cluster.create']]: function* errorClusterCreate(params) {
+        throw new Error('test')
+      }
+    }
+    const controller = getController()
+    const taskProcessor = getTaskProcessor(handlers)
+    const testUser = userMap[PERMISSION_USER.admin]
+    const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
+
+    const insertData = Object.assign({}, clusterData, {
+      name: 'error cluster',
+    })
+
+    await taskProcessor.start()
+
+    const errorCluster = await controller.create({
+      user: testUser,
+      data: insertData,
+    })
+
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedCluster = await controller.get({
+      id: errorCluster.id,
+    })
+
+    
+    t.equal(updatedCluster.status, CLUSTER_STATUS.error, `the cluster status is error`)
+    t.equal(updatedCluster.task.error, `Error: test`, `the task error message is correct`)
 
     await taskProcessor.stop()
   })
