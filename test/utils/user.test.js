@@ -1,9 +1,6 @@
 'use strict'
 
-const tape = require('tape')
-const async = require('async')
 const userUtils = require('../../src/utils/user')
-const tools = require('../tools')
 const asyncTest = require('../asyncTest')
 
 asyncTest('user utils -> get and compare hash (correct)', async (t) => {
