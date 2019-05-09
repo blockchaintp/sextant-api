@@ -297,6 +297,20 @@ database.testSuiteWithDatabase(getConnection => {
     t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(testCluster.desired_state), `the cluster desired_state is correct`)
   })
 
+  asyncTest('cluster controller -> get cluster with task', async (t) => {
+  
+    const controller = getController()
+
+    const testCluster = testClusters[PERMISSION_USER.superuser]
+
+    const cluster = await controller.get({
+      id: testCluster.id,
+      withTask: true,
+    })
+
+    t.equal(typeof(cluster.task), 'object', 'the task was returned with the cluster')
+  })
+
   asyncTest('cluster controller -> list clusters for superuser user', async (t) => {
 
     const controller = getController()
@@ -346,6 +360,20 @@ database.testSuiteWithDatabase(getConnection => {
     }
 
     t.ok(error, `there was an error`)
+  })
+
+  asyncTest('cluster controller -> list clusters with tasks', async (t) => {
+
+    const controller = getController()
+
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    const clusters = await controller.list({
+      user: testUser,
+      withTasks: true,
+    })
+
+    t.equal(typeof(clusters[0].task), 'object', `there is a task returned with the cluster`)
   })
 
   asyncTest('cluster controller -> cannot delete a cluster with a running task', async (t) => {
