@@ -6,7 +6,9 @@ const asyncTestError = require('../asyncTestError')
 
 asyncTest('kubectl -> get help output', async (t) => {
 
-  const kubectl = Kubectl()
+  const kubectl = Kubectl({
+    mode: 'test',
+  })
   const [ stdout ] = await kubectl.command(`help`)
 
   t.ok(stdout.toLowerCase().indexOf('kubernetes') >= 0, `the output contained the word Kubernetes`)
@@ -14,7 +16,9 @@ asyncTest('kubectl -> get help output', async (t) => {
 
 asyncTestError('kubectl -> run bad command', async (t) => {
 
-  const kubectl = Kubectl()
+  const kubectl = Kubectl({
+    mode: 'test',
+  })
   await kubectl.command(`oranges`)
 
 })

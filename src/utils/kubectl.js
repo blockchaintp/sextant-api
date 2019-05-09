@@ -37,7 +37,7 @@ const tempFile = Promise.promisify(tmp.file)
 const writeFile = Promise.promisify(fs.writeFile)
 const readFile = Promise.promisify(fs.readFile)
 
-const MODES = ['local', 'remote']
+const MODES = ['local', 'remote', 'test']
 
 const LOCAL_TOKEN_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/token'
 const LOCAL_CA_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
