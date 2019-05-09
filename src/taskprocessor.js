@@ -130,14 +130,6 @@ const TaskProcessor = ({
   // timestamps indicates what fields we should stamp as now
   const updateTaskStatus = (task, status, timestamps) => {
 
-    if(logging) {
-      pino.error({
-        action: 'updatestatus',
-        task: task,
-        status,
-      })
-    }
-
     const updateData = {
       status,
     }
