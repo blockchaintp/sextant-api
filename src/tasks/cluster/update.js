@@ -23,7 +23,11 @@ const ClusterUpdate = ({
   })
 
   // test we can connect to the remote cluster with the details provided
-  yield clusterKubectl.jsonCommand('get ns')
+  const namespaces = yield clusterKubectl.jsonCommand('get ns')
+
+  console.log('--------------------------------------------')
+  console.log('--------------------------------------------')
+  console.dir(namespaces)
 
   yield saveAppliedState({
     id,

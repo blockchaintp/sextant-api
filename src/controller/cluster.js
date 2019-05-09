@@ -199,6 +199,9 @@ const ClusterController = ({ store, settings }) => {
       updatedDesiredState.ca_id = applied_state.ca_id
     }
 
+    delete(updatedDesiredState.ca)
+    delete(updatedDesiredState.token)
+
     return updatedDesiredState
   }
 
@@ -380,6 +383,11 @@ const ClusterController = ({ store, settings }) => {
         desired_state: formData.desired_state,
         secrets: extractedSecrets.secrets,
       }, trx)
+
+      console.log('--------------------------------------------')
+      console.log('--------------------------------------------')
+      console.log('--------------------------------------------')
+      console.dir(updatedDesiredState)
 
       formData.desired_state = updatedDesiredState
     }
