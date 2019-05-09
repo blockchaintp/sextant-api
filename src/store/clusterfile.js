@@ -169,12 +169,35 @@ const ClusterFileStore = (knex) => {
       .get(0)
   }
 
+  /*
+  
+    delete all files for a cluster
+
+    params:
+
+      * cluster
+
+  */
+  const deleteForCluster = ({
+    cluster,
+  }, trx) => {
+    if(!cluster) throw new Error(`cluster must be given to store.clusterfile.del`)
+    return (trx || knex)(config.TABLES.clusterfile)
+      .where({
+        cluster,
+      })
+      .del()
+      .returning('*')
+      .get(0)
+  }
+
   return {
     list,
     get,
     create,
     update,
     delete: del,
+    deleteForCluster,
   }
 }
 

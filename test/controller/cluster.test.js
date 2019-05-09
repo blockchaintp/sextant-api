@@ -537,6 +537,8 @@ database.testSuiteWithDatabase(getConnection => {
       data: clusterData,
     })
 
+    testClusters.withSecrets = cluster
+
     const {
       token_id,
       ca_id,
@@ -621,6 +623,69 @@ database.testSuiteWithDatabase(getConnection => {
 
     await taskProcessor.stop()
 
+  })
+
+  asyncTest('cluster controller -> delete the cluster permenantly', async (t) => {
+
+    const controller = getController()
+    const store = Store(getConnection())
+
+    const taskProcessor = TaskProcessor({
+      store,
+      handlers: {
+        [TASK_ACTION['cluster.delete']]: function* (params) {},
+      }
+    })
+
+
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    const testCluster = testClusters.withSecrets
+
+    await taskProcessor.start()
+
+    await controller.delete({
+      id: testCluster.id,
+      user: testUser,
+    })
+
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    await controller.deletePermenantly({
+      id: testCluster.id,
+      user: testUser,
+    })
+
+    const secrets = await store.clustersecret.list({
+      cluster: testCluster.id,
+    })
+
+    const files = await store.clusterfile.list({
+      cluster: testCluster.id,
+    })
+
+    const tasks = await store.task.list({
+      cluster: testCluster.id,
+    })
+
+    const roles = await store.role.listForResource({
+      resource_type: 'cluster',
+      resource_id: testCluster.id,
+    })
+
+    const cluster = await store.cluster.get({
+      id: testCluster.id,
+    })
+
+    t.equal(secrets.length, 0, `there are no secrets`)
+    t.equal(files.length, 0, `there are no files`)
+    t.equal(tasks.length, 0, `there are no tasks`)
+    t.equal(roles.length, 0, `there are no roles`)
+    t.equal(secrets.length, 0, `there are no secrets`)
+
+    t.notok(cluster, `there was no cluster`)
+
+    await taskProcessor.stop()
   })
   
 })

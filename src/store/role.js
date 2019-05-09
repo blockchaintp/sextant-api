@@ -141,12 +141,37 @@ const RoleStore = (knex) => {
       .get(0)
   }
 
+  /*
+  
+    delete roles for a resource
+
+    params:
+
+     * id
+  
+  */
+  const deleteForResource = ({
+    resource_type,
+    resource_id,
+  }, trx) => {
+    if(!resource_type) throw new Error(`resource_type must be given to store.role.deleteForResource`)
+    if(!resource_id) throw new Error(`resource_type must be given to store.role.deleteForResource`)
+    return (trx || knex)(config.TABLES.role)
+      .where({
+        resource_type,
+        resource_id,
+      })
+      .del()
+      .returning('*')
+  }
+
   return {
     listForUser,
     listForResource,
     get,
     create,
     delete: del,
+    deleteForResource,
   }
 }
 

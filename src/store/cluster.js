@@ -148,12 +148,27 @@ const ClusterStore = (knex) => {
       .get(0)
   }
 
+  const deletePermenantly = ({
+    id,
+  }, trx) => {
+    if(!id) throw new Error(`id must be given to store.cluster.deletePermenantly`)
+    
+    return (trx || knex)(config.TABLES.cluster)
+      .where({
+        id,
+      })
+      .del()
+      .returning('*')
+      .get(0)
+  }
+
   return {
     list,
     get,
     create,
     update,
     delete: del,
+    deletePermenantly,
   }
 }
 

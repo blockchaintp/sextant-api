@@ -248,6 +248,30 @@ const TaskStore = (knex) => {
       .get(0)
   }
 
+  /*
+  
+    delete tasks for a resource
+
+    params:
+
+     * id
+  
+  */
+  const deleteForResource = ({
+    resource_type,
+    resource_id,
+  }, trx) => {
+    if(!resource_type) throw new Error(`resource_type must be given to store.task.deleteForResource`)
+    if(!resource_id) throw new Error(`resource_type must be given to store.task.deleteForResource`)
+    return (trx || knex)(config.TABLES.task)
+      .where({
+        resource_type,
+        resource_id,
+      })
+      .del()
+      .returning('*')
+  }
+
   return {
     list,
     activeForResource,
@@ -255,6 +279,7 @@ const TaskStore = (knex) => {
     get,
     create,
     update,
+    deleteForResource,
   }
 }
 

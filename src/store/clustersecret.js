@@ -214,6 +214,28 @@ const ClusterSecretStore = (knex) => {
     }, trx)
   }
 
+  /*
+  
+    delete all secrets for a cluster
+
+    params:
+
+      * cluster
+
+  */
+  const deleteForCluster = ({
+    cluster,
+  }, trx) => {
+    if(!cluster) throw new Error(`cluster must be given to store.clustersecret.deleteForCluster`)
+    return (trx || knex)(config.TABLES.clustersecret)
+      .where({
+        cluster,
+      })
+      .del()
+      .returning('*')
+      .get(0)
+  }
+
   return {
     list,
     get,
@@ -221,6 +243,7 @@ const ClusterSecretStore = (knex) => {
     update,
     delete: del,
     replace,
+    deleteForCluster,
   }
 }
 

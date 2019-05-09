@@ -9,6 +9,7 @@ const validate = require('../forms/validate')
 
 const {
   CLUSTER_STATUS,
+  DEPLOYMENT_STATUS,
   CLUSTER_PROVISION_TYPE,
   PERMISSION_ROLE_ACCESS_LEVELS,
 } = config
@@ -449,6 +450,78 @@ const ClusterController = ({ store, settings }) => {
 
   /*
   
+    delete a cluster - i.e. actually delete it from disk
+    a cluster *must* be in the `deleted` state to do this
+
+    params:
+
+     * user - the user that is creating the cluster  
+     * id
+    
+  */
+  const deletePermenantly = ({
+    user,
+    id,
+  }) => store.transaction(async trx => {
+
+    if(!user) throw new Error(`user required for controllers.cluster.delete`)
+    if(!id) throw new Error(`id must be given to controller.cluster.delete`) 
+
+    // check there are no active tasks for this cluster
+    const activeTasks = await store.task.activeForResource({
+      cluster: id,
+    }, trx)
+
+    if(activeTasks.length > 0) throw new Error(`there are active tasks for this cluster`)
+
+    const cluster = await store.cluster.get({
+      id,
+    }, trx)
+
+    if(cluster.status != CLUSTER_STATUS.deleted) throw new Error(`a cluster must be in deleted status to be deleted permenantly`)
+
+    // get a list of deployments for this cluster and check they are all in deleted status
+    const deployments = await store.deployment.list({
+      cluster: id,
+    }, trx)
+
+    const nonDeletedDeployments = deployments.filter(deployment => deployment.status != DEPLOYMENT_STATUS.deleted)
+
+    if(nonDeletedDeployments.length > 0) throw new Error(`all deployments for this cluster must be in deleted state to be deleted permenantly`)
+    
+    // loop over each deployment and remove, tasks and roles and then the deployment
+    await Promise.each(deployments, async deployment => {
+      await store.task.deleteForResource({
+        resource_type: 'deployment',
+        resource_id: deployment.id,
+      }, trx)
+      await store.role.deleteForResource({
+        resource_type: 'deployment',
+        resource_id: deployment.id,
+      }, trx)
+      await store.deployment.delete({
+        id: deployment.id,
+      }, trx)
+    })
+
+    // delete the cluster tasks, roles and then the cluster
+    await store.task.deleteForResource({
+      resource_type: 'cluster',
+      resource_id: cluster.id,
+    }, trx)
+    await store.role.deleteForResource({
+      resource_type: 'cluster',
+      resource_id: cluster.id,
+    }, trx)
+    await store.cluster.deletePermenantly({
+      id: cluster.id,
+    }, trx)
+
+    return true
+  })
+
+  /*
+  
     get the roles for a given cluster
 
     params:
@@ -560,6 +633,7 @@ const ClusterController = ({ store, settings }) => {
     create,
     update,
     delete: del,
+    deletePermenantly,
     getRoles,
     createRole,
     deleteRole,
