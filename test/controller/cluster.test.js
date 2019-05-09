@@ -2,6 +2,7 @@
 
 const Promise = require('bluebird')
 const asyncTest = require('../asyncTest')
+const asyncTestError = require('../asyncTestError')
 const database = require('../database')
 const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
@@ -623,6 +624,21 @@ database.testSuiteWithDatabase(getConnection => {
 
     await taskProcessor.stop()
 
+  })
+
+  asyncTestError('cluster controller -> fail to delete the cluster permenantly', async (t) => {
+
+    const controller = getController()
+    const store = Store(getConnection())
+
+    const testUser = userMap[PERMISSION_USER.admin]
+
+    const testCluster = testClusters.withSecrets
+
+    await controller.deletePermenantly({
+      id: testCluster.id,
+      user: testUser,
+    })
   })
 
   asyncTest('cluster controller -> delete the cluster permenantly', async (t) => {
