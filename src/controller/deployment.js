@@ -222,10 +222,30 @@ const DeployentController = ({ store, settings }) => {
     return deployment
   })
 
+  /*
+  
+    get the tasks for a given deployment
+
+    params:
+
+     * id
+    
+  */
+  const getTasks = ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.getTasks`)
+
+    return store.task.list({
+      deployment: id,
+    })
+  }
+
   return {
     list,
     get,
     create,
+    getTasks,
   }
 
 }

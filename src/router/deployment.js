@@ -44,10 +44,20 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const listTasks = async (req, res, next) => {
+    const data = await controllers.deployment.getTasks({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   return {
     list,
     get,
     create,
+    listTasks,
   }
 }
 
