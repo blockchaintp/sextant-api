@@ -199,3 +199,41 @@ tape('task -> simple', async (t) => {
 
   t.end()
 })
+
+tape('task -> cancel from inside an inner generator', async (t) => {
+
+  const MESSAGE = 'hello'
+  const steps = []
+
+  function* innerTask() {
+    steps.push(yield 2)
+    yield Promise.delay(1000)
+    steps.push(yield 3)
+  }
+
+  function* testTask() {
+    steps.push(yield Promise.resolve(1))
+    yield innerTask()
+  }
+
+  const task = Task({
+    generator: testTask, 
+  })
+
+  await Promise.all([
+    task.run(),
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        task.cancel()
+        resolve()
+      }, 100)
+    })
+  ])
+
+  t.deepEqual(steps, [
+    1,
+    2,
+  ], `the task was cancelled from inside an inner generator`)
+
+  t.end()
+})
