@@ -167,7 +167,7 @@ const TaskProcessor = ({
       data: {
         status: TASK_STATUS.error,
         ended_at: store.knex.fn.now(),
-        error: error.toString(),
+        error: error.toString().substring(0, 250),
       }
     })
 
