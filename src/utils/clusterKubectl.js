@@ -18,19 +18,15 @@ const ClusterKubectl = async ({
 
   const mode = cluster.provision_type
   let remoteCredentials = null
-
-  console.log('--------------------------------------------')
-  console.log('--------------------------------------------')
-  console.dir(cluster.desired_state)
   if(mode == 'remote') {
     const tokenSecret = await store.clustersecret.get({
       cluster: cluster.id,
-      id: cluster.desired_state.token,
+      id: cluster.desired_state.token_id,
     })
 
     const caSecret = await store.clustersecret.get({
       cluster: cluster.id,
-      id: cluster.desired_state.ca,
+      id: cluster.desired_state.ca_id,
     })
 
     remoteCredentials = {
