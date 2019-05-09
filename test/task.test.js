@@ -268,3 +268,28 @@ tape('task -> test for long running Promise cancellation', async (t) => {
 
   t.end()
 })
+
+tape('task -> self cancellation', async (t) => {
+  
+  const steps = []
+
+  function* testTask(params) {
+    yield Promise.each([1,2,3,4,5], async i => {
+      if(!params.isCancelled()) steps.push(i)
+      await Promise.delay(100)
+      params.cancel()
+    })
+  }
+
+  const task = Task({
+    generator: testTask, 
+  })
+
+  await task.run()
+
+  t.deepEqual(steps, [
+    1,
+  ], `only one value was added because the task was cancelled`)
+
+  t.end()
+})
