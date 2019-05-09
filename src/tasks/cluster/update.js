@@ -2,7 +2,7 @@ const ClusterKubectl = require('../../utils/clusterKubectl')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const ClusterUpdate = ({
-  
+  testMode,
 }) => function* clusterUpdateTask(params) {
   
   const {
@@ -17,13 +17,16 @@ const ClusterUpdate = ({
     id,
   }, trx)
 
-  const clusterKubectl = yield ClusterKubectl({
-    cluster,
-    store,
-  })
+  // TODO: mock the kubectl handler for tests
+  if(!testMode) {
+    const clusterKubectl = yield ClusterKubectl({
+      cluster,
+      store,
+    })
 
-  // test we can connect to the remote cluster with the details provided
-  const namespaces = yield clusterKubectl.jsonCommand('get ns')
+    // test we can connect to the remote cluster with the details provided
+    const namespaces = yield clusterKubectl.jsonCommand('get ns')
+  }
 
   yield saveAppliedState({
     id,

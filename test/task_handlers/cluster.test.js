@@ -47,9 +47,11 @@ database.testSuiteWithDatabase(getConnection => {
     userMap = await fixtures.insertTestUsers(getConnection())
   })
 
-  asyncTest('cluster controller -> create cluster', async (t) => {
+  asyncTest('cluster task_handlers -> create cluster', async (t) => {
   
-    const handlers = Tasks({})
+    const handlers = Tasks({
+      testMode: true,
+    })
     const controller = getController()
     const taskProcessor = getTaskProcessor(handlers)
     const testUser = userMap[PERMISSION_USER.admin]
@@ -74,7 +76,7 @@ database.testSuiteWithDatabase(getConnection => {
     await taskProcessor.stop()
   })
 
-  asyncTest('cluster controller -> create cluster error', async (t) => {
+  asyncTest('cluster task_handlers -> create cluster error', async (t) => {
   
     const handlers = {
       [TASK_ACTION['cluster.create']]: function* errorClusterCreate(params) {

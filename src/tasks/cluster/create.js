@@ -4,7 +4,7 @@ const ClusterKubectl = require('../../utils/clusterKubectl')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const ClusterCreate = ({
-  
+  testMode,
 }) => function* clusterCreateTask(params) {
 
   const {
@@ -19,13 +19,16 @@ const ClusterCreate = ({
     id,
   }, trx)
 
-  const clusterKubectl = yield ClusterKubectl({
-    cluster,
-    store,
-  })
-
-  // test we can connect to the remote cluster with the details provided
-  yield clusterKubectl.jsonCommand('get ns')
+  // TODO: mock the kubectl handler for tests
+  if(!testMode) {
+    const clusterKubectl = yield ClusterKubectl({
+      cluster,
+      store,
+    })
+  
+    // test we can connect to the remote cluster with the details provided
+    yield clusterKubectl.jsonCommand('get ns')
+  }
 
   yield saveAppliedState({
     id,
