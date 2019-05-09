@@ -71,6 +71,11 @@ const CLUSTER_STATUS = {
 
 const CLUSTER_STATUS_DEFAULT = CLUSTER_STATUS.created
 
+const DEPLOYMENT_TYPE = {
+  sawtooth: 'sawtooth',
+  ethereum: 'ethereum',
+}
+
 const DEPLOYMENT_STATUS = {
   created: 'created',
   provisioned: 'provisioned',
@@ -171,6 +176,7 @@ const config = {
   CLUSTER_PROVISION_TYPE,
   CLUSTER_STATUS,
   CLUSTER_STATUS_DEFAULT,
+  DEPLOYMENT_TYPE,
   DEPLOYMENT_STATUS,
   DEPLOYMENT_STATUS_DEFAULT,
   TASK_STATUS,
