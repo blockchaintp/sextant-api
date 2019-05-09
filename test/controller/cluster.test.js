@@ -7,6 +7,7 @@ const database = require('../database')
 const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
 const Store = require('../../src/store')
+const base64 = require('../../src/utils/base64')
 
 const TaskProcessor = require('../../src/taskprocessor')
 
@@ -507,10 +508,10 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
     const TOKEN = 'apples'
-    const CA = 'oranges'
+    const CA = '-----BEGIN CERTIFICATE-----Oranges-----END CERTIFICATE-----'
 
     const TOKEN2 = 'pears'
-    const CA2 = 'peaches'
+    const CA2 = '-----BEGIN CERTIFICATE-----peaches-----END CERTIFICATE-----'
 
     const API_SERVER = 'http://localhost.com'
 
@@ -558,9 +559,9 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
     t.equal(token.name, 'token', 'the token secret name is correct')
-    t.equal(token.base64data, TOKEN, 'the token secret value is correct')
+    t.equal(token.base64data, base64.encode(TOKEN), 'the token secret value is correct')
     t.equal(ca.name, 'ca', 'the ca secret name is correct')
-    t.equal(ca.base64data, CA, 'the ca secret value is correct')
+    t.equal(ca.base64data, base64.encode(CA), 'the ca secret value is correct')
 
     await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
@@ -603,9 +604,9 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
     t.equal(token2.name, 'token', 'the token secret name is correct')
-    t.equal(token2.base64data, TOKEN2, 'the token secret value is correct')
+    t.equal(token2.base64data, base64.encode(TOKEN2), 'the token secret value is correct')
     t.equal(ca2.name, 'ca', 'the ca secret name is correct')
-    t.equal(ca2.base64data, CA2, 'the ca secret value is correct')
+    t.equal(ca2.base64data, base64.encode(CA2), 'the ca secret value is correct')
 
     await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 

@@ -37,7 +37,7 @@ const errorClusters = {
       name: 'apples',
       provision_type: 'remote',
       desired_state: {
-        ca: 'apples',
+        ca: '-----BEGIN CERTIFICATE-----SOME DATA-----END CERTIFICATE-----',
       },
     },
     error: 'desired_state.token validation error: access token is required',
@@ -47,7 +47,7 @@ const errorClusters = {
       name: 'apples',
       provision_type: 'remote',
       desired_state: {
-        ca: 'apples',
+        ca: '-----BEGIN CERTIFICATE-----SOME DATA-----END CERTIFICATE-----',
         token: 'apples',
       },
     },
@@ -58,7 +58,7 @@ const errorClusters = {
       name: 'apples',
       provision_type: 'remote',
       desired_state: {
-        ca: 'apples',
+        ca: '-----BEGIN CERTIFICATE-----SOME DATA-----END CERTIFICATE-----',
         token: 'apples',
         apiServer: 'apples',
       },

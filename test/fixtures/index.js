@@ -42,7 +42,7 @@ const SIMPLE_CLUSTER_DATA = [{
   desired_state: {
     oranges: 10,
     apiServer: 'https://apiserver.com',
-    ca: 'oranges_ca',
+    ca: '-----BEGIN CERTIFICATE-----SOME DATA-----END CERTIFICATE-----',
     token: 'oranges_token',
   },
   capabilities: {
@@ -52,11 +52,13 @@ const SIMPLE_CLUSTER_DATA = [{
 
 const SIMPLE_DEPLOYMENT_DATA = [{
   name: 'testdeployment',
+  deployment_type: 'sawtooth',
   desired_state: {
     apples: 10,
   },
 },{
   name: 'otherdeployment',
+  deployment_type: 'sawtooth',
   desired_state: {
     oranges: 10,
   },
