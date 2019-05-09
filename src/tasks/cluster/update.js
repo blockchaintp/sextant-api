@@ -1,3 +1,4 @@
+const ClusterKubectl = require('../../utils/clusterKubectl')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const ClusterUpdate = ({
@@ -11,6 +12,18 @@ const ClusterUpdate = ({
   } = params
 
   const id = task.resource_id
+
+  const cluster = yield store.cluster.get({
+    id,
+  }, trx)
+
+  const clusterKubectl = yield ClusterKubectl({
+    cluster,
+    store,
+  })
+
+  // test we can connect to the remote cluster with the details provided
+  yield clusterKubectl.jsonCommand('get ns')
 
   yield saveAppliedState({
     id,
