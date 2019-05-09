@@ -1,29 +1,21 @@
-const async = require('async')
-
 // save the desired_state to applied_state
 // this should be the last step of a task
-// such that is there is an error - this won't happen
-
-const SaveAppliedState = ({
+const SaveAppliedState = async ({
   id,
   store,
-  transaction,
-}, done) => {
+  trx,
+}) => {
 
-  async.waterfall([
-    (next) => store.cluster.get({
-      id,
-      transaction,
-    }, next),
-    (cluster, next) => store.cluster.update({
-      id,
-      data: {
-        applied_state: cluster.desired_state,
-      },
-      transaction,
-    }, next)
-  ], done)
-  
+  const cluster = await store.cluster.get({
+    id,
+  }, trx)
+
+  return store.cluster.update({
+    id,
+    data: {
+      applied_state: cluster.desired_state,
+    },
+  }, trx)  
 }
 
 module.exports = SaveAppliedState
