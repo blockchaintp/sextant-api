@@ -13,6 +13,7 @@ const config = require('../../src/config')
 const {
   TASK_ACTION,
   TASK_CONTROLLER_LOOP_DELAY,
+  CLUSTER_STATUS,
 } = config
 
 const getClusterWithoutTask = (cluster) => {
@@ -22,8 +23,8 @@ const getClusterWithoutTask = (cluster) => {
 }
 
 app.testSuiteWithAppTaskHandlers({
-  [TASK_ACTION['cluster.create']]: (params, done) => {
-    done()
+  [TASK_ACTION['cluster.create']]: function* (params) {
+    
   }
 }, ({
   getConnection,
@@ -254,7 +255,10 @@ app.testSuiteWithAppTaskHandlers({
         if(err) return next(err)
         t.equal(res.statusCode, 200, `200 code`)
         t.equal(body.length, 1, `there is a single cluster in the response`)
-        t.deepEqual(getClusterWithoutTask(body[0]), createdClusters.admin, `the cluster in the list is the same as the created one`)
+        const checkCluster = Object.assign({}, createdClusters.admin, {
+          status: CLUSTER_STATUS.provisioned,
+        })
+        t.deepEqual(body[0], checkCluster, `the cluster in the list is the same as the created one`)
         next()
       })
     }, (err) => {

@@ -33,6 +33,7 @@ const ClusterController = ({ store, settings }) => {
   const list = async ({
     user,
     deleted,
+    withTasks,
   }) => {
     if(!user) throw new Error(`user required for controllers.cluster.list`)
 
@@ -65,9 +66,14 @@ const ClusterController = ({ store, settings }) => {
       return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
     })
 
-    return loadMostRecentTasksForClusters({
-      clusters: filteredClusters,
-    })
+    if(withTasks) {
+      return loadMostRecentTasksForClusters({
+        clusters: filteredClusters,
+      })
+    }
+    else {
+      return filteredClusters
+    }    
   }
 
   /*
@@ -77,10 +83,12 @@ const ClusterController = ({ store, settings }) => {
     params:
 
      * id
+     * withTask - should we load the latest task into the result
     
   */
   const get = async ({
     id,
+    withTask,
   }) => {
     if(!id) throw new Error(`id must be given to controller.cluster.update`)
 
@@ -90,11 +98,13 @@ const ClusterController = ({ store, settings }) => {
 
     if(!cluster) return null
 
-    const task = await store.task.mostRecentForResource({
-      cluster: id,
-    })
-
-    cluster.task = task
+    if(withTask) {
+      const task = await store.task.mostRecentForResource({
+        cluster: id,
+      })
+  
+      cluster.task = task
+    }
 
     return cluster
   }

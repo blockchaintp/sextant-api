@@ -101,6 +101,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const updatedCluster = await controller.get({
       id: errorCluster.id,
+      withTask: true,
     })
 
     
