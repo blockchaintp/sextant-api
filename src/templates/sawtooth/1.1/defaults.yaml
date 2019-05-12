@@ -11,6 +11,7 @@ storage:
   fsType: ext4
 
 sawtooth:
+  namespace: default
   networkName: sawtooth
   replicas: 3
   scheduler: parallel
@@ -46,7 +47,7 @@ dns:
 
 sources:
   imageRepository: blockchaintp
-  version: 1.0.5
+  version: v1.1.4-2-g402f6b6b-BTP1.1.0-55-g2710fa3
   rbacVersion: develop
   simpleVersion: latest
   xoDemoVersion: master

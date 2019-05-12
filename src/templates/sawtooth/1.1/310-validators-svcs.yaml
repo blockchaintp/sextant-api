@@ -1,0 +1,89 @@
+# kubetpl:syntax:go-template
+---
+{{$peering:= .sawtooth.dynamicPeering}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-rest-api
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-validator
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    protocol: TCP 
+    targetPort: 8080
+    name: rest-api
+  - port: 3030
+    protocol: TCP 
+    targetPort: 3030
+    name: seth-rpc
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-nodeport
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-validator
+spec:
+  type: NodePort
+  ports:
+  - nodePort: 30080
+    port: 8080
+    protocol: TCP 
+    targetPort: 8080
+    name: rest-api
+  - nodePort: 30030
+    port: 3030
+    protocol: TCP 
+    targetPort: 3030
+    name: seth-rpc
+  - nodePort: 30800
+    port: 30800
+    protocol: TCP 
+    targetPort: 30800
+    name: sawnet
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-validator
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-validator
+spec:
+  ports:
+  - port: 30800
+    protocol: TCP 
+    targetPort: 30800
+    name: sawnet
+  clusterIP: None
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-xo-demo
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-xo-demo
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP 
+    targetPort: 80
+    name: xo-demo
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---

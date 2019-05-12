@@ -4,14 +4,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{.sawtooth.networkName}}-sa
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{.sawtooth.networkName}}-role
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
     resources: ["services", "statefulsets.apps","endpoints", "nodes", "pods"]
@@ -22,7 +22,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{.sawtooth.networkName}}-clusterrole
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
     resources: ["statefulsets.apps", "nodes",]
@@ -33,7 +33,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
   name: {{.sawtooth.networkName}}-rb
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -48,7 +48,7 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
   name: {{.sawtooth.networkName}}-crb
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -64,7 +64,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-rest-api
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
@@ -86,7 +86,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-nodeport
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
@@ -115,7 +115,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-validator
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
@@ -133,7 +133,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{.sawtooth.networkName}}-xo-demo
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-xo-demo
 spec:
@@ -151,7 +151,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{.sawtooth.networkName}}-validator
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 spec:
   selector:
     matchLabels:

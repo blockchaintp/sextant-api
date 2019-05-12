@@ -1,45 +1,11 @@
 # kubetpl:syntax:go-template
-apiVersion: v1
-kind: Service
-metadata:
-  name: grafana
-  namespace: default
-  labels:
-    app: {{.sawtooth.networkName}}-monitoring
-    dns: route53
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 3000
-    name: grafana
-  selector:
-    app: {{.sawtooth.networkName}}-monitoring
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: influxdb
-  namespace: default
-  labels:
-    app: {{.sawtooth.networkName}}-monitoring
-spec:
-  ports:
-  - port: 8086
-    protocol: TCP
-    targetPort: 8086
-    name: influxdb
-  selector:
-    app: {{.sawtooth.networkName}}-monitoring
 ---
 
 apiVersion: apps/v1
 kind: StatefulSet 
 metadata:
   name: {{.sawtooth.networkName}}-monitoring
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-monitoring
 spec:

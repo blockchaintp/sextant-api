@@ -1,0 +1,23 @@
+# kubetpl:syntax:go-template
+{{ if .sawtooth.rbac.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-next
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-next
+spec:
+  ports:
+  - port: 9090
+    protocol: TCP
+    targetPort: 8080
+    name: rethinkdb-admin
+  - port: 4200
+    protocol: TCP
+    targetPort: 4200
+    name: rbac-ui
+  selector:
+    app: {{.sawtooth.networkName}}-next
+---
+{{ end }}
