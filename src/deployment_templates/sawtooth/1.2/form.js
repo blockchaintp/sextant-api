@@ -1,24 +1,24 @@
 const activatedOptions = [{
-  value: 'true',
+  value: true,
   title: 'Enabled'
 },{
-  value: 'false',
+  value: false,
   title: 'Disabled'
 }]
 
 const consensusOptions = [{
-  value: 'true',
+  value: true,
   title: 'Poet'
 },{
-  value: 'false',
+  value: false,
   title: 'Dev Mode'
 }]
 
 const peeringOptions = [{
-  value: 'true',
+  value: true,
   title: 'Dynamic'
 },{
-  value: 'false',
+  value: false,
   title: 'Static'
 }]
 
@@ -28,7 +28,7 @@ const form = [
 
   [
     {
-      id: 'name',
+      id: 'deployment.name',
       title: 'Network Name',
       helperText: 'The name of the sawtooth network',
       component: 'text',
@@ -41,7 +41,7 @@ const form = [
       },
     },
     {
-      id: 'namespace',
+      id: 'deployment.namespace',
       title: 'Kubernetes Namespace',
       helperText: 'The Kubernetes namespace',
       component: 'text',
@@ -58,10 +58,11 @@ const form = [
 
   [
     {
-      id: 'dynamic_peering',
+      id: 'sawtooth.dynamicPeering',
       title: 'Peering Type',
       helperText: 'Peering type for the validator',
       component: 'radio',
+      default: true,
       row: true,
       options: peeringOptions,
       validate: {
@@ -72,10 +73,11 @@ const form = [
       },
     },
     {
-      id: 'genesis_enabled',
+      id: 'sawtooth.genesis.enabled',
       title: 'Genesis Block',
       helperText: 'Should this network create the genesis block?',
       component: 'radio',
+      default: true,
       row: true,
       options: activatedOptions,
       validate: {
@@ -89,7 +91,7 @@ const form = [
 
   
   {
-    id: 'external_seeds',
+    id: 'sawtooth.externalSeeds',
     title: 'External Seeds',
     helperText: 'The list of external addresses to connect to',
     list: {
@@ -116,10 +118,11 @@ const form = [
   'Consensus Algorithm',
 
   {
-    id: 'poet_enabled',
+    id: 'sawtooth.poet.enabled',
     title: 'POET Enabled',
     helperText: 'Should the POET consensus protocol be active on this network?',
     component: 'radio',
+    default: false,
     row: true,
     options: consensusOptions,
     validate: {
@@ -133,7 +136,7 @@ const form = [
   'Transaction Processors',
 
   {
-    id: 'custom_tps',
+    id: 'sawtooth.customTPs',
     title: 'Custom Transaction Processors',
     helperText: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
     list: {
@@ -199,26 +202,79 @@ const form = [
     }
   },
 
-  {
-    id: 'additional_tps',
-    title: 'Additional Transaction Processors',
-    component: 'multipleCheckbox',
-    helperText: 'Choose which additional transaction processors to activate',
-    options: [{
-      title: 'RBAC',
-      value: 'rabc',
-    }, {
-      title: 'XO',
-      value: 'xo',
-    }, {
-      title: 'Smallbank',
-      value: 'smallbank',
-    }, {
-      title: 'Simple',
-      value: 'simple',
-    }]
-  },
+  [{
+    id: 'sawtooth.rbac.enabled',
+    title: 'RBAC Enabled',
+    helperText: 'Should the RBAC transaction processor be active on this network?',
+    component: 'radio',
+    default: true,
+    row: true,
+    options: activatedOptions,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  },{
+    id: 'sawtooth.seth.enabled',
+    title: 'SETH Enabled',
+    helperText: 'Should the SETH transaction processor be active on this network?',
+    component: 'radio',
+    default: true,
+    row: true,
+    options: activatedOptions,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }], [{
+    id: 'sawtooth.xo.enabled',
+    title: 'XO Enabled',
+    helperText: 'Should the XO transaction processor be active on this network?',
+    component: 'radio',
+    default: true,
+    row: true,
+    options: activatedOptions,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }, {
+    id: 'sawtooth.smallbank.enabled',
+    title: 'Smallbank Enabled',
+    helperText: 'Should the Smallbank transaction processor be active on this network?',
+    component: 'radio',
+    default: true,
+    row: true,
+    options: activatedOptions,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }],
 
+  [{
+    id: 'sawtooth.simple.enabled',
+    title: 'Simple Enabled',
+    helperText: 'Should the Simple transaction processor be active on this network?',
+    component: 'radio',
+    default: true,
+    row: true,
+    options: activatedOptions,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }],
 
 ]
 

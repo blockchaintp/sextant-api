@@ -3,16 +3,16 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: rbac-config
-  namespace: default
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-next
+    app: {{.deployment.name}}-next
 data:
   config.py: |
     HOST = 'localhost'
     PORT = 8000
     TIMEOUT = 500
     KEEP_ALIVE = False
-    VALIDATOR_HOST = '{{.sawtooth.networkName}}-validator'
+    VALIDATOR_HOST = '{{.deployment.namespace}}-validator'
     VALIDATOR_PORT = 4004
     DB_HOST = 'localhost'
     DB_PORT = 28015

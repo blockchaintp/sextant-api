@@ -3,7 +3,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: fast-keep
-  namespace: default
+  namespace: {{.deployment.namespace}}
 provisioner: {{.cloud.storage.provisioner}}
 parameters:
   type: {{.cloud.storage.fastType}}
@@ -16,7 +16,7 @@ kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
   name: slow-keep
-  namespace: default
+  namespace: {{.deployment.namespace}}
 provisioner: {{.cloud.storage.provisioner}}
 parameters:
   type: {{.cloud.storage.slowType}}

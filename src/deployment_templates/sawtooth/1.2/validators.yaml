@@ -3,15 +3,15 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{.sawtooth.networkName}}-sa
-  namespace: default
+  name: {{.deployment.name}}-sa
+  namespace: {{.deployment.namespace}}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{.sawtooth.networkName}}-role
-  namespace: default
+  name: {{.deployment.name}}-role
+  namespace: {{.deployment.namespace}}
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
     resources: ["services", "statefulsets.apps","endpoints", "nodes", "pods"]
@@ -21,8 +21,8 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{.sawtooth.networkName}}-clusterrole
-  namespace: default
+  name: {{.deployment.name}}-clusterrole
+  namespace: {{.deployment.namespace}}
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
     resources: ["statefulsets.apps", "nodes",]
@@ -32,41 +32,41 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
-  name: {{.sawtooth.networkName}}-rb
-  namespace: default
+  name: {{.deployment.name}}-rb
+  namespace: {{.deployment.namespace}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{.sawtooth.networkName}}-role
+  name: {{.deployment.name}}-role
 subjects:
 - kind: ServiceAccount
-  name: {{.sawtooth.networkName}}-sa
-  namespace: default
+  name: {{.deployment.name}}-sa
+  namespace: {{.deployment.namespace}}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: {{.sawtooth.networkName}}-crb
-  namespace: default
+  name: {{.deployment.name}}-crb
+  namespace: {{.deployment.namespace}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{.sawtooth.networkName}}-clusterrole
+  name: {{.deployment.name}}-clusterrole
 subjects:
 - kind: ServiceAccount
-  name: {{.sawtooth.networkName}}-sa
-  namespace: default
+  name: {{.deployment.name}}-sa
+  namespace: {{.deployment.namespace}}
 
 ---
 {{$peering:= .sawtooth.dynamicPeering}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.sawtooth.networkName}}-rest-api
-  namespace: default
+  name: {{.deployment.name}}-rest-api
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 spec:
   type: LoadBalancer
   ports:
@@ -79,16 +79,16 @@ spec:
     targetPort: 3030
     name: seth-rpc
   selector:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.sawtooth.networkName}}-nodeport
-  namespace: default
+  name: {{.deployment.name}}-nodeport
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 spec:
   type: NodePort
   ports:
@@ -108,16 +108,16 @@ spec:
     targetPort: 30800
     name: sawnet
   selector:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.sawtooth.networkName}}-validator
-  namespace: default
+  name: {{.deployment.name}}-validator
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 spec:
   ports:
   - port: 30800
@@ -126,16 +126,16 @@ spec:
     name: sawnet
   clusterIP: None
   selector:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.sawtooth.networkName}}-xo-demo
-  namespace: default
+  name: {{.deployment.name}}-xo-demo
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-xo-demo
+    app: {{.deployment.name}}-xo-demo
 spec:
   type: LoadBalancer
   ports:
@@ -144,27 +144,27 @@ spec:
     targetPort: 80
     name: xo-demo
   selector:
-    app: {{.sawtooth.networkName}}-validator
+    app: {{.deployment.name}}-validator
 ---
 
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{.sawtooth.networkName}}-validator
-  namespace: default
+  name: {{.deployment.name}}-validator
+  namespace: {{.deployment.namespace}}
 spec:
   selector:
     matchLabels:
-      app: {{.sawtooth.networkName}}-validator
-  serviceName: "{{.sawtooth.networkName}}-validator"
+      app: {{.deployment.name}}-validator
+  serviceName: "{{.deployment.name}}-validator"
   podManagementPolicy: Parallel
   replicas: {{.sawtooth.replicas}}
   template:
     metadata:
       labels:
-        app: {{.sawtooth.networkName}}-validator
+        app: {{.deployment.name}}-validator
     spec:
-      serviceAccountName: {{.sawtooth.networkName}}-sa
+      serviceAccountName: {{.deployment.name}}-sa
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -179,7 +179,7 @@ spec:
             curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
             chmod a+x kubectl; mv kubectl /usr/local/bin
             echo External IP Address is $MY_IP 
-            for node in `kubectl get pod -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
+            for node in `kubectl get pod -l app={{.deployment.name}}-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
               ip=`kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' -l kubernetes.io/role=node -l kubernetes.io/hostname=${node}`
               if [ "${MY_IP}" != "${ip}" ]; then
                 export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:30800 $SEEDS";
@@ -298,6 +298,19 @@ spec:
             cpu: "250m"
           requests:
             cpu: "50m"
+      {{ if .sawtooth.poet.enabled }}
+      - name: poet-validator-registry-tp
+        image: {{.sources.imageRepository}}/sawtooth-poet-validator-registry-tp:{{.sources.version}}
+        command: [ "bash", "-c"]
+        args: 
+          - "poet-validator-registry-tp -v --connect tcp://localhost:4004"
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
+      {{ end }}
+      {{ if .sawtooth.seth.enabled }}
       - name: seth-tp
         image: {{.sources.imageRepository}}/sawtooth-seth-tp:{{.sources.version}}
         command: [ "bash", "-c"]
@@ -319,17 +332,6 @@ spec:
         ports:
           - containerPort: 3030
             name: seth-rpc
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ if .sawtooth.poet.enabled }}
-      - name: poet-validator-registry-tp
-        image: {{.sources.imageRepository}}/sawtooth-poet-validator-registry-tp:{{.sources.version}}
-        command: [ "bash", "-c"]
-        args: 
-          - "poet-validator-registry-tp -v --connect tcp://localhost:4004"
         resources:
           limits:
             cpu: "250m"
@@ -476,7 +478,7 @@ spec:
               sawadm keygen --force;
               sawtooth keygen --force ;
               {{ if .sawtooth.genesis.enabled }}
-              if [ "${POD_NAME}" = "{{.sawtooth.networkName}}-validator-0" ]; then
+              if [ "${POD_NAME}" = "{{.deployment.name}}-validator-0" ]; then
                 mkdir -p /etc/sawtooth/genesis;
                 curl https://raw.githubusercontent.com/hyperledger/sawtooth-core/5094a9a1a7d086c14704e7055cfad9de77d1e6aa/consensus/poet/simulator/packaging/simulator_rk_pub.pem > /etc/sawtooth/keys/simulator_rk_pub.pem
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;

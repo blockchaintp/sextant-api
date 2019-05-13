@@ -1,12 +1,12 @@
 # kubetpl:syntax:go-template
-{{ if .sawtooth.rbac.enabled }}
+{{ if .sawtooth.additionalTPs.rbac }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.sawtooth.networkName}}-next
-  namespace: default
+  name: {{.deployment.name}}-next
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-next
+    app: {{.deployment.name}}-next
 spec:
   ports:
   - port: 9090
@@ -18,25 +18,25 @@ spec:
     targetPort: 4200
     name: rbac-ui
   selector:
-    app: {{.sawtooth.networkName}}-next
+    app: {{.deployment.name}}-next
 ---
 
 apiVersion: apps/v1
 kind: StatefulSet 
 metadata:
-  name: {{.sawtooth.networkName}}-next
-  namespace: default
+  name: {{.deployment.name}}-next
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-next
+    app: {{.deployment.name}}-next
 spec:
   selector:
     matchLabels:
-      app: {{.sawtooth.networkName}}-next
-  serviceName: "{{.sawtooth.networkName}}-next"
+      app: {{.deployment.name}}-next
+  serviceName: "{{.deployment.name}}-next"
   template:
     metadata:
       labels:
-        app: {{.sawtooth.networkName}}-next
+        app: {{.deployment.name}}-next
     spec:
       containers:
       - name: rethinkdb 
@@ -66,7 +66,7 @@ spec:
             bin/setup_db --host localhost &&
             bin/rbac-ledger-sync -v \
               --db-host localhost \
-              --validator tcp://{{.sawtooth.networkName}}-validator:4004
+              --validator tcp://{{.deployment.name}}-validator:4004
       - name: rbac-ui
         image: {{.sources.imageRepository}}/rbac-ui-production:{{.sources.rbacVersion}}
         ports:
