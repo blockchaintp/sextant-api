@@ -23,6 +23,9 @@ const peeringOptions = [{
 }]
 
 const form = [
+
+  'Network',
+
   [
     {
       id: 'namespace',
@@ -81,6 +84,34 @@ const form = [
         ],
       },
     },
+  ],
+
+  [
+    {
+      id: 'external_seeds',
+      title: 'External Seeds',
+      helperText: 'The list of external addresses to connect to',
+      list: {
+        mainField: 'address',
+        schema: [{
+          id: 'address',
+          title: `Seed address`,
+          helperText: 'Type the address of a new external seed (hostname:port or ip:port)',
+          component: 'text',
+          validate: {
+            type: 'string',
+            methods: [
+              ['required', 'Required'],
+            ],
+          },
+        }],
+        table: [{
+          title: 'Seed address',
+          name: 'address',
+        }]
+      }
+    },
+
   ]
 ]
 
