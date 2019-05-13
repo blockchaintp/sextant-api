@@ -297,7 +297,7 @@ const ClusterController = ({ store, settings }) => {
       }, trx)
     }
 
-    await store.task.create({
+    const task = await store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.cluster,
@@ -308,7 +308,7 @@ const ClusterController = ({ store, settings }) => {
       },
     }, trx)
 
-    return updatedCluster
+    return task
   })
 
   /*
@@ -395,20 +395,19 @@ const ClusterController = ({ store, settings }) => {
 
     // if there is an update to the desired state
     // trigger a task to update it
-    if(data.desired_state) {
-      await store.task.create({
-        data: {
-          user: user.id,
-          resource_type: config.RESOURCE_TYPES.cluster,
-          resource_id: cluster.id,
-          action: config.TASK_ACTION['cluster.update'],
-          restartable: true,
-          payload: {},
-        },
-      }, trx)
-    }
+    
+    const task = await store.task.create({
+      data: {
+        user: user.id,
+        resource_type: config.RESOURCE_TYPES.cluster,
+        resource_id: cluster.id,
+        action: config.TASK_ACTION['cluster.update'],
+        restartable: true,
+        payload: {},
+      },
+    }, trx)
 
-    return updatedCluster
+    return task
   })
 
   /*
@@ -437,7 +436,7 @@ const ClusterController = ({ store, settings }) => {
     if(activeTasks.length > 0) throw new Error(`there are active tasks for this cluster`)
 
     // create a delete task
-    await store.task.create({
+    const task = await store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.cluster,
@@ -448,7 +447,7 @@ const ClusterController = ({ store, settings }) => {
       },
     }, trx)
 
-    return true
+    return task
   })
 
   /*
