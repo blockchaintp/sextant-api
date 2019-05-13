@@ -5,8 +5,8 @@
   "description": "api server for the sextant cluster creation service",
   "main": "index.js",
   "scripts": {
-    "prestart": "knex migrate:latest",
-    "start": "node src/index.js",
+    "preserve": "knex migrate:latest",
+    "serve": "node src/index.js",
     "test": "tape {src,test}/**/*.test.js | tap-spec"
   },
   "dependencies": {

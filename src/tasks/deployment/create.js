@@ -16,6 +16,18 @@ const DeploymentCreate = ({
     id,
   }, trx)
 
+
+  // TODO: mock the kubectl handler for tests
+  if(!testMode) {
+    const clusterKubectl = yield ClusterKubectl({
+      cluster,
+      store,
+    })
+  
+    // test we can connect to the remote cluster with the details provided
+    yield clusterKubectl.jsonCommand('get ns')
+  }
+
   yield saveAppliedState({
     id,
     store,

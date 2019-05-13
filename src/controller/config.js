@@ -8,7 +8,7 @@ const deploymentForms = require('../forms/deployment')
 const forms = {
   user: userForms.browser,
   cluster: clusterForms.browser,
-  deployment: deploymentForms.browser,
+  deployment: deploymentForms,
 }
 
 const ConfigBackend = () => {
