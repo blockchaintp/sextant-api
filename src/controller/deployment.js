@@ -188,6 +188,13 @@ const DeployentController = ({ store, settings }) => {
       data: desired_state,
     })
 
+    // check there is no cluster already with that name
+    const deployments = await store.deployment.list({
+      cluster,
+    })
+    const existingDeployment = deployments.find(deployment => deployment.name.toLowerCase() == name.toLowerCase())
+    if(existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
+
     // create the deployment record
     const deployment = await store.deployment.create({
       data: {
@@ -211,7 +218,7 @@ const DeployentController = ({ store, settings }) => {
       }, trx)
     }
 
-    await store.task.create({
+    const task = await store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.deployment,
@@ -222,7 +229,7 @@ const DeployentController = ({ store, settings }) => {
       },
     }, trx)
 
-    return deployment
+    return task
   })
 
   /*
@@ -272,12 +279,12 @@ const DeployentController = ({ store, settings }) => {
     })
 
     // save the deployment
-    const updatedDeployment = await store.deployment.update({
+    await store.deployment.update({
       id,
       data,
     }, trx)
 
-    await store.task.create({
+    const task = await store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.deployment,
@@ -288,7 +295,7 @@ const DeployentController = ({ store, settings }) => {
       },
     }, trx)
 
-    return updatedDeployment
+    return task
   })
 
   /*
@@ -337,7 +344,7 @@ const DeployentController = ({ store, settings }) => {
     if(activeTasks.length > 0) throw new Error(`there are active tasks for this deployment`)
 
     // create a delete task
-    await store.task.create({
+    const task = await store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.deployment,
@@ -348,7 +355,7 @@ const DeployentController = ({ store, settings }) => {
       },
     }, trx)
 
-    return true
+    return task
   })
 
 
