@@ -73,6 +73,7 @@ const Routes = ({
   app.post(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'create'), asyncHandler(deployment.create))
   app.get(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.get))
   app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
+  app.delete(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.delete))
 }
 
 module.exports = Routes

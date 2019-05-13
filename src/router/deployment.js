@@ -1,7 +1,7 @@
 const config = require('../config')
 
 const {
-  CLUSTER_STATUS,
+  DEPLOYMENT_STATUS,
 } = config
 
 const DeploymentRoutes = (controllers) => {
@@ -53,11 +53,38 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const del = async (req, res, next) => {
+
+    const deployment = await controllers.deployment.get({
+      id: req.params.id,
+    })
+
+    let data = null
+
+    if(deployment.status == DEPLOYMENT_STATUS.deleted) {
+      data = await controllers.deployment.deletePermenantly({
+        id: req.params.id,
+        user: req.user,
+      })
+    }
+    else {
+      data = await controllers.deployment.delete({
+        id: req.params.id,
+        user: req.user,
+      })
+    }
+    
+    res
+      .status(200)
+      .json(data)
+  }
+
   return {
     list,
     get,
     create,
     listTasks,
+    delete: del,
   }
 }
 
