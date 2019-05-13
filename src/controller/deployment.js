@@ -227,6 +227,72 @@ const DeployentController = ({ store, settings }) => {
 
   /*
   
+    update a deployment
+
+    params:
+
+      * id
+      * user - the user that is updating the deployment
+      * data
+        * name
+        * desired_state
+        * maintenance_flag
+    
+  */
+  const update = ({
+    id,
+    user,
+    data,
+  }) => store.transaction(async trx => {
+
+    if(!id) throw new Error(`id must be given to controller.deployment.update`)
+    if(!user) throw new Error(`user must be given to controller.deployment.update`)
+    if(!data) throw new Error(`data must be given to controller.deployment.update`)
+
+    // check to see if there are active tasks for this cluster
+    const activeTasks = await store.task.activeForResource({
+      deployment: id,
+    }, trx)
+
+    if(activeTasks.length > 0) throw new Error(`there are active tasks for this deployment`)
+
+    // get the existing cluster
+    const deployment = await store.deployment.get({
+      id,
+    }, trx)
+
+    if(!deployment) throw new Error(`no deployment with that id found: ${id}`)
+
+    const schema = deploymentForms[deployment.deployment_type].forms[deployment.deployment_version]
+
+    // validate the form data
+    await validate({
+      schema,
+      data: data.desired_state,
+    })
+
+    // save the deployment
+    const updatedDeployment = await store.deployment.update({
+      id,
+      data,
+    }, trx)
+
+    await store.task.create({
+      data: {
+        user: user.id,
+        resource_type: config.RESOURCE_TYPES.deployment,
+        resource_id: deployment.id,
+        action: config.TASK_ACTION['deployment.update'],
+        restartable: true,
+        payload: {},
+      },
+    }, trx)
+
+    return updatedDeployment
+  })
+
+  /*
+  
     get the tasks for a given deployment
 
     params:
@@ -338,6 +404,7 @@ const DeployentController = ({ store, settings }) => {
     list,
     get,
     create,
+    update,
     getTasks,
     delete: del,
     deletePermenantly,
