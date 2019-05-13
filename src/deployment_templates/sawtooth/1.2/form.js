@@ -28,7 +28,7 @@ const form = [
 
   [
     {
-      id: 'network_name',
+      id: 'name',
       title: 'Network Name',
       helperText: 'The name of the sawtooth network',
       component: 'text',
