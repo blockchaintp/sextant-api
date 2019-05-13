@@ -485,6 +485,7 @@ const ClusterController = ({ store, settings }) => {
     // get a list of deployments for this cluster and check they are all in deleted status
     const deployments = await store.deployment.list({
       cluster: id,
+      deleted: true,
     }, trx)
 
     const nonDeletedDeployments = deployments.filter(deployment => deployment.status != DEPLOYMENT_STATUS.deleted)
