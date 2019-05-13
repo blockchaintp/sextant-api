@@ -58,6 +58,7 @@ const form = [
       title: `Peering Type`,
       helperText: 'Peering type for the validator',
       component: 'radio',
+      row: true,
       options: peeringOptions,
       validate: {
         type: 'string',
@@ -71,6 +72,7 @@ const form = [
       title: `Genesis Block`,
       helperText: 'Should this network create the genesis block?',
       component: 'radio',
+      row: true,
       options: activatedOptions,
       validate: {
         type: 'string',
