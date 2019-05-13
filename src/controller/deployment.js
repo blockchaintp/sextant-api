@@ -165,6 +165,7 @@ const DeployentController = ({ store, settings }) => {
     data: {
       name,
       deployment_type,
+      deployment_version,
       desired_state,
     }
   }) => store.transaction(async trx => {
@@ -172,18 +173,19 @@ const DeployentController = ({ store, settings }) => {
     if(!user) throw new Error(`user required for controllers.deployment.create`)
     if(!name) throw new Error(`data.name required for controllers.deployment.create`)
     if(!deployment_type) throw new Error(`data.deployment_type required for controllers.deployment.create`)
+    if(!deployment_version) throw new Error(`data.deployment_version required for controllers.deployment.create`)
     if(!desired_state) throw new Error(`data.desired_state required for controllers.deployment.create`)
 
     if(!DEPLOYMENT_TYPE[deployment_type]) throw new Error(`unknown deployment_type: ${deployment_type}`)
 
+    const schema = deploymentForms[deployment_type].forms[deployment_version]
+
+    if(!schema) throw new Error(`unknown deployment_version: ${deployment_type} version ${deployment_version}`)
+
     // validate the incoming form data
     await validate({
-      schema: deploymentForms.server[deployment_type].add,
-      data: {
-        name,
-        deployment_type,
-        desired_state,
-      },
+      schema,
+      data: desired_state,
     })
 
     // create the deployment record
@@ -192,6 +194,7 @@ const DeployentController = ({ store, settings }) => {
         name,
         cluster,
         deployment_type,
+        deployment_version,
         desired_state,
       },
     }, trx)
