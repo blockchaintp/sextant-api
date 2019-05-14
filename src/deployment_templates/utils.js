@@ -76,15 +76,7 @@ const getTemplateData = async ({
     deployment_type,
     deployment_version,
   })
-  const result = merge(defaults, desired_state)
-  console.log('--------------------------------------------')
-  console.log('--------------------------------------------')
-  console.log(JSON.stringify({
-    defaults,
-    desired_state,
-    result,
-  }, null, 4))
-  return result
+  return merge(defaults, desired_state)
 }
 
 module.exports = {

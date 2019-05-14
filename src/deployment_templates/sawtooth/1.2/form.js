@@ -45,6 +45,9 @@ const form = [
       title: 'Kubernetes Namespace',
       helperText: 'The Kubernetes namespace',
       component: 'text',
+      editable: {
+        new: true,
+      },
       validate: {
         type: 'string',
         methods: [

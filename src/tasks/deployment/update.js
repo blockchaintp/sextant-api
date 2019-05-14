@@ -17,10 +17,6 @@ const DeploymentUpdate = ({
     id,
   }, trx)
 
-  console.log('--------------------------------------------')
-  console.log('--------------------------------------------')
-  console.dir(deployment)
-
   const {
     deployment_type,
     deployment_version,
