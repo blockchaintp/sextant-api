@@ -2,18 +2,6 @@ deployment:
   name: sawtooth
   namespace: sawtooth
 
-# note this is an example values file and should not be actually used
-cloud:
-  storage:
-    provisioner: kubernetes.io/aws-ebs
-    fastType: io1
-    slowType: gp2
-    
-storage:
-  reclaimPolicy: Delete
-  iops: "50"
-  fsType: ext4
-
 sawtooth:
   networkName: sawtooth
   replicas: 3
