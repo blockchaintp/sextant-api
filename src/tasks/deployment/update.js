@@ -1,4 +1,4 @@
-const templateUtils = require('../../deployment_templates/utils')
+const renderTemplates = require('../../deployment_templates/render')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const DeploymentUpdate = ({
@@ -23,11 +23,15 @@ const DeploymentUpdate = ({
     desired_state,
   } = deployment
 
-  const templateData = yield templateUtils.getTemplateData({
+  const templateData = yield renderTemplates({
     deployment_type,
     deployment_version,
     desired_state,
   })
+
+  console.log('--------------------------------------------')
+  console.log('--------------------------------------------')
+  console.dir(templateData)
 
   yield saveAppliedState({
     id,
