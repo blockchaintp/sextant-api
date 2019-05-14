@@ -18,6 +18,7 @@
     "body-parser": "^1.17.2",
     "connect-pg-simple": "^5.0.0",
     "cookie-parser": "^1.4.3",
+    "deepmerge": "^3.2.0",
     "dotty": "^0.1.0",
     "express": "^4.15.3",
     "express-async-handler": "^1.1.4",
