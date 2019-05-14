@@ -1,6 +1,7 @@
 deployment:
   name: sawtooth
   namespace: sawtooth
+  storageclass: default
 
 sawtooth:
   networkName: sawtooth
