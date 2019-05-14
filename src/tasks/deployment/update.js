@@ -23,15 +23,12 @@ const DeploymentUpdate = ({
     desired_state,
   } = deployment
 
-  const templateData = yield renderTemplates({
+  const templateDirectory = yield renderTemplates({
     deployment_type,
     deployment_version,
     desired_state,
   })
 
-  console.log('--------------------------------------------')
-  console.log('--------------------------------------------')
-  console.dir(templateData)
 
   yield saveAppliedState({
     id,

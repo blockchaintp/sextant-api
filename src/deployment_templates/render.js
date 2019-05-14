@@ -232,11 +232,7 @@ const renderDeployment = async({
     outputDirectory,
   }))
 
-  return {
-    outputDirectory,
-    valuesPath,
-    templates,
-  }
+  return outputDirectory
 }
 
 module.exports = renderDeployment
