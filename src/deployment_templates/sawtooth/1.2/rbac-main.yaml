@@ -1,5 +1,5 @@
 # kubetpl:syntax:go-template
-{{ if .sawtooth.additionalTPs.rbac }}
+{{ if .sawtooth.rbac.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
