@@ -165,6 +165,32 @@ const renderTemplate = async ({
   const outputTemplatePath = path.resolve(outputDirectory, templateName)
   const runCommand = `kubetpl render -i ${valuesPath} ${inputTemplatePath}`
   const [ stdout, stderr ] = await exec(runCommand)
+    .catch(err => {
+      // make the kubetpl error message nicely readable
+      err.message = err
+        .toString()
+        .split("\n")
+        .filter(line => line.indexOf('Error: ') == 0 ? false : true)
+        .map(line => {
+          return line
+            .split(/\s+/)
+            .filter(part => {
+              if(part.indexOf('.yaml') >= 0 && part.indexOf(':') < 0) return false
+              return true
+            })
+            .map(part => {
+              if(part.indexOf('.yaml') > 0) {
+                const pathParts = part.split('/')
+                return pathParts[pathParts.length-1]
+              }
+              else {
+                return part
+              }
+            }).join(' ')
+        })
+        .join("\n")
+      throw err
+    })
   return writeFile(outputTemplatePath, stdout, 'utf8')
 }
 
@@ -185,15 +211,31 @@ const renderDeployment = async({
   desired_state,
 }) => {
   const outputDirectory = await tmpDir()
+  const inputDirectory = getTemplateFolder({
+    deployment_type,
+    deployment_version,
+  })
   const valuesPath = await writeTemplateValues({
     deployment_type,
     deployment_version,
     desired_state,
   })
+  const templates = await getTemplates({
+    deployment_type,
+    deployment_version,
+  })
+
+  await Promise.each(templates, templateName => renderTemplate({
+    templateName,
+    valuesPath,
+    inputDirectory,
+    outputDirectory,
+  }))
 
   return {
     outputDirectory,
     valuesPath,
+    templates,
   }
 }
 
