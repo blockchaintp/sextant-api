@@ -63,6 +63,7 @@ const form = [
       helperText: 'Peering type for the validator',
       component: 'radio',
       default: true,
+      dataType: 'boolean',
       row: true,
       options: peeringOptions,
       validate: {
@@ -78,6 +79,7 @@ const form = [
       helperText: 'Should this network create the genesis block?',
       component: 'radio',
       default: true,
+      dataType: 'boolean',
       row: true,
       options: activatedOptions,
       validate: {
@@ -123,6 +125,7 @@ const form = [
     helperText: 'Should the POET consensus protocol be active on this network?',
     component: 'radio',
     default: false,
+    dataType: 'boolean',
     row: true,
     options: consensusOptions,
     validate: {
@@ -208,6 +211,7 @@ const form = [
     helperText: 'Should the RBAC transaction processor be active on this network?',
     component: 'radio',
     default: true,
+    dataType: 'boolean',
     row: true,
     options: activatedOptions,
     validate: {
@@ -222,6 +226,7 @@ const form = [
     helperText: 'Should the SETH transaction processor be active on this network?',
     component: 'radio',
     default: true,
+    dataType: 'boolean',
     row: true,
     options: activatedOptions,
     validate: {
@@ -236,6 +241,7 @@ const form = [
     helperText: 'Should the XO transaction processor be active on this network?',
     component: 'radio',
     default: true,
+    dataType: 'boolean',
     row: true,
     options: activatedOptions,
     validate: {
@@ -250,6 +256,7 @@ const form = [
     helperText: 'Should the Smallbank transaction processor be active on this network?',
     component: 'radio',
     default: true,
+    dataType: 'boolean',
     row: true,
     options: activatedOptions,
     validate: {
@@ -266,6 +273,7 @@ const form = [
     helperText: 'Should the Simple transaction processor be active on this network?',
     component: 'radio',
     default: true,
+    dataType: 'boolean',
     row: true,
     options: activatedOptions,
     validate: {
