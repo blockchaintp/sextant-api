@@ -3,6 +3,7 @@ const async = require('async')
 const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
+const ClusterKubectl = require('../utils/clusterKubectl')
 
 const deploymentForms = require('../forms/deployment')
 const validate = require('../forms/validate')
@@ -433,12 +434,26 @@ const DeployentController = ({ store, settings }) => {
       id: deployment.cluster,
     })
 
-    return {
-      pods: [],
-      services: [],
-      volumes: [],
-    }
+    const kubectl = await ClusterKubectl({
+      cluster,
+      store,
+    })
 
+    const namespace = deployment.desired_state.deployment.namespace
+
+    const results = await Promise.props({
+      pods: kubectl
+        .jsonCommand(`-n ${namespace} get po`)
+        .then(result => result.items),
+      services: kubectl
+        .jsonCommand(`-n ${namespace} get svc`)
+        .then(result => result.items),
+      volumes: kubectl
+        .jsonCommand(`-n ${namespace} get pvc`)
+        .then(result => result.items),
+    })
+
+    return results
   }
 
   return {
