@@ -6,6 +6,7 @@ const clusterUtils = require('../utils/cluster')
 const ClusterKubectl = require('../utils/clusterKubectl')
 
 const deploymentForms = require('../forms/deployment')
+const deploymentTemplates = require('../deployment_templates')
 const validate = require('../forms/validate')
 
 const {
@@ -410,7 +411,7 @@ const DeployentController = ({ store, settings }) => {
 
   /*
   
-    get a collectin of kubernetes resources for this deployment
+    get a collection of kubernetes resources for this deployment
 
      * pods
      * services
@@ -424,7 +425,7 @@ const DeployentController = ({ store, settings }) => {
   const resources = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.delete`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.resources`) 
 
     const deployment = await store.deployment.get({
       id,
@@ -456,6 +457,32 @@ const DeployentController = ({ store, settings }) => {
     return results
   }
 
+  /*
+  
+    get a summary of the deployment state
+
+    params:
+
+     * id - the deployment id
+  
+  */
+  const summary = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.summary`) 
+
+    const deployment = await store.deployment.get({
+      id,
+    })
+
+    const type = deploymentTemplates[deployment.deployment_type]
+    if(!type) throw new Error(`unknown deployment_type: ${deployment.deployment_type}`)
+    const summaryFunction = type.summary[deployment.deployment_version]
+    if(!summaryFunction) throw new Error(`unknown deployment_version: ${deployment.deployment_version}`)
+
+    return summaryFunction(deployment.desired_state)
+  }
+
   return {
     list,
     get,
@@ -465,6 +492,7 @@ const DeployentController = ({ store, settings }) => {
     delete: del,
     deletePermenantly,
     resources,
+    summary,
   }
 
 }

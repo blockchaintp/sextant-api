@@ -73,6 +73,15 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const summary = async (req, res, next) => {
+    const data = await controllers.deployment.summary({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const del = async (req, res, next) => {
 
     const deployment = await controllers.deployment.get({
@@ -106,6 +115,7 @@ const DeploymentRoutes = (controllers) => {
     update,
     listTasks,
     resources,
+    summary,
     delete: del,
   }
 }
