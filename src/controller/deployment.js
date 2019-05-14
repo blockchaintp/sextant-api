@@ -407,6 +407,40 @@ const DeployentController = ({ store, settings }) => {
     return true
   })
 
+  /*
+  
+    get a collectin of kubernetes resources for this deployment
+
+     * pods
+     * services
+     * persistent volumes
+
+    params:
+
+     * id - the deployment id
+  
+  */
+  const resources = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.delete`) 
+
+    const deployment = await store.deployment.get({
+      id,
+    })
+
+    const cluster = await store.cluster.get({
+      id: deployment.cluster,
+    })
+
+    return {
+      pods: [],
+      services: [],
+      volumes: [],
+    }
+
+  }
+
   return {
     list,
     get,
@@ -415,6 +449,7 @@ const DeployentController = ({ store, settings }) => {
     getTasks,
     delete: del,
     deletePermenantly,
+    resources,
   }
 
 }
