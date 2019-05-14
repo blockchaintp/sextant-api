@@ -18,15 +18,22 @@ const ClusterUpdate = ({
   }, trx)
 
   // TODO: mock the kubectl handler for tests
-  if(!testMode) {
-    const clusterKubectl = yield ClusterKubectl({
-      cluster,
+  if(testMode) {
+    yield saveAppliedState({
+      id,
       store,
+      trx
     })
-
-    // test we can connect to the remote cluster with the details provided
-    const namespaces = yield clusterKubectl.jsonCommand('get ns')
+    return
   }
+
+  const clusterKubectl = yield ClusterKubectl({
+    cluster,
+    store,
+  })
+
+  // test we can connect to the remote cluster with the details provided
+  const namespaces = yield clusterKubectl.jsonCommand('get ns')
 
   yield saveAppliedState({
     id,

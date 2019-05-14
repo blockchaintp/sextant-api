@@ -17,6 +17,21 @@ const DeploymentUpdate = ({
     id,
   }, trx)
 
+  const cluster = yield store.cluster.get({
+    id: deployment.cluster,
+  }, trx)
+
+  // TODO: mock the kubectl handler for tests
+  if(testMode) {
+    yield saveAppliedState({
+      id,
+      store,
+      trx,
+    })
+
+    return
+  } 
+
   const {
     deployment_type,
     deployment_version,
@@ -29,6 +44,13 @@ const DeploymentUpdate = ({
     desired_state,
   })
 
+  const clusterKubectl = yield ClusterKubectl({
+    cluster,
+    store,
+  })
+
+  // test we can connect to the remote cluster with the details provided
+  yield clusterKubectl.jsonCommand('get ns')
 
   yield saveAppliedState({
     id,

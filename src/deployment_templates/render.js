@@ -11,9 +11,7 @@ const readdir = Promise.promisify(fs.readdir)
 const writeFile = Promise.promisify(fs.writeFile)
 const tempFile = Promise.promisify(tmp.file)
 const tmpDir = Promise.promisify(tmp.dir)
-const exec = Promise.promisify(childProcess.exec, {
-  multiArgs: true,
-})
+const exec = Promise.promisify(childProcess.exec)
 
 const DEFAULTS_FILE = 'defaults.yaml'
 
@@ -164,7 +162,7 @@ const renderTemplate = async ({
   const inputTemplatePath = path.resolve(inputDirectory, templateName)
   const outputTemplatePath = path.resolve(outputDirectory, templateName)
   const runCommand = `kubetpl render -i ${valuesPath} ${inputTemplatePath}`
-  const [ stdout, stderr ] = await exec(runCommand)
+  const stdout = await exec(runCommand)
     .catch(err => {
       // make the kubetpl error message nicely readable
       err.message = err
