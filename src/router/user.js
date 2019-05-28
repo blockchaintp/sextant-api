@@ -67,6 +67,15 @@ const UserRoutes = (controllers) => {
       .json(users.map(userUtils.safe))
   }
 
+  const search = async (req, res, next) => {
+    const users = await controllers.user.search({
+      search: req.query.search,
+    })
+    res
+      .status(200)
+      .json(users)
+  }
+
   const get = async (req, res, next) => {
     const user = await controllers.user.get({
       id: req.params.id,
@@ -159,6 +168,7 @@ const UserRoutes = (controllers) => {
     login,
     logout,
     list,
+    search,
     get,
     update,
     getToken,

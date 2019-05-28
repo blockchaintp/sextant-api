@@ -92,6 +92,7 @@ const ClusterRoutes = (controllers) => {
     const data = await controllers.cluster.createRole({
       id: req.params.id,
       user: req.body.user,
+      username: req.body.username,
       permission: req.body.permission,
     })
     res
