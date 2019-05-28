@@ -4,202 +4,179 @@
 
   it overrides the 'command' function injecting the KUBECONFIG environment
   variable to any call which connects the kubectl command to the given cluster
+
+  if the `kubeConfigPath` variable is given - we connect using that
+
+  otherwise - we connect using the credentials which are a combination of
+
+   * apiServer
+   * token
+   * ca
   
+  
+
 */
+
+const Promise = require('bluebird')
 const tmp = require('tmp')
 const async = require('async')
 const fs = require('fs')
-const exec = require('child_process').exec
+const childProcess = require('child_process')
+
+const base64 = require('./base64')
+
 const pino = require('pino')({
   name: 'kubectl',
 })
 
-const Kubectl = (kubeconfigPath) => {
-  const command = (cmd, options, done) => {
+const exec = Promise.promisify(childProcess.exec)
 
-    if(!done) {
-      done = options
-      options = {}
+const tempFile = Promise.promisify(tmp.file)
+const writeFile = Promise.promisify(fs.writeFile)
+const readFile = Promise.promisify(fs.readFile)
+
+const MODES = ['local', 'remote', 'test']
+
+const LOCAL_TOKEN_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/token'
+const LOCAL_CA_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
+const LOCAL_API_SERVER = 'https://kubernetes.default.svc'
+
+/*
+
+  mode is one of 'local' or 'remote'
+
+  if 'remote' - then remoteCredentials are expected
+
+  if 'local' - it will work out the credentials itself
+
+  'remoteCredentials' object means we are connecting to a remote cluster
+
+  this should have the following properties
+
+   * apiServer
+   * token
+   * ca
+  
+  'localCredentials' object means we are running on the cluster we should connect to
+  
+  
+
+*/
+const Kubectl = ({
+  mode,
+  remoteCredentials,
+} = {}) => {
+
+  if(!mode) throw new Error(`mode required for Kubectl`)
+  if(MODES.indexOf(mode) < 0) throw new Error(`unknown mode for Kubectl: ${mode}`)
+
+  if(mode == 'remote') {
+    if(!remoteCredentials) throw new Error(`remoteCredentials required for Kubectl remote mode`)
+    if(!remoteCredentials.ca) throw new Error(`ca required for remote credentials`)
+    if(!remoteCredentials.token) throw new Error(`token required for remote credentials`)
+    if(!remoteCredentials.apiServer) throw new Error(`apiServer required for remote credentials`)
+  }
+
+  let isSetup = false
+
+  // we inject these arguments to every kubectl call
+  let connectionArguments = []
+
+  /*
+  
+    write the ca data to a tempfile so we can inject it into kubectl commands
+  
+  */
+  const setup = async () => {
+    if(isSetup) return
+
+    if(mode == 'remote') {
+
+      const caPath = await tempFile({
+        postfix: '.txt',
+      })
+  
+      await writeFile(caPath, remoteCredentials.ca, 'base64')
+
+      connectionArguments = [
+        '--certificate-authority',
+        caPath,
+        '--token',
+        base64.decode(remoteCredentials.token),
+        '--server',
+        remoteCredentials.apiServer,
+      ]
+    }
+    else if(mode == 'local') {
+
+      const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
+
+      connectionArguments = [
+        '--certificate-authority',
+        LOCAL_CA_PATH,
+        '--token',
+        token,
+        '--server',
+        LOCAL_API_SERVER,
+      ]
     }
 
+    isSetup = true
+  }
+
+  // run a kubectl command and return [ stdout, stderr ]
+  const command = async (cmd, options = {}) => {
+    await setup()
     const useOptions = Object.assign({}, options, {
       // allow 5MB back on stdout 
       //(which should not happen but some logs might be longer than 200kb which is the default)
       maxBuffer: 1024 * 1024 * 5,
     })
-
     useOptions.env = Object.assign({}, process.env, options.env)
-    useOptions.env.KUBECONFIG = kubeconfigPath
+    const runCommand = `kubectl ${connectionArguments.join(' ')} ${cmd}`
+    return exec(runCommand, useOptions)
+      // remove the command itself from the error message so we don't leak credentials
+      .catch(err => {
+        const errorParts = err.toString().split("\n")
+        const okErrorParts = errorParts
+          .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
+          .filter(line => line)
+          .map(line => line.replace(/error: /, ''))
+        err.message = okErrorParts.join("\n")
+        throw err
+      })
+  }
 
-    const runCommand = `kubectl ${cmd}`
+  // process stdout as JSON
+  const jsonCommand = async (cmd, options = {}) => {
+    const runCommand = `${ cmd } --output json`
+    const stdout = await command(runCommand, options)
+    const processedOutput = JSON.parse(stdout)
+    return processedOutput
+  }
 
-    const logOptions = Object.assign({}, useOptions)
-    delete(logOptions.env)
+  // apply a filename
+  const apply = (filepath) => command(`apply -f ${ filepath }`)
 
-    pino.info({
-      action: 'command',
-      command: runCommand,
-      options: logOptions,
+  // given some YAML content - write a tempfile then apply it
+  const applyInline = async (data) => {
+    const filepath = await tempFile({
+      postfix: '.yaml',
     })
+    await writeFile(filepath, data, 'utf8')
+    return apply(filepath)
+  }
 
-    exec(runCommand, useOptions, (err, stdout, stderr) => {
-      if(err) return done(err)
-      done(null, stdout.toString(), stderr.toString())
+  // delete a filename
+  const del = (filepath) => command(`delete -f ${ filepath }`)
+
+  // given some YAML content - write a tempfile then delete it
+  const deleteInline = async (data) => {
+    const filepath = await tempFile({
+      postfix: '.yaml',
     })
-  }
-
-  /*
-
-    run a kubectl command that assumes JSON output
-    add `--output json` and process stdout
-
-    params:
-
-     * command
-     * allowFail
-    
-  */
-  const jsonCommand = (params, done) => {
-    if(!params.command) return done(`command param required for kubectl.jsonCommand`)
-    const runCommand = `${ params.command } --output json`
-
-    command(runCommand, (err, stdout) => {
-      if(err) {
-        if(params.allowFail) {
-          return done()
-        }
-        else {
-          return done(err)  
-        }
-      }
-      let processedResult = null
-      try {
-        processedResult = JSON.parse(stdout)
-      } catch(e) {
-        return done(e.toString())
-      }
-      done(null, processedResult)
-    })
-  }
-
-  /*
-
-    apply a manifest that is a filepath or url
-
-    params:
-
-     * resource - a filepath or url of a manifest
-    
-  */
-  const apply = (params, done) => {
-    if(!params.resource) return done(`resource param required for kubectl.apply`)
-    command(`apply -f ${ params.resource }`, done)
-  }
-
-  /*
-
-    apply a manifest that is given as is
-
-    write to a temp file before using normal apply
-
-    params:
-
-     * data - yaml manifest data
-    
-  */
-  const applyInline = (params, done) => {
-    if(!params.data) return done(`data param required for kubectl.applyInline`)
-    async.waterfall([
-
-      (next) => {
-        tmp.file({
-          postfix: '.yaml',
-        }, (err, filepath) => {
-          if(err) return next(err)
-          next(null, filepath)
-        })
-      },
-
-      (filepath, next) => {
-        fs.writeFile(filepath, params.data, 'utf8', (err) => {
-          if(err) return next(err)
-          next(null, filepath)
-        })
-      },
-
-      (filepath, next) => {
-        apply({
-          resource: filepath
-        }, next)
-      },
-
-    ], done)
-  }
-
-
-  /*
-
-    delete a manifest that is a filepath or url
-
-    params:
-
-     * resource - a filepath or url of a manifest
-    
-  */
-  const del = (params, done) => {
-    if(!params.resource) return done(`resource param required for kubectl.del`)
-    command(`delete -f ${ params.resource }`, done)
-  }
-
-  /*
-
-    delete a manifest that is given as is
-
-    write to a temp file before using normal delete
-
-    params:
-
-     * data - yaml manifest data
-     * allowFail
-    
-  */
-  const delInline = (params, done) => {
-    if(!params.data) return done(`data param required for kubectl.delInline`)
-    async.waterfall([
-
-      (next) => {
-        tmp.file({
-          postfix: '.yaml',
-        }, (err, filepath) => {
-          if(err) return next(err)
-          next(null, filepath)
-        })
-      },
-
-      (filepath, next) => {
-        fs.writeFile(filepath, params.data, 'utf8', (err) => {
-          if(err) return next(err)
-          next(null, filepath)
-        })
-      },
-
-      (filepath, next) => {
-        del({
-          resource: filepath
-        }, (err, result) => {
-          if(err) {
-            if(params.allowFail) {
-              return next()
-            }
-            else {
-              return next(err)
-            }
-          }
-          next(null, result)
-        })
-      },
-
-    ], done)
+    await writeFile(filepath, data, 'utf8')
+    return del(filepath)
   }
 
   return {
@@ -207,8 +184,8 @@ const Kubectl = (kubeconfigPath) => {
     jsonCommand,
     apply,
     applyInline,
-    del,
-    delInline,
+    delete: del,
+    deleteInline,
   }
 }
 

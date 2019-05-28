@@ -1,3 +1,24 @@
+const config = require('./config')
+const required_env = [
+  'POSTGRES_SERVICE_HOST',
+  'POSTGRES_USER',
+  'POSTGRES_DB',
+  'POSTGRES_PASSWORD',
+  'SESSION_SECRET',
+  'TOKEN_SECRET',
+]
+
+const missing_env = required_env.filter(name => process.env[name] ? false : true)
+
+if(missing_env.length>0) {
+  console.error(`The following environment variables are required:
+
+${missing_env.join("\n")}
+`)
+
+  process.exit(1)
+}
+
 /*
 
   the settings passed in via the command line or environment
@@ -6,16 +27,22 @@
 const args = require('minimist')(process.argv, {
   alias: {
     'sextant-manual-init': 'sextantManualInit',
-    'sextant-state': 'sextantState',
     'initial-user': 'initialUser',
     'initial-password': 'initialPassword',
   },
   default:{
     port: process.env.PORT || 80,
-    baseUrl: process.env.BASE_URL || '/api/v1',
+    baseUrl: process.env.BASE_URL || config.baseUrl,
 
-    // folder locations
-    fileStoreFolder: process.env.SEXTANT_FILE_STORE_FOLDER || '/var/lib/sextant-api/filestore',
+    // turn logging on?
+    logging: process.env.LOGGING,
+
+    // postgres
+    postgreshost: process.env.POSTGRES_SERVICE_HOST,
+    postgresport: process.env.POSTGRES_SERVICE_PORT || 5432,
+    postgresuser: process.env.POSTGRES_USER,
+    postgrespassword: process.env.POSTGRES_PASSWORD,
+    postgresdatabase: process.env.POSTGRES_DB,
 
     // aws
     awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -29,10 +56,6 @@ const args = require('minimist')(process.argv, {
     // values to create the user and password with?
     sextantManualInit: process.env.SEXTANT_MANUAL_INIT,
 
-    // the name of the S3 bucket to automatically create if we are not in
-    // SEXTANT_MANUAL_INIT mode
-    sextantState: process.env.SEXTANT_STATE,
-
     // the name of the initial user to create if we are not in
     // SEXTANT_MANUAL_INIT mode
     initialUser: process.env.INITIAL_USER,
@@ -42,7 +65,8 @@ const args = require('minimist')(process.argv, {
     initialPassword: process.env.INITIAL_PASSWORD,
 
     // sessions
-    sessionSecret: process.env.SESSION_SECRET || 'sextant-blockchain',
+    sessionSecret: process.env.SESSION_SECRET,
+    tokenSecret: process.env.TOKEN_SECRET,
 
     // which type of networking we use for kops clusters
     kopsNetworking: 'weave',
@@ -56,13 +80,28 @@ const args = require('minimist')(process.argv, {
 
     // a list of the sawtooth template manifests that will be rendered and applied in order
     sawtoothManifests: [
-      'sawtooth/config-maps.yaml',
-      'sawtooth/storage-class.yaml',
-      'sawtooth/monitoring.yaml',
+      'sawtooth/1.0.5/config-maps.yaml',
+      'sawtooth/1.0.5/storage-class.yaml',
+      'sawtooth/1.0.5/monitoring.yaml',
       //'sawtooth/rbac-main.yaml',
-      'sawtooth/validators.yaml',
+      'sawtooth/1.0.5/validators.yaml',
     ],
   }
 })
+
+args.postgres = {
+  client: 'pg',
+  connection: {
+    host: args.postgreshost,
+    port: args.postgresport,
+    user: args.postgresuser,
+    password: args.postgrespassword,
+    database: args.postgresdatabase
+  },
+  pool: {
+    min: 2,
+    max: 10
+  }
+}
 
 module.exports = args

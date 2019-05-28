@@ -1,0 +1,39 @@
+# kubetpl:syntax:go-template
+cloud:
+  storage:
+    provisioner: kubernetes.io/aws-ebs
+    fastType: io1
+    slowType: gp2
+    
+storage:
+  reclaimPolicy: Delete
+  iops: "50"
+  fsType: ext4
+
+ethereum:
+  namespace: ethereum-private
+  image: ethereum/client-go:alltools-release-1.8
+  minerImage: ethereum/client-go:release-1.8
+  dashboard: 
+    image: ethereumex/eth-stats-dashboard:latest
+  registrar:
+    image: jpoon/bootnode-registrar:v1.0.0
+  networkid: "8189450821"
+  genesis_data: |-
+    {
+        "config": {
+            "chainId": 8189450821,
+            "homesteadBlock": 0,
+            "eip150Block": 0,
+            "eip155Block": 0,
+            "eip158Block": 0
+        },
+        "difficulty": "0x400",
+        "gasLimit": "2000000",
+        "nonce"   : "0x0000000000000000",
+        "alloc": {
+          "0x58917D55dA991da576F148FD7E3E05a34666988b": { "balance": "100000000000000000000" },
+          "0x29bb385cF8ae4Cc49dBd10CcdA5e3d591D831527": { "balance": "200000000000000000000" },
+          "0xf1c9C9a1Ba591588147c2A729c470D8AFA91a04d": { "balance": "300000000000000000000" }
+        }
+    }
