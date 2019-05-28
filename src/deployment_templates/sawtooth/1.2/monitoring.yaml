@@ -3,9 +3,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: grafana
-  namespace: default
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-monitoring
+    app: {{.deployment.name}}-monitoring
     dns: route53
 spec:
   type: LoadBalancer
@@ -15,16 +15,16 @@ spec:
     targetPort: 3000
     name: grafana
   selector:
-    app: {{.sawtooth.networkName}}-monitoring
+    app: {{.deployment.name}}-monitoring
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
   name: influxdb
-  namespace: default
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-monitoring
+    app: {{.deployment.name}}-monitoring
 spec:
   ports:
   - port: 8086
@@ -32,25 +32,25 @@ spec:
     targetPort: 8086
     name: influxdb
   selector:
-    app: {{.sawtooth.networkName}}-monitoring
+    app: {{.deployment.name}}-monitoring
 ---
 
 apiVersion: apps/v1
 kind: StatefulSet 
 metadata:
-  name: {{.sawtooth.networkName}}-monitoring
-  namespace: default
+  name: {{.deployment.name}}-monitoring
+  namespace: {{.deployment.namespace}}
   labels:
-    app: {{.sawtooth.networkName}}-monitoring
+    app: {{.deployment.name}}-monitoring
 spec:
   selector:
     matchLabels:
-      app: {{.sawtooth.networkName}}-monitoring
-  serviceName: "{{.sawtooth.networkName}}-monitoring"
+      app: {{.deployment.name}}-monitoring
+  serviceName: "{{.deployment.name}}-monitoring"
   template:
     metadata:
       labels:
-        app: {{.sawtooth.networkName}}-monitoring
+        app: {{.deployment.name}}-monitoring
     spec:
       containers:
       - name: sawtooth-stats-influxdb

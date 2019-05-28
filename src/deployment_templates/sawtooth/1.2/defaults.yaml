@@ -1,14 +1,7 @@
-# note this is an example values file and should not be actually used
-cloud:
-  storage:
-    provisioner: kubernetes.io/aws-ebs
-    fastType: io1
-    slowType: gp2
-    
-storage:
-  reclaimPolicy: Delete
-  iops: "50"
-  fsType: ext4
+deployment:
+  name: sawtooth
+  namespace: sawtooth
+  storageclass: default
 
 sawtooth:
   networkName: sawtooth
@@ -29,6 +22,8 @@ sawtooth:
     secretKey: 'g7op0ioXPdw7jFTf4aY2'
     aesKey: '37960e8f0337b90131acfb30b8817d17'
     batcherKey: 'a8fbe6bb38fb6ae5cc1abbfee9068f734b4c023cc5ffc193a8c9d83793d0ee02'
+  seth:
+    enabled: true
   xo:
     enabled: true
   smallbank:
@@ -40,10 +35,7 @@ sawtooth:
           #      image: "blockchaintp/sawtooth-intkey-tp-go:1.0.5"
           #      command: [ "bash", "-c" ]
           #      args: [ "intkey-tp-go -v --connect tcp://localhost:4004" ]
-    
-dns:
-  domain: dev.catenasys.com
-
+ 
 sources:
   imageRepository: blockchaintp
   version: 1.0.5

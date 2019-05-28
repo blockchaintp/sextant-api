@@ -29,9 +29,7 @@ const pino = require('pino')({
   name: 'kubectl',
 })
 
-const exec = Promise.promisify(childProcess.exec, {
-  multiArgs: true,
-})
+const exec = Promise.promisify(childProcess.exec)
 
 const tempFile = Promise.promisify(tmp.file)
 const writeFile = Promise.promisify(fs.writeFile)
@@ -152,9 +150,9 @@ const Kubectl = ({
   // process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
     const runCommand = `${ cmd } --output json`
-    const [ stdout, stderr ] = await command(runCommand, options)
+    const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
-    return [ processedOutput, stderr ]
+    return processedOutput
   }
 
   // apply a filename

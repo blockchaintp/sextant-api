@@ -52,3 +52,44 @@ On your host - run through the [connect-remote-credentials.md](connect-remote-cr
 However - you must change the apiServer that is reported to be `https://kind-control-plane:6443`
 
 The token and ca remain the same.
+
+### pre-loading images
+
+To get the images downloaded and inserted into the kind container:
+
+```bash
+export REPO=blockchaintp
+export VERSION=1.0.5
+
+function importImage() {
+  local image="$1"
+  local tag="$2"
+
+  if [ -z "$tag" ]; then
+   tag="$VERSION"
+  fi
+
+  docker pull $REPO/$image:$tag
+  kind load docker-image $REPO/$image:$tag
+}
+
+importImage sawtooth-validator
+importImage sawtooth-settings-tp
+importImage sawtooth-identity-tp
+importImage sawtooth-block-info-tp
+importImage sawtooth-intkey-tp-go
+importImage sawtooth-seth-tp
+importImage sawtooth-seth-rpc
+importImage sawtooth-smallbank-tp-go
+importImage sawtooth-xo-tp-go
+importImage sawtooth-rest-api
+importImage sawtooth-stats-influxdb
+importImage sawtooth-stats-grafana
+importImage rbac-server-production develop
+importImage rbac-ledger-sync-production develop
+importImage rbac-tp-production develop
+importImage xo-demo master
+importImage simple-tp-python latest
+```
+
+#importImage rbac-ui-production develop

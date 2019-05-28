@@ -22,9 +22,9 @@ node {
             '''
 	} 
 
-  // Run the tests
-  stage("Test Sextant") {
-	    sh "test.sh"
+        // Run the tests
+        stage("Test Sextant") {
+	    sh "./test.sh"
 	}
 
 	// Build 

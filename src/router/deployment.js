@@ -1,7 +1,7 @@
 const config = require('../config')
 
 const {
-  CLUSTER_STATUS,
+  DEPLOYMENT_STATUS,
 } = config
 
 const DeploymentRoutes = (controllers) => {
@@ -44,6 +44,17 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const update = async (req, res, next) => {
+    const data = await controllers.deployment.update({
+      id: req.params.id,
+      user: req.user,
+      data: req.body,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const listTasks = async (req, res, next) => {
     const data = await controllers.deployment.getTasks({
       id: req.params.id,
@@ -53,11 +64,59 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const resources = async (req, res, next) => {
+    const data = await controllers.deployment.resources({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const summary = async (req, res, next) => {
+    const data = await controllers.deployment.summary({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const del = async (req, res, next) => {
+
+    const deployment = await controllers.deployment.get({
+      id: req.params.id,
+    })
+
+    let data = null
+
+    if(deployment.status == DEPLOYMENT_STATUS.deleted) {
+      data = await controllers.deployment.deletePermenantly({
+        id: req.params.id,
+        user: req.user,
+      })
+    }
+    else {
+      data = await controllers.deployment.delete({
+        id: req.params.id,
+        user: req.user,
+      })
+    }
+    
+    res
+      .status(200)
+      .json(data)
+  }
+
   return {
     list,
     get,
     create,
+    update,
     listTasks,
+    resources,
+    summary,
+    delete: del,
   }
 }
 

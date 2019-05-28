@@ -13,17 +13,26 @@ const DeploymentStore = (knex) => {
   */
   const list = ({
     cluster,
+    deleted,
   }, trx) => {
     if(!cluster) throw new Error(`cluster must be given to store.deployment.list`)
     
     const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
 
-    return (trx || knex).select('*')
+    const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.deployment)
       .where({
         cluster,
       })
       .orderBy(orderBy.field, orderBy.direction)
+
+    if(!deleted) {
+      sqlQuery.andWhereNot({
+        status: config.CLUSTER_STATUS.deleted,
+      })
+    }
+
+    return sqlQuery
   }
 
   /*
@@ -68,12 +77,14 @@ const DeploymentStore = (knex) => {
       cluster,
       name,
       deployment_type,
+      deployment_version,
       desired_state,
     }
   }, trx) => {
     if(!cluster) throw new Error(`data.cluster param must be given to store.deployment.create`)
     if(!name) throw new Error(`data.name param must be given to store.deployment.create`)
     if(!deployment_type) throw new Error(`data.deployment_type param must be given to store.deployment.create`)
+    if(!deployment_version) throw new Error(`data.deployment_version param must be given to store.deployment.create`)
     if(!desired_state) throw new Error(`data.desired_state param must be given to store.deployment.create`)
 
     return (trx || knex)(config.TABLES.deployment)
@@ -81,6 +92,7 @@ const DeploymentStore = (knex) => {
         cluster,
         name,
         deployment_type,
+        deployment_version,
         desired_state,
       })
       .returning('*')
