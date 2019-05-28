@@ -443,6 +443,12 @@ database.testSuiteWithDatabase(getConnection => {
     const taskProcessor = TaskProcessor({
       store,
       handlers: {
+        [TASK_ACTION['cluster.create']]: function* (params) {
+          
+        },
+        [TASK_ACTION['cluster.update']]: function* (params) {
+          
+        },
         [TASK_ACTION['cluster.delete']]: function* (params) {
           yield store.cluster.update({
             id: params.task.resource_id,
