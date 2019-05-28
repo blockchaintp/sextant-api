@@ -152,11 +152,6 @@ const TaskProcessor = ({
   // the error status
   const errorTask = async (task, error) => {
 
-    console.log('--------------------------------------------')
-    console.log('--------------------------------------------')
-    console.log('have error')
-    console.dir(error)
-
     if(logging) {
       pino.error({
         action: 'error',
