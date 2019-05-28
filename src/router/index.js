@@ -68,13 +68,14 @@ const Routes = ({
   app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.createRole))
   app.delete(basePath('/clusters/:id/roles/:userid'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.deleteRole))
   app.get(basePath('/clusters/:id/tasks'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.listTasks))
+  app.get(basePath('/clusters/:id/resources'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.resources))
+  app.get(basePath('/clusters/:id/summary'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.summary))
 
   app.get(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'list'), asyncHandler(deployment.list))
   app.get(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.get))
   app.post(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'create'), asyncHandler(deployment.create))
   app.put(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.update))
   app.delete(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.delete))
-  
   app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
   app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))

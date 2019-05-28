@@ -3,6 +3,7 @@ const async = require('async')
 const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
+const ClusterKubectl = require('../utils/clusterKubectl')
 
 const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
@@ -630,6 +631,69 @@ const ClusterController = ({ store, settings }) => {
     })
   }
 
+  /*
+  
+    get a collection of kubernetes resources for this cluster
+
+     * nodes
+
+    params:
+
+     * id - the cluster id
+  
+  */
+  const resources = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.resources`) 
+
+    const cluster = await store.cluster.get({
+      id,
+    })
+
+    const kubectl = await ClusterKubectl({
+      cluster,
+      store,
+    })
+
+    const results = await Promise.props({
+      nodes: kubectl
+        .jsonCommand(`get no`)
+        .then(result => result.items),
+    })
+
+    return results
+  }
+
+  /*
+  
+    get a summary of the cluster state
+
+    params:
+
+     * id - the cluster id
+  
+  */
+  const summary = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.summary`) 
+
+    const cluster = await store.cluster.get({
+      id,
+    })
+
+    const fields = [{
+      title: 'Name',
+      value: cluster.name,
+    }, {
+      title: 'Provision Type',
+      value: cluster.provision_type,
+    }]
+
+    return fields
+  }
+
   return {
     list,
     get,
@@ -641,6 +705,8 @@ const ClusterController = ({ store, settings }) => {
     createRole,
     deleteRole,
     getTasks,
+    resources,
+    summary,
   }
 
 }

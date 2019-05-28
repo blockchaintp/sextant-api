@@ -118,6 +118,24 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
+  const resources = async (req, res, next) => {
+    const data = await controllers.cluster.resources({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const summary = async (req, res, next) => {
+    const data = await controllers.cluster.summary({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   return {
     list,
     get,
@@ -128,6 +146,8 @@ const ClusterRoutes = (controllers) => {
     createRole,
     deleteRole,
     listTasks,
+    resources,
+    summary,
   }
 }
 
