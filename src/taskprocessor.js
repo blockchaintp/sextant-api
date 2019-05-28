@@ -152,6 +152,11 @@ const TaskProcessor = ({
   // the error status
   const errorTask = async (task, error) => {
 
+    console.log('--------------------------------------------')
+    console.log('--------------------------------------------')
+    console.log('have error')
+    console.dir(error)
+
     if(logging) {
       pino.error({
         action: 'error',
@@ -219,7 +224,7 @@ const TaskProcessor = ({
       const handler = handlers[task.action]
 
       if(!handler) {
-        throw new Error(task, `no handler was found for task: ${task.action}`)
+        throw new Error(`no handler was found for task: ${task.action}`)
       }
 
       // update the task be to in running state
