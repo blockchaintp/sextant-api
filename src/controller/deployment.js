@@ -54,7 +54,7 @@ const DeployentController = ({ store, settings }) => {
     // if it's a superuser - they can see all clusters
     if(userUtils.isSuperuser(user)) {
       if(withTasks) {
-        return loadMostRecentTasksForDeployments({
+        return loadAdditionalDeploymentData({
           deployments,
         })
       }
@@ -75,14 +75,20 @@ const DeployentController = ({ store, settings }) => {
         return all
       }, {})
 
-    const filteredDeployments = deployments.filter(deployment => {
-      const deploymentRole = roleMap[deployment.id]
-      if(!deploymentRole) return false
-      return PERMISSION_ROLE_ACCESS_LEVELS[deploymentRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
-    })
+    const filteredDeployments = deployments
+      .filter(deployment => {
+        const deploymentRole = roleMap[deployment.id]
+        if(!deploymentRole) return false
+        return PERMISSION_ROLE_ACCESS_LEVELS[deploymentRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
+      })
+      .map(deployment => {
+        const role = roleMap[deployment.id]
+        deployment.role = role
+        return deployment
+      })
 
     if(withTasks) {
-      return loadMostRecentTasksForDeployments({
+      return loadAdditionalDeploymentData({
         deployments: filteredDeployments,
       })
     }
@@ -129,21 +135,45 @@ const DeployentController = ({ store, settings }) => {
     load the most recent task for each cluster so the frontend can display
     the task status of clusters in the table
 
+    also load the cluster and inject the name so a user without RBAC access
+    onto the cluster can at least see the cluster name
+
     params:
 
      * clusters
     
   */
-  const loadMostRecentTasksForDeployments = ({
+  const loadAdditionalDeploymentData = ({
     deployments,
-  }) => Promise.map(deployments, async deployment => {
-    const task = await store.task.mostRecentForResource({
-      deployment: deployment.id,
-    })
+  }) => {
 
-    deployment.task = task
-    return deployment
-  })
+    const clusterCache = {}
+
+    const loadClusterForDeployment = async ({
+      id
+    }) => {
+      if(clusterCache[id]) return clusterCache[id]
+      const cluster = await store.cluster.get({
+        id,
+      })
+      clusterCache[id] = cluster
+      return cluster
+    }
+
+    return Promise.map(deployments, async deployment => {
+      const task = await store.task.mostRecentForResource({
+        deployment: deployment.id,
+      })
+
+      const cluster = await loadClusterForDeployment({
+        id: deployment.cluster,
+      })
+
+      deployment.task = task
+      deployment.clusterName = cluster.name
+      return deployment
+    })
+  }
 
   /*
   

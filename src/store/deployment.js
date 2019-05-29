@@ -21,10 +21,14 @@ const DeploymentStore = (knex) => {
 
     const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.deployment)
-      .where({
+
+    if(cluster != 'all') {
+      sqlQuery.where({
         cluster,
       })
-      .orderBy(orderBy.field, orderBy.direction)
+    }
+     
+    sqlQuery.orderBy(orderBy.field, orderBy.direction)
 
     if(!deleted) {
       sqlQuery.andWhereNot({

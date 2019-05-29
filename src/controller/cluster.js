@@ -68,11 +68,17 @@ const ClusterController = ({ store, settings }) => {
         return all
       }, {})
 
-    const filteredClusters = clusters.filter(cluster => {
-      const clusterRole = roleMap[cluster.id]
-      if(!clusterRole) return false
-      return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
-    })
+    const filteredClusters = clusters
+      .filter(cluster => {
+        const clusterRole = roleMap[cluster.id]
+        if(!clusterRole) return false
+        return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
+      })
+      .map(cluster => {
+        const role = roleMap[cluster.id]
+        cluster.role = role
+        return cluster
+      })
 
     if(withTasks) {
       return loadMostRecentTasksForClusters({

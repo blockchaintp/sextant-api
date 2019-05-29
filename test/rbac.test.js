@@ -271,7 +271,7 @@ database.testSuiteWithDatabase(getConnection => {
     
   })
 
-  asyncTestError('rbac -> deployment.list not allowed for read with no role', async (t) => {
+  asyncTest('rbac -> deployment.list not allowed for read with no role', async (t) => {
 
     const store = Store(getConnection())
 

@@ -1,3 +1,4 @@
+const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const saveAppliedState = require('./utils/saveAppliedState')
 
