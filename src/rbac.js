@@ -64,14 +64,14 @@ const HELPERS = {
   // this is so a user can read itself or update their password etc
   allowUserAccessToOwnRecord: (opts) => async (store, user, action) => {
     // requires a user
-    if(!user) throw new Error(`access denied`)
+    if(!user) return false
 
     // superuser gets access if configured
     if(user && userUtils.isSuperuser(user) && opts.allowSuperuser) return true
   
     // if the user is getting it's own data - allow
     if(action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
-    else throw new Error(`access denied`)
+    else return false
   },
 
   // if there is no user and zero existing users - allow (so the initial account can be created)
@@ -79,11 +79,11 @@ const HELPERS = {
   allowInitialAccountCreation: (opts) => async (store, user, action) => {
     if(user) {
       if(userUtils.isSuperuser(user)) return true
-      else throw new Error(`access denied`)
+      else return false
     }
     else {
       const users = await store.user.list({})
-      if(users.length > 0) throw new Error(`access denied`)
+      if(users.length > 0) return false
       return true
     }
   }
@@ -171,22 +171,22 @@ const RBAC = async (store, user, action) => {
   else {
 
     // no logged in user - deny
-    if(!user) throw new Error(`access denied`)
+    if(!user) return false
 
     // if they are an superuser - allow
     if(userUtils.isSuperuser(user)) return true
 
     // require superuser and they are not - deny
-    if(methodConfig.superuser && !userUtils.isSuperuser(user)) throw new Error(`access denied`)
+    if(methodConfig.superuser && !userUtils.isSuperuser(user)) return false
 
     // require at least X user permission - deny
-    if(methodConfig.userPermission && !userUtils.hasPermission(user, methodConfig.userPermission)) throw new Error(`access denied`)
+    if(methodConfig.userPermission && !userUtils.hasPermission(user, methodConfig.userPermission)) return false
       
     // require a resource role with the given permission
     if(methodConfig.resourcePermission) {
 
       // we need a resource_id if we are performing a resourcePermission check
-      if(!resource_id) throw new Error(`access denied`)
+      if(!resource_id) return false
 
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
       const resourceType = methodConfig.resourcePermissionForType || resource_type
@@ -201,13 +201,13 @@ const RBAC = async (store, user, action) => {
       const role = await store.role.get(roleQuery)
       
       // if there is no role we can't grant access
-      if(!role) throw new Error(`access denied`)
+      if(!role) return false
 
       // ensure the role has a correct permission value
-      if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) throw new Error(`access denied`)
+      if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) return false
 
       // check the granted role is at least the required type
-      if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) throw new Error(`access denied`)
+      if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) return false
 
       // ok - we are allowed
       return true
