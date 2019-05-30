@@ -598,6 +598,19 @@ const DeployentController = ({ store, settings }) => {
     return summaryFunction(deployment.desired_state)
   }
 
+  const localKeys = [{
+    key: '123',
+    type: 'validtor'
+  },{
+    key: '456',
+    type: 'daml'
+  }]
+
+  const remoteKeys = [{
+    key: 'abc'
+  },{
+    key: 'edf'
+  }]
 
   /*
   
@@ -613,24 +626,12 @@ const DeployentController = ({ store, settings }) => {
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.getLocalKeys`)
 
-    return [{
-      id: 1,
-      key: '123',
-      type: 'validtor'
-    },{
-      id: 2,
-      key: '456',
-      type: 'daml'
-    }]
+    return localKeys.map(key => {
+      return Object.assign({}, key, {
+        id: key.key,
+      })
+    })
   }
-
-  const remoteKeys = [{
-    id: 1,
-    key: 'abc'
-  },{
-    id: 2,
-    key: 'edf'
-  }]
 
   /*
   
@@ -646,7 +647,11 @@ const DeployentController = ({ store, settings }) => {
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.getRemoteKeys`)
 
-    return remoteKeys
+    return remoteKeys.map(key => {
+      return Object.assign({}, key, {
+        id: key.key,
+      })
+    })
   }
 
   /*
@@ -665,7 +670,9 @@ const DeployentController = ({ store, settings }) => {
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.addRemoteKey`)
     if(!key) throw new Error(`key must be given to controller.deployment.addRemoteKey`)
-    remoteKeys.push(key)
+    remoteKeys.push({
+      key
+    })
     return remoteKeys
   }
 
