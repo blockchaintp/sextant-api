@@ -4,6 +4,7 @@ const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
 const ClusterKubectl = require('../utils/clusterKubectl')
+const RBAC = require('../rbac')
 
 const deploymentForms = require('../forms/deployment')
 const deploymentTemplates = require('../deployment_templates')
@@ -51,41 +52,14 @@ const DeployentController = ({ store, settings }) => {
       deleted,
     })
 
-    // if it's a superuser - they can see all clusters
-    if(userUtils.isSuperuser(user)) {
-      if(withTasks) {
-        return loadAdditionalDeploymentData({
-          deployments,
-        })
-      }
-      else {
-        return deployments
-      }
-    }
-
-    // we need to load the roles that are for a cluster for the user
-    const roles = await store.role.listForUser({
-      user: user.id,
+    const filteredDeployments = await Promise.filter(deployments, async deployment => {
+      const canSeeDeployment = await RBAC(store, user, {
+        resource_type: 'deployment',
+        resource_id: deployment.id,
+        method: 'get',
+      })
+      return canSeeDeployment
     })
-
-    const roleMap = roles
-      .filter(role => role.resource_type == RESOURCE_TYPES.deployment)
-      .reduce((all, role) => {
-        all[role.resource_id] = role
-        return all
-      }, {})
-
-    const filteredDeployments = deployments
-      .filter(deployment => {
-        const deploymentRole = roleMap[deployment.id]
-        if(!deploymentRole) return false
-        return PERMISSION_ROLE_ACCESS_LEVELS[deploymentRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
-      })
-      .map(deployment => {
-        const role = roleMap[deployment.id]
-        deployment.role = role
-        return deployment
-      })
 
     if(withTasks) {
       return loadAdditionalDeploymentData({

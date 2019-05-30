@@ -4,6 +4,7 @@ const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
 const ClusterKubectl = require('../utils/clusterKubectl')
+const RBAC = require('../rbac')
 
 const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
@@ -44,41 +45,14 @@ const ClusterController = ({ store, settings }) => {
       deleted,
     })
 
-    // if it's a superuser - they can see all clusters
-    if(userUtils.isSuperuser(user)) {
-      if(withTasks) {
-        return loadMostRecentTasksForClusters({
-          clusters,
-        })
-      }
-      else {
-        return clusters
-      }
-    }
-
-    // we need to load the roles that are for a cluster for the user
-    const roles = await store.role.listForUser({
-      user: user.id,
+    const filteredClusters = await Promise.filter(clusters, async cluster => {
+      const canSeeCluster = await RBAC(store, user, {
+        resource_type: 'cluster',
+        resource_id: cluster.id,
+        method: 'get',
+      })
+      return canSeeCluster
     })
-
-    const roleMap = roles
-      .filter(role => role.resource_type == config.RESOURCE_TYPES.cluster)
-      .reduce((all, role) => {
-        all[role.resource_id] = role
-        return all
-      }, {})
-
-    const filteredClusters = clusters
-      .filter(cluster => {
-        const clusterRole = roleMap[cluster.id]
-        if(!clusterRole) return false
-        return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
-      })
-      .map(cluster => {
-        const role = roleMap[cluster.id]
-        cluster.role = role
-        return cluster
-      })
 
     if(withTasks) {
       return loadMostRecentTasksForClusters({

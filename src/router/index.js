@@ -11,12 +11,21 @@ const DeploymentRoutes = require('./deployment')
 
 const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
-    await rbac(store, req.user, {
+    const canAccess = await rbac(store, req.user, {
       resource_type,
       resource_id: req.params.id,
       method,
     })
-    next()
+
+    if(canAccess) {
+      next()
+    }
+    else {
+      res.status(403)
+      res.json({
+        error: 'Error: access denied',
+      })
+    }
   } catch(err) {
     if(settings.logging) {
       pino.error({
@@ -25,10 +34,7 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
         stack: err.stack,
       })
     }
-    res.status(403)
-    res.json({
-      error: err.toString(),
-    })
+    next(err)
   }
 }
 
