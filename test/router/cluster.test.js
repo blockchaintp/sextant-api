@@ -314,6 +314,7 @@ app.testSuiteWithAppTaskHandlers({
         const checkCluster = Object.assign({}, createdClusters.admin, {
           status: CLUSTER_STATUS.provisioned,
         })
+        delete(body[0].role)
         t.deepEqual(body[0], checkCluster, `the cluster in the list is the same as the created one`)
         next()
       })

@@ -127,11 +127,8 @@ const METHOD_CONFIG = {
   },
 
   deployment: {
-    // ask for read access to the given cluster
-    list: {
-      resourcePermission: PERMISSION_ROLE.read,
-      resourcePermissionForType: RESOURCE_TYPES.cluster,
-    },
+    // the controller will only list deployments the user has access to
+    list: {},
     get: {
       resourcePermission: PERMISSION_ROLE.read,
     },
@@ -210,7 +207,7 @@ const RBAC = async (store, user, action) => {
       if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) throw new Error(`access denied`)
 
       // check the granted role is at least the required type
-      if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) return done(`access denied`)
+      if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) throw new Error(`access denied`)
 
       // ok - we are allowed
       return true

@@ -1,4 +1,7 @@
 const asyncHandler = require('express-async-handler')
+const pino = require('pino')({
+  name: 'app',
+})
 const rbac = require('../rbac')
 
 const ConfigRoutes = require('./config')
@@ -6,7 +9,7 @@ const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
 const DeploymentRoutes = require('./deployment')
 
-const rbacMiddleware = (store, resource_type, method) => async (req, res, next) => {
+const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
     await rbac(store, req.user, {
       resource_type,
@@ -15,6 +18,13 @@ const rbacMiddleware = (store, resource_type, method) => async (req, res, next) 
     })
     next()
   } catch(err) {
+    if(settings.logging) {
+      pino.error({
+        action: 'error',
+        error: err.error ? err.error.toString() : err.toString(),
+        stack: err.stack,
+      })
+    }
     res.status(403)
     res.json({
       error: err.toString(),
@@ -37,6 +47,7 @@ const Routes = ({
   store,
 }) => {
 
+  const rbacMiddleware = RbacMiddleware(settings)
   const basePath = (path) => `${settings.baseUrl}${path}`
 
   const config = ConfigRoutes(controllers)
