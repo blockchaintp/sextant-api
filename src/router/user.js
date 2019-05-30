@@ -7,11 +7,13 @@ const UserRoutes = (controllers) => {
       userUtils.safe(req.user) :
       null
 
-    const roles = await controllers.user.getRoles({
-      id: result.id,
-    })
-
-    result.roles = roles
+    if(result) {
+      const roles = await controllers.user.getRoles({
+        id: result.id,
+      })
+  
+      result.roles = roles
+    }
 
     res
       .status(200)
