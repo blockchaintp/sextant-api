@@ -598,6 +598,77 @@ const DeployentController = ({ store, settings }) => {
     return summaryFunction(deployment.desired_state)
   }
 
+
+  /*
+  
+    get the local keys for a deployment
+
+    params:
+
+     * id
+    
+  */
+  const getLocalKeys = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.getLocalKeys`)
+
+    return [{
+      id: 1,
+      key: '123',
+      type: 'validtor'
+    },{
+      id: 2,
+      key: '456',
+      type: 'daml'
+    }]
+  }
+
+  const remoteKeys = [{
+    id: 1,
+    key: 'abc'
+  },{
+    id: 2,
+    key: 'edf'
+  }]
+
+  /*
+  
+    get the remote keys for a deployment
+
+    params:
+
+     * id
+    
+  */
+  const getRemoteKeys = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.getRemoteKeys`)
+
+    return remoteKeys
+  }
+
+  /*
+  
+    add a remote key for a deployment
+
+    params:
+
+     * id
+     * key
+    
+  */
+  const addRemoteKey = async ({
+    id,
+    key,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.addRemoteKey`)
+    if(!key) throw new Error(`key must be given to controller.deployment.addRemoteKey`)
+    remoteKeys.push(key)
+    return remoteKeys
+  }
+
   return {
     list,
     get,
@@ -611,6 +682,9 @@ const DeployentController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
+    getLocalKeys,
+    getRemoteKeys,
+    addRemoteKey,
   }
 
 }
