@@ -100,6 +100,9 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
   app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))
+  app.get(basePath('/clusters/:cluster/deployments/:id/localKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listLocalKeys))
+  app.get(basePath('/clusters/:cluster/deployments/:id/remoteKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listRemoteKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/remoteKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.addRemoteKey))
   
 }
 

@@ -139,6 +139,34 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const listLocalKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getLocalKeys({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const listRemoteKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getRemoteKeys({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const addRemoteKey = async (req, res, next) => {
+    const data = await controllers.deployment.addRemoteKey({
+      id: req.params.id,
+      key: req.body.key,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
   return {
     list,
     get,
@@ -151,6 +179,9 @@ const DeploymentRoutes = (controllers) => {
     resources,
     summary,
     delete: del,
+    listLocalKeys,
+    listRemoteKeys,
+    addRemoteKey,
   }
 }
 
