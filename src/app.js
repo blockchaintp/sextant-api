@@ -35,8 +35,14 @@ const App = ({
   // the HTTP server
   const app = express()
 
-  app.use(bodyParser.json())
+  app.disable('etag')
 
+  app.use(bodyParser.json())
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-cache')
+    next()
+  })
+  
   // hook up the session store
   Passport({
     app,
