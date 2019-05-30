@@ -216,6 +216,26 @@ const UserController = ({ store, settings }) => {
 
   /*
   
+    get a users roles
+
+    params:
+
+      * id
+    
+  */
+  const getRoles = ({
+    id,
+  }) => {
+
+    if(!id) throw new Error(`id must be given to controller.user.getRoles`)
+
+    return store.role.listForUser({
+      user: id,
+    })
+  }
+
+  /*
+  
     update a users token server_side_key
 
     params:
@@ -268,6 +288,7 @@ const UserController = ({ store, settings }) => {
     create,
     update,
     getToken,
+    getRoles,
     updateToken,
     delete: del,
   }

@@ -6,6 +6,13 @@ const UserRoutes = (controllers) => {
     const result = req.user ?
       userUtils.safe(req.user) :
       null
+
+    const roles = await controllers.user.getRoles({
+      id: result.id,
+    })
+
+    result.roles = roles
+
     res
       .status(200)
       .json(result)
