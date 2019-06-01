@@ -22,6 +22,18 @@ const DeploymentUpdate = ({
     id: deployment.cluster,
   }, trx)
 
+  const {
+    deployment_type,
+    deployment_version,
+    applied_state,
+    desired_state,
+  } = deployment
+
+  // check that the user is not trying to change the k8s namespace
+  if(desired_state.deployment.namespace != applied_state.deployment.namespace) {
+    throw new Error(`you cannot change the namespace of a deployment`)
+  }
+
   // TODO: mock the kubectl handler for tests
   if(testMode) {
     yield saveAppliedState({
@@ -31,13 +43,12 @@ const DeploymentUpdate = ({
     })
 
     return
-  } 
+  }
 
-  const {
-    deployment_type,
-    deployment_version,
-    desired_state,
-  } = deployment
+  const clusterKubectl = yield ClusterKubectl({
+    cluster,
+    store,
+  })
 
   const templateDirectory = yield renderTemplates({
     deployment_type,
@@ -45,13 +56,7 @@ const DeploymentUpdate = ({
     desired_state,
   })
 
-  const clusterKubectl = yield ClusterKubectl({
-    cluster,
-    store,
-  })
-
-  // test we can connect to the remote cluster with the details provided
-  yield clusterKubectl.jsonCommand('get ns')
+  yield clusterKubectl.command(`apply -f ${templateDirectory}`)
 
   yield saveAppliedState({
     id,
