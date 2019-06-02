@@ -9,7 +9,6 @@ metadata:
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
-  type: LoadBalancer
   ports:
   - port: 8080
     protocol: TCP 
@@ -17,7 +16,7 @@ spec:
     name: rest-api
   - port: 3030
     protocol: TCP 
-    targetPort: 3030
+    targetPort: 30030
     name: seth-rpc
   selector:
     app: {{.sawtooth.networkName}}-validator
@@ -39,7 +38,7 @@ spec:
     targetPort: 8080
     name: rest-api
   - nodePort: 30030
-    port: 3030
+    port: 30030
     protocol: TCP 
     targetPort: 3030
     name: seth-rpc
@@ -78,7 +77,6 @@ metadata:
   labels:
     app: {{.sawtooth.networkName}}-xo-demo
 spec:
-  type: LoadBalancer
   ports:
   - port: 80
     protocol: TCP 

@@ -9,7 +9,6 @@ metadata:
     app: {{.sawtooth.networkName}}-monitoring
     dns: route53
 spec:
-  type: LoadBalancer
   ports:
   - port: 80
     protocol: TCP

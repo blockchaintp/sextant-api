@@ -1,4 +1,5 @@
 # kubetpl:syntax:go-template
+{{$peering:= .sawtooth.dynamicPeering}}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -15,26 +16,32 @@ spec:
         app: {{.sawtooth.networkName}}-validator
     spec:
       serviceAccountName: {{.sawtooth.networkName}}-sa
-      nodeAffinity:
-        requiredDuringSchedulingRequiredDuringExecution:
-          nodeSelectorTerms:
-            - matchFields:
-              - key: app
-                operator: In
-                values:
-                - {{.sawtooth.networkName}}-validator
+      {{if .affinity.enabled}}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{.sawtooth.networkName}}-validator
+      {{ end }}
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
+      {{ if .imagePullSecrets }}
+      imagePullSecrets: 
+      {{range .imagePullSecrets.value }}
+        - name: {{ . }}
+      {{ end }}
+      {{ end }}
       containers:
-      - name: sawtooth-validator
-        image: {{.sources.imageRepository}}/sawtooth-validator:{{.sources.version}}
-        command: ["bash", "-c" ]
+      - name: validator
+        image: {{.images.validator}}
+        command: ["bash", "-xc" ]
         args:
           - |
-            apt update; apt install curl -y;
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod a+x kubectl; mv kubectl /usr/local/bin            
             for node in `kubectl --namespace ${POD_NAMESPACE} get pod -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
               ip=`kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' -l kubernetes.io/role=node -l kubernetes.io/hostname=${node}`
               if [ "${NODE_NAME}" != "${node}" ]; then
@@ -46,24 +53,25 @@ spec:
             done;
             sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
             --endpoint tcp://${MY_EXTERNAL_IP}:30800 \
-              --bind component:tcp://0.0.0.0:4004 \
+              --bind component:tcp://127.0.0.1:4004 \
+              --bind consensus:tcp://127.0.0.1:5050 \
               --bind network:tcp://0.0.0.0:30800 \
               -P {{if ($peering)}}dynamic{{else}}static{{end}} \
               {{ range .sawtooth.externalSeeds }}{{if ($peering) }}-s{{else}}-p{{end}} tcp://{{.}} {{end}} \
               ${SEEDS} \
               --network-auth trust \
               --minimum-peer-connectivity 5 \
-              --maximum-peer-connectivity 64 \
-              --opentsdb-url http://influxdb:8086 \
-              --opentsdb-db metrics ;
+              --maximum-peer-connectivity 64 ;
         volumeMounts:
           - mountPath: "/etc/sawtooth"
-            name: sawtooth
+            name: sawtooth-etc
+          - mountPath: "/var/lib/sawtooth"
+            name: sawtooth-data
         livenessProbe:
           exec:
             command:
               - bash
-              - -c
+              - -xc
               - |
                 mkdir -p /var/run/liveness
                 cat /var/log/sawtooth/validator-debug.log| \
@@ -122,8 +130,8 @@ spec:
           - containerPort: 5050
             name: consensus
       - name: settings-tp
-        image: {{.sources.imageRepository}}/sawtooth-settings-tp:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.settings_tp}}
+        command: [ "bash", "-xc"]
         args: 
         - "settings-tp -v --connect tcp://localhost:4004"
         resources:
@@ -131,9 +139,10 @@ spec:
             cpu: "250m"
           requests:
             cpu: "50m"
+      {{ if .sawtooth.permissioned }}
       - name: identity-tp
-        image: {{.sources.imageRepository}}/sawtooth-identity-tp:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.identity_tp}}
+        command: [ "bash", "-xc"]
         args: 
         - "identity-tp -v --connect tcp://localhost:4004"
         resources:
@@ -141,9 +150,10 @@ spec:
             cpu: "250m"
           requests:
             cpu: "50m"
+      {{ end }}
       - name: block-info-tp
-        image: {{.sources.imageRepository}}/sawtooth-block-info-tp:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.block_info_tp}}
+        command: [ "bash", "-xc"]
         args: 
         - "block-info-tp -v --connect tcp://localhost:4004"
         resources:
@@ -152,8 +162,8 @@ spec:
           requests:
             cpu: "50m"
       - name: intkey-tp
-        image: {{.sources.imageRepository}}/sawtooth-intkey-tp-go:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.intkey_tp}}
+        command: [ "bash", "-xc"]
         args: 
         - "intkey-tp-go -v --connect tcp://localhost:4004"
         resources:
@@ -162,23 +172,20 @@ spec:
           requests:
             cpu: "50m"
       - name: seth-tp
-        image: {{.sources.imageRepository}}/sawtooth-seth-tp:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.seth_tp}}
+        command: [ "bash", "-xc"]
         args: 
-        - "seth-tp -v --connect tcp://localhost:4004 --listen tcp://0.0.0.0:4005"
-        ports:
-        - containerPort: 4005
-          name: seth
+        - "seth-tp -v --connect tcp://localhost:4004"
         resources:
           limits:
             cpu: "250m"
           requests:
             cpu: "50m"
       - name: seth-rpc
-        image: {{.sources.imageRepository}}/sawtooth-seth-rpc:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.seth_rpc}}
+        command: [ "bash", "-xc"]
         args: 
-        - "seth-rpc -vv --bind 0.0.0.0:3030 --connect tcp://localhost:4004 --process tcp://0.0.0.0:4005"
+        - "seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://localhost:4004 "
         ports:
           - containerPort: 3030
             name: seth-rpc
@@ -188,8 +195,13 @@ spec:
           requests:
             cpu: "50m"
       {{ if .sawtooth.poet.enabled }}
+      - name: poet-engine
+        image: {{.images.poet_engine}}
+        command: [ "bash", "-xc"]
+        args:
+        - "poet-engine -v -C tcp://localhost:5050 --component tcp://localhost:4004"
       - name: poet-validator-registry-tp
-        image: {{.sources.imageRepository}}/sawtooth-poet-validator-registry-tp:{{.sources.version}}
+        image: {{.images.poet_validator_registry_tp}}
         command: [ "bash", "-c"]
         args: 
         - "poet-validator-registry-tp -v --connect tcp://localhost:4004"
@@ -199,10 +211,17 @@ spec:
           requests:
             cpu: "50m"
       {{ end }}
+      {{ if .sawtooth.devmode.enabled }}
+      - name: devmode-engine
+        image: {{.images.devmode_engine}}
+        command: [ "bash", "-xc"]
+        args:
+        - "devmode-engine-rust -v -C tcp://localhost:5050"
+      {{ end }}
       {{ if .sawtooth.smallbank.enabled }}
       - name: smallbank-tp
-        image: {{.sources.imageRepository}}/sawtooth-smallbank-tp-go:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.smallbank_tp}}
+        command: [ "bash", "-xc"]
         args: 
         - "smallbank-tp-go -v --connect tcp://localhost:4004"
         resources:
@@ -211,22 +230,10 @@ spec:
           requests:
             cpu: "50m"
       {{ end }}
-      {{ if .sawtooth.rbac.enabled }} 
-      - name: rbac-tp
-        image: {{.sources.imageRepository}}/rbac-tp-production:{{.sources.rbacVersion}}
-        command: [ "bash", "-c"]
-        args: 
-        - "bin/rbac-tp -v tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
       {{ if .sawtooth.xo.enabled }}
       - name: xo-tp
-        image: {{.sources.imageRepository}}/sawtooth-xo-tp-go:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.xo_tp}}
+        command: [ "bash", "-xc"]
         args: 
         - "xo-tp-go -v --connect tcp://localhost:4004"
         resources:
@@ -235,7 +242,7 @@ spec:
           requests:
             cpu: "50m"
       - name: xo-demo
-        image: {{.sources.imageRepository}}/xo-demo:{{.sources.xoDemoVersion}}
+        image: {{.images.xo_demo}}
         ports:
           - containerPort: 80
             name: xo-demo
@@ -251,31 +258,9 @@ spec:
         {{if .command}}command: [ {{ range .command }}"{{.}}",{{end}} ]{{end}}
         {{if .args}}args: [ {{ range .args}}"{{.}}", {{end}} ]{{end}}
       {{end}}
-      {{ if .sawtooth.simple.enabled }}
-      - name: simple-tp-python
-        image: {{.sources.imageRepository}}/simple-tp-python:{{.sources.simpleVersion}}
-        command: [ "bash", "-c"]
-        args: 
-        - |  
-          ( set -x ; apt update;
-          apt install git -y
-          cd /; 
-          git clone https://github.com/catenasys/caliper; 
-          cd caliper; 
-          git fetch --all;
-          git checkout sawtooth-testing ; 
-          cd /; 
-          mv caliper project; 
-          /project/caliper/src/contract/sawtooth/simple/simple_python/simple-tp-python -vv -C tcp://localhost:4004 )
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
       - name: rest-api
-        image: {{.sources.imageRepository}}/sawtooth-rest-api:{{.sources.version}}
-        command: [ "bash", "-c"]
+        image: {{.images.rest_api}}
+        command: [ "bash", "-xc"]
         args: 
         - "sawtooth-rest-api -v --bind 0.0.0.0:8080 --connect tcp://localhost:4004 --opentsdb-url http://influxdb:8086  --opentsdb-db metrics "
         ports:
@@ -286,93 +271,77 @@ spec:
             cpu: "250m"
           requests:
             cpu: "50m"
-      - name: utility-shell
-        image: blockchaintp/sawtooth-shell:{{.sources.version}}
-        command:
-        - bash
-        - -c
-        args:
-        - |
-          set -x
-          sawtooth keygen; 
-          touch iam.healthy
-          intkey set --url http://localhost:8080 ${POD_NAME} 0 ; 
-          THEN=0
-          while /bin/true; do 
-            intkey inc --url http://localhost:8080 ${POD_NAME} 1;
-            sleep 2;
-            NOW=`intkey show --url http://localhost:8080 ${POD_NAME}`;
-            if [ "$NOW" = "$THEN" ]; then
-              rm -f iam.healthy
-            else
-              touch iam.healthy
-            fi
-            THEN=$NOW
-          done
-        env:
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-        resources:
-          limits:
-            cpu: "100m"
-          requests:
-            cpu: "100m"
       initContainers:
-        - name: install
-          image: {{.sources.imageRepository}}/sawtooth-validator:{{.sources.version}}
+        - name: setup
+          image: {{.images.shell}}
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+            - mountPath: "/var/lib/sawtooth"
+              name: sawtooth-data
           command: [ "bash", "-xc" ]
           args: 
+            - |
+              mkdir -p /etc/sawtooth/data
+              mkdir -p /etc/sawtooth/genesis
+              mkdir -p /etc/sawtooth/keys
+              if [ ! -r /etc/sawtooth/keys/validator.priv ]; then
+                sawadm keygen --force
+              fi
+              echo 'opentsdb_url = "http://influxdb:8086"'>/etc/sawtooth/validator.toml
+              echo 'opentsdb_db = "metrics"'>>/etc/sawtooth/validator.toml
+              echo 'opentsdb_username  = "lrdata"'>>/etc/sawtooth/validator.toml
+              echo 'opentsdb_password  = "lrdata"'>>/etc/sawtooth/validator.toml
+        {{ if .sawtooth.genesis.enabled }}
+          {{ if .sawtooth.poet.enabled }}
+        - name: poet-registration
+          image: {{.images.poet_cli}}
+          command: [ "bash", "-xc" ]
+          args:
           - |
-            set -x
-            apt-get update -y
-            apt-get install curl -y
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
-            chmod a+x kubectl 
-            mv kubectl /usr/local/bin/
+            cp /etc/sawtooth/simulator_rk_pub.pem /sawtooth-etc;
+            poet registration create -k /etc/sawtooth/keys/validator.priv -o /sawtooth-etc/genesis/200.poet.batch
+          volumeMounts:
+            - mountPath: "/sawtooth-etc"
+              name: sawtooth-etc
+          {{ end }}
+        {{ end }}
+        {{ if .sawtooth.genesis.enabled }}
+        - name: genesis
+          image: {{.images.shell}}
+          command: [ "bash", "-xc" ]
+          args:
+          - |
             if [ ! -r /etc/sawtooth/initialized ]; then
-              mkdir -p /etc/sawtooth/keys;
-              mkdir -p /etc/sawtooth/data;
-              rm -rf /var/lib/sawtooth;
-              ln -s /etc/sawtooth/data /var/lib/sawtooth
-              sawadm keygen --force;
-              sawtooth keygen --force ;
-              {{ if .sawtooth.genesis.enabled }}
-              genesis_pod=$( for n in $( kubectl --namespace ${POD_NAMESPACE} get pod -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].metadata.name }' ) ; do echo $n; done|sort |head -1 )
+              genesis_pod=$( for n in $( kubectl --namespace ${POD_NAMESPACE} get pod \
+                            -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].metadata.name }'); \
+                            do echo $n; done|sort |head -1 )
               if [ "${POD_NAME}" = "${genesis_pod}" ]; then
-                mkdir -p /etc/sawtooth/genesis;
-                curl https://raw.githubusercontent.com/hyperledger/sawtooth-core/5094a9a1a7d086c14704e7055cfad9de77d1e6aa/consensus/poet/simulator/packaging/simulator_rk_pub.pem > /etc/sawtooth/keys/simulator_rk_pub.pem
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv {{ if .sawtooth.poet.enabled }} \
-                  sawtooth.consensus.algorithm=poet \
-                  sawtooth.poet.report_public_key_pem="$(cat /etc/sawtooth/keys/simulator_rk_pub.pem)" \
-                  sawtooth.poet.valid_enclave_measurements=$(poet enclave --enclave-module {{.sawtooth.poet.enclaveModule}} measurement) \
-                  sawtooth.poet.valid_enclave_basenames=$(poet enclave --enclave-module {{.sawtooth.poet.enclaveModule}} basename) \
-                  sawtooth.validator.batch_injectors=block_info \
-                  -o /etc/sawtooth/genesis/config.batch; {{ else }} \
-                  sawtooth.validator.batch_injectors=block_info -o /etc/sawtooth/genesis/config.batch; {{ end }}
-                {{ if .sawtooth.poet.enabled }}
-                poet registration create -k /etc/sawtooth/keys/validator.priv \
-                  --enclave-module simulator \
-                  -o /etc/sawtooth/genesis/poet.batch
+          {{ if .sawtooth.poet.enabled }}
+                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
+                  sawtooth.consensus.algorithm.name=PoET \
+                  sawtooth.consensus.algorithm.version=0.1 \
+                  sawtooth.poet.report_public_key_pem=\
+                  \\\"$$(cat /poet-shared/simulator_rk_pub.pem)\\\" \
+                  sawtooth.poet.valid_enclave_measurements=$$(cat /etc/sawtooth/poet-enclave-measurement) \
+                  sawtooth.poet.valid_enclave_basenames=$$(cat /etc/sawtooth/poet-enclave-basename) \
+                  -o /etc/sawtooth/genesis/100-config.batch; 
+          {{ else }}
+                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
+                  sawtooth.consensus.algorithm.name=Devmode \
+                  sawtooth.consensus.algorithm.version=0.1 \
+                  -o /etc/sawtooth/genesis/100-config.batch; 
                 sawset proposal create -k /etc/sawtooth/keys/validator.priv \
                   sawtooth.poet.target_wait_time={{.sawtooth.poet.targetWaitTime}} \
                   sawtooth.poet.initial_wait_time={{.sawtooth.poet.initialWaitTime}} \
                   sawtooth.publisher.max_batches_per_block={{.sawtooth.poet.maxBatchesPerBlock}} \
-                  -o /etc/sawtooth/genesis/poet-settings.batch
-                {{ end }}
-                
-                sawadm genesis /etc/sawtooth/genesis/genesis.batch \
-                  /etc/sawtooth/genesis/config.batch {{ if .sawtooth.poet.enabled }} \
-                  /etc/sawtooth/genesis/poet.batch \
-                  /etc/sawtooth/genesis/poet-settings.batch
-                  {{ end }}
+                  -o /etc/sawtooth/genesis/210-poet-settings.batch
+          {{ end }}
+                sawadm genesis `ls /etc/sawtooth/genesis|sort`
               else
                 sleep 60
               fi
-              {{ end }}
-              echo 'data_dir = "/etc/sawtooth/data"' > /etc/sawtooth/path.toml
               touch /etc/sawtooth/initialized;
             fi
           env:
@@ -386,9 +355,14 @@ spec:
                   fieldPath: metadata.namespace
           volumeMounts:
             - mountPath: "/etc/sawtooth"
-              name: sawtooth
+              name: sawtooth-etc
+            - mountPath: "/var/lib/sawtooth"
+              name: sawtooth-data
+        {{ end }}
       volumes:
-        - name: sawtooth
+        - name: sawtooth-etc
+          emptyDir: {}
+        - name: sawtooth-data
           emptyDir: {}
 ---
 

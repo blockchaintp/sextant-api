@@ -18,9 +18,15 @@ spec:
       labels:
         app: {{.sawtooth.networkName}}-monitoring
     spec:
+      {{ if .imagePullSecrets }}
+      imagePullSecrets: 
+      {{range .imagePullSecrets.value }}
+        - name: {{ . }}
+      {{ end }}
+      {{ end }}
       containers:
-      - name: sawtooth-stats-influxdb
-        image: {{.sources.imageRepository}}/sawtooth-stats-influxdb:{{.sources.version}}
+      - name: influxdb
+        image: {{.images.influxdb}}
         ports:
           - containerPort: 8086
             name: influxdb
@@ -29,8 +35,21 @@ spec:
             cpu: "100m"
           requests: 
             cpu: "50m"
-      - name: sawtooth-stats-grafana
-        image: {{.sources.imageRepository}}/sawtooth-stats-grafana:{{.sources.version}}
+        env:
+          - name: INFLUX_DB
+            value: metrics
+          - name: INFLUX_HTTP_AUTH_ENABLED
+            value: "true"
+          - name: INFLUXDB_ADMIN_USER
+            value: admin
+          - name: INFLUXDB_ADMIN_PASSWORD
+            value: admin
+          - name: INFLUXDB_USER
+            value: lrdata
+          - name: INFLUXDB_USER_PASSWORD
+            value: lrdata
+      - name: grafana
+        image: {{.images.grafana}}
         ports:
           - containerPort: 3000
             name: grafana

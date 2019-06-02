@@ -1,0 +1,65 @@
+# note this is an example values file and should not be actually used
+
+affinity:
+  enabled: false
+
+imagePullSecrets:
+  enabled: true
+  value: 
+    - regcred
+sawtooth:
+  permissioned: false
+  namespace: default
+  networkName: sawtooth
+  scheduler: parallel
+  devmode:
+    enabled: true
+  pbft:
+    enabled: false 
+  raft:
+    enabled: false
+  poet:
+    enabled: false
+    targetWaitTime: 30
+    initialWaitTime: 25
+    maxBatchesPerBlock: 100
+    enclaveModule: simulator
+  genesis:
+    enabled: true
+  dynamicPeering: false
+  externalSeeds: []
+  xo:
+    enabled: false
+  smallbank:
+    enabled: false
+  customTPs:
+          #    - name: intkey-tp
+          #      image: "blockchaintp/sawtooth-intkey-tp-go:1.0.5"
+          #      command: [ "bash", "-c" ]
+          #      args: [ "intkey-tp-go -v --connect tcp://localhost:4004" ]
+    
+images:
+  grafana: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-grafana:latest
+  influxdb: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-influxdb:latest
+  validator: dev.catenasys.com:8083/blockchaintp/sawtooth-validator:latest
+  settings_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-settings-tp:latest
+  identity_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-identity-tp:latest
+  block_info_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-block-info-tp:latest
+  intkey_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-intkey-tp-go:latest
+  seth_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-tp:latest
+  seth_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-rpc:latest
+  poet_cli: dev.catenasys.com:8083/blockchaintp/sawtooth-poet-cli:latest
+  poet_validator_registry_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-poet-validator-registry-tp:latest
+  poet_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-poet-engine:latest
+  devmode_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-devmode-engine-rust:latest
+  raft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-raft-engine:latest
+  pbft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-pbft-engine:latest
+  smallbank_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-smallbank-tp-go:latest
+  xo_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-xo-tp-go:latest
+  xo_demo: dev.catenasys.com:8083/blockchaintp/xo-demo:latest
+  rest_api: dev.catenasys.com:8083/blockchaintp/sawtooth-rest-api:latest
+  shell: dev.catenasys.com:8083/blockchaintp/sawtooth-shell:latest
+  sabre_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-sabre-tp:latest
+  daml_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-tp:latest
+  daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc:latest
+  timekeeper: dev.catenasys.com:8083/blockchaintp/timekeeper:latest
