@@ -1,0 +1,12 @@
+# kubetpl:syntax:go-template
+---
+apiVersion: "etcd.database.coreos.com/v1beta2"
+kind: "EtcdCluster"
+metadata:
+  name: "etcd"
+  namespace: {{.sawtooth.namespace}}
+spec:
+# A size of one is fine since this is only used as a shared whiteboard of public information
+  size: 1s
+  version: "3.2.13"
+---

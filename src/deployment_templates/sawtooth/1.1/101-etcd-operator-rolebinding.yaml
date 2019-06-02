@@ -1,0 +1,16 @@
+# kubetpl:syntax:go-template
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: etcd-operator
+  namespace: {{.sawtooth.namespace}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{.sawtooth.namespace}}.{{.sawtooth.networkName}}.etcd-operator
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: {{.sawtooth.namespace}}
+---

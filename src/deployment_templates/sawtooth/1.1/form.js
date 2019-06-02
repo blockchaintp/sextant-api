@@ -42,7 +42,7 @@ const form = [
         type: 'string',
         methods: [
           ['required', 'Required'],
-          ['matches', `^[a-zA-Z0-9]+$`, 'Only alphanumeric characters']
+          ['matches', `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*`, 'Only alphanumeric characters, and period separators']
         ],
       },
     },
