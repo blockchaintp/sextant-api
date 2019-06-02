@@ -49,6 +49,8 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('cluster task_handlers -> create cluster', async (t) => {
   
+    const store = Store(getConnection())
+
     const handlers = Tasks({
       testMode: true,
     })
@@ -59,9 +61,13 @@ database.testSuiteWithDatabase(getConnection => {
 
     await taskProcessor.start()
 
-    testClusters.admin = await controller.create({
+    const createTask = await controller.create({
       user: testUser,
       data: clusterData,
+    })
+
+    testClusters.admin = await store.cluster.get({
+      id: createTask.resource_id,
     })
 
     await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)

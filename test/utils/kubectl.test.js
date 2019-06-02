@@ -9,7 +9,7 @@ asyncTest('kubectl -> get help output', async (t) => {
   const kubectl = Kubectl({
     mode: 'test',
   })
-  const [ stdout ] = await kubectl.command(`help`)
+  const stdout = await kubectl.command(`help`)
 
   t.ok(stdout.toLowerCase().indexOf('kubernetes') >= 0, `the output contained the word Kubernetes`)
 })

@@ -1,4 +1,7 @@
 const asyncHandler = require('express-async-handler')
+const pino = require('pino')({
+  name: 'app',
+})
 const rbac = require('../rbac')
 
 const ConfigRoutes = require('./config')
@@ -6,19 +9,32 @@ const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
 const DeploymentRoutes = require('./deployment')
 
-const rbacMiddleware = (store, resource_type, method) => async (req, res, next) => {
+const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
-    await rbac(store, req.user, {
+    const canAccess = await rbac(store, req.user, {
       resource_type,
       resource_id: req.params.id,
       method,
     })
-    next()
+
+    if(canAccess) {
+      next()
+    }
+    else {
+      res.status(403)
+      res.json({
+        error: 'Error: access denied',
+      })
+    }
   } catch(err) {
-    res.status(403)
-    res.json({
-      error: err.toString(),
-    })
+    if(settings.logging) {
+      pino.error({
+        action: 'error',
+        error: err.error ? err.error.toString() : err.toString(),
+        stack: err.stack,
+      })
+    }
+    next(err)
   }
 }
 
@@ -37,6 +53,7 @@ const Routes = ({
   store,
 }) => {
 
+  const rbacMiddleware = RbacMiddleware(settings)
   const basePath = (path) => `${settings.baseUrl}${path}`
 
   const config = ConfigRoutes(controllers)
@@ -52,6 +69,7 @@ const Routes = ({
   app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout))
 
   app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), asyncHandler(user.list))
+  app.get(basePath('/user/search'), requireUser, asyncHandler(user.search))
   app.post(basePath('/user'), rbacMiddleware(store, 'user', 'create'), asyncHandler(user.create))
   app.get(basePath('/user/:id'), rbacMiddleware(store, 'user', 'get'), asyncHandler(user.get))
   app.put(basePath('/user/:id'), rbacMiddleware(store, 'user', 'update'), asyncHandler(user.update))
@@ -68,13 +86,17 @@ const Routes = ({
   app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.createRole))
   app.delete(basePath('/clusters/:id/roles/:userid'), rbacMiddleware(store, 'cluster', 'update'), asyncHandler(cluster.deleteRole))
   app.get(basePath('/clusters/:id/tasks'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.listTasks))
+  app.get(basePath('/clusters/:id/resources'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.resources))
+  app.get(basePath('/clusters/:id/summary'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.summary))
 
   app.get(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'list'), asyncHandler(deployment.list))
   app.get(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.get))
   app.post(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'create'), asyncHandler(deployment.create))
   app.put(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.update))
   app.delete(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.delete))
-  
+  app.get(basePath('/clusters/:cluster/deployments/:id/roles'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listRoles))
+  app.post(basePath('/clusters/:cluster/deployments/:id/roles'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.createRole))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/roles/:userid'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.deleteRole))
   app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
   app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))

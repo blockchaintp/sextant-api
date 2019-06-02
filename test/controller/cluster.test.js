@@ -89,9 +89,13 @@ database.testSuiteWithDatabase(getConnection => {
 
     const testUser = userMap[PERMISSION_USER.admin]
 
-    const cluster = await controller.create({
+    const createTask = await controller.create({
       user: testUser,
       data: clusterData,
+    })
+
+    const cluster = await store.cluster.get({
+      id: createTask.resource_id,
     })
 
     const role = await store.role.get({
@@ -248,13 +252,17 @@ database.testSuiteWithDatabase(getConnection => {
     const testCluster = testClusters[PERMISSION_USER.admin]
     const testUser = userMap[PERMISSION_USER.admin]
 
-    const cluster = await controller.update({
+    await controller.update({
       user: testUser,
       id: testCluster.id,
       data: {
         desired_state,
         shouldNotBeInserted: true,
       },
+    })
+
+    const cluster = await store.cluster.get({
+      id: testCluster.id,
     })
 
     t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(desired_state), `the desired_state is correct`)
@@ -273,13 +281,18 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('cluster controller -> create cluster for superuser user', async (t) => {
   
     const controller = getController()
+    const store = Store(getConnection())
     
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
     const testUser = userMap[PERMISSION_USER.superuser]
 
-    const cluster = await controller.create({
+    const createTask = await controller.create({
       user: testUser,
       data: clusterData,
+    })
+
+    const cluster = await store.cluster.get({
+      id: createTask.resource_id,
     })
     t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
     t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
@@ -430,6 +443,12 @@ database.testSuiteWithDatabase(getConnection => {
     const taskProcessor = TaskProcessor({
       store,
       handlers: {
+        [TASK_ACTION['cluster.create']]: function* (params) {
+          
+        },
+        [TASK_ACTION['cluster.update']]: function* (params) {
+          
+        },
         [TASK_ACTION['cluster.delete']]: function* (params) {
           yield store.cluster.update({
             id: params.task.resource_id,
@@ -534,9 +553,13 @@ database.testSuiteWithDatabase(getConnection => {
 
     await taskProcessor.start()
 
-    const cluster = await controller.create({
+    const createTask = await controller.create({
       user: testUser,
       data: clusterData,
+    })
+
+    const cluster = await store.cluster.get({
+      id: createTask.resource_id,
     })
 
     testClusters.withSecrets = cluster
@@ -565,7 +588,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
-    const updatedNameCluster = await controller.update({
+    await controller.update({
       id: cluster.id,
       user: testUser,
       data: {
@@ -573,12 +596,18 @@ database.testSuiteWithDatabase(getConnection => {
       },
     })
 
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedNameCluster = await store.cluster.get({
+      id: cluster.id,
+    })
+
     t.equal(updatedNameCluster.desired_state.apiServer, cluster.desired_state.apiServer, `the cluster api server is the same`)
     t.equal(updatedNameCluster.name, 'my new name', `the cluster name is correct`)
     t.equal(updatedNameCluster.desired_state.token_id, token_id, `the desired_state token id is the same`)
     t.equal(updatedNameCluster.desired_state.ca_id, ca_id, `the desired_state ca id is the same`)
 
-    const updatedSecretsCluster = await controller.update({
+    await controller.update({
       id: cluster.id,
       user: testUser,
       data: {
@@ -588,6 +617,12 @@ database.testSuiteWithDatabase(getConnection => {
           ca: CA2,
         },
       },
+    })
+
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedSecretsCluster = await store.cluster.get({
+      id: cluster.id,
     })
 
     const token_id2 = updatedSecretsCluster.desired_state.token_id
@@ -610,7 +645,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
-    const updatedNameCluster2 = await controller.update({
+    await controller.update({
       id: cluster.id,
       user: testUser,
       data: {
@@ -618,10 +653,15 @@ database.testSuiteWithDatabase(getConnection => {
       },
     })
 
+    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+
+    const updatedNameCluster2 = await store.cluster.get({
+      id: cluster.id,
+    })
+
     t.equal(updatedNameCluster2.name, 'my new name2', `the cluster name is correct`)
     t.equal(updatedNameCluster2.desired_state.token_id, token_id2, `the desired_state token id is the same`)
     t.equal(updatedNameCluster2.desired_state.ca_id, ca_id2, `the desired_state ca id is the same`)
-
 
     await taskProcessor.stop()
 

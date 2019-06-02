@@ -64,6 +64,37 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const listRoles = async (req, res, next) => {
+    const data = await controllers.deployment.getRoles({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const createRole = async (req, res, next) => {
+    const data = await controllers.deployment.createRole({
+      id: req.params.id,
+      user: req.body.user,
+      username: req.body.username,
+      permission: req.body.permission,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
+  const deleteRole = async (req, res, next) => {
+    const data = await controllers.deployment.deleteRole({
+      id: req.params.id,
+      user: req.params.userid,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const resources = async (req, res, next) => {
     const data = await controllers.deployment.resources({
       id: req.params.id,
@@ -113,6 +144,9 @@ const DeploymentRoutes = (controllers) => {
     get,
     create,
     update,
+    listRoles,
+    createRole,
+    deleteRole,
     listTasks,
     resources,
     summary,

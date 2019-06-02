@@ -32,5 +32,5 @@ COPY . /app/api
 #COPY ./src/metering/${METERING_MODULE} /app/api/src/metering/index.js
 
 ENTRYPOINT ["yarn"]
-CMD ["run", "start"]
+CMD ["run", "serve"]
 

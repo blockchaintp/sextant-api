@@ -53,12 +53,14 @@ const SIMPLE_CLUSTER_DATA = [{
 const SIMPLE_DEPLOYMENT_DATA = [{
   name: 'testdeployment',
   deployment_type: 'sawtooth',
+  deployment_version: '1.0',
   desired_state: {
     apples: 10,
   },
 },{
   name: 'otherdeployment',
   deployment_type: 'sawtooth',
+  deployment_version: '1.0',
   desired_state: {
     oranges: 10,
   },

@@ -23,6 +23,27 @@ const UserController = ({ store, settings }) => {
 
   /*
   
+    search current users - used for the role form
+    only return the username because all users should be able to
+    add other users
+  
+  */
+  const search = async ({
+    search,
+  }) => {
+    if(!search) return []
+    const users = await store.user.list({})
+    return users
+      .filter(user => user.username.toLowerCase().indexOf(search.toLowerCase()) >= 0)
+      .map(user => ({
+        id: user.id,
+        permission: user.permission,
+        username: user.username,
+      }))
+  }
+
+  /*
+  
     list the current users
 
     params:
@@ -195,6 +216,26 @@ const UserController = ({ store, settings }) => {
 
   /*
   
+    get a users roles
+
+    params:
+
+      * id
+    
+  */
+  const getRoles = ({
+    id,
+  }) => {
+
+    if(!id) throw new Error(`id must be given to controller.user.getRoles`)
+
+    return store.role.listForUser({
+      user: id,
+    })
+  }
+
+  /*
+  
     update a users token server_side_key
 
     params:
@@ -241,11 +282,13 @@ const UserController = ({ store, settings }) => {
   return {
     count,
     list,
+    search,
     get,
     checkPassword,
     create,
     update,
     getToken,
+    getRoles,
     updateToken,
     delete: del,
   }

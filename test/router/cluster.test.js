@@ -25,6 +25,12 @@ const getClusterWithoutTask = (cluster) => {
 app.testSuiteWithAppTaskHandlers({
   [TASK_ACTION['cluster.create']]: function* (params) {
     
+  },
+  [TASK_ACTION['cluster.update']]: function* (params) {
+    
+  },
+  [TASK_ACTION['cluster.delete']]: function* (params) {
+    
   }
 }, ({
   getConnection,
@@ -108,23 +114,47 @@ app.testSuiteWithAppTaskHandlers({
       user: userUtils.USERS.admin,
     }, 
     (next) => {
-      tools.sessionRequest({
-        t,
-        method: 'post',
-        url: `${url}/clusters`,
-        json: true,
-        body: clusterData,
-      }, (err, res, body) => {
-        if(err) return next(err)
-        t.equal(res.statusCode, 201, `the cluster was created`)
-        const createdCluster = Object.keys(clusterData).reduce((all, key) => {
-          all[key] = body[key]
-          return all
-        }, {})
-        t.deepEqual(createdCluster, clusterData, `the returned cluster data was correct`)
-        createdClusters.admin = body
-        next()
-      })
+
+      async.waterfall([
+        (nextw) => {
+          tools.sessionRequest({
+            t,
+            method: 'post',
+            url: `${url}/clusters`,
+            json: true,
+            body: clusterData,
+          }, (err, res, body) => {
+            if(err) return nextw(err)
+            t.equal(res.statusCode, 201, `the cluster was created`)
+            // give the task queue some time to process
+            setTimeout(() => {
+              nextw(null, body)
+            }, TASK_CONTROLLER_LOOP_DELAY * 2)
+          })
+        },
+
+        (task, nextw) => {
+          tools.sessionRequest({
+            t,
+            method: 'get',
+            url: `${url}/clusters/${task.resource_id}`,
+            json: true,
+          }, (err, res, body) => {
+            if(err) return nextw(err)
+            t.equal(res.statusCode, 200, `the cluster was returned`)
+            const createdCluster = Object.keys(clusterData).reduce((all, key) => {
+              all[key] = body[key]
+              return all
+            }, {})
+            t.deepEqual(createdCluster, clusterData, `the returned cluster data was correct`)
+            createdClusters.admin = body
+
+            t.equal(body.status, CLUSTER_STATUS.provisioned, `the returned cluster is provisioned`)
+            nextw()
+          })
+        }
+      ], next)
+
     }, (err) => {
       t.notok(err, `there was no error`)
       t.end()
@@ -233,7 +263,7 @@ app.testSuiteWithAppTaskHandlers({
             if(err) return next(err)
             t.equal(res.statusCode, 200, `the cluster was updated`)
             createdClusters.admin.name = 'new cluster name'
-            next()
+            setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2)
           })
         }, next)
       },
@@ -254,6 +284,7 @@ app.testSuiteWithAppTaskHandlers({
             if(err) return next(err)
             t.equal(res.statusCode, 200, `the cluster was created`)
             t.equal(body.name, createdClusters.admin.name, `the cluster name is correct`)
+            t.equal(body.status, CLUSTER_STATUS.provisioned, `the cluster is provisioned`)
             next()
           })
         }, next)
@@ -283,6 +314,7 @@ app.testSuiteWithAppTaskHandlers({
         const checkCluster = Object.assign({}, createdClusters.admin, {
           status: CLUSTER_STATUS.provisioned,
         })
+        delete(body[0].role)
         t.deepEqual(body[0], checkCluster, `the cluster in the list is the same as the created one`)
         next()
       })

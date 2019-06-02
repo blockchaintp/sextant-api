@@ -4,6 +4,7 @@ const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
 const ClusterKubectl = require('../utils/clusterKubectl')
+const RBAC = require('../rbac')
 
 const deploymentForms = require('../forms/deployment')
 const deploymentTemplates = require('../deployment_templates')
@@ -16,6 +17,7 @@ const {
   PERMISSION_ROLE_ACCESS_LEVELS,
   RESOURCE_TYPES,
   DEPLOYMENT_TYPE,
+  PERMISSION_USER,
 } = config
 
 const DeployentController = ({ store, settings }) => {
@@ -50,38 +52,17 @@ const DeployentController = ({ store, settings }) => {
       deleted,
     })
 
-    // if it's a superuser - they can see all clusters
-    if(userUtils.isSuperuser(user)) {
-      if(withTasks) {
-        return loadMostRecentTasksForDeployments({
-          deployments,
-        })
-      }
-      else {
-        return deployments
-      }
-    }
-
-    // we need to load the roles that are for a cluster for the user
-    const roles = await store.role.listForUser({
-      user: user.id,
-    })
-
-    const roleMap = roles
-      .filter(role => role.resource_type == RESOURCE_TYPES.deployment)
-      .reduce((all, role) => {
-        all[role.resource_id] = role
-        return all
-      }, {})
-
-    const filteredDeployments = deployments.filter(deployment => {
-      const deploymentRole = roleMap[deployment.id]
-      if(!deploymentRole) return false
-      return PERMISSION_ROLE_ACCESS_LEVELS[deploymentRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
+    const filteredDeployments = await Promise.filter(deployments, async deployment => {
+      const canSeeDeployment = await RBAC(store, user, {
+        resource_type: 'deployment',
+        resource_id: deployment.id,
+        method: 'get',
+      })
+      return canSeeDeployment
     })
 
     if(withTasks) {
-      return loadMostRecentTasksForDeployments({
+      return loadAdditionalDeploymentData({
         deployments: filteredDeployments,
       })
     }
@@ -128,21 +109,45 @@ const DeployentController = ({ store, settings }) => {
     load the most recent task for each cluster so the frontend can display
     the task status of clusters in the table
 
+    also load the cluster and inject the name so a user without RBAC access
+    onto the cluster can at least see the cluster name
+
     params:
 
      * clusters
     
   */
-  const loadMostRecentTasksForDeployments = ({
+  const loadAdditionalDeploymentData = ({
     deployments,
-  }) => Promise.map(deployments, async deployment => {
-    const task = await store.task.mostRecentForResource({
-      deployment: deployment.id,
-    })
+  }) => {
 
-    deployment.task = task
-    return deployment
-  })
+    const clusterCache = {}
+
+    const loadClusterForDeployment = async ({
+      id
+    }) => {
+      if(clusterCache[id]) return clusterCache[id]
+      const cluster = await store.cluster.get({
+        id,
+      })
+      clusterCache[id] = cluster
+      return cluster
+    }
+
+    return Promise.map(deployments, async deployment => {
+      const task = await store.task.mostRecentForResource({
+        deployment: deployment.id,
+      })
+
+      const cluster = await loadClusterForDeployment({
+        id: deployment.cluster,
+      })
+
+      deployment.task = task
+      deployment.clusterName = cluster.name
+      return deployment
+    })
+  }
 
   /*
   
@@ -298,6 +303,116 @@ const DeployentController = ({ store, settings }) => {
     }, trx)
 
     return task
+  })
+
+
+  /*
+  
+    get the roles for a given deployment
+
+    params:
+
+     * id
+    
+  */
+  const getRoles = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.getRoles`)
+
+    const roles = await store.role.listForResource({
+      resource_type: 'deployment',
+      resource_id: id,
+    })
+
+    return Promise.map(roles, async role => {
+      const user = await store.user.get({
+        id: role.user,
+      })
+      role.userRecord = userUtils.safe(user)
+      return role
+    })
+  }
+
+  /*
+
+    create a role for a given deployment
+
+    params:
+
+    * id
+    * user
+    * username
+    * permission
+    
+  */
+  const createRole = ({
+    id,
+    user,
+    username,
+    permission,
+  }) => store.transaction(async trx => {
+    if(!id) throw new Error(`id must be given to controller.deployment.createRole`)
+    if(!user && !username) throw new Error(`user or username must be given to controller.deployment.createRole`)
+    if(!permission) throw new Error(`permission must be given to controller.deployment.createRole`)
+
+    const userQuery = {}
+
+    if(user) userQuery.id = user
+    else if(username) userQuery.username = username
+
+    const userRecord = await store.user.get(userQuery, trx)
+
+    if(!userRecord) throw new Error(`no user found`)
+    if(userRecord.permission == PERMISSION_USER.superuser) throw new Error(`cannot create role for superuser`)
+    
+    const existingRoles = await store.role.listForResource({
+      resource_type: 'deployment',
+      resource_id: id,
+    }, trx)
+
+    const existingRole = existingRoles.find(role => role.user == userRecord.id)
+
+    if(existingRole) throw new Error(`this user already has a role for this deployment - delete it first`)
+
+    return store.role.create({
+      data: {
+        resource_type: 'deployment',
+        resource_id: id,
+        user: userRecord.id,
+        permission,
+      },
+    }, trx)
+  })
+
+  /*
+
+    delete a role for a given deployment
+
+    params:
+
+    * id
+    * user
+    
+  */
+  const deleteRole = ({
+    id,
+    user,
+  }) => store.transaction(async trx => {
+    if(!id) throw new Error(`id must be given to controller.deployment.createRole`)
+    if(!user) throw new Error(`user must be given to controller.deployment.createRole`)
+
+    const roles = await store.role.listForResource({
+      resource_type: 'deployment',
+      resource_id: id,
+    }, trx)
+
+    const role = roles.find(role => role.user == user)
+    if(!role) throw new Error(`no role for user ${user} found for deployment ${id}`)
+
+    return store.role.delete({
+      id: role.id,
+    }, trx)
   })
 
   /*
@@ -493,6 +608,9 @@ const DeployentController = ({ store, settings }) => {
     deletePermenantly,
     resources,
     summary,
+    getRoles,
+    createRole,
+    deleteRole,
   }
 
 }

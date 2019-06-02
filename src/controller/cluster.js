@@ -3,6 +3,8 @@ const async = require('async')
 const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
+const ClusterKubectl = require('../utils/clusterKubectl')
+const RBAC = require('../rbac')
 
 const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
@@ -12,6 +14,7 @@ const {
   DEPLOYMENT_STATUS,
   CLUSTER_PROVISION_TYPE,
   PERMISSION_ROLE_ACCESS_LEVELS,
+  PERMISSION_USER,
 } = config
 
 const ClusterController = ({ store, settings }) => {
@@ -42,34 +45,13 @@ const ClusterController = ({ store, settings }) => {
       deleted,
     })
 
-    // if it's a superuser - they can see all clusters
-    if(userUtils.isSuperuser(user)) {
-      if(withTasks) {
-        return loadMostRecentTasksForClusters({
-          clusters,
-        })
-      }
-      else {
-        return clusters
-      }
-    }
-
-    // we need to load the roles that are for a cluster for the user
-    const roles = await store.role.listForUser({
-      user: user.id,
-    })
-
-    const roleMap = roles
-      .filter(role => role.resource_type == config.RESOURCE_TYPES.cluster)
-      .reduce((all, role) => {
-        all[role.resource_id] = role
-        return all
-      }, {})
-
-    const filteredClusters = clusters.filter(cluster => {
-      const clusterRole = roleMap[cluster.id]
-      if(!clusterRole) return false
-      return PERMISSION_ROLE_ACCESS_LEVELS[clusterRole.permission] >= PERMISSION_ROLE_ACCESS_LEVELS.read
+    const filteredClusters = await Promise.filter(clusters, async cluster => {
+      const canSeeCluster = await RBAC(store, user, {
+        resource_type: 'cluster',
+        resource_id: cluster.id,
+        method: 'get',
+      })
+      return canSeeCluster
     })
 
     if(withTasks) {
@@ -559,23 +541,44 @@ const ClusterController = ({ store, settings }) => {
 
      * id
      * user
+     * username
      * permission
     
   */
   const createRole = ({
     id,
     user,
+    username,
     permission,
-  }) => store.transaction(trx => {
+  }) => store.transaction(async trx => {
     if(!id) throw new Error(`id must be given to controller.cluster.createRole`)
-    if(!user) throw new Error(`user must be given to controller.cluster.createRole`)
+    if(!user && !username) throw new Error(`user or username must be given to controller.cluster.createRole`)
     if(!permission) throw new Error(`permission must be given to controller.cluster.createRole`)
+
+    const userQuery = {}
+
+    if(user) userQuery.id = user
+    else if(username) userQuery.username = username
+
+    const userRecord = await store.user.get(userQuery, trx)
+
+    if(!userRecord) throw new Error(`no user found`)
+    if(userRecord.permission == PERMISSION_USER.superuser) throw new Error(`cannot create role for superuser`)
+    
+    const existingRoles = await store.role.listForResource({
+      resource_type: 'cluster',
+      resource_id: id,
+    }, trx)
+
+    const existingRole = existingRoles.find(role => role.user == userRecord.id)
+
+    if(existingRole) throw new Error(`this user already has a role for this cluster - delete it first`)
 
     return store.role.create({
       data: {
         resource_type: 'cluster',
         resource_id: id,
-        user,
+        user: userRecord.id,
         permission,
       },
     }, trx)
@@ -630,6 +633,69 @@ const ClusterController = ({ store, settings }) => {
     })
   }
 
+  /*
+  
+    get a collection of kubernetes resources for this cluster
+
+     * nodes
+
+    params:
+
+     * id - the cluster id
+  
+  */
+  const resources = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.resources`) 
+
+    const cluster = await store.cluster.get({
+      id,
+    })
+
+    const kubectl = await ClusterKubectl({
+      cluster,
+      store,
+    })
+
+    const results = await Promise.props({
+      nodes: kubectl
+        .jsonCommand(`get no`)
+        .then(result => result.items),
+    })
+
+    return results
+  }
+
+  /*
+  
+    get a summary of the cluster state
+
+    params:
+
+     * id - the cluster id
+  
+  */
+  const summary = async ({
+    id,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.cluster.summary`) 
+
+    const cluster = await store.cluster.get({
+      id,
+    })
+
+    const fields = [{
+      title: 'Name',
+      value: cluster.name,
+    }, {
+      title: 'Provision Type',
+      value: cluster.provision_type,
+    }]
+
+    return fields
+  }
+
   return {
     list,
     get,
@@ -641,6 +707,8 @@ const ClusterController = ({ store, settings }) => {
     createRole,
     deleteRole,
     getTasks,
+    resources,
+    summary,
   }
 
 }

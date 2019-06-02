@@ -26,20 +26,38 @@ database.testSuiteWithDatabase(getConnection => {
   let userMap = {}
   let roleMap = {}
 
-  asyncTest('rbac -> test initial account creation (no users) with no logged in user', async (t) => {
+  const rbacTest = async ({
+    t,
+    user,
+    action,
+    expectedResult,
+  }) => {
     const store = Store(getConnection())
-    const result = await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.user,
-      method: 'create',
+    const result = await rbac(store, user, action)
+    t.equal(result, expectedResult, `the result was correct`)
+  }
+
+  asyncTest('rbac -> test initial account creation (no users) with no logged in user', async (t) => {
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        method: 'create',
+      },
+      expectedResult: true,
     })
-    t.equal(result, true, `the result was ok`)
   })
 
-  asyncTestError('rbac -> test initial account creation (no users) with a logged in user', async (t) => {
-    const store = Store(getConnection())
-    await rbac(store, {id: 1}, {
-      resource_type: RESOURCE_TYPES.user,
-      method: 'create',
+  asyncTest('rbac -> test initial account creation (no users) with a logged in user', async (t) => {
+    await rbacTest({
+      t,
+      user: {id: 1},
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        method: 'create',
+      },
+      expectedResult: false,
     })
   })
   
@@ -50,60 +68,55 @@ database.testSuiteWithDatabase(getConnection => {
 
 
   asyncTestError('rbac -> test bad resource_type', async (t) => {
-
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: 'apples',
-      method: 'list',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: 'apples',
+        method: 'list',
+      },
+      expectedResult: false,
     })
-    
   })
 
   asyncTestError('rbac -> test bad method', async (t) => {
-
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.cluster,
-      method: 'apples',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        method: 'apples',
+      },
+      expectedResult: false,
     })
-    
   })
 
-  asyncTestError('rbac -> test initial account creation (with users) with no logged in user', async (t) => {
+  asyncTest('rbac -> test initial account creation (with users) with no logged in user', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.user,
-      method: 'create',
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        method: 'create',
+      },
+      expectedResult: false,
     })
     
   })
 
   const testWithUserTypes = (t, resource_type, method, expectedResults) => {
-    const store = Store(getConnection())
-
     return Promise.each(Object.keys(expectedResults), async (userType) => {
       const expectedResult = expectedResults[userType]
-      let error = null
-
-      try {
-        await rbac(store, userMap[userType], {
+      await rbacTest({
+        t,
+        user: userMap[userType],
+        action: {
           resource_type,
           method,
-        })
-      } catch(err) {
-        error = err
-      }
-     
-      if(expectedResult) {
-        t.notok(error, `${resource_type}.${method}: there was no error for usertype: ${userType}`)
-      }
-      else {
-        t.ok(error, `${resource_type}.${method}: there was an error for usertype: ${userType}`)
-      }
+        },
+        expectedResult,
+      })
     })
   }
 
@@ -154,72 +167,92 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> user.get allowed for own record', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.user,
-      resource_id: userMap.user.id,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        resource_id: userMap.user.id,
+        method: 'get',
+      },
+      expectedResult: true,
     })
-    
+
   })
 
-  asyncTestError('rbac -> user.get not allowed for other record', async (t) => {
+  asyncTest('rbac -> user.get not allowed for other record', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.user,
-      resource_id: userMap.superuser.id,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        resource_id: userMap.superuser.id,
+        method: 'get',
+      },
+      expectedResult: false,
     })
+
     
   })
 
   asyncTest('rbac -> user.update allowed for own record', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.user,
-      resource_id: userMap.user.id,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        resource_id: userMap.user.id,
+        method: 'update',
+      },
+      expectedResult: true,
     })
+
     
   })
 
-  asyncTestError('rbac -> user.update not allowed for other record', async (t) => {
+  asyncTest('rbac -> user.update not allowed for other record', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.user,
-      resource_id: userMap.superuser.id,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        resource_id: userMap.superuser.id,
+        method: 'update',
+      },
+      expectedResult: false,
     })
-    
+
   })
 
   asyncTest('rbac -> user.token allowed for own record', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.user,
-      resource_id: userMap.user.id,
-      method: 'token',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        resource_id: userMap.user.id,
+        method: 'token',
+      },
+      expectedResult: true,
     })
     
   })
 
-  asyncTestError('rbac -> user.token not allowed for other record even when user is admin', async (t) => {
+  asyncTest('rbac -> user.token not allowed for other record even when user is admin', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.user,
-      resource_id: userMap.user.id,
-      method: 'token',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.user,
+        resource_id: userMap.user.id,
+        method: 'token',
+      },
+      expectedResult: false,
     })
     
   })
@@ -237,62 +270,79 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> cluster.get allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: true,
     })
     
   })
 
   asyncTest('rbac -> deployment.list allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'list',
+      },
+      expectedResult: true,
+    })
 
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'list',
+    
+  })
+
+  asyncTest('rbac -> deployment.list not allowed for no user', async (t) => {
+
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'list',
+      },
+      expectedResult: false,
+    })
+
+    
+  })
+
+  asyncTest('rbac -> deployment.list not allowed for read with no role', async (t) => {
+
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'list',
+      },
+      expectedResult: true,
     })
     
   })
 
-  asyncTestError('rbac -> deployment.list not allowed for no user', async (t) => {
+  asyncTest('rbac -> cluster.get not allowed for read with no role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'list',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: false,
     })
-    
-  })
 
-  asyncTestError('rbac -> deployment.list not allowed for read with no role', async (t) => {
-
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'list',
-    })
-    
-  })
-
-  asyncTestError('rbac -> cluster.get not allowed for read with no role', async (t) => {
-
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'get',
-    })
-    
   })
 
   // insert a read role for a cluster for the read user
@@ -312,24 +362,30 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> cluster.get allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: true,
     })
     
   })
 
   asyncTest('rbac -> deployment.list allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'list',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'list',
+      },
+      expectedResult: true,
     })
     
   })
@@ -347,90 +403,122 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> cluster.update allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: true,
     })
+
   })
 
   asyncTest('rbac -> cluster.delete allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'delete',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'delete',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> cluster.update not allowed for read with role', async (t) => {
+  asyncTest('rbac -> cluster.update not allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: false,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.create not allowed for read with role', async (t) => {
+  asyncTest('rbac -> deployment.create not allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'create',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'create',
+      },
+      expectedResult: false,
     })
+  
   })
 
-  asyncTestError('rbac -> cluster.delete not allowed for read with role', async (t) => {
+  asyncTest('rbac -> cluster.delete not allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'delete',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'delete',
+      },
+      expectedResult: false,
     })
+  
   })
 
-  asyncTestError('rbac -> cluster.update not allowed for write with no role', async (t) => {
+  asyncTest('rbac -> cluster.update not allowed for write with no role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: false,
     })
+  
   })
 
-  asyncTestError('rbac -> deployment.create not allowed for write with no role', async (t) => {
+  asyncTest('rbac -> deployment.create not allowed for write with no role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'create',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'create',
+      },
+      expectedResult: false,
     })
+  
   })
 
-  asyncTestError('rbac -> cluster.delete not allowed for write with no role', async (t) => {
+  asyncTest('rbac -> cluster.delete not allowed for write with no role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'delete',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'delete',
+      },
+      expectedResult: false,
     })
+  
   })
 
   // insert a write role for a cluster for the write user
@@ -450,134 +538,182 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> cluster.update allowed for write with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: true,
     })
+
   })
 
   asyncTest('rbac -> deployment.create allowed for write with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'create',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'create',
+      },
+      expectedResult: true,
     })
+
   })
 
   asyncTest('rbac -> cluster.delete allowed for write with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.cluster,
-      resource_id: 1,
-      method: 'delete',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.cluster,
+        resource_id: 1,
+        method: 'delete',
+      },
+      expectedResult: true,
     })
+
   })
 
   asyncTest('rbac -> deployment.get allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.get not allowed for no user', async (t) => {
+  asyncTest('rbac -> deployment.get not allowed for no user', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: false,
     })
+
   })
 
   asyncTest('rbac -> deployment.create allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'create',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'create',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.create not allowed for no user', async (t) => {
+  asyncTest('rbac -> deployment.create not allowed for no user', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'create',
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'create',
+      },
+      expectedResult: false,
     })
+
   })
 
   asyncTest('rbac -> deployment.update allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.update not allowed for no user', async (t) => {
+  asyncTest('rbac -> deployment.update not allowed for no user', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: false,
     })
+
   })
 
   asyncTest('rbac -> deployment.delete allowed for superuser', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.superuser, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'delete',
+    await rbacTest({
+      t,
+      user: userMap.superuser,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'delete',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.delete not allowed for no user', async (t) => {
+  asyncTest('rbac -> deployment.delete not allowed for no user', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, null, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'delete',
+    await rbacTest({
+      t,
+      user: null,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'delete',
+      },
+      expectedResult: false,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.get not allowed for read without role', async (t) => {
+  asyncTest('rbac -> deployment.get not allowed for read without role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: false,
     })
+
   })
 
   // insert a read role for a deployment for the read user
@@ -597,24 +733,32 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> deployment.get allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'get',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'get',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.update not allowed for write without role', async (t) => {
+  asyncTest('rbac -> deployment.update not allowed for write without role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: false,
     })
+
   })
 
   // insert a read role for a deployment for the read user
@@ -634,23 +778,30 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('rbac -> deployment.update allowed for write with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.admin, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.admin,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: true,
     })
+
   })
 
-  asyncTestError('rbac -> deployment.update allowed for read with role', async (t) => {
+  asyncTest('rbac -> deployment.update allowed for read with role', async (t) => {
 
-    const store = Store(getConnection())
-
-    await rbac(store, userMap.user, {
-      resource_type: RESOURCE_TYPES.deployment,
-      resource_id: 1,
-      method: 'update',
+    await rbacTest({
+      t,
+      user: userMap.user,
+      action: {
+        resource_type: RESOURCE_TYPES.deployment,
+        resource_id: 1,
+        method: 'update',
+      },
+      expectedResult: false,
     })
   })
 
