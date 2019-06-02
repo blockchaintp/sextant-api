@@ -173,7 +173,7 @@ spec:
       {{ end }}
       {{ if .sawtooth.pbft.enabled }}
       - name: pbft-engine
-        image: {{.images.raft_engine}}
+        image: {{.images.pbft_engine}}
         command: [ "bash", "-xc"]
         args:
         - "pbft-engine -v -C tcp://localhost:5050"
@@ -209,7 +209,7 @@ spec:
         args:
         - "devmode-engine-rust -v -C tcp://localhost:5050"
       {{ end }}
-      {{ if sawtooth.seth.enabled }}
+      {{ if .sawtooth.seth.enabled }}
       - name: seth-tp
         image: {{.images.seth_tp}}
         command: [ "bash", "-xc"]
@@ -311,20 +311,64 @@ spec:
               echo 'opentsdb_username  = "lrdata"'>>/etc/sawtooth/validator.toml
               echo 'opentsdb_password  = "lrdata"'>>/etc/sawtooth/validator.toml
         {{ if .sawtooth.genesis.enabled }}
-          {{ if .sawtooth.poet.enabled }}
+          {{ if eq .sawtooth.consensus 400 }}
+        - name: engine-config
+          image: {{.images.pbft_engine}}
+          command: [ "bash", "-xc" ]
+          args:
+          - |
+            /usr/local/bin/pbft_genesis_config.sh
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+          {{ else if eq .sawtooth.consensus 300 }}
+        - name: engine-config
+          image: {{.images.raft_engine}}
+          command: [ "bash", "-xc" ]
+          args:
+          - |
+            /usr/local/bin/raft_genesis_config.sh
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+          {{ else if eq .sawtooth.consensus 200 }}
         - name: poet-registration
           image: {{.images.poet_cli}}
           command: [ "bash", "-xc" ]
           args:
           - |
-            cp /etc/sawtooth/simulator_rk_pub.pem /sawtooth-etc;
-            poet registration create -k /etc/sawtooth/keys/validator.priv -o /sawtooth-etc/genesis/200.poet.batch
+            mkdir -p /sawtoot-etc/poet
+            cp /etc/sawtooth/simulator_rk_pub.pem /sawtooth-etc/poet;
+            if [ ! -f /sawtooth-etc/poet/poet-enclave-measurement ]; then 
+              poet enclave measurement > /sawtooth-etc/poet/poet-enclave-measurement; 
+            fi 
+            if [ ! -f /sawtooth-etc/poet/poet-enclave-basename ]; then 
+              poet enclave basename > /sawtooth-etc/poet/poet-enclave-basename; 
+            fi 
+            poet registration create -k /sawtooth-etc/keys/validator.priv -o /sawtooth-etc/genesis/200.poet.batch
           volumeMounts:
             - mountPath: "/sawtooth-etc"
               name: sawtooth-etc
+        - name: engine-config
+          image: {{.images.poet_engine}}
+          command: [ "bash", "-xc" ]
+          args:
+          - |
+            /usr/local/bin/poet_genesis_config.sh
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+          {{ else }}
+        - name: engine-config
+          image: {{.images.devmode_engine}}
+          command: [ "bash", "-xc" ]
+          args:
+          - |
+            /usr/local/bin/devmode_genesis_config.sh
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
           {{ end }}
-        {{ end }}
-        {{ if .sawtooth.genesis.enabled }}
         - name: genesis
           image: {{.images.shell}}
           command: [ "bash", "-xc" ]
@@ -336,65 +380,10 @@ spec:
                             -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].metadata.name }'); \
                             do echo $n; done|sort |head -1 )
               if [ "${POD_NAME}" = "${genesis_pod}" ]; then
-                sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;
-          {{ if eq .sawtooth.consensus 400 }}
-                sleep 120 # Give two minutes for the locals to advertise their keys
-                flag=0
-                KEY_LIST=
-                for v in $(etcdctl --endpoint $ETCD_URL ls validator); do
-                  if [ $flag -eq 0 ]; then
-                    KEY_LIST=\"$(etcdctl --endpoint $ETCD_URL get $v/pubKey)\"
-                    flag = 1
-                  else
-                    KEY_LIST=$KEY_LIST,\"$(etcdctl --endpoint $ETCD_URL get $v/pubKey)\"
-                  fi
-                done
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
-                  sawtooth.consensus.algorithm.name=pbft \
-                  sawtooth.consensus.algorithm.version=0.1 \
-                  sawtooth.consensus.pbft.peers=\\[ $KEY_LIST \\]
-                  -o /etc/sawtooth/genesis/100-config.batch; 
-          {{ else if eq .sawtooth.consensus 300 }}
-                sleep 120 # Give two minutes for the locals to advertise their keys
-                flag=0
-                HOST_LIST=
-                for v in $(etcdctl --endpoint $ETCD_URL ls validator); do
-                  host=`echo $v |awk -F/ '{print $NF}'`
-                  if [ $flag -eq 0 ]; then
-                    HOST_LIST=\"$host\"
-                    flag = 1
-                  else
-                    HOST_LIST=$HOST_LIST,\"$host\"
-                  fi
-                done
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
-                  sawtooth.consensus.algorithm.name=raft \
-                  sawtooth.consensus.algorithm.version=0.1 \
-                  sawtooth.consensus.raft.peers=\\[ $HOST_LIST \\] \
-                  -o /etc/sawtooth/genesis/100-config.batch; 
-          {{ else if eq .sawtooth.consensus 200 }}
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
-                  sawtooth.consensus.algorithm.name=PoET \
-                  sawtooth.consensus.algorithm.version=0.1 \
-                  sawtooth.poet.report_public_key_pem=\
-                  \\\"$$(cat /poet-shared/simulator_rk_pub.pem)\\\" \
-                  sawtooth.poet.valid_enclave_measurements=$$(cat /etc/sawtooth/poet-enclave-measurement) \
-                  sawtooth.poet.valid_enclave_basenames=$$(cat /etc/sawtooth/poet-enclave-basename) \
-                  -o /etc/sawtooth/genesis/100-config.batch; 
-          {{ else }}
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
-                  sawtooth.consensus.algorithm.name=Devmode \
-                  sawtooth.consensus.algorithm.version=0.1 \
-                  -o /etc/sawtooth/genesis/100-config.batch; 
-                sawset proposal create -k /etc/sawtooth/keys/validator.priv \
-                  sawtooth.poet.target_wait_time={{.sawtooth.poet.targetWaitTime}} \
-                  sawtooth.poet.initial_wait_time={{.sawtooth.poet.initialWaitTime}} \
-                  sawtooth.publisher.max_batches_per_block={{.sawtooth.poet.maxBatchesPerBlock}} \
-                  -o /etc/sawtooth/genesis/210-poet-settings.batch
-          {{ end }}
+                sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/000-genesis.batch ;
                 sawadm genesis `ls /etc/sawtooth/genesis|sort`
               else
-                sleep 60
+                sleep 120
               fi
               touch /etc/sawtooth/initialized;
             fi

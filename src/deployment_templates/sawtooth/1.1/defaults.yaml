@@ -23,10 +23,6 @@ sawtooth:
     enabled: true
   poet:
     enabled: true
-    targetWaitTime: 30
-    initialWaitTime: 25
-    maxBatchesPerBlock: 100
-    enclaveModule: simulator
   genesis:
     enabled: true
   dynamicPeering: false
