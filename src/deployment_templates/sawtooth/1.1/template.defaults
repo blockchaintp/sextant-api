@@ -9,9 +9,12 @@ imagePullSecrets:
     - regcred
 sawtooth:
   permissioned: false
-  namespace: default
-  networkName: sawtooth
+  namespace: prod
+  networkName: myNetwork
   scheduler: parallel
+  consensus: 200 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
+  # Engines can be enabled, but they aren't active unless they are selected
+  # as the consensus algorithm.
   devmode:
     enabled: true
   pbft:
@@ -28,6 +31,8 @@ sawtooth:
     enabled: true
   dynamicPeering: false
   externalSeeds: []
+  seth:
+    enabled: false
   xo:
     enabled: false
   smallbank:

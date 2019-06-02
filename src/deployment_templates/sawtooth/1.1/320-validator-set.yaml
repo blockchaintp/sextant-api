@@ -318,7 +318,7 @@ spec:
                             do echo $n; done|sort |head -1 )
               if [ "${POD_NAME}" = "${genesis_pod}" ]; then
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/genesis.batch ;
-          {{ if .sawtooth.poet.enabled }}
+          {{ if eq .sawtooth.consensus 200 }}
                 sawset proposal create -k /etc/sawtooth/keys/validator.priv \
                   sawtooth.consensus.algorithm.name=PoET \
                   sawtooth.consensus.algorithm.version=0.1 \
