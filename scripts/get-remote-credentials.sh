@@ -35,12 +35,12 @@ echo "-------"
 echo "token |"
 echo "-------"
 echo
-echo -n $BASE64_BEARER_TOKEN | base64 -d
+echo -n $BASE64_BEARER_TOKEN | base64 --decode
 echo
 echo
 echo "-----"
 echo "ca: |"
 echo "-----"
 echo
-echo -n $BASE64_CA_FILE | base64 -d
+echo -n $BASE64_CA_FILE | base64 --decode
 echo
