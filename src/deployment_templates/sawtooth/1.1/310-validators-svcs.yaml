@@ -9,44 +9,18 @@ metadata:
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
+  sessionAffinity: ClientIP
   ports:
-  - port: 8080
+  - port: 8008
     protocol: TCP 
-    targetPort: 8080
+    targetPort: 8008
     name: rest-api
+{{ if .sawtooth.seth.enabled }}
   - port: 3030
-    protocol: TCP 
-    targetPort: 30030
-    name: seth-rpc
-  selector:
-    app: {{.sawtooth.networkName}}-validator
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{.sawtooth.networkName}}-nodeport
-  namespace: {{.sawtooth.namespace}}
-  labels:
-    app: {{.sawtooth.networkName}}-validator
-spec:
-  type: NodePort
-  ports:
-  - nodePort: 30080
-    port: 8080
-    protocol: TCP 
-    targetPort: 8080
-    name: rest-api
-  - nodePort: 30030
-    port: 30030
     protocol: TCP 
     targetPort: 3030
     name: seth-rpc
-  - nodePort: 30800
-    port: 30800
-    protocol: TCP 
-    targetPort: 30800
-    name: sawnet
+{{ end }}
   selector:
     app: {{.sawtooth.networkName}}-validator
 ---
@@ -59,16 +33,18 @@ metadata:
   labels:
     app: {{.sawtooth.networkName}}-validator
 spec:
-  ports:
-  - port: 30800
-    protocol: TCP 
-    targetPort: 30800
-    name: sawnet
+  type: ClusterIP
   clusterIP: None
+  ports:
+  - port: 8800
+    protocol: TCP 
+    targetPort: 8800
+    name: sawnet
   selector:
     app: {{.sawtooth.networkName}}-validator
 ---
 
+{{ if .sawtooth.xo.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -77,6 +53,7 @@ metadata:
   labels:
     app: {{.sawtooth.networkName}}-xo-demo
 spec:
+  sessionAffinity: ClientIP
   ports:
   - port: 80
     protocol: TCP 
@@ -85,3 +62,4 @@ spec:
   selector:
     app: {{.sawtooth.networkName}}-validator
 ---
+{{ end }}
