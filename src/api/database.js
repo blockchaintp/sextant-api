@@ -42,9 +42,12 @@ const damlParticipants = [{
   key: random.key(),
 }]
 
+const getKey = () => random.key()
+
 module.exports = {
   validatorKeys,
   damlRPCKeys,
   remoteKeys,
   damlParticipants,
+  getKey,
 }

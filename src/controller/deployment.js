@@ -604,6 +604,28 @@ const DeployentController = ({ store, settings }) => {
     return summaryFunction(deployment.desired_state)
   }
 
+  const rotateLocalDamlRPCKey = async ({
+    id,
+    damlId,
+    key,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.rotateLocalDamlRPCKey`) 
+    if(!key) throw new Error(`key must be given to controller.deployment.rotateLocalDamlRPCKey`) 
+
+    const newKey = keyManager.rotateLocalDamlRPCKey({
+      id,
+      key,
+    })
+
+    await damlRPC.updateKey({
+      id,
+      damlId,
+      key: newKey,
+    })
+
+    return true
+  }
+
   return {
     list,
     get,
@@ -621,7 +643,9 @@ const DeployentController = ({ store, settings }) => {
     getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
     getRemoteKeys: keyManager.getRemoteKeys,
     damlParticipants: damlRPC.getParticipants,
+    registerParticipant: damlRPC.registerParticipant,
     addRemoteKey: keyManager.addRemoteKey,
+    rotateLocalDamlRPCKey,
   }
 
 }

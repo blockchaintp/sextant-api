@@ -72,11 +72,33 @@ const KeyManager = () => {
     return database.remoteKeys
   }
 
+  /*
+  
+    add a remote key for a deployment
+
+    params:
+
+     * id
+     * key
+    
+  */
+  const rotateLocalDamlRPCKey = async ({
+    id,
+    key,
+  }) => {
+    if(!id) throw new Error(`id must be given to api.keyManager.rotateLocalDamlRPCKey`)
+    if(!key) throw new Error(`key must be given to api.keyManager.rotateLocalDamlRPCKey`)
+    const rpc = database.damlRPCKeys.filter(rpc => rpc.id == key)
+    rpc.id = database.getKey()
+    return rpc.id
+  }
+
   return {
     getLocalValidatorKeys,
     getLocalDamlRPCKeys,
     getRemoteKeys,
     addRemoteKey,
+    rotateLocalDamlRPCKey,
   }
 
 }
