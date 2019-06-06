@@ -102,6 +102,7 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))
   app.get(basePath('/clusters/:cluster/deployments/:id/localValidatorKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listLocalValidatorKeys))
   app.get(basePath('/clusters/:cluster/deployments/:id/localDamlRPCKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listLocalDamlRPCKeys))
+  app.get(basePath('/clusters/:cluster/deployments/:id/damlParticipants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.damlParticipants))
   app.get(basePath('/clusters/:cluster/deployments/:id/remoteKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listRemoteKeys))
   app.post(basePath('/clusters/:cluster/deployments/:id/remoteKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.addRemoteKey))
   

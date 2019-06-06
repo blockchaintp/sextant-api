@@ -11,6 +11,7 @@ const deploymentTemplates = require('../deployment_templates')
 const validate = require('../forms/validate')
 
 const KeyManager = require('../api/keyManager')
+const DamlRPC = require('../api/damlRPC')
 
 const {
   CLUSTER_STATUS,
@@ -25,6 +26,7 @@ const {
 const DeployentController = ({ store, settings }) => {
   
   const keyManager = KeyManager()
+  const damlRPC = DamlRPC()
 
   /*
   
@@ -618,6 +620,7 @@ const DeployentController = ({ store, settings }) => {
     getLocalValidatorKeys: keyManager.getLocalValidatorKeys,
     getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
     getRemoteKeys: keyManager.getRemoteKeys,
+    damlParticipants: damlRPC.getParticipants,
     addRemoteKey: keyManager.addRemoteKey,
   }
 

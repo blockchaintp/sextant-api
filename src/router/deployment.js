@@ -166,6 +166,15 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const damlParticipants = async (req, res, next) => {
+    const data = await controllers.deployment.damlParticipants({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const addRemoteKey = async (req, res, next) => {
     const data = await controllers.deployment.addRemoteKey({
       id: req.params.id,
@@ -191,6 +200,7 @@ const DeploymentRoutes = (controllers) => {
     listLocalValidatorKeys,
     listLocalDamlRPCKeys,
     listRemoteKeys,
+    damlParticipants,
     addRemoteKey,
   }
 }

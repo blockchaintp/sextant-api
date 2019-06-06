@@ -14,7 +14,7 @@ const KeyManager = () => {
   const getLocalValidatorKeys = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.getLocalValidatorKeys`)
+    if(!id) throw new Error(`id must be given to api.keyManager.getLocalValidatorKeys`)
     return database.validatorKeys
   }
 
@@ -30,7 +30,7 @@ const KeyManager = () => {
  const getLocalDamlRPCKeys = async ({
   id,
 }) => {
-  if(!id) throw new Error(`id must be given to controller.deployment.getLocalDamlRPCKeys`)
+  if(!id) throw new Error(`id must be given to api.keyManager.getLocalDamlRPCKeys`)
   return database.damlRPCKeys
 }
 
@@ -46,7 +46,7 @@ const KeyManager = () => {
   const getRemoteKeys = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.getRemoteKeys`)
+    if(!id) throw new Error(`id must be given to api.keyManager.getRemoteKeys`)
     return database.remoteKeys
   }
 
@@ -64,8 +64,8 @@ const KeyManager = () => {
     id,
     key,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.addRemoteKey`)
-    if(!key) throw new Error(`key must be given to controller.deployment.addRemoteKey`)
+    if(!id) throw new Error(`id must be given to api.keyManager.addRemoteKey`)
+    if(!key) throw new Error(`key must be given to api.keyManager.addRemoteKey`)
     database.remoteKeys.push({
       id: key
     })
