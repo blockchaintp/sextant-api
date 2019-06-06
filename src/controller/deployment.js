@@ -600,7 +600,7 @@ const DeployentController = ({ store, settings }) => {
 
   const localKeys = [{
     key: '123',
-    type: 'validtor'
+    type: 'validator'
   },{
     key: '456',
     type: 'daml'
@@ -625,12 +625,7 @@ const DeployentController = ({ store, settings }) => {
     id,
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.getLocalKeys`)
-
-    return localKeys.map(key => {
-      return Object.assign({}, key, {
-        id: key.key,
-      })
-    })
+    return localKeys
   }
 
   /*
@@ -646,12 +641,7 @@ const DeployentController = ({ store, settings }) => {
     id,
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.getRemoteKeys`)
-
-    return remoteKeys.map(key => {
-      return Object.assign({}, key, {
-        id: key.key,
-      })
-    })
+    return remoteKeys
   }
 
   /*
