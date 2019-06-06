@@ -206,6 +206,17 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const uploadArchive = async (req, res, next) => {
+    const writeStream = fs.createWriteStream('/tmp/uploadNoop')
+    writeStream.on('end', () => {
+      res.end('ok')
+    })
+    writeStream.on('error', (error) => {
+      next(error)
+    })
+    req.pipe(writeStream)
+  }
+
   return {
     list,
     get,
@@ -225,6 +236,7 @@ const DeploymentRoutes = (controllers) => {
     addRemoteKey,
     registerParticipant,
     rotateLocalDamlRPCKey,
+    uploadArchive,
   }
 }
 

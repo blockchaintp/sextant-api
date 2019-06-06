@@ -107,6 +107,7 @@ const Routes = ({
   app.post(basePath('/clusters/:cluster/deployments/:id/remoteKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addRemoteKey))
   app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerParticipant))
   app.post(basePath('/clusters/:cluster/deployments/:id/rotateLocalDamlRPCKey'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateLocalDamlRPCKey))
+  app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.uploadArchive))
   
 }
 
