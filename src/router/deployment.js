@@ -139,8 +139,17 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  const listLocalKeys = async (req, res, next) => {
-    const data = await controllers.deployment.getLocalKeys({
+  const listLocalValidatorKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getLocalValidatorKeys({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const listLocalDamlRPCKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getLocalDamlRPCKeys({
       id: req.params.id,
     })
     res
@@ -179,7 +188,8 @@ const DeploymentRoutes = (controllers) => {
     resources,
     summary,
     delete: del,
-    listLocalKeys,
+    listLocalValidatorKeys,
+    listLocalDamlRPCKeys,
     listRemoteKeys,
     addRemoteKey,
   }

@@ -1,36 +1,38 @@
-const random = require('../utils/random')
+const database = require('./database')
 
 const KeyManager = () => {
-  
-  const localKeys = [{
-    id: random.key(),
-    type: 'validator'
-  },{
-    id: random.key(),
-    type: 'daml'
-  }]
-
-  const remoteKeys = [{
-    id: random.key()
-  },{
-    id: random.key()
-  }]
 
   /*
   
-    get the local keys for a deployment
+    get the local validator keys for a deployment
 
     params:
 
      * id
     
   */
-  const getLocalKeys = async ({
+  const getLocalValidatorKeys = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.getLocalKeys`)
-    return localKeys
+    if(!id) throw new Error(`id must be given to controller.deployment.getLocalValidatorKeys`)
+    return database.validatorKeys
   }
+
+  /*
+  
+    get the local validator keys for a deployment
+
+    params:
+
+     * id
+    
+  */
+ const getLocalDamlRPCKeys = async ({
+  id,
+}) => {
+  if(!id) throw new Error(`id must be given to controller.deployment.getLocalDamlRPCKeys`)
+  return database.damlRPCKeys
+}
 
   /*
   
@@ -45,7 +47,7 @@ const KeyManager = () => {
     id,
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.getRemoteKeys`)
-    return remoteKeys
+    return database.remoteKeys
   }
 
   /*
@@ -64,14 +66,15 @@ const KeyManager = () => {
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.addRemoteKey`)
     if(!key) throw new Error(`key must be given to controller.deployment.addRemoteKey`)
-    remoteKeys.push({
+    database.remoteKeys.push({
       id: key
     })
-    return remoteKeys
+    return database.remoteKeys
   }
 
   return {
-    getLocalKeys,
+    getLocalValidatorKeys,
+    getLocalDamlRPCKeys,
     getRemoteKeys,
     addRemoteKey,
   }

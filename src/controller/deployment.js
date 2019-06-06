@@ -615,7 +615,8 @@ const DeployentController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
-    getLocalKeys: keyManager.getLocalKeys,
+    getLocalValidatorKeys: keyManager.getLocalValidatorKeys,
+    getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
     getRemoteKeys: keyManager.getRemoteKeys,
     addRemoteKey: keyManager.addRemoteKey,
   }
