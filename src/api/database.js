@@ -34,6 +34,7 @@ const damlParticipants = [{
   key: damlRPCS[0],
   parties: [{
     name: 'Alice',
+  }, {
     name: 'Bob',
   }]
 }, {
