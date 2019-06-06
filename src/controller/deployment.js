@@ -10,6 +10,8 @@ const deploymentForms = require('../forms/deployment')
 const deploymentTemplates = require('../deployment_templates')
 const validate = require('../forms/validate')
 
+const KeyManager = require('../api/keyManager')
+
 const {
   CLUSTER_STATUS,
   DEPLOYMENT_STATUS,
@@ -22,6 +24,8 @@ const {
 
 const DeployentController = ({ store, settings }) => {
   
+  const keyManager = KeyManager()
+
   /*
   
     list deployments
@@ -598,74 +602,6 @@ const DeployentController = ({ store, settings }) => {
     return summaryFunction(deployment.desired_state)
   }
 
-  const localKeys = [{
-    key: '123',
-    type: 'validator'
-  },{
-    key: '456',
-    type: 'daml'
-  }]
-
-  const remoteKeys = [{
-    key: 'abc'
-  },{
-    key: 'edf'
-  }]
-
-  /*
-  
-    get the local keys for a deployment
-
-    params:
-
-     * id
-    
-  */
-  const getLocalKeys = async ({
-    id,
-  }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.getLocalKeys`)
-    return localKeys
-  }
-
-  /*
-  
-    get the remote keys for a deployment
-
-    params:
-
-     * id
-    
-  */
-  const getRemoteKeys = async ({
-    id,
-  }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.getRemoteKeys`)
-    return remoteKeys
-  }
-
-  /*
-  
-    add a remote key for a deployment
-
-    params:
-
-     * id
-     * key
-    
-  */
-  const addRemoteKey = async ({
-    id,
-    key,
-  }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.addRemoteKey`)
-    if(!key) throw new Error(`key must be given to controller.deployment.addRemoteKey`)
-    remoteKeys.push({
-      key
-    })
-    return remoteKeys
-  }
-
   return {
     list,
     get,
@@ -679,9 +615,9 @@ const DeployentController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
-    getLocalKeys,
-    getRemoteKeys,
-    addRemoteKey,
+    getLocalKeys: keyManager.getLocalKeys,
+    getRemoteKeys: keyManager.getRemoteKeys,
+    addRemoteKey: keyManager.addRemoteKey,
   }
 
 }
