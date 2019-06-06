@@ -7,6 +7,6 @@ metadata:
   namespace: {{.sawtooth.namespace}}
 spec:
 # A size of one is fine since this is only used as a shared whiteboard of public information
-  size: 1s
+  size: 1
   version: "3.2.13"
 ---
