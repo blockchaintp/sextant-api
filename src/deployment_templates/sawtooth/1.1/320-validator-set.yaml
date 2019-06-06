@@ -7,6 +7,8 @@ metadata:
   name: {{.sawtooth.networkName}}-validator
   namespace: {{.sawtooth.namespace}}
 spec:
+#  replicas: 1
+#  serviceName: {{.sawtooth.networkName}}-validator
   selector:
     matchLabels:
       app: {{.sawtooth.networkName}}-validator
@@ -37,265 +39,323 @@ spec:
       {{ end }}
       {{ end }}
       containers:
-      - name: validator
-        image: {{.images.validator}}
-        command: ["bash", "-xc" ]
-        args:
-          - |
-            for node in `kubectl --namespace ${POD_NAMESPACE} get pod -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].spec.nodeName }'`; do
-              ip=`kubectl get nodes -o jsonpath='{ $.items[*].status.addresses[?(@.type=="ExternalIP")].address }' -l kubernetes.io/role=node -l kubernetes.io/hostname=${node}`
-              if [ "${NODE_NAME}" != "${node}" ]; then
-                export SEEDS="{{if ($peering) }}-s{{else}}-p{{end}} tcp://$ip:30800 $SEEDS";
-              else
-                export MY_EXTERNAL_IP=$ip
-              fi
-            echo External IP Address is $MY_EXTERNAL_IP 
-            done;
-            sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
-            --endpoint tcp://${MY_EXTERNAL_IP}:30800 \
-              --bind component:tcp://127.0.0.1:4004 \
-              --bind consensus:tcp://127.0.0.1:5050 \
-              --bind network:tcp://0.0.0.0:30800 \
-              -P {{if ($peering)}}dynamic{{else}}static{{end}} \
-              {{ range .sawtooth.externalSeeds }}{{if ($peering) }}-s{{else}}-p{{end}} tcp://{{.}} {{end}} \
-              ${SEEDS} \
-              --network-auth trust \
-              --minimum-peer-connectivity 5 \
-              --maximum-peer-connectivity 64 ;
-        volumeMounts:
-          - mountPath: "/etc/sawtooth"
-            name: sawtooth-etc
-          - mountPath: "/var/lib/sawtooth"
-            name: sawtooth-data
-        livenessProbe:
-          exec:
-            command:
-              - bash
-              - -xc
-              - |
-                mkdir -p /var/run/liveness
-                cat /var/log/sawtooth/validator-debug.log| \
-                  grep block_validator|grep "Finished block validation"| \
-                  grep block_num| awk -F'block_num:' '{print $2}'| awk -F, '{print $1}'| tail -1 > /var/run/liveness.probe
-                grep -v "Cannot create wait certificate because timer has timed out" /var/log/sawtooth/validator-error.log| \
-                grep -v "claiming blocks too frequently." /var/log/sawtooth/validator-error.log| \
-                  grep -v "Create new registration" | \
-                  grep ERROR
-                if [ $? -eq 0 ]; then 
-                  echo "Found significant errors in the runtime log"
-                  exit 1
-                else
-                  LAST_PROBE=`cat /var/run/liveness/probe.last`
-                  mkdir -p /var/run/liveness
-                  cat /var/log/sawtooth/validator-debug.log| \
-                    grep block_validator|grep "Finished block validation"| \
-                    grep block_num| awk -F'block_num:' '{print $2}'| awk -F, '{print $1}'| tail -1 > /var/run/liveness/probe.new
-                  THIS_PROBE=`cat /var/run/liveness/probe.new`
-                  if [ -r /var/run/liveness/probe.count ]; then
-                    FAIL_COUNT=`cat /var/run/liveness/probe.count`
-                  else
-                    FAIL_COUNT=0
-                  fi
-                  if [ "$THIS_PROBE" = "$LAST_PROBE" ]; then
-                    FAIL_COUNT=$(( $FAIL_COUNT + 1 ))
-                    echo "Current probe status FAIL_COUNT=$FAIL_COUNT LAST_PROBE=$LAST_PROBE THIS_PROBE=$THIS_PROBE"
-                    if [ $FAIL_COUNT -ge 10 ]; then
-                      echo "Exceeded FAIL_COUNT threshold=10"
-                      exit 1
-                    else
-                      echo $FAIL_COUNT > /var/run/liveness/probe.count
-                    fi
-                  else
-                    echo 0 > /var/run/liveness/probe.count
-                  fi
-                  echo $THIS_PROBE > /var/run/liveness/probe.last
-                fi
-                exit 0
-          initialDelaySeconds: 120
-          periodSeconds: 60
-        env:
-          - name: NODE_NAME
+        {{ if eq .sawtooth.consensus 400 }}
+        - name: pbft-engine
+          image: {{.images.pbft_engine}}
+          command: [ "bash", "-xc"]
+          args:
+          - "pbft-engine -v -C tcp://${POD_IP}:5050"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ else if eq .sawtooth.consensus 300 }}
+        - name: raft-engine
+          image: {{.images.raft_engine}}
+          command: [ "bash", "-xc"]
+          args:
+          - "raft-engine -v -C tcp://${POD_IP}:5050"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ else if eq .sawtooth.consensus 200 }}
+        - name: poet-engine
+          image: {{.images.poet_engine}}
+          command: [ "bash", "-xc"]
+          args:
+          - "poet-engine -v -C tcp://${POD_IP}:5050 --component tcp://${POD_IP}:4004"
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+            - mountPath: "/var/lib/sawtooth"
+              name: sawtooth-data
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        - name: poet-validator-registry-tp
+          image: {{.images.poet_validator_registry_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "poet-validator-registry-tp -v --connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ else }}
+        - name: devmode-engine
+          image: {{.images.devmode_engine}}
+          command: [ "bash", "-xc"]
+          args:
+          - "devmode-engine-rust -v -C tcp://${POD_IP}:5050"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ end }}
+        - name: settings-tp
+          image: {{.images.settings_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "settings-tp -v --connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        # - name: block-info-tp
+        #   image: {{.images.block_info_tp}}
+        #   command: [ "bash", "-xc"]
+        #   args: 
+        #   - "block-info-tp -v -C tcp://${POD_IP}:4004"
+        #   resources:
+        #     limits:
+        #       cpu: "250m"
+        #     requests:
+        #       cpu: "50m"
+        #   env:
+        #     - name: POD_IP
+        #       valueFrom:
+        #         fieldRef:
+        #           fieldPath: status.podIP
+        - name: intkey-tp
+          image: {{.images.intkey_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "intkey-tp-go -v --connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ if .sawtooth.permissioned }}
+        - name: identity-tp
+          image: {{.images.identity_tp}}
+          command: [ "bash", "-xc" ]
+          args: 
+          - "identity-tp -v -connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ end }}
+        {{ if .sawtooth.seth.enabled }}
+        - name: seth-tp
+          image: {{.images.seth_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "seth-tp -v --connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        - name: seth-rpc
+          image: {{.images.seth_rpc}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://${POD_IP}:4004 "
+          ports:
+            - containerPort: 3030
+              name: seth-rpc
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ end }}
+        {{ if .sawtooth.smallbank.enabled }}
+        - name: smallbank-tp
+          image: {{.images.smallbank_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "smallbank-tp-go -v --connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ end }}
+        {{ if .sawtooth.xo.enabled }}
+        - name: xo-tp
+          image: {{.images.xo_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "xo-tp-go -v --connect tcp://${POD_IP}:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        - name: xo-demo
+          image: {{.images.xo_demo}}
+          ports:
+            - containerPort: 80
+              name: xo-demo
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        {{ end }}
+        {{range .sawtooth.customTPs}}
+        - name: {{.name}}
+          image: {{.image}}
+          {{if .command}}command: [ {{ range .command }}"{{.}}",{{end}} ]{{end}}
+          {{if .args}}args: [ {{ range .args}}"{{.}}", {{end}} ]{{end}}
+        {{end}}
+        - name: rest-api
+          image: {{.images.rest_api}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "sawtooth-rest-api -v --bind 0.0.0.0:8080 --connect tcp://${POD_IP}:4004"
+          ports:
+            - containerPort: 8080
+              name: sawrest
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+        - name: monitor
+          image: {{.images.shell}}
+          command: [ "bash", "-xc"]
+          args:
+            - "sawtooth keygen && /usr/local/bin/heartbeat_loop.sh ${POD_NAME}"
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+          env:
+          - name: POD_NAME
             valueFrom:
               fieldRef:
-                fieldPath: spec.nodeName
-          - name: POD_NAMESPACE
+                fieldPath: metadata.name
+          - name: POD_IP
             valueFrom:
               fieldRef:
-                fieldPath: metadata.namespace
-        ports:
-          - containerPort: 4004
-            name: sawcomp
-          - containerPort: 30800
-            name: sawnet
-          - containerPort: 5050
-            name: consensus
-      - name: settings-tp
-        image: {{.images.settings_tp}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "settings-tp -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      - name: block-info-tp
-        image: {{.images.block_info_tp}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "block-info-tp -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      - name: intkey-tp
-        image: {{.images.intkey_tp}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "intkey-tp-go -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ if .sawtooth.permissioned }}
-      - name: identity-tp
-        image: {{.images.identity_tp}}
-        command: [ "bash", "-xc" ]
-        args: 
-        - "identity-tp -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
-      {{ if .sawtooth.pbft.enabled }}
-      - name: pbft-engine
-        image: {{.images.pbft_engine}}
-        command: [ "bash", "-xc"]
-        args:
-        - "pbft-engine -v -C tcp://localhost:5050"
-      {{ end }}
-      {{ if .sawtooth.raft.enabled }}
-      - name: raft-engine
-        image: {{.images.raft_engine}}
-        command: [ "bash", "-xc"]
-        args:
-        - "raft-engine -v -C tcp://localhost:5050"
-      {{ end }}
-      {{ if .sawtooth.poet.enabled }}
-      - name: poet-engine
-        image: {{.images.poet_engine}}
-        command: [ "bash", "-xc"]
-        args:
-        - "poet-engine -v -C tcp://localhost:5050 --component tcp://localhost:4004"
-      - name: poet-validator-registry-tp
-        image: {{.images.poet_validator_registry_tp}}
-        command: [ "bash", "-c"]
-        args: 
-        - "poet-validator-registry-tp -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
-      {{ if .sawtooth.devmode.enabled }}
-      - name: devmode-engine
-        image: {{.images.devmode_engine}}
-        command: [ "bash", "-xc"]
-        args:
-        - "devmode-engine-rust -v -C tcp://localhost:5050"
-      {{ end }}
-      {{ if .sawtooth.seth.enabled }}
-      - name: seth-tp
-        image: {{.images.seth_tp}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "seth-tp -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      - name: seth-rpc
-        image: {{.images.seth_rpc}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://localhost:4004 "
-        ports:
-          - containerPort: 3030
-            name: seth-rpc
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
-      {{ if .sawtooth.smallbank.enabled }}
-      - name: smallbank-tp
-        image: {{.images.smallbank_tp}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "smallbank-tp-go -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
-      {{ if .sawtooth.xo.enabled }}
-      - name: xo-tp
-        image: {{.images.xo_tp}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "xo-tp-go -v --connect tcp://localhost:4004"
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      - name: xo-demo
-        image: {{.images.xo_demo}}
-        ports:
-          - containerPort: 80
-            name: xo-demo
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
-      {{ end }}
-      {{range .sawtooth.customTPs}}
-      - name: {{.name}}
-        image: {{.image}}
-        {{if .command}}command: [ {{ range .command }}"{{.}}",{{end}} ]{{end}}
-        {{if .args}}args: [ {{ range .args}}"{{.}}", {{end}} ]{{end}}
-      {{end}}
-      - name: rest-api
-        image: {{.images.rest_api}}
-        command: [ "bash", "-xc"]
-        args: 
-        - "sawtooth-rest-api -v --bind 0.0.0.0:8080 --connect tcp://localhost:4004 --opentsdb-url http://influxdb:8086  --opentsdb-db metrics "
-        ports:
-          - containerPort: 8080
-            name: sawrest
-        resources:
-          limits:
-            cpu: "250m"
-          requests:
-            cpu: "50m"
+                fieldPath: status.podIP
+          resources:
+            limits:
+              cpu: "100m"
+            requests:
+              cpu: "100m"            
+        - name: validator
+          image: {{.images.validator}}
+          command: ["bash", "-xc" ]
+          args:
+            - |
+              source /usr/local/bin/validator_env.sh {{.sawtooth.namespace}} {{.sawtooth.networkName}}
+              sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
+                --endpoint tcp://${POD_IP}:8800 \
+                --bind component:tcp://eth0:4004 \
+                --bind consensus:tcp://eth0:5050 \
+                --bind network:tcp://eth0:8800 \
+                --peering {{if ($peering)}}dynamic{{else}}static{{end}} \
+                {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.}} {{end}} \
+                {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} 
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
+            - mountPath: "/var/lib/sawtooth"
+              name: sawtooth-data
+          # livenessProbe:
+          #   exec:
+          #     command:
+          #       - /usr/local/bin/liveness_probe.sh
+          #   initialDelaySeconds: 120
+          #   periodSeconds: 60
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - containerPort: 4004
+              name: sawcomp
+            - containerPort: 8800
+              hostPort: 8800
+              name: sawnet
+            - containerPort: 5050
+              name: consensus
       initContainers:
         - name: setup
-          image: {{.images.shell}}
+          image: {{.images.validator}}
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
             - mountPath: "/var/lib/sawtooth"
               name: sawtooth-data
           command: [ "bash", "-xc" ]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           args: 
             - |
               mkdir -p /etc/sawtooth/data
@@ -303,85 +363,82 @@ spec:
               mkdir -p /etc/sawtooth/keys
               if [ ! -r /etc/sawtooth/keys/validator.priv ]; then
                 sawadm keygen --force
-              fi
-              ETCD_URL=`echo $ETCD_CLIENT_PORT | sed -e 's/tcp/http/'`
+              fi 
+              ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
+              etcdctl --endpoint $ETCD_URL ls 
+              EXIT=$?
+              while [ $EXIT -ne 0 ]; do
+                sleep 5
+                etcdctl --endpoint $ETCD_URL ls 2>/dev/null
+                EXIT=$?
+              done
               etcdctl --endpoint $ETCD_URL set validator/$NODE_NAME/pubKey $(cat /etc/sawtooth/keys/validator.pub)
-              echo 'opentsdb_url = "http://influxdb:8086"'>/etc/sawtooth/validator.toml
-              echo 'opentsdb_db = "metrics"'>>/etc/sawtooth/validator.toml
-              echo 'opentsdb_username  = "lrdata"'>>/etc/sawtooth/validator.toml
-              echo 'opentsdb_password  = "lrdata"'>>/etc/sawtooth/validator.toml
+              # echo 'opentsdb_url = "http://influxdb.{{.sawtooth.namespace}}:8086"'>/etc/sawtooth/validator.toml
+              # echo 'opentsdb_db = "metrics"'>>/etc/sawtooth/validator.toml
+              # echo 'opentsdb_username  = "lrdata"'>>/etc/sawtooth/validator.toml
+              # echo 'opentsdb_password  = "lrdata"'>>/etc/sawtooth/validator.toml
         {{ if .sawtooth.genesis.enabled }}
-          {{ if eq .sawtooth.consensus 400 }}
-        - name: engine-config
-          image: {{.images.pbft_engine}}
-          command: [ "bash", "-xc" ]
-          args:
-          - |
-            /usr/local/bin/pbft_genesis_config.sh
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
-          {{ else if eq .sawtooth.consensus 300 }}
-        - name: engine-config
-          image: {{.images.raft_engine}}
-          command: [ "bash", "-xc" ]
-          args:
-          - |
-            /usr/local/bin/raft_genesis_config.sh
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
-          {{ else if eq .sawtooth.consensus 200 }}
+          {{ if eq .sawtooth.consensus 200 }}
         - name: poet-registration
           image: {{.images.poet_cli}}
           command: [ "bash", "-xc" ]
           args:
           - |
-            mkdir -p /sawtoot-etc/poet
-            cp /etc/sawtooth/simulator_rk_pub.pem /sawtooth-etc/poet;
+            mkdir -p /sawtooth-etc/poet
+            cp /etc/sawtooth/simulator_rk_pub.pem /sawtooth-etc/;
             if [ ! -f /sawtooth-etc/poet/poet-enclave-measurement ]; then 
               poet enclave measurement > /sawtooth-etc/poet/poet-enclave-measurement; 
             fi 
             if [ ! -f /sawtooth-etc/poet/poet-enclave-basename ]; then 
               poet enclave basename > /sawtooth-etc/poet/poet-enclave-basename; 
             fi 
-            poet registration create -k /sawtooth-etc/keys/validator.priv -o /sawtooth-etc/genesis/200.poet.batch
+            poet registration create --enclave-module simulator \
+                  -k /sawtooth-etc/keys/validator.priv \
+                  -o /sawtooth-etc/genesis/200.poet.batch
           volumeMounts:
             - mountPath: "/sawtooth-etc"
               name: sawtooth-etc
-        - name: engine-config
-          image: {{.images.poet_engine}}
-          command: [ "bash", "-xc" ]
-          args:
-          - |
-            /usr/local/bin/poet_genesis_config.sh
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
-          {{ else }}
-        - name: engine-config
-          image: {{.images.devmode_engine}}
-          command: [ "bash", "-xc" ]
-          args:
-          - |
-            /usr/local/bin/devmode_genesis_config.sh
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
           {{ end }}
         - name: genesis
-          image: {{.images.shell}}
+          image: {{.images.validator}}
           command: [ "bash", "-xc" ]
           args:
           - |
-            ETCD_URL=`echo $ETCD_CLIENT_PORT | sed -e 's/tcp/http/'`
+            env
+          {{ if eq .sawtooth.consensus 400 }}
+            bash /usr/local/bin/pbft_genesis_config.sh ${POD_NAMESPACE}
+          {{ else if eq .sawtooth.consensus 300 }}
+            bash /usr/local/bin/raft_genesis_config.sh
+          {{ else if eq .sawtooth.consensus 200 }}
+            sawset proposal create -k /etc/sawtooth/keys/validator.priv \
+              sawtooth.consensus.algorithm=poet \
+              sawtooth.consensus.algorithm.name=PoET \
+              sawtooth.consensus.algorithm.version=0.1 \
+              sawtooth.poet.report_public_key_pem="$(cat /etc/sawtooth/simulator_rk_pub.pem)" \
+              sawtooth.poet.valid_enclave_measurements=$(cat /etc/sawtooth/poet/poet-enclave-measurement) \
+              sawtooth.poet.valid_enclave_basenames=$(cat /etc/sawtooth/poet/poet-enclave-basename) \
+              sawtooth.poet.target_wait_time=15 \
+              sawtooth.poet.initial_wait_time=15 \
+              sawtooth.publisher.max_batches_per_block=200 \
+              sawtooth.poet.key_block_claim_limit=100000 \
+              sawtooth.poet.ztest_minimum_win_count=100000 \
+              -o /etc/sawtooth/genesis/100-config.batch; 
+          {{ else }}
+            bash /usr/local/bin/devmode_genesis_config.sh
+          {{ end }}
+            ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
+          {{ if .sawtooth.permissioned }}
+            /usr/local/bin/identity_genesis_config.sh
+          {{ end }}
             if [ ! -r /etc/sawtooth/initialized ]; then
               genesis_pod=$( for n in $( kubectl --namespace ${POD_NAMESPACE} get pod \
                             -l app={{.sawtooth.networkName}}-validator -o jsonpath='{ $.items[*].metadata.name }'); \
                             do echo $n; done|sort |head -1 )
               if [ "${POD_NAME}" = "${genesis_pod}" ]; then
                 sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/000-genesis.batch ;
-                sawadm genesis `ls /etc/sawtooth/genesis|sort`
+                cd /etc/sawtooth/genesis
+                sawadm genesis `ls |sort`
+                cd -
               else
                 sleep 120
               fi
