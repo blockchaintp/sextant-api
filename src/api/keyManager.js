@@ -88,7 +88,7 @@ const KeyManager = () => {
   }) => {
     if(!id) throw new Error(`id must be given to api.keyManager.rotateLocalDamlRPCKey`)
     if(!key) throw new Error(`key must be given to api.keyManager.rotateLocalDamlRPCKey`)
-    const rpc = database.damlRPCKeys.filter(rpc => rpc.id == key)
+    const rpc = database.damlRPCKeys.find(rpc => rpc.id == key)
     rpc.id = database.getKey()
     return rpc.id
   }

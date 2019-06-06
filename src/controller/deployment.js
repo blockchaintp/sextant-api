@@ -612,7 +612,7 @@ const DeployentController = ({ store, settings }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.rotateLocalDamlRPCKey`) 
     if(!key) throw new Error(`key must be given to controller.deployment.rotateLocalDamlRPCKey`) 
 
-    const newKey = keyManager.rotateLocalDamlRPCKey({
+    const newKey = await keyManager.rotateLocalDamlRPCKey({
       id,
       key,
     })

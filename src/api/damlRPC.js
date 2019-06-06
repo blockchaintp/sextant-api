@@ -33,7 +33,7 @@ const DamlRPC = () => {
     if(!id) throw new Error(`id must be given to api.damlRPC.updateKey`)
     if(!damlId) throw new Error(`damlId must be given to api.damlRPC.updateKey`)
     if(!key) throw new Error(`key must be given to api.damlRPC.updateKey`)
-    const participant = database.damlParticipants.filter(participant => participant.id == damlId)
+    const participant = database.damlParticipants.find(participant => participant.id == damlId)
     participant.key = key
     return true
   }
