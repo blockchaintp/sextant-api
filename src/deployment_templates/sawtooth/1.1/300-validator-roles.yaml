@@ -10,7 +10,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{.sawtooth.networkName}}-role
+  name: {{.sawtooth.networkName}}:role
   namespace: {{.sawtooth.namespace}}
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
@@ -21,41 +21,39 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{.sawtooth.networkName}}-clusterrole
-  namespace: {{.sawtooth.namespace}}
+  name: {{.sawtooth.namespace}}:{{.sawtooth.networkName}}:clusterrole
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
-    resources: ["statefulsets.apps", "nodes",]
+    resources: ["statefulsets.apps", "nodes", "pods"]
     verbs: ["get", "list", "watch"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
-  name: {{.sawtooth.networkName}}-rb
+  name: {{.sawtooth.namespace}}:{{.sawtooth.networkName}}
   namespace: {{.sawtooth.namespace}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{.sawtooth.networkName}}-role
+  name: {{.sawtooth.networkName}}:role
 subjects:
 - kind: ServiceAccount
   name: {{.sawtooth.networkName}}-sa
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: {{.sawtooth.networkName}}-crb
-  namespace: {{.sawtooth.namespace}}
+  name: {{.sawtooth.namespace}}:{{.sawtooth.networkName}}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{.sawtooth.networkName}}-clusterrole
+  name: {{.sawtooth.namespace}}:{{.sawtooth.networkName}}:clusterrole
 subjects:
 - kind: ServiceAccount
   name: {{.sawtooth.networkName}}-sa
-  namespace: default
+  namespace: {{.sawtooth.namespace}}
 
 ---
