@@ -7,10 +7,9 @@ metadata:
   namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-monitoring
-    dns: route53
 spec:
   ports:
-  - port: 80
+  - port: 3000
     protocol: TCP
     targetPort: 3000
     name: grafana
