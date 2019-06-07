@@ -1,53 +1,59 @@
 # note this is an example values file and should not be actually used
-cloud:
-  storage:
-    provisioner: kubernetes.io/aws-ebs
-    fastType: io1
-    slowType: gp2
-    
-storage:
-  reclaimPolicy: Delete
-  iops: "50"
-  fsType: ext4
 
+affinity:
+  enabled: false
+
+imagePullSecrets:
+  enabled: true
+  value: 
+    - regcred
 sawtooth:
-  networkName: sawtooth
-  replicas: 3
-  scheduler: parallel
-  poet:
-    enabled: true
-    targetWaitTime: 30
-    initialWaitTime: 25
-    maxBatchesPerBlock: 100
-    enclaveModule: simulator
+  permissioned: false
+  namespace: prod
+  networkName: mynetwork
+  scheduler: serial
+  consensus: 400 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
+  # Engines can be enabled, but they aren't active unless they are selected
+  # as the consensus algorithm.
   genesis:
     enabled: true
   dynamicPeering: false
+  replicas: 2
   externalSeeds: []
-  rbac:
-    enabled: true
-    secretKey: 'g7op0ioXPdw7jFTf4aY2'
-    aesKey: '37960e8f0337b90131acfb30b8817d17'
-    batcherKey: 'a8fbe6bb38fb6ae5cc1abbfee9068f734b4c023cc5ffc193a8c9d83793d0ee02'
+  seth:
+    enabled: false
   xo:
-    enabled: true
+    enabled: false
   smallbank:
-    enabled: true
-  simple:
-    enabled: true
+    enabled: false
   customTPs:
           #    - name: intkey-tp
           #      image: "blockchaintp/sawtooth-intkey-tp-go:1.0.5"
           #      command: [ "bash", "-c" ]
           #      args: [ "intkey-tp-go -v --connect tcp://localhost:4004" ]
     
-dns:
-  domain: dev.catenasys.com
-
-sources:
-  imageRepository: blockchaintp
-  version: 1.0.5
-  rbacVersion: develop
-  simpleVersion: latest
-  xoDemoVersion: master
-  
+images:
+  grafana: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-grafana:test1
+  influxdb: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-influxdb:BTP2.0.0-21-gc2a1f0f-1.1.5
+  validator: dev.catenasys.com:8083/scealiontach/sawtooth-validator:test
+  settings_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-settings-tp:BTP2.0.0-21-gc2a1f0f-1.1.5
+  block_info_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-block-info-tp:BTP2.0.0-21-gc2a1f0f-1.1.5
+  identity_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-identity-tp:BTP2.0.0-21-gc2a1f0f-1.1.5
+  intkey_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-intkey-tp-go:BTP2.0.0-21-gc2a1f0f-1.1.5
+  smallbank_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-smallbank-tp-go:BTP2.0.0-21-gc2a1f0f-1.1.5
+  xo_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-xo-tp-go:BTP2.0.0-21-gc2a1f0f-1.1.5
+  rest_api: dev.catenasys.com:8083/blockchaintp/sawtooth-rest-api:BTP2.0.0-21-gc2a1f0f-1.1.5
+  shell: dev.catenasys.com:8083/scealiontach/sawtooth-shell:test
+  seth_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-tp:BTP2.0.0-21-gc2a1f0f-0.2.2p1
+  seth_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-rpc:BTP2.0.0-21-gc2a1f0f-0.2.2p1
+  poet_cli: hyperledger/sawtooth-poet-engine:1.1
+  poet_validator_registry_tp: hyperledger/sawtooth-poet-validator-registry-tp:1.1
+  poet_engine: hyperledger/sawtooth-poet-engine:1.1
+  devmode_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-devmode-engine-rust:BTP2.0.0
+  raft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-raft-engine:BTP2.0.0-21-gc2a1f0f-0.1.2
+  pbft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-pbft-engine:BTP2.0.0-21-gc2a1f0f-0.1.3 
+  xo_demo: dev.catenasys.com:8083/blockchaintp/xo-demo:BTP2.0.0-21-gc2a1f0f-1.0.1
+  sabre_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-sabre-tp:BTP2.0.0-21-gc2a1f0f-0.2.1
+  daml_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-tp::BTP2.0.0-21-gc2a1f0f-0.0.0-65-gd722782
+  daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc::BTP2.0.0-21-gc2a1f0f-0.0.0-65-gd722782
+  timekeeper: dev.catenasys.com:8083/blockchaintp/timekeeper::BTP2.0.0-21-gc2a1f0f-0.0.0-65-gd722782

@@ -11,6 +11,7 @@ storage:
   fsType: ext4
 
 sawtooth:
+  namespace: prod
   networkName: sawtooth
   replicas: 3
   scheduler: parallel
