@@ -12,7 +12,7 @@ sawtooth:
   namespace: prod
   networkName: mynetwork
   scheduler: serial
-  consensus: 100 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
+  consensus: 400 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
   # Engines can be enabled, but they aren't active unless they are selected
   # as the consensus algorithm.
   genesis:

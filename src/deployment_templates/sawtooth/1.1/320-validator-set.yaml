@@ -41,6 +41,11 @@ spec:
       {{ end }}
       {{ end }}
       containers:
+        - name: telegraf
+          image: telegraf:1.10.4
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/telegraf
         {{ if eq .sawtooth.consensus 400 }}
         - name: pbft-engine
           image: {{.images.pbft_engine}}
@@ -222,7 +227,11 @@ spec:
           image: {{.images.rest_api}}
           command: [ "bash", "-xc"]
           args: 
-          - "sawtooth-rest-api -v --bind 0.0.0.0:8008 --connect tcp://127.0.0.1:4004"
+          - |
+            sawtooth-rest-api -v --bind 0.0.0.0:8008 \
+              --connect tcp://127.0.0.1:4004 \
+              --opentsdb-db metrics \
+              --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
           ports:
             - containerPort: 8008
               name: sawrest
@@ -236,7 +245,10 @@ spec:
           imagePullPolicy: Always
           command: [ "bash", "-xc"]
           args:
-            - "sawtooth keygen && sleep 90 && /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:8008 test-$RANDOM 1"
+            - |
+              sawtooth keygen && \
+              sleep 90 && \
+              /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:8008 test-$RANDOM 30
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
@@ -290,7 +302,9 @@ spec:
                 --bind network:tcp://0.0.0.0:8800 \
                 --peering {{if ($peering)}}dynamic{{else}}static{{end}} \
                 {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.}} {{end}} \
-                {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} 
+                {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} \
+                --opentsdb-db metrics \
+                --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
@@ -383,5 +397,11 @@ spec:
           emptyDir: {}
         - name: sawtooth-data
           emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: monitoring-cm
+            items:
+              - key: telegraf.conf
+                path: telegraf.conf
 ---
 
