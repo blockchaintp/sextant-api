@@ -10,7 +10,7 @@ imagePullSecrets:
 sawtooth:
   permissioned: false
   namespace: prod
-  networkName: mynetwork
+  networkName: mynetwork2
   scheduler: serial
   consensus: 400 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
   # Engines can be enabled, but they aren't active unless they are selected
@@ -26,6 +26,9 @@ sawtooth:
     enabled: false
   smallbank:
     enabled: false
+  volumes:
+    hostPathBaseDir: /var/lib/btp/
+
   customTPs:
           #    - name: intkey-tp
           #      image: "blockchaintp/sawtooth-intkey-tp-go:1.0.5"
