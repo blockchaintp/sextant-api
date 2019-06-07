@@ -15,7 +15,7 @@ metadata:
 rules:
   - apiGroups: ["","apps/v1"] # "" refers to the core API group
     resources: ["services", "statefulsets.apps","endpoints", "nodes", "pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "patch"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

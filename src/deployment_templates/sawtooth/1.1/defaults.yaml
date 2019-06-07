@@ -12,12 +12,12 @@ sawtooth:
   namespace: prod
   networkName: mynetwork
   scheduler: serial
-  consensus: 400 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
+  consensus: 100 # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
   # Engines can be enabled, but they aren't active unless they are selected
   # as the consensus algorithm.
   genesis:
     enabled: true
-  dynamicPeering: true
+  dynamicPeering: false
   replicas: 2
   externalSeeds: []
   seth:
@@ -35,7 +35,7 @@ sawtooth:
 images:
   grafana: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-grafana:test1
   influxdb: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-influxdb:BTP2.0.0-21-gc2a1f0f-1.1.5
-  validator: dev.catenasys.com:8083/scealiontach/sawtooth-validator:test17
+  validator: dev.catenasys.com:8083/scealiontach/sawtooth-validator:test
   settings_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-settings-tp:BTP2.0.0-21-gc2a1f0f-1.1.5
   block_info_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-block-info-tp:BTP2.0.0-21-gc2a1f0f-1.1.5
   identity_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-identity-tp:BTP2.0.0-21-gc2a1f0f-1.1.5
@@ -43,7 +43,7 @@ images:
   smallbank_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-smallbank-tp-go:BTP2.0.0-21-gc2a1f0f-1.1.5
   xo_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-xo-tp-go:BTP2.0.0-21-gc2a1f0f-1.1.5
   rest_api: dev.catenasys.com:8083/blockchaintp/sawtooth-rest-api:BTP2.0.0-21-gc2a1f0f-1.1.5
-  shell: dev.catenasys.com:8083/scealiontach/sawtooth-shell:test14
+  shell: dev.catenasys.com:8083/scealiontach/sawtooth-shell:test
   seth_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-tp:BTP2.0.0-21-gc2a1f0f-0.2.2p1
   seth_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-rpc:BTP2.0.0-21-gc2a1f0f-0.2.2p1
   poet_cli: hyperledger/sawtooth-poet-engine:1.1
