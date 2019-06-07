@@ -1,5 +1,8 @@
 # kubetpl:syntax:go-template
 ---
+###
+# We use etcd for utility reasons on startup. No secure information is ever stored here
+##
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
