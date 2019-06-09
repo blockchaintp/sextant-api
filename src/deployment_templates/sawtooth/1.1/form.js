@@ -34,7 +34,7 @@ const form = [
 
   [
     {
-      id: 'deployment.name',
+      id: 'sawtooth.networkName',
       title: 'Network Name',
       helperText: 'The name of the sawtooth network',
       component: 'text',
@@ -47,7 +47,7 @@ const form = [
       },
     },
     {
-      id: 'deployment.namespace',
+      id: 'sawtooth.namespace',
       title: 'Kubernetes Namespace',
       helperText: 'The Kubernetes namespace',
       component: 'text',
