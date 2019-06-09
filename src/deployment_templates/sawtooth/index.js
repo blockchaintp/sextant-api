@@ -20,12 +20,15 @@ module.exports = {
   paths: {
     '1.0': {
       name: 'sawtooth.networkName',
+      namespace: 'sawtooth.namespace',
     },
     '1.1': {
       name: 'sawtooth.networkName',
+      namespace: 'sawtooth.namespace',
     },
     '1.2': {
       name: 'sawtooth.networkName',
+      namespace: 'sawtooth.namespace',
     },
   },
   button: {
