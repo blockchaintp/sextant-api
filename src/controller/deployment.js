@@ -8,6 +8,7 @@ const RBAC = require('../rbac')
 
 const deploymentForms = require('../forms/deployment')
 const deploymentTemplates = require('../deployment_templates')
+const getField = require('../deployment_templates/getField')
 const validate = require('../forms/validate')
 
 const {
@@ -555,7 +556,18 @@ const DeployentController = ({ store, settings }) => {
       store,
     })
 
-    const namespace = deployment.desired_state.deployment.namespace
+    const {
+      deployment_type,
+      deployment_version,
+      applied_state,
+    } = deployment
+
+    const namespace = getField({
+      deployment_type,
+      deployment_version,
+      data: applied_state,
+      field: 'namespace',
+    })
 
     const results = await Promise.props({
       pods: kubectl
