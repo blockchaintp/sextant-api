@@ -1,7 +1,7 @@
 const options = require('./options')
 
 const getConsensusTitle = (value) => {
-  const option = options.find(o => o.value == value)
+  const option = options.consensus.find(o => o.value == value)
   return option ? option.title : 'unknown'
 }
 
