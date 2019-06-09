@@ -567,6 +567,9 @@ const DeployentController = ({ store, settings }) => {
       pods: kubectl
         .jsonCommand(`-n ${namespace} get po`)
         .then(result => result.items),
+      nodes: kubectl
+        .jsonCommand(`-n ${namespace} get no`)
+        .then(result => result.items),
       services: kubectl
         .jsonCommand(`-n ${namespace} get svc`)
         .then(result => result.items),
