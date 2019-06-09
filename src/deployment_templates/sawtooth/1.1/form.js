@@ -98,6 +98,8 @@ const form = [
         ],
       },
     },
+  ],
+  [
     {
       id: 'sawtooth.permissioned',
       title: 'Permissioned Network',
@@ -109,6 +111,21 @@ const form = [
       options: activatedOptions,
       validate: {
         type: 'string',
+        methods: [
+          ['required', 'Required']
+        ],
+      },
+    },
+    {
+      id: 'sawtooth.consensus',
+      title: 'Consensus Algorithm',
+      helperText: 'Which consensus algorithm should this network use?',
+      component: 'select',
+      default: 300,
+      dataType: 'number',
+      options: consensusOptions,
+      validate: {
+        type: 'number',
         methods: [
           ['required', 'Required']
         ],
@@ -140,25 +157,6 @@ const form = [
         name: 'address',
       }]
     }
-  },
-
-  'Consensus Algorithm',
-
-  {
-    id: 'sawtooth.poet.enabled',
-    title: 'PoET Enabled',
-    helperText: 'Should the PoET consensus protocol be active on this network?',
-    component: 'radio',
-    default: false,
-    dataType: 'string',
-    row: true,
-    options: consensusOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
   },
 
   'Transaction Processors',
@@ -229,68 +227,6 @@ const form = [
       }]
     }
   },
-  [{
-    id: 'sawtooth.devmode.enabled',
-    title: 'DevMode Engine Enabled',
-    helperText: 'Should the DevMode Engine be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  },{
-    id: 'sawtooth.poet.enabled',
-    title: 'PoET Engine Enabled',
-    helperText: 'Should the PoET Engine be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  },{
-    id: 'sawtooth.raft.enabled',
-    title: 'Raft Engine Enabled',
-    helperText: 'Should the Raft Engine be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  },{
-    id: 'sawtooth.pbft.enabled',
-    title: 'PBFT Engine Enabled',
-    helperText: 'Should the PBFT Engine be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }],
-
   [{
     id: 'sawtooth.sabre.enabled',
     title: 'Sabre Enabled',
