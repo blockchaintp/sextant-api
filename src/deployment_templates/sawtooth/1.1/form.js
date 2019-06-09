@@ -1,32 +1,4 @@
-const activatedOptions = [{
-  value: true,
-  title: 'Enabled'
-},{
-  value: false,
-  title: 'Disabled'
-}]
-
-const consensusOptions = [{
-  value: 100,
-  title: 'DevMode'
-},{
-  value: 200,
-  title: 'PoET'
-},{
-  value: 300,
-  title: 'Raft'
-},{
-  value: 400,
-  title: 'PBFT'
-}]
-
-const peeringOptions = [{
-  value: true,
-  title: 'Dynamic'
-},{
-  value: false,
-  title: 'Static'
-}]
+const options = require('./options')
 
 const form = [
 
@@ -74,7 +46,7 @@ const form = [
       default: true,
       dataType: 'boolean',
       row: true,
-      options: peeringOptions,
+      options: options.peering,
       validate: {
         type: 'string',
         methods: [
@@ -90,7 +62,7 @@ const form = [
       default: true,
       dataType: 'boolean',
       row: true,
-      options: activatedOptions,
+      options: options.activated,
       validate: {
         type: 'string',
         methods: [
@@ -108,7 +80,7 @@ const form = [
       default: false,
       dataType: 'boolean',
       row: true,
-      options: activatedOptions,
+      options: options.activated,
       validate: {
         type: 'string',
         methods: [
@@ -123,7 +95,7 @@ const form = [
       component: 'select',
       default: 300,
       dataType: 'number',
-      options: consensusOptions,
+      options: options.consensus,
       validate: {
         type: 'number',
         methods: [
@@ -235,7 +207,7 @@ const form = [
     default: true,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: options.activated,
     validate: {
       type: 'string',
       methods: [
@@ -250,7 +222,7 @@ const form = [
     default: true,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: options.activated,
     validate: {
       type: 'string',
       methods: [
@@ -265,7 +237,7 @@ const form = [
     default: true,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: options.activated,
     validate: {
       type: 'string',
       methods: [
@@ -280,7 +252,7 @@ const form = [
     default: true,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: options.activated,
     validate: {
       type: 'string',
       methods: [
