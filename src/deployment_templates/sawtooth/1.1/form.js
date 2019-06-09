@@ -93,7 +93,7 @@ const form = [
       title: 'Consensus Algorithm',
       helperText: 'Which consensus algorithm should this network use?',
       component: 'select',
-      default: 300,
+      default: 100,
       dataType: 'number',
       options: options.consensus,
       validate: {
