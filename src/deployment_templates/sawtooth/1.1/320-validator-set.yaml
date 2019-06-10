@@ -51,7 +51,7 @@ spec:
           image: {{.images.pbft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "pbft-engine -v -C tcp://127.0.0.1:5050"
+          - "pbft-engine -v -C tcp://127.0.0.1:5050 --storage_location disk+/var/lib/sawtooth/pbft.log"
           resources:
             limits:
               cpu: "250m"
@@ -394,9 +394,13 @@ spec:
         {{ end }}
       volumes:
         - name: sawtooth-etc
-          emptyDir: {}
+          hostPath: 
+            type: DirectoryOrCreate
+            path: {{.sawtooth.volumes.hostPathBaseDir}}/{{.sawtooth.namespace}}/{{.sawtooth.networkName}}/sawtooth-etc
         - name: sawtooth-data
-          emptyDir: {}
+          hostPath: 
+            type: DirectoryOrCreate
+            path: {{.sawtooth.volumes.hostPathBaseDir}}/{{.sawtooth.namespace}}/{{.sawtooth.networkName}}/sawtooth-data
         - name: config-volume
           configMap:
             name: monitoring-cm
