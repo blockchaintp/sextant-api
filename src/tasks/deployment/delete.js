@@ -1,5 +1,10 @@
 const Promise = require('bluebird')
 const ClusterKubectl = require('../../utils/clusterKubectl')
+const getField = require('../../deployment_templates/getField')
+
+const {
+  CLUSTER_STATUS,
+} = require('../../config')
 
 const DeploymentDelete = ({
   testMode,
@@ -26,12 +31,26 @@ const DeploymentDelete = ({
   }
 
   const {
+    deployment_type,
+    deployment_version,
+    desired_state,
     applied_state,
+    status,
   } = deployment
 
-  const {
-    namespace,
-  } = applied_state.deployment
+  // if the deployment is in error state - use the
+  // desired state to pick the namespace as it might
+  // not have any applied_state having errored
+  const useData = status == CLUSTER_STATUS.error ?
+    desired_state :
+    applied_state
+
+  const namespace = getField({
+    deployment_type,
+    deployment_version,
+    data: useData,
+    field: 'namespace',
+  })
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,

@@ -1,16 +1,15 @@
 const summary = (values) => {
 
   const {
-    deployment,
     sawtooth,
   } = values
 
   return [{
     title: 'Network Name',
-    value: deployment.name,
+    value: sawtooth.networkName,
   }, {
     title: 'Namespace',
-    value: deployment.namespace,
+    value: sawtooth.namespace,
   }, {
     title: 'Peering Type',
     value: sawtooth.dynamicPeering ? 'Dynamic' : 'Static',

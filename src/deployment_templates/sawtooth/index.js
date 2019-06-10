@@ -16,6 +16,21 @@ module.exports = {
     '1.1': version_1_1_summary,
     '1.2': version_1_2_summary,
   },
+  // paths to specific fields in the deployment
+  paths: {
+    '1.0': {
+      name: 'sawtooth.networkName',
+      namespace: 'sawtooth.namespace',
+    },
+    '1.1': {
+      name: 'sawtooth.networkName',
+      namespace: 'sawtooth.namespace',
+    },
+    '1.2': {
+      name: 'sawtooth.networkName',
+      namespace: 'sawtooth.namespace',
+    },
+  },
   button: {
     title: 'Sawtooth',
     versions: [{

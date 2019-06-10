@@ -3,9 +3,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: rbac-config
-  namespace: {{.deployment.namespace}}
+  namespace: {{.sawtooth.namespace}}
   labels:
-    app: {{.deployment.name}}-next
+    app: {{.sawtooth.networkName}}-next
 data:
   config.py: |
     HOST = 'localhost'
