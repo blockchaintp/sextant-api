@@ -12,6 +12,7 @@ const validate = require('../forms/validate')
 
 const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
+const SettingsTP = require('../api/settingsTP')
 
 const {
   CLUSTER_STATUS,
@@ -27,6 +28,7 @@ const DeployentController = ({ store, settings }) => {
   
   const keyManager = KeyManager()
   const damlRPC = DamlRPC()
+  const settingsTP = SettingsTP()
 
   /*
   
@@ -629,6 +631,27 @@ const DeployentController = ({ store, settings }) => {
     return true
   }
 
+  const getKeyManagerKeys = async ({
+    id,
+  }) => {
+    return keyManager.getKeys()
+  }
+
+  const getEnrolledKeys = async ({
+    id,
+  }) => {
+    return settingsTP.getEnrolledKeys()
+  }
+
+  const addEnrolledKey = async ({
+    id,
+    publicKey,
+  }) => {
+    return settingsTP.addEnrolledKey({
+      publicKey,
+    })
+  }
+
   return {
     list,
     get,
@@ -642,13 +665,17 @@ const DeployentController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
-    getLocalValidatorKeys: keyManager.getLocalValidatorKeys,
+    getKeyManagerKeys,
+    getEnrolledKeys,
+    addEnrolledKey,
+/*
     getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
     getRemoteKeys: keyManager.getRemoteKeys,
     damlParticipants: damlRPC.getParticipants,
     registerParticipant: damlRPC.registerParticipant,
     addRemoteKey: keyManager.addRemoteKey,
     rotateLocalDamlRPCKey,
+*/
   }
 
 }

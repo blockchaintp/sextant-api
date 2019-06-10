@@ -3,22 +3,19 @@ const database = require('./database')
 const DamlRPC = () => {
 
   const getParticipants = ({
-    id,
+    
   }) => {
-    if(!id) throw new Error(`id must be given to api.damlRPC.getParticipants`)
     return database.damlParticipants
   }
 
   const registerParticipant = ({
-    id,
-    key,
+    publicKey,
   }) => {
-    if(!id) throw new Error(`id must be given to api.damlRPC.registerParticipant`)
-    if(!key) throw new Error(`id must be given to api.damlRPC.registerParticipant`)
+    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.registerParticipant`)
 
     database.damlParticipants.push({
-      id: database.getKey(),
-      key,
+      damlId: database.getKey(),
+      publicKey,
       parties: [],
     })
 
@@ -26,15 +23,14 @@ const DamlRPC = () => {
   }
 
   const updateKey = ({
-    id,
-    damlId,
-    key,
+    oldPublicKey,
+    newPublicKey,
   }) => {
-    if(!id) throw new Error(`id must be given to api.damlRPC.updateKey`)
-    if(!damlId) throw new Error(`damlId must be given to api.damlRPC.updateKey`)
-    if(!key) throw new Error(`key must be given to api.damlRPC.updateKey`)
-    const participant = database.damlParticipants.find(participant => participant.id == damlId)
-    participant.key = key
+    if(!oldPublicKey) throw new Error(`oldPublicKey must be given to api.damlRPC.updateKey`)
+    if(!newPublicKey) throw new Error(`newPublicKey must be given to api.damlRPC.updateKey`)
+    const participant = database.damlParticipants.find(participant => participant.publicKey == oldPublicKey)
+    if(!participant) throw new Error(`no participant found with publicKey ${oldPublicKey}`)
+    participant.publicKey = newPublicKey
     return true
   }
 

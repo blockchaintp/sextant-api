@@ -4,51 +4,18 @@ const KeyManager = () => {
 
   /*
   
-    get the local validator keys for a deployment
+    get the list of keys from the key managers
 
     params:
-
-     * id
     
   */
-  const getLocalValidatorKeys = async ({
-    id,
+  const getKeys = async ({
+    
   }) => {
-    if(!id) throw new Error(`id must be given to api.keyManager.getLocalValidatorKeys`)
-    return database.validatorKeys
+    return database.keyManagerKeys
   }
 
-  /*
   
-    get the local validator keys for a deployment
-
-    params:
-
-     * id
-    
-  */
- const getLocalDamlRPCKeys = async ({
-  id,
-}) => {
-  if(!id) throw new Error(`id must be given to api.keyManager.getLocalDamlRPCKeys`)
-  return database.damlRPCKeys
-}
-
-  /*
-  
-    get the remote keys for a deployment
-
-    params:
-
-     * id
-    
-  */
-  const getRemoteKeys = async ({
-    id,
-  }) => {
-    if(!id) throw new Error(`id must be given to api.keyManager.getRemoteKeys`)
-    return database.remoteKeys
-  }
 
   /*
   
@@ -60,45 +27,19 @@ const KeyManager = () => {
      * key
     
   */
-  const addRemoteKey = async ({
-    id,
-    key,
+  const rotateDamlRPCKey = async ({
+    publicKey,
   }) => {
-    if(!id) throw new Error(`id must be given to api.keyManager.addRemoteKey`)
-    if(!key) throw new Error(`key must be given to api.keyManager.addRemoteKey`)
-    database.remoteKeys.push({
-      id: key
-    })
-    return database.remoteKeys
-  }
-
-  /*
-  
-    add a remote key for a deployment
-
-    params:
-
-     * id
-     * key
-    
-  */
-  const rotateLocalDamlRPCKey = async ({
-    id,
-    key,
-  }) => {
-    if(!id) throw new Error(`id must be given to api.keyManager.rotateLocalDamlRPCKey`)
-    if(!key) throw new Error(`key must be given to api.keyManager.rotateLocalDamlRPCKey`)
-    const rpc = database.damlRPCKeys.find(rpc => rpc.id == key)
-    rpc.id = database.getKey()
-    return rpc.id
+    if(!publicKey) throw new Error(`publicKey must be given to api.keyManager.rotateDamlRPCKey`)
+    const rpc = database.damlRPCs.find(rpc => rpc.publicKey == publicKey)
+    if(!rpc) throw new Error(`no daml RPC server with that public key found: ${publicKey}`)
+    rpc.publicKey = database.getKey()
+    return rpc.publicKey
   }
 
   return {
-    getLocalValidatorKeys,
-    getLocalDamlRPCKeys,
-    getRemoteKeys,
-    addRemoteKey,
-    rotateLocalDamlRPCKey,
+    getKeys,
+    rotateDamlRPCKey,
   }
 
 }

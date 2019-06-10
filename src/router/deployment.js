@@ -139,8 +139,8 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  const listLocalValidatorKeys = async (req, res, next) => {
-    const data = await controllers.deployment.getLocalValidatorKeys({
+  const getKeyManagerKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getKeyManagerKeys({
       id: req.params.id,
     })
     res
@@ -148,8 +148,8 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  const listLocalDamlRPCKeys = async (req, res, next) => {
-    const data = await controllers.deployment.getLocalDamlRPCKeys({
+  const getEnrolledKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getEnrolledKeys({
       id: req.params.id,
     })
     res
@@ -157,6 +157,17 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const addEnrolledKey = async (req, res, next) => {
+    const data = await controllers.deployment.addEnrolledKey({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
+  /*
   const listRemoteKeys = async (req, res, next) => {
     const data = await controllers.deployment.getRemoteKeys({
       id: req.params.id,
@@ -175,15 +186,7 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  const addRemoteKey = async (req, res, next) => {
-    const data = await controllers.deployment.addRemoteKey({
-      id: req.params.id,
-      key: req.body.key,
-    })
-    res
-      .status(201)
-      .json(data)
-  }
+  
 
   const registerParticipant = async (req, res, next) => {
     const data = await controllers.deployment.registerParticipant({
@@ -216,7 +219,7 @@ const DeploymentRoutes = (controllers) => {
     })
     req.pipe(writeStream)
   }
-
+*/
   return {
     list,
     get,
@@ -229,6 +232,12 @@ const DeploymentRoutes = (controllers) => {
     resources,
     summary,
     delete: del,
+
+    getKeyManagerKeys,
+    getEnrolledKeys,
+    addEnrolledKey,
+
+    /*
     listLocalValidatorKeys,
     listLocalDamlRPCKeys,
     listRemoteKeys,
@@ -237,6 +246,7 @@ const DeploymentRoutes = (controllers) => {
     registerParticipant,
     rotateLocalDamlRPCKey,
     uploadArchive,
+    */
   }
 }
 

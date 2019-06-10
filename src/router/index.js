@@ -100,6 +100,12 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
   app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))
+
+  app.get(basePath('/clusters/:cluster/deployments/:id/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getKeyManagerKeys))
+  app.get(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getEnrolledKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addEnrolledKey))
+
+  /*
   app.get(basePath('/clusters/:cluster/deployments/:id/localValidatorKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listLocalValidatorKeys))
   app.get(basePath('/clusters/:cluster/deployments/:id/localDamlRPCKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listLocalDamlRPCKeys))
   app.get(basePath('/clusters/:cluster/deployments/:id/damlParticipants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.damlParticipants))
@@ -108,7 +114,7 @@ const Routes = ({
   app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerParticipant))
   app.post(basePath('/clusters/:cluster/deployments/:id/rotateLocalDamlRPCKey'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateLocalDamlRPCKey))
   app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.uploadArchive))
-  
+  */
 }
 
 module.exports = Routes
