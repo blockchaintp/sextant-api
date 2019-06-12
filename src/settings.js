@@ -43,6 +43,7 @@ const args = require('minimist')(process.argv, {
     postgresuser: process.env.POSTGRES_USER,
     postgrespassword: process.env.POSTGRES_PASSWORD,
     postgresdatabase: process.env.POSTGRES_DB,
+    postgrestls: process.env.POSTGRES_TLS,
 
     // aws
     awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -96,7 +97,8 @@ args.postgres = {
     port: args.postgresport,
     user: args.postgresuser,
     password: args.postgrespassword,
-    database: args.postgresdatabase
+    database: args.postgresdatabase,
+    ssl: args.postgrestls ? true : false
   },
   pool: {
     min: 2,
