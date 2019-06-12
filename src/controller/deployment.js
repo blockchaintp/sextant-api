@@ -709,12 +709,14 @@ const DeployentController = ({ store, settings }) => {
     if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.generatePartyToken`) 
     if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.generatePartyToken`) 
 
-    await damlRPC.generatePartyToken({
+    const token = await damlRPC.generatePartyToken({
       publicKey,
       partyNames,
     })
 
-    return true
+    return {
+      token,
+    }
   }
 
   return {
