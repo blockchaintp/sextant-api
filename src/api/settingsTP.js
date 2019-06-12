@@ -32,7 +32,7 @@ const SettingsTP = () => {
   }) => {
     if(!publicKey) throw new Error(`publicKey must be given to api.settingsTP.addEnrolledKey`)
     database.sawtoothEnrolledKeys.push({
-      publicKey: key
+      publicKey,
     })
     return database.sawtoothEnrolledKeys
   }
