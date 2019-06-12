@@ -196,52 +196,40 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  /*
-  const listRemoteKeys = async (req, res, next) => {
-    const data = await controllers.deployment.getRemoteKeys({
+  const addParty = async (req, res, next) => {
+    const data = await controllers.deployment.addParty({
       id: req.params.id,
+      publicKey: req.body.publicKey,
+      partyName: req.body.partyName,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
+  const removeParties = async (req, res, next) => {
+    const data = await controllers.deployment.removeParties({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+      partyNames: req.body.partyNames,
     })
     res
       .status(200)
       .json(data)
   }
 
-  
-
-  
-
-  const registerParticipant = async (req, res, next) => {
-    const data = await controllers.deployment.registerParticipant({
+  const generatePartyToken = async (req, res, next) => {
+    const data = await controllers.deployment.generatePartyToken({
       id: req.params.id,
-      key: req.body.key,
+      publicKey: req.body.publicKey,
+      partyNames: req.body.partyNames,
     })
     res
       .status(200)
       .json(data)
   }
 
-  const rotateLocalDamlRPCKey = async (req, res, next) => {
-    const data = await controllers.deployment.rotateLocalDamlRPCKey({
-      id: req.params.id,
-      damlId: req.body.damlId,
-      key: req.body.key,
-    })
-    res
-      .status(200)
-      .json(data)
-  }
 
-  const uploadArchive = async (req, res, next) => {
-    const writeStream = fs.createWriteStream('/tmp/uploadNoop')
-    writeStream.on('end', () => {
-      res.end('ok')
-    })
-    writeStream.on('error', (error) => {
-      next(error)
-    })
-    req.pipe(writeStream)
-  }
-*/
   return {
     list,
     get,
@@ -262,17 +250,10 @@ const DeploymentRoutes = (controllers) => {
     getDamlParticipants,
     registerParticipant,
     rotateParticipantKey,
+    addParty,
+    removeParties,
+    generatePartyToken,
 
-    /*
-    listLocalValidatorKeys,
-    listLocalDamlRPCKeys,
-    listRemoteKeys,
-    damlParticipants,
-    addRemoteKey,
-    registerParticipant,
-    rotateLocalDamlRPCKey,
-    uploadArchive,
-    */
   }
 }
 

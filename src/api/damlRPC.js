@@ -34,10 +34,50 @@ const DamlRPC = () => {
     return true
   }
 
+  const addParty = ({
+    publicKey,
+    partyName,
+  }) => {
+    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.addParty`)
+    if(!partyName) throw new Error(`partyName must be given to api.damlRPC.addParty`)
+    const participant = database.damlParticipants.find(participant => participant.publicKey == publicKey)
+    if(!participant) throw new Error(`participant with publicKey not found: ${publicKey}`)
+    const existingParty = participant.parties.find(party => party.name.toLowerCase() == partyName.toLowerCase())
+    if(existingParty) throw new Error(`participant already has party with that name: ${partyName}`)
+    participant.parties.push({
+      name: partyName,
+    })
+    return true
+  }
+
+  const removeParties = ({
+    publicKey,
+    partyNames,
+  }) => {
+    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.removeParties`)
+    if(!partyNames) throw new Error(`partyNames must be given to api.damlRPC.removeParties`)
+    const participant = database.damlParticipants.find(participant => participant.publicKey == publicKey)
+    if(!participant) throw new Error(`participant with publicKey not found: ${publicKey}`)
+    participant.parties = participant.parties.filter(party => partyNames.indexOf(party.name) == -1)
+    return true
+  }
+
+  const generatePartyToken = ({
+    publicKey,
+    partyNames,
+  }) => {
+    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.generatePartyTokens`)
+    if(!partyNames) throw new Error(`partyNames must be given to api.damlRPC.generatePartyTokens`)
+    return database.getKey()
+  }
+
   return {
     getParticipants,
     registerParticipant,
     updateKey,
+    addParty,
+    removeParties,
+    generatePartyToken,
   }
 
 }

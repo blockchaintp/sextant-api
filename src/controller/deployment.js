@@ -640,6 +640,8 @@ const DeployentController = ({ store, settings }) => {
     id,
     publicKey,
   }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.registerParticipant`) 
     return damlRPC.registerParticipant({
       publicKey,
     })
@@ -650,7 +652,7 @@ const DeployentController = ({ store, settings }) => {
     publicKey,
   }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.rotateParticipantKey`) 
-    if(!publicKey) throw new Error(`key must be given to controller.deployment.rotateParticipantKey`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.rotateParticipantKey`) 
 
     const newKey = await keyManager.rotateDamlRPCKey({
       publicKey,
@@ -659,6 +661,57 @@ const DeployentController = ({ store, settings }) => {
     await damlRPC.updateKey({
       oldPublicKey: publicKey,
       newPublicKey: newKey,
+    })
+
+    return true
+  }
+
+  const addParty = async ({
+    id,
+    publicKey,
+    partyName,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.addParty`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.addParty`) 
+    if(!partyName) throw new Error(`partyName must be given to controller.deployment.addParty`) 
+
+    await damlRPC.addParty({
+      publicKey,
+      partyName,
+    })
+
+    return true
+  }
+
+  const removeParties = async ({
+    id,
+    publicKey,
+    partyNames,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.removeParties`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.removeParties`) 
+    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.removeParties`) 
+
+    await damlRPC.removeParties({
+      publicKey,
+      partyNames,
+    })
+
+    return true
+  }
+
+  const generatePartyToken = async ({
+    id,
+    publicKey,
+    partyNames,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.generatePartyToken`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.generatePartyToken`) 
+    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.generatePartyToken`) 
+
+    await damlRPC.generatePartyToken({
+      publicKey,
+      partyNames,
     })
 
     return true
@@ -683,15 +736,9 @@ const DeployentController = ({ store, settings }) => {
     getDamlParticipants,
     registerParticipant,
     rotateParticipantKey,
-    
-/*
-    getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
-    getRemoteKeys: keyManager.getRemoteKeys,
-    damlParticipants: damlRPC.getParticipants,
-    registerParticipant: damlRPC.registerParticipant,
-    addRemoteKey: keyManager.addRemoteKey,
-    rotateLocalDamlRPCKey,
-*/
+    addParty,
+    removeParties,
+    generatePartyToken,
   }
 
 }
