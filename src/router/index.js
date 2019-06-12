@@ -106,11 +106,13 @@ const Routes = ({
   app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addEnrolledKey))
 
   app.get(basePath('/clusters/:cluster/deployments/:id/damlParticipants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getDamlParticipants))
+
+  app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerParticipant))
+  app.post(basePath('/clusters/:cluster/deployments/:id/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateParticipantKey))
   
 
   /*
-  app.post(basePath('/clusters/:cluster/deployments/:id/damlParticipants'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerDamlParticipant))
-  app.post(basePath('/clusters/:cluster/deployments/:id/damlParticipants/:damlKey/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateDamlParticipantKeys))
+  
 
   
   app.get(basePath('/clusters/:cluster/deployments/:id/localValidatorKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listLocalValidatorKeys))

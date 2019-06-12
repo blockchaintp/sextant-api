@@ -609,28 +609,6 @@ const DeployentController = ({ store, settings }) => {
     return summaryFunction(deployment.desired_state)
   }
 
-  const rotateLocalDamlRPCKey = async ({
-    id,
-    damlId,
-    key,
-  }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.rotateLocalDamlRPCKey`) 
-    if(!key) throw new Error(`key must be given to controller.deployment.rotateLocalDamlRPCKey`) 
-
-    const newKey = await keyManager.rotateLocalDamlRPCKey({
-      id,
-      key,
-    })
-
-    await damlRPC.updateKey({
-      id,
-      damlId,
-      key: newKey,
-    })
-
-    return true
-  }
-
   const getKeyManagerKeys = async ({
     id,
   }) => {
@@ -658,6 +636,34 @@ const DeployentController = ({ store, settings }) => {
     return damlRPC.getParticipants()
   }
 
+  const registerParticipant = async ({
+    id,
+    publicKey,
+  }) => {
+    return damlRPC.registerParticipant({
+      publicKey,
+    })
+  }
+
+  const rotateParticipantKey = async ({
+    id,
+    publicKey,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.rotateParticipantKey`) 
+    if(!publicKey) throw new Error(`key must be given to controller.deployment.rotateParticipantKey`) 
+
+    const newKey = await keyManager.rotateDamlRPCKey({
+      publicKey,
+    })
+
+    await damlRPC.updateKey({
+      oldPublicKey: publicKey,
+      newPublicKey: newKey,
+    })
+
+    return true
+  }
+
   return {
     list,
     get,
@@ -675,6 +681,9 @@ const DeployentController = ({ store, settings }) => {
     getEnrolledKeys,
     addEnrolledKey,
     getDamlParticipants,
+    registerParticipant,
+    rotateParticipantKey,
+    
 /*
     getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
     getRemoteKeys: keyManager.getRemoteKeys,

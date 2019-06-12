@@ -176,6 +176,26 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const registerParticipant = async (req, res, next) => {
+    const data = await controllers.deployment.registerParticipant({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const rotateParticipantKey = async (req, res, next) => {
+    const data = await controllers.deployment.rotateParticipantKey({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   /*
   const listRemoteKeys = async (req, res, next) => {
     const data = await controllers.deployment.getRemoteKeys({
@@ -240,6 +260,8 @@ const DeploymentRoutes = (controllers) => {
     addEnrolledKey,
 
     getDamlParticipants,
+    registerParticipant,
+    rotateParticipantKey,
 
     /*
     listLocalValidatorKeys,

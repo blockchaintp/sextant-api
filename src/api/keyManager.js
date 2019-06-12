@@ -31,7 +31,7 @@ const KeyManager = () => {
     publicKey,
   }) => {
     if(!publicKey) throw new Error(`publicKey must be given to api.keyManager.rotateDamlRPCKey`)
-    const rpc = database.damlRPCs.find(rpc => rpc.publicKey == publicKey)
+    const rpc = database.keyManagerKeys.find(rpc => rpc.publicKey == publicKey)
     if(!rpc) throw new Error(`no daml RPC server with that public key found: ${publicKey}`)
     rpc.publicKey = database.getKey()
     return rpc.publicKey
