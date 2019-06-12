@@ -54,8 +54,8 @@ const damlParticipants = [{
     name: 'Harry',
   }]
 }, {
-  id: random.key(),
-  key: random.key(),
+  publicKey: random.key(),
+  damlId: random.key(),
   parties: [{
     name: 'Nigel',
   },{
