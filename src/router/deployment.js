@@ -1,4 +1,9 @@
+const fs = require('fs')
+const Promise = require('bluebird')
+const tmp = require('tmp')
 const config = require('../config')
+
+const tempFile = Promise.promisify(tmp.file)
 
 const {
   DEPLOYMENT_STATUS,
@@ -247,6 +252,26 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const uploadArchive = async (req, res, next) => {
+    const filepath = await tempFile({
+      postfix: '.txt',
+    })
+
+    const writeStream = fs.createWriteStream(filepath)
+
+    await new Promise((resolve, reject) => {
+      writeStream.on('error', reject)
+      writeStream.on('end', resolve)
+      req.pipe(writeStream)
+    })
+
+    res
+      .status(200)
+      .json({
+        filepath,
+      })
+  }
+
 
   return {
     list,
@@ -273,6 +298,7 @@ const DeploymentRoutes = (controllers) => {
     addParty,
     removeParties,
     generatePartyToken,
+    uploadArchive,
 
   }
 }
