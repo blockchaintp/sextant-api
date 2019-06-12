@@ -65,11 +65,25 @@ const damlParticipants = [{
   }]
 }]
 
+const damlArchives = [{
+  packageid: '3ab37fe8d_some.daml.package',
+  size: '3123987',
+  uploadedBy: 'participantA_Alice',
+  uploaded: new Date().getTime() - (1000 * 60 * 60 * 24 * 5),
+}]
+
+const damlTimeService = [{
+  publicKey: damlKeys[0].publicKey,
+  lastClockUpdate: '3127383',
+}]
+
 const getKey = () => random.key()
 
 module.exports = {
   sawtoothEnrolledKeys,
   keyManagerKeys,
   damlParticipants,
+  damlArchives,
+  damlTimeService,
   getKey,
 }

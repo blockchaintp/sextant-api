@@ -71,6 +71,18 @@ const DamlRPC = () => {
     return database.getKey()
   }
 
+  const getArchives = ({
+
+  } = {}) => {
+    return database.damlArchives
+  }
+
+  const getTimeServiceInfo = ({
+
+  } = {}) => {
+    return database.damlTimeService
+  }
+
   return {
     getParticipants,
     registerParticipant,
@@ -78,6 +90,8 @@ const DamlRPC = () => {
     addParty,
     removeParties,
     generatePartyToken,
+    getArchives,
+    getTimeServiceInfo,
   }
 
 }

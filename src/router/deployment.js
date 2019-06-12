@@ -176,6 +176,24 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const getDamlArchives = async (req, res, next) => {
+    const data = await controllers.deployment.getDamlArchives({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const getDamlTimeServiceInfo = async (req, res, next) => {
+    const data = await controllers.deployment.getDamlTimeServiceInfo({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const registerParticipant = async (req, res, next) => {
     const data = await controllers.deployment.registerParticipant({
       id: req.params.id,
@@ -248,6 +266,8 @@ const DeploymentRoutes = (controllers) => {
     addEnrolledKey,
 
     getDamlParticipants,
+    getDamlArchives,
+    getDamlTimeServiceInfo,
     registerParticipant,
     rotateParticipantKey,
     addParty,

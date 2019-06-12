@@ -636,6 +636,18 @@ const DeployentController = ({ store, settings }) => {
     return damlRPC.getParticipants()
   }
 
+  const getDamlArchives = async ({
+    id,
+  }) => {
+    return damlRPC.getArchives()
+  }
+
+  const getDamlTimeServiceInfo = async ({
+    id,
+  }) => {
+    return damlRPC.getTimeServiceInfo()
+  }
+
   const registerParticipant = async ({
     id,
     publicKey,
@@ -736,6 +748,8 @@ const DeployentController = ({ store, settings }) => {
     getEnrolledKeys,
     addEnrolledKey,
     getDamlParticipants,
+    getDamlArchives,
+    getDamlTimeServiceInfo,
     registerParticipant,
     rotateParticipantKey,
     addParty,
