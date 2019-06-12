@@ -167,6 +167,15 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const getDamlParticipants = async (req, res, next) => {
+    const data = await controllers.deployment.getDamlParticipants({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   /*
   const listRemoteKeys = async (req, res, next) => {
     const data = await controllers.deployment.getRemoteKeys({
@@ -177,14 +186,7 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  const damlParticipants = async (req, res, next) => {
-    const data = await controllers.deployment.damlParticipants({
-      id: req.params.id,
-    })
-    res
-      .status(200)
-      .json(data)
-  }
+  
 
   
 
@@ -236,6 +238,8 @@ const DeploymentRoutes = (controllers) => {
     getKeyManagerKeys,
     getEnrolledKeys,
     addEnrolledKey,
+
+    getDamlParticipants,
 
     /*
     listLocalValidatorKeys,

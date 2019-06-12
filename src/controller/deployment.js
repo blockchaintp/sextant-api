@@ -652,6 +652,12 @@ const DeployentController = ({ store, settings }) => {
     })
   }
 
+  const getDamlParticipants = async ({
+    id,
+  }) => {
+    return damlRPC.getParticipants()
+  }
+
   return {
     list,
     get,
@@ -668,6 +674,7 @@ const DeployentController = ({ store, settings }) => {
     getKeyManagerKeys,
     getEnrolledKeys,
     addEnrolledKey,
+    getDamlParticipants,
 /*
     getLocalDamlRPCKeys: keyManager.getLocalDamlRPCKeys,
     getRemoteKeys: keyManager.getRemoteKeys,

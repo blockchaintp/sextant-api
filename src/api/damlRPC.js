@@ -4,7 +4,7 @@ const DamlRPC = () => {
 
   const getParticipants = ({
     
-  }) => {
+  } = {}) => {
     return database.damlParticipants
   }
 
