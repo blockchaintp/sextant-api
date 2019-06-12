@@ -13,7 +13,7 @@ const SettingsTP = () => {
   */
   const getEnrolledKeys = async ({
     
-  }) => {
+  } = {}) => {
     return database.sawtoothEnrolledKeys
   }
 

@@ -11,7 +11,7 @@ const KeyManager = () => {
   */
   const getKeys = async ({
     
-  }) => {
+  } = {}) => {
     return database.keyManagerKeys
   }
 
