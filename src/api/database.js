@@ -68,13 +68,13 @@ const damlParticipants = [{
 const damlArchives = [{
   packageid: '3ab37fe8d_some.daml.package',
   size: '3123987',
-  uploadedBy: 'participantA_Alice',
-  uploaded: new Date().getTime() - (1000 * 60 * 60 * 24 * 5),
+  uploadedBy: damlParticipants[0].publicKey,
+  uploaded: new Date().getTime(),
 }]
 
 const damlTimeService = [{
-  publicKey: damlKeys[0].publicKey,
-  lastClockUpdate: '3127383',
+  publicKey: damlParticipants[0].publicKey,
+  lastClockUpdate: new Date().getTime(),
 }]
 
 const getKey = () => random.key()
