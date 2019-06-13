@@ -633,7 +633,7 @@ const DeployentController = ({ store, settings }) => {
   const getEnrolledKeys = async ({
     id,
   }) => {
-
+/*
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -659,7 +659,7 @@ const DeployentController = ({ store, settings }) => {
     // TODO - process these results and return them instead of the fixtures
     console.log('--------------------------------------------')
     console.dir(result)
-
+*/
     return settingsTP.getEnrolledKeys()
   }
 
