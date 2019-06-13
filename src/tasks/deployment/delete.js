@@ -29,6 +29,11 @@ const DeploymentDelete = ({
     applied_state,
   } = deployment
 
+  // the case where the create failed to create the namespace
+  if(!applied_state || !applied_state.namespace) {
+    return
+  }
+
   const {
     namespace,
   } = applied_state.deployment
