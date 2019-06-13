@@ -38,6 +38,7 @@
     "randomstring": "^1.1.5",
     "request": "^2.81.0",
     "rmdir": "^1.2.0",
+    "sawtooth-sdk": "^1.0.5",
     "tap-spec": "^5.0.0",
     "tmp": "^0.0.33",
     "yup": "^0.27.0"
