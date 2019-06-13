@@ -16,6 +16,7 @@ const TABLES = {
   task: 'task',
   clusterfile: 'clusterfile',
   clustersecret: 'clustersecret',
+  deploymentsecret: 'deploymentsecret',
 }
 
 const LIST_ORDER_BY_FIELDS = {
@@ -32,6 +33,10 @@ const LIST_ORDER_BY_FIELDS = {
     direction: 'asc',
   },
   deployment: {
+    field: 'name',
+    direction: 'asc',
+  },
+  deploymentsecret: {
     field: 'name',
     direction: 'asc',
   },

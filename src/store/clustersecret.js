@@ -201,7 +201,6 @@ const ClusterSecretStore = (knex) => {
     await del({
       cluster,
       name,
-      transaction,
     }, trx)
 
     return create({
