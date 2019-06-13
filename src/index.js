@@ -2,10 +2,14 @@
 
 const session = require('express-session')
 const pg = require('pg')
+const Knex = require('knex')
 const pgSession = require('connect-pg-simple')(session)
 const settings = require('./settings')
 const App = require('./app')
+const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
+const Store = require('./store')
+
 const pino = require('pino')({
   name: 'app',
 })
@@ -15,24 +19,41 @@ const sessionStore = new pgSession({
   pool: pgPool,
 })
 
+const knex = Knex(settings.postgres)
+const store = Store(knex)
+
 const app = App({
+  knex,
+  store,
   settings,
   sessionStore,
   taskHandlers: TaskHandlers({}),
 })
 
-app.listen(settings.port, () => {
-  if(settings.logging) {
-    pino.info({
-      action: 'webserver.start',
-      message: `webserver started on port ${settings.port}`,
-    })
-  }
-})
+const boot = async () => {
 
-app.taskProcessor.start(() => {
-  pino.info({
-    action: 'taskProcessor.start',
-    message: `taskProcessor started`,
+  // wait the the initialisation to complete
+  // before we start listing on the port and
+  // start the task processor
+  await Initialise({
+    store,
   })
-})
+
+  app.listen(settings.port, () => {
+    if(settings.logging) {
+      pino.info({
+        action: 'webserver.start',
+        message: `webserver started on port ${settings.port}`,
+      })
+    }
+  })
+  
+  app.taskProcessor.start(() => {
+    pino.info({
+      action: 'taskProcessor.start',
+      message: `taskProcessor started`,
+    })
+  })  
+}
+
+boot()
