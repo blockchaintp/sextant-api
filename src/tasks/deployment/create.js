@@ -68,7 +68,7 @@ const DeploymentCreate = ({
 
   yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
 
-  yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-keys --from-literal=publicKey=${keyPair.publicKey}`)
+  yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
   const templateDirectory = yield renderTemplates({
     deployment_type,
