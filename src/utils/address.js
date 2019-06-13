@@ -12,9 +12,6 @@ const identity = (path) => {
     parts.push('')
   }
   const hashParts = parts.map(value => getHash(value).substring(0, 16))
-
-  console.log('--------------------------------------------')
-  console.dir(hashParts)
   return [IDENTITY_NAMESPACE, ROLE_NAMESPACE].concat(hashParts).join('')
 }
 

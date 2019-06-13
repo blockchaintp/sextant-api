@@ -1,5 +1,6 @@
 const Promise = require('bluebird')
 const async = require('async')
+const axios = require('axios')
 const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
@@ -11,6 +12,7 @@ const deploymentTemplates = require('../deployment_templates')
 const getField = require('../deployment_templates/getField')
 const validate = require('../forms/validate')
 
+const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
@@ -630,6 +632,29 @@ const DeployentController = ({ store, settings }) => {
   const getEnrolledKeys = async ({
     id,
   }) => {
+
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+    })
+
+    const pods = await proxy.getPods()
+
+    const pod = pods[0]
+
+    const result = await proxy.request({
+      pod: pod.metadata.name,
+      port: 8080,
+      handler: ({
+        port,
+      }) => axios
+        .get(`http://localhost:${port}/transactions?limit=5`)
+        .then(res => res.data)
+    })
+
+    console.log('--------------------------------------------')
+    console.dir(result)
+
     return settingsTP.getEnrolledKeys()
   }
 
