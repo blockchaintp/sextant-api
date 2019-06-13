@@ -261,7 +261,7 @@ const DeploymentRoutes = (controllers) => {
 
     await new Promise((resolve, reject) => {
       writeStream.on('error', reject)
-      writeStream.on('end', resolve)
+      req.on('end', resolve)
       req.pipe(writeStream)
     })
 
