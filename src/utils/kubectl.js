@@ -20,6 +20,7 @@
 const Promise = require('bluebird')
 const tmp = require('tmp')
 const async = require('async')
+const getPort = require('get-port')
 const fs = require('fs')
 const childProcess = require('child_process')
 
@@ -124,15 +125,40 @@ const Kubectl = ({
     isSetup = true
   }
 
-  // run a kubectl command and return [ stdout, stderr ]
-  const command = async (cmd, options = {}) => {
-    await setup()
+  const getOptions = (options) => {
     const useOptions = Object.assign({}, options, {
       // allow 5MB back on stdout 
       //(which should not happen but some logs might be longer than 200kb which is the default)
       maxBuffer: 1024 * 1024 * 5,
     })
     useOptions.env = Object.assign({}, process.env, options.env)
+    return useOptions
+  }
+
+  // pick a free local port and setup a port-forward to a pod
+  // return an object that can close the forwarding process
+  const portForward = async ({
+    namespace,
+    pod,
+    port,
+  }) => {
+    await setup()
+    const useOptions = getOptions({})
+    const localPort = await getPort()
+    const runCommand = `kubectl ${connectionArguments.join(' ')} -n ${namespace} pod/${pod} ${localPort}:${port}`
+    const forwardingProcess = childProcess.exec(runCommand, useOptions)
+    return {
+      port: localPort,
+      stop: async () => {
+        forwardingProcess.kill()
+      }
+    }
+  }
+
+  // run a kubectl command and return [ stdout, stderr ]
+  const command = async (cmd, options = {}) => {
+    await setup()
+    const useOptions = getOptions(options)
     const runCommand = `kubectl ${connectionArguments.join(' ')} ${cmd}`
     return exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
@@ -181,6 +207,7 @@ const Kubectl = ({
 
   return {
     command,
+    portForward,
     jsonCommand,
     apply,
     applyInline,
