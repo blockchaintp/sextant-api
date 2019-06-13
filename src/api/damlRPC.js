@@ -83,6 +83,20 @@ const DamlRPC = () => {
     return database.damlTimeService
   }
 
+  const uploadArchive = ({
+    name,
+    size,
+  } = {}) => {
+    const archive = {
+      packageid: name,
+      size,
+      uploadedBy: database.damlParticipants[0].publicKey,
+      uploaded: new Date().getTime(),
+    }
+    database.damlArchives.push(archive)
+    return database.damlArchives
+  }
+
   return {
     getParticipants,
     registerParticipant,
@@ -92,6 +106,7 @@ const DamlRPC = () => {
     generatePartyToken,
     getArchives,
     getTimeServiceInfo,
+    uploadArchive,
   }
 
 }

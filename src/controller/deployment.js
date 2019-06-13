@@ -731,6 +731,25 @@ const DeployentController = ({ store, settings }) => {
     }
   }
 
+  const uploadArchive = async ({
+    id,
+    name,
+    size,
+    localFilepath,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.uploadArchive`) 
+    if(!name) throw new Error(`name must be given to controller.deployment.uploadArchive`) 
+    if(!size) throw new Error(`size must be given to controller.deployment.uploadArchive`) 
+    if(!localFilepath) throw new Error(`localFilepath must be given to controller.deployment.uploadArchive`) 
+
+    const data = await damlRPC.uploadArchive({
+      name,
+      size,
+    })
+
+    return data
+  }
+
   return {
     list,
     get,
@@ -755,6 +774,7 @@ const DeployentController = ({ store, settings }) => {
     addParty,
     removeParties,
     generatePartyToken,
+    uploadArchive,
   }
 
 }

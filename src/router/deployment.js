@@ -253,11 +253,16 @@ const DeploymentRoutes = (controllers) => {
   }
 
   const uploadArchive = async (req, res, next) => {
-    const filepath = await tempFile({
-      postfix: '.txt',
-    })
 
-    const writeStream = fs.createWriteStream(filepath)
+    const {
+      name,
+      type,
+      size,
+    } = req.query
+
+    const localFilepath = await tempFile()
+
+    const writeStream = fs.createWriteStream(localFilepath)
 
     await new Promise((resolve, reject) => {
       writeStream.on('error', reject)
@@ -265,11 +270,17 @@ const DeploymentRoutes = (controllers) => {
       req.pipe(writeStream)
     })
 
+    const data = await controllers.deployment.uploadArchive({
+      id: req.params.id,
+      name,
+      type,
+      size,
+      localFilepath,
+    })
+
     res
-      .status(200)
-      .json({
-        filepath,
-      })
+      .status(201)
+      .json(data)
   }
 
 

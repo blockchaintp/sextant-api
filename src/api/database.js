@@ -67,7 +67,7 @@ const damlParticipants = [{
 
 const damlArchives = [{
   packageid: '3ab37fe8d_some.daml.package',
-  size: '3123987',
+  size: 3123987,
   uploadedBy: damlParticipants[0].publicKey,
   uploaded: new Date().getTime(),
 }]
