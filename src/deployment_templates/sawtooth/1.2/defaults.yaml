@@ -1,10 +1,9 @@
 deployment:
-  name: sawtooth
-  namespace: sawtooth
   storageclass: default
 
 sawtooth:
   networkName: sawtooth
+  namespace: prod
   replicas: 3
   scheduler: parallel
   poet:

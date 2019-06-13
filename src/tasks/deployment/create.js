@@ -1,6 +1,7 @@
 const Promise = require('bluebird')
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
+const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('./utils/keyPair')
 
@@ -46,9 +47,12 @@ const DeploymentCreate = ({
     desired_state,
   } = deployment
 
-  const {
-    namespace,
-  } = desired_state.deployment
+  const namespace = getField({
+    deployment_type,
+    deployment_version,
+    data: desired_state,
+    field: 'namespace',
+  })
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,

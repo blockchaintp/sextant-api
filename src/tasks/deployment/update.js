@@ -1,5 +1,6 @@
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
+const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const DeploymentUpdate = ({
@@ -29,8 +30,22 @@ const DeploymentUpdate = ({
     desired_state,
   } = deployment
 
+  const desiredNamespace = getField({
+    deployment_type,
+    deployment_version,
+    data: desired_state,
+    field: 'namespace',
+  })
+
+  const appliedNamespace = getField({
+    deployment_type,
+    deployment_version,
+    data: applied_state,
+    field: 'namespace',
+  })
+
   // check that the user is not trying to change the k8s namespace
-  if(desired_state.deployment.namespace != applied_state.deployment.namespace) {
+  if(desiredNamespace != appliedNamespace) {
     throw new Error(`you cannot change the namespace of a deployment`)
   }
 

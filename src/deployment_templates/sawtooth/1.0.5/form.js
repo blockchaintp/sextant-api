@@ -94,48 +94,31 @@ const form = [
     },
   ],
 
-  [
-    {
-      id: 'sawtooth.permissioned',
-      title: 'Permissioned Network',
-      helperText: 'Will remote peers require permission to join this network?',
-      component: 'radio',
-      default: true,
-      dataType: 'boolean',
-      row: true,
-      options: activatedOptions,
-      validate: {
-        type: 'string',
-        methods: [
-          ['required', 'Required']
-        ],
-      },
-    },
-    {
-      id: 'sawtooth.externalSeeds',
-      title: 'External Seeds',
-      helperText: 'The list of external addresses to connect to',
-      list: {
-        mainField: 'address',
-        schema: [{
-          id: 'address',
-          title: 'Seed address',
-          helperText: 'Type the address of a new external seed (hostname:port or ip:port)',
-          component: 'text',
-          validate: {
-            type: 'string',
-            methods: [
-              ['required', 'Required'],
-            ],
-          },
-        }],
-        table: [{
-          title: 'Seed address',
-          name: 'address',
-        }]
-      }
-    },
-  ],
+  
+  {
+    id: 'sawtooth.externalSeeds',
+    title: 'External Seeds',
+    helperText: 'The list of external addresses to connect to',
+    list: {
+      mainField: 'address',
+      schema: [{
+        id: 'address',
+        title: 'Seed address',
+        helperText: 'Type the address of a new external seed (hostname:port or ip:port)',
+        component: 'text',
+        validate: {
+          type: 'string',
+          methods: [
+            ['required', 'Required'],
+          ],
+        },
+      }],
+      table: [{
+        title: 'Seed address',
+        name: 'address',
+      }]
+    }
+  },
 
   'Consensus Algorithm',
 
@@ -226,40 +209,24 @@ const form = [
   },
 
   [{
-    id: 'sawtooth.daml.enabled',
-    title: 'DAML Enabled',
-    helperText: 'Should the DAML transaction processor be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }, {
-    id: 'sawtooth.rbac.enabled',
-    title: 'RBAC Enabled',
-    helperText: 'Should the RBAC transaction processor be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }], 
-  [{
     id: 'sawtooth.seth.enabled',
     title: 'SETH Enabled',
     helperText: 'Should the SETH transaction processor be active on this network?',
+    component: 'radio',
+    default: true,
+    dataType: 'boolean',
+    row: true,
+    options: activatedOptions,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }], [{
+    id: 'sawtooth.xo.enabled',
+    title: 'XO Enabled',
+    helperText: 'Should the XO transaction processor be active on this network?',
     component: 'radio',
     default: true,
     dataType: 'boolean',
@@ -287,39 +254,7 @@ const form = [
       ],
     },
   }],
-
-  [{
-    id: 'sawtooth.xo.enabled',
-    title: 'XO Enabled',
-    helperText: 'Should the XO transaction processor be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }, {
-    id: 'sawtooth.simple.enabled',
-    title: 'Simple Enabled',
-    helperText: 'Should the Simple transaction processor be active on this network?',
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: activatedOptions,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }],
-
+  
 ]
 
 module.exports = form
