@@ -8,38 +8,38 @@ All of these methods are defined in the `src/controllers/deployment.js` file.
 
 These methods deal with sawtooth keys both local and globally enrolled:
 
- * getKeyManagerKeys - list keys from all key manager services in the deployment
- * getEnrolledKeys - list globally enrolled keys for the sawtooth cluster
- * addEnrolledKey - add an enrolled key to the sawtooth cluster
+ * `getKeyManagerKeys` - list keys from all key manager services in the deployment
+ * `getEnrolledKeys` - list globally enrolled keys for the sawtooth cluster
+ * `addEnrolledKey` - add an enrolled key to the sawtooth cluster
 
 ### Participants
 
 These methods deal with DAML participants - we combine the results from `getKeyManagerKeys` to determine which participants are local and which are remote:
 
- * getParticipants - list the global DAML participants
- * registerParticipant - regiater a global DAML participant
- * rotateParticipantKey - rotate the keypair for a local DAML participant
+ * `getParticipants` - list the global DAML participants
+ * `registerParticipant` - regiater a global DAML participant
+ * `rotateParticipantKey` - rotate the keypair for a local DAML participant
 
 ### Parties
 
 Methods that deal with the parties that belong to local participants:
 
- * addParty - add a party to a local participant
- * removeParties - remove parties from a local participant
- * generatePartyToken - generate a JWT token for some parties of a local participant
+ * `addParty` - add a party to a local participant
+ * `removeParties` - remove parties from a local participant
+ * `generatePartyToken` - generate a JWT token for some parties of a local participant
 
 ### Archives
 
 Handle listing and uploading DAR archives:
 
- * getArchives - list the globally uploaded DAML archives
- * uploadArchive - upload a new DAR file
+ * `getArchives` - list the globally uploaded DAML archives
+ * `uploadArchive` - upload a new DAR file
 
 ### Time service
 
 List info for the time service
 
- * getTimeServiceInfo - list the information for the time service
+ * `getTimeServiceInfo` - list the information for the time service
 
 ## Backend
 
