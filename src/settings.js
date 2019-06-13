@@ -26,7 +26,6 @@ ${missing_env.join("\n")}
 */
 const args = require('minimist')(process.argv, {
   alias: {
-    'sextant-manual-init': 'sextantManualInit',
     'initial-user': 'initialUser',
     'initial-password': 'initialPassword',
   },
