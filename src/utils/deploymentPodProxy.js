@@ -28,6 +28,7 @@ const ProxyRequest = async ({
 const DeploymentPodProxy = async ({
   store,
   id,
+  label = 'app=<namespace>-validator',
 }) => {
 
   const deployment = await store.deployment.get({
@@ -56,8 +57,10 @@ const DeploymentPodProxy = async ({
     store,
   })
 
+  const useLabel = label.replace('<namespace>', namespace)
+
   const getPods = () => clusterKubectl
-    .jsonCommand(`-n ${namespace} get po -l app=${namespace}-validator`)
+    .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
     .then(data => data.items)
 
   return {
