@@ -262,25 +262,36 @@ const DeploymentRoutes = (controllers) => {
 
     const localFilepath = await tempFile()
 
-    const writeStream = fs.createWriteStream(localFilepath)
+    const removeFile = () => {
+      fs.unlink(localFilepath, () => {})
+    }
 
-    await new Promise((resolve, reject) => {
-      writeStream.on('error', reject)
-      req.on('end', resolve)
-      req.pipe(writeStream)
-    })
+    try {
+      const writeStream = fs.createWriteStream(localFilepath)
 
-    const data = await controllers.deployment.uploadArchive({
-      id: req.params.id,
-      name,
-      type,
-      size,
-      localFilepath,
-    })
+      await new Promise((resolve, reject) => {
+        writeStream.on('error', reject)
+        req.on('end', resolve)
+        req.pipe(writeStream)
+      })
 
-    res
-      .status(201)
-      .json(data)
+      const data = await controllers.deployment.uploadArchive({
+        id: req.params.id,
+        name,
+        type,
+        size,
+        localFilepath,
+      })
+
+      removeFile()
+
+      res
+        .status(201)
+        .json(data)
+    } catch(e) {
+      removeFile()
+      throw e
+    }    
   }
 
 
