@@ -217,6 +217,46 @@ spec:
             requests:
               cpu: "50m"
         {{ end }}
+        {{ if .sawtooth.daml.enabled }} 
+        - name: daml-tp
+          image: {{.images.daml_tp}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "/opt/sawtooth-daml-tp/entrypoint.sh tcp://localhost:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+        - name: daml-rpc
+          image: {{.images.daml_rpc}}
+          command: [ "bash", "-xc"]
+          args: 
+          - |
+            /opt/sawtooth-daml-rpc/entrypoint.sh --port 9000 \
+              --connect tcp://localhost:4004 \
+              $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"
+          ports:
+            - containerPort: 9000
+              name: daml-ledger-api
+            - containerPort: 5051
+              name: tracer
+        - name: timekeeper
+          image: {{.images.timekeeper}}
+          command: [ "bash", "-xc"]
+          args: 
+          - "/opt/timekeeper/entrypoint.sh tcp://localhost:4004"
+          resources:
+            limits:
+              cpu: "250m"
+            requests:
+              cpu: "50m"          
+        {{ end }}
         {{range .sawtooth.customTPs}}
         - name: {{.name}}
           image: {{.image}}
@@ -268,12 +308,11 @@ spec:
           command: ["bash", "-xc" ]
           args:
             - |
-              sleep 30
               source /usr/local/bin/validator_env.sh {{.sawtooth.namespace}} {{.sawtooth.networkName}} \
                 ${POD_NAME} ${POD_IP} ${NODE_NAME}
               start_delay=$(( $DELAY * 5 ))
-              sleep $start_delay
               if [ ! -r /etc/sawtooth/initialized ]; then
+                sleep $start_delay
                 if [ $RUN_GENESIS -eq 1 ]; then
             {{ if eq .sawtooth.consensus 400 }}
                   bash -x /usr/local/bin/pbft_genesis_config.sh {{.sawtooth.namespace}}
