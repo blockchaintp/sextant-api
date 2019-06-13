@@ -27,7 +27,7 @@ const KeyManager = () => {
      * key
     
   */
-  const rotateDamlRPCKey = async ({
+  const rotateRPCKey = async ({
     publicKey,
   }) => {
     if(!publicKey) throw new Error(`publicKey must be given to api.keyManager.rotateDamlRPCKey`)
@@ -39,7 +39,7 @@ const KeyManager = () => {
 
   return {
     getKeys,
-    rotateDamlRPCKey,
+    rotateRPCKey,
   }
 
 }

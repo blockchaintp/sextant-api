@@ -172,26 +172,8 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
-  const getDamlParticipants = async (req, res, next) => {
-    const data = await controllers.deployment.getDamlParticipants({
-      id: req.params.id,
-    })
-    res
-      .status(200)
-      .json(data)
-  }
-
-  const getDamlArchives = async (req, res, next) => {
-    const data = await controllers.deployment.getDamlArchives({
-      id: req.params.id,
-    })
-    res
-      .status(200)
-      .json(data)
-  }
-
-  const getDamlTimeServiceInfo = async (req, res, next) => {
-    const data = await controllers.deployment.getDamlTimeServiceInfo({
+  const getParticipants = async (req, res, next) => {
+    const data = await controllers.deployment.getParticipants({
       id: req.params.id,
     })
     res
@@ -252,6 +234,15 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const getArchives = async (req, res, next) => {
+    const data = await controllers.deployment.getArchives({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const uploadArchive = async (req, res, next) => {
 
     const {
@@ -294,6 +285,14 @@ const DeploymentRoutes = (controllers) => {
     }    
   }
 
+  const getTimeServiceInfo = async (req, res, next) => {
+    const data = await controllers.deployment.getTimeServiceInfo({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
 
   return {
     list,
@@ -312,16 +311,19 @@ const DeploymentRoutes = (controllers) => {
     getEnrolledKeys,
     addEnrolledKey,
 
-    getDamlParticipants,
-    getDamlArchives,
-    getDamlTimeServiceInfo,
+    getParticipants,
     registerParticipant,
     rotateParticipantKey,
+
     addParty,
     removeParties,
     generatePartyToken,
+
+    getArchives,
     uploadArchive,
 
+    getTimeServiceInfo,
+    
   }
 }
 

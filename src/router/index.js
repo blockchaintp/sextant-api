@@ -105,9 +105,9 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getEnrolledKeys))
   app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addEnrolledKey))
 
-  app.get(basePath('/clusters/:cluster/deployments/:id/damlParticipants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getDamlParticipants))
-  app.get(basePath('/clusters/:cluster/deployments/:id/damlArchives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getDamlArchives))
-  app.get(basePath('/clusters/:cluster/deployments/:id/damlTimeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getDamlTimeServiceInfo))
+  app.get(basePath('/clusters/:cluster/deployments/:id/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getParticipants))
+  app.get(basePath('/clusters/:cluster/deployments/:id/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getArchives))
+  app.get(basePath('/clusters/:cluster/deployments/:id/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getTimeServiceInfo))
 
   app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerParticipant))
   app.post(basePath('/clusters/:cluster/deployments/:id/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateParticipantKey))

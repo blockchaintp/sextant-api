@@ -630,22 +630,10 @@ const DeployentController = ({ store, settings }) => {
     })
   }
 
-  const getDamlParticipants = async ({
+  const getParticipants = async ({
     id,
   }) => {
     return damlRPC.getParticipants()
-  }
-
-  const getDamlArchives = async ({
-    id,
-  }) => {
-    return damlRPC.getArchives()
-  }
-
-  const getDamlTimeServiceInfo = async ({
-    id,
-  }) => {
-    return damlRPC.getTimeServiceInfo()
   }
 
   const registerParticipant = async ({
@@ -666,7 +654,7 @@ const DeployentController = ({ store, settings }) => {
     if(!id) throw new Error(`id must be given to controller.deployment.rotateParticipantKey`) 
     if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.rotateParticipantKey`) 
 
-    const newKey = await keyManager.rotateDamlRPCKey({
+    const newKey = await keyManager.rotateRPCKey({
       publicKey,
     })
 
@@ -731,6 +719,12 @@ const DeployentController = ({ store, settings }) => {
     }
   }
 
+  const getArchives = async ({
+    id,
+  }) => {
+    return damlRPC.getArchives()
+  }
+
   const uploadArchive = async ({
     id,
     name,
@@ -750,6 +744,12 @@ const DeployentController = ({ store, settings }) => {
     return data
   }
 
+  const getTimeServiceInfo = async ({
+    id,
+  }) => {
+    return damlRPC.getTimeServiceInfo()
+  }
+
   return {
     list,
     get,
@@ -763,18 +763,23 @@ const DeployentController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
+
     getKeyManagerKeys,
     getEnrolledKeys,
     addEnrolledKey,
-    getDamlParticipants,
-    getDamlArchives,
-    getDamlTimeServiceInfo,
+
+    getParticipants,
     registerParticipant,
     rotateParticipantKey,
+
     addParty,
     removeParties,
     generatePartyToken,
+
+    getArchives,
     uploadArchive,
+    
+    getTimeServiceInfo,
   }
 
 }
