@@ -12,6 +12,7 @@ const deploymentTemplates = require('../deployment_templates')
 const getField = require('../deployment_templates/getField')
 const validate = require('../forms/validate')
 
+const Address = require('../utils/address')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
@@ -640,18 +641,22 @@ const DeployentController = ({ store, settings }) => {
 
     const pods = await proxy.getPods()
 
-    const pod = pods[0]
-
     const result = await proxy.request({
-      pod: pod.metadata.name,
+      pod: pods[0].metadata.name,
       port: 8080,
       handler: ({
         port,
       }) => axios
-        .get(`http://localhost:${port}/transactions?limit=5`)
+        .get(`http://localhost:${port}/state`, {
+          params: {
+            address: Address.allowedKeys(),
+            limit: 100,
+          }
+        })
         .then(res => res.data)
     })
 
+    // TODO - process these results and return them instead of the fixtures
     console.log('--------------------------------------------')
     console.dir(result)
 
