@@ -1,4 +1,7 @@
 const random = require('../utils/random')
+const secp256k1 = require('../utils/secp256k1')
+
+const getKey = () => secp256k1.binaryToHex(secp256k1.createKeyPair()).publicKey
 
 /*
 
@@ -13,22 +16,22 @@ const sawtoothEnrolledKeys = []
 
 */
 const keyManagerKeys = [{
-  publicKey: random.key(),
+  publicKey: getKey(),
   name: 'validator:1',
 },{
-  publicKey: random.key(),
+  publicKey: getKey(),
   name: 'validator:2',
 },{
-  publicKey: random.key(),
+  publicKey: getKey(),
   name: 'validator:3',
 },{
-  publicKey: random.key(),
+  publicKey: getKey(),
   name: 'daml:1',
 },{
-  publicKey: random.key(),
+  publicKey: getKey(),
   name: 'daml:2',
 },{
-  publicKey: random.key(),
+  publicKey: getKey(),
   name: 'daml:3',
 }]
 
@@ -41,7 +44,7 @@ const damlKeys = keyManagerKeys.filter(key => key.name.indexOf('daml:') == 0)
 */
 const damlParticipants = [{
   publicKey: damlKeys[0].publicKey,
-  damlId: random.key(),
+  damlId: getKey(),
   parties: [{
     name: 'Alice',
   }, {
@@ -49,13 +52,13 @@ const damlParticipants = [{
   }]
 },{
   publicKey: damlKeys[1].publicKey,
-  damlId: random.key(),
+  damlId: getKey(),
   parties: [{
     name: 'Harry',
   }]
 }, {
-  publicKey: random.key(),
-  damlId: random.key(),
+  publicKey: getKey(),
+  damlId: random.string(),
   parties: [{
     name: 'Nigel',
   },{
@@ -76,8 +79,6 @@ const damlTimeService = [{
   publicKey: damlParticipants[0].publicKey,
   lastClockUpdate: new Date().getTime(),
 }]
-
-const getKey = () => random.key()
 
 module.exports = {
   sawtoothEnrolledKeys,

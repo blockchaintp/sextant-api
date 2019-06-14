@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 
-const randString = (n) => {
+const string = (n = 32) => {
   if (n <= 0) {
       return '';
   }
@@ -28,6 +28,5 @@ const randString = (n) => {
 const key = () => randString(32)
 
 module.exports = {
-  randString,
-  key,
+  string,
 }
