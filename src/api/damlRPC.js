@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken')
+const settings = require('../settings')
 const database = require('./database')
 
 const DamlRPC = () => {
@@ -68,7 +70,16 @@ const DamlRPC = () => {
   }) => {
     if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.generatePartyTokens`)
     if(!partyNames) throw new Error(`partyNames must be given to api.damlRPC.generatePartyTokens`)
-    return database.getKey()
+
+    return new Promise((resolve, reject) => {
+      jwt.sign({
+        publicKey,
+        partyNames,
+      }, settings.tokenSecret, (err, result) => {
+        if(err) return reject(err)
+        resolve(result)
+      })
+    })
   }
 
   const getArchives = ({
