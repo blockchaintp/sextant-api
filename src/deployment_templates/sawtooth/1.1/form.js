@@ -200,6 +200,21 @@ const form = [
     }
   },
   [{
+    id: 'sawtooth.daml.enabled',
+    title: 'DAML Enabled',
+    helperText: 'Should DAML be active on this network?',
+    component: 'radio',
+    default: true,
+    dataType: 'boolean',
+    row: true,
+    options: options.activated,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  },{
     id: 'sawtooth.sabre.enabled',
     title: 'Sabre Enabled',
     helperText: 'Should the Sabre transaction processor be active on this network?',
