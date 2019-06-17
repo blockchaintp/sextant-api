@@ -1,5 +1,6 @@
 const Promise = require('bluebird')
 const async = require('async')
+const axios = require('axios')
 const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
@@ -10,6 +11,13 @@ const deploymentForms = require('../forms/deployment')
 const deploymentTemplates = require('../deployment_templates')
 const getField = require('../deployment_templates/getField')
 const validate = require('../forms/validate')
+
+const Address = require('../utils/address')
+const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const KeyPair = require('../utils/sextantKeyPair')
+const KeyManager = require('../api/keyManager')
+const DamlRPC = require('../api/damlRPC')
+const SettingsTP = require('../api/settingsTP')
 
 const {
   CLUSTER_STATUS,
@@ -23,6 +31,10 @@ const {
 
 const DeployentController = ({ store, settings }) => {
   
+  const keyManager = KeyManager()
+  const damlRPC = DamlRPC()
+  const settingsTP = SettingsTP()
+
   /*
   
     list deployments
@@ -573,6 +585,9 @@ const DeployentController = ({ store, settings }) => {
       pods: kubectl
         .jsonCommand(`-n ${namespace} get po`)
         .then(result => result.items),
+      nodes: kubectl
+        .jsonCommand(`-n ${namespace} get no`)
+        .then(result => result.items),
       services: kubectl
         .jsonCommand(`-n ${namespace} get svc`)
         .then(result => result.items),
@@ -610,6 +625,182 @@ const DeployentController = ({ store, settings }) => {
     return summaryFunction(deployment.desired_state)
   }
 
+  const getKeyManagerKeys = async ({
+    id,
+  }) => {
+    const keyPair = await KeyPair.get({
+      store,
+      deployment: id,
+    })
+
+    return keyManager.getKeys({
+      sextantPublicKey: keyPair.publicKey,
+    })
+  }
+
+  const getEnrolledKeys = async ({
+    id,
+  }) => {
+/*
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+    })
+
+    const pods = await proxy.getPods()
+
+    const result = await proxy.request({
+      pod: pods[0].metadata.name,
+      port: 8080,
+      handler: ({
+        port,
+      }) => axios
+        .get(`http://localhost:${port}/state`, {
+          params: {
+            address: Address.allowedKeys(),
+            limit: 100,
+          }
+        })
+        .then(res => res.data)
+    })
+
+    // TODO - process these results and return them instead of the fixtures
+    console.log('--------------------------------------------')
+    console.dir(result)
+*/
+
+    return settingsTP.getEnrolledKeys()
+  }
+
+  const addEnrolledKey = async ({
+    id,
+    publicKey,
+  }) => {
+    return settingsTP.addEnrolledKey({
+      publicKey,
+    })
+  }
+
+  const getParticipants = async ({
+    id,
+  }) => {
+    return damlRPC.getParticipants()
+  }
+
+  const registerParticipant = async ({
+    id,
+    publicKey,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.registerParticipant`) 
+    return damlRPC.registerParticipant({
+      publicKey,
+    })
+  }
+
+  const rotateParticipantKey = async ({
+    id,
+    publicKey,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.rotateParticipantKey`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.rotateParticipantKey`) 
+
+    const newKey = await keyManager.rotateRPCKey({
+      publicKey,
+    })
+
+    await damlRPC.updateKey({
+      oldPublicKey: publicKey,
+      newPublicKey: newKey,
+    })
+
+    return true
+  }
+
+  const addParty = async ({
+    id,
+    publicKey,
+    partyName,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.addParty`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.addParty`) 
+    if(!partyName) throw new Error(`partyName must be given to controller.deployment.addParty`) 
+
+    await damlRPC.addParty({
+      publicKey,
+      partyName,
+    })
+
+    return true
+  }
+
+  const removeParties = async ({
+    id,
+    publicKey,
+    partyNames,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.removeParties`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.removeParties`) 
+    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.removeParties`) 
+
+    await damlRPC.removeParties({
+      publicKey,
+      partyNames,
+    })
+
+    return true
+  }
+
+  const generatePartyToken = async ({
+    id,
+    publicKey,
+    partyNames,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.generatePartyToken`) 
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.generatePartyToken`) 
+    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.generatePartyToken`) 
+
+    const token = await damlRPC.generatePartyToken({
+      publicKey,
+      partyNames,
+    })
+
+    return {
+      token,
+    }
+  }
+
+  const getArchives = async ({
+    id,
+  }) => {
+    return damlRPC.getArchives()
+  }
+
+  const uploadArchive = async ({
+    id,
+    name,
+    size,
+    localFilepath,
+  }) => {
+    if(!id) throw new Error(`id must be given to controller.deployment.uploadArchive`) 
+    if(!name) throw new Error(`name must be given to controller.deployment.uploadArchive`) 
+    if(!size) throw new Error(`size must be given to controller.deployment.uploadArchive`) 
+    if(!localFilepath) throw new Error(`localFilepath must be given to controller.deployment.uploadArchive`) 
+
+    const data = await damlRPC.uploadArchive({
+      name,
+      size,
+    })
+
+    return data
+  }
+
+  const getTimeServiceInfo = async ({
+    id,
+  }) => {
+    return damlRPC.getTimeServiceInfo()
+  }
+
   return {
     list,
     get,
@@ -623,6 +814,23 @@ const DeployentController = ({ store, settings }) => {
     getRoles,
     createRole,
     deleteRole,
+
+    getKeyManagerKeys,
+    getEnrolledKeys,
+    addEnrolledKey,
+
+    getParticipants,
+    registerParticipant,
+    rotateParticipantKey,
+
+    addParty,
+    removeParties,
+    generatePartyToken,
+
+    getArchives,
+    uploadArchive,
+    
+    getTimeServiceInfo,
   }
 
 }

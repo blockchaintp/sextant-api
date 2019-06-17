@@ -100,7 +100,22 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
   app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))
-  
+
+  app.get(basePath('/clusters/:cluster/deployments/:id/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getKeyManagerKeys))
+  app.get(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getEnrolledKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addEnrolledKey))
+
+  app.get(basePath('/clusters/:cluster/deployments/:id/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getParticipants))
+  app.get(basePath('/clusters/:cluster/deployments/:id/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getArchives))
+  app.get(basePath('/clusters/:cluster/deployments/:id/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getTimeServiceInfo))
+
+  app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerParticipant))
+  app.post(basePath('/clusters/:cluster/deployments/:id/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateParticipantKey))
+  app.post(basePath('/clusters/:cluster/deployments/:id/addParty'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addParty))
+  app.post(basePath('/clusters/:cluster/deployments/:id/removeParties'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.removeParties))
+  app.post(basePath('/clusters/:cluster/deployments/:id/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.generatePartyToken))
+  app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.uploadArchive))
+
 }
 
 module.exports = Routes

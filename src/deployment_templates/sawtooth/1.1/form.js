@@ -105,6 +105,23 @@ const form = [
     },
   ],
 
+  {
+    id: 'affinity.enabled',
+    title: 'Affinity',
+    helperText: 'If enabled - pods will only deploy to nodes that have the label: app={{.sawtooth.networkName}}-validator',
+    component: 'radio',
+    default: false,
+    dataType: 'boolean',
+    row: true,
+    options: options.activated,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  },
+
   
   {
     id: 'sawtooth.externalSeeds',
@@ -132,7 +149,7 @@ const form = [
   },
 
   'Transaction Processors',
-
+  
   {
     id: 'sawtooth.customTPs',
     title: 'Custom Transaction Processors',
@@ -274,7 +291,52 @@ const form = [
         ['required', 'Required']
       ],
     },
-  }],
+  }, ''],
+
+  'Image Pull Secrets',
+
+  {
+    id: 'imagePullSecrets.enabled',
+    title: 'Enable Image Pull Secrets',
+    helperText: 'Inject the image pull secrets into the pod to get images from secure registries',
+    component: 'radio',
+    default: false,
+    dataType: 'boolean',
+    row: true,
+    options: options.activated,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }, {
+    id: 'imagePullSecrets.value',
+    title: 'Image Pull Secret Names',
+    helperText: 'A list of image pull secret names in the same namespace used to get images from secure registries',
+    default: [{
+      name: 'regcred',
+    }],
+    list: {
+      mainField: 'name',
+      schema: [{
+        id: 'name',
+        title: 'Name',
+        helperText: 'The name of the secret',
+        component: 'text',
+        validate: {
+          type: 'string',
+          methods: [
+            ['required', 'Required'],
+          ],
+        },
+      }],
+      table: [{
+        title: 'Name',
+        name: 'name',
+      }]
+    }
+  },
 
 
 ]

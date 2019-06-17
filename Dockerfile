@@ -4,7 +4,7 @@ ENV NODEJS_MAJOR_VERSION=10
 ENV KUBETPL_VERSION=0.7.1
 
 RUN apt-get update -y && \
-       apt-get install --yes ca-certificates curl openssl openssh-client bash python-minimal mime-support gnupg && \
+       apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python-minimal mime-support gnupg && \
        curl --silent --location https://deb.nodesource.com/setup_${NODEJS_MAJOR_VERSION}.x | bash -  && \
        curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -  && \
        echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list  && \

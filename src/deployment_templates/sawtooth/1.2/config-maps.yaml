@@ -12,7 +12,7 @@ data:
     PORT = 8000
     TIMEOUT = 500
     KEEP_ALIVE = False
-    VALIDATOR_HOST = '{{.deployment.namespace}}-validator'
+    VALIDATOR_HOST = '{{.sawtooth.namespace}}-validator'
     VALIDATOR_PORT = 4004
     DB_HOST = 'localhost'
     DB_PORT = 28015

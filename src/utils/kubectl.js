@@ -19,7 +19,9 @@
 
 const Promise = require('bluebird')
 const tmp = require('tmp')
+const split = require('split')
 const async = require('async')
+const getPort = require('get-port')
 const fs = require('fs')
 const childProcess = require('child_process')
 
@@ -124,15 +126,81 @@ const Kubectl = ({
     isSetup = true
   }
 
-  // run a kubectl command and return [ stdout, stderr ]
-  const command = async (cmd, options = {}) => {
-    await setup()
+  const getOptions = (options) => {
     const useOptions = Object.assign({}, options, {
       // allow 5MB back on stdout 
       //(which should not happen but some logs might be longer than 200kb which is the default)
       maxBuffer: 1024 * 1024 * 5,
     })
     useOptions.env = Object.assign({}, process.env, options.env)
+    return useOptions
+  }
+
+  // pick a free local port and setup a port-forward to a pod
+  // return an object that can close the forwarding process
+  const portForward = async ({
+    namespace,
+    pod,
+    port,
+  }) => {
+    await setup()
+    const useOptions = getOptions({})
+    const localPort = await getPort()
+
+    const args = connectionArguments.concat([
+      '-n', namespace,
+      'port-forward',
+      `pod/${pod}`,
+      `${localPort}:${port}`
+    ])
+
+    const forwardingProcess = await new Promise((resolve, reject) => {
+
+      let complete = false
+      let stderr = ''
+
+      const spawnedProcess = childProcess.spawn('kubectl', args, {
+        env: useOptions.env,
+        stdio: 'pipe',
+      })
+
+      // watch for confirmation the proxy is setup
+      spawnedProcess.stdout
+        .pipe(split())
+        .on('data', (line) => {
+          // this is the key line kubectl port-forward prints once the proxy is setup
+          if(line == `Forwarding from 127.0.0.1:${localPort} -> ${port}`)
+          complete = true
+          resolve(spawnedProcess)
+        })
+
+      // capture stderr so we can throw an error if there is one
+      spawnedProcess.stderr
+        .pipe(split())
+        .on('data', (line) => {
+          stderr += line + "\n"
+        })
+      
+      spawnedProcess.on('exit', (code) => {
+        if(code > 0 && !complete) {
+          complete = true
+          reject(new Error(stderr))
+        }
+      })
+    })
+
+    return {
+      port: localPort,
+      stop: async () => {
+        forwardingProcess.kill()
+      }
+    }
+  }
+
+  // run a kubectl command and return [ stdout, stderr ]
+  const command = async (cmd, options = {}) => {
+    await setup()
+    const useOptions = getOptions(options)
     const runCommand = `kubectl ${connectionArguments.join(' ')} ${cmd}`
     return exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
@@ -181,6 +249,7 @@ const Kubectl = ({
 
   return {
     command,
+    portForward,
     jsonCommand,
     apply,
     applyInline,

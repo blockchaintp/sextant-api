@@ -3,6 +3,7 @@ const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
+const KeyPair = require('../../utils/sextantKeyPair')
 
 const DeploymentCreate = ({
   testMode,
@@ -22,6 +23,11 @@ const DeploymentCreate = ({
 
   const cluster = yield store.cluster.get({
     id: deployment.cluster,
+  }, trx)
+
+  const keyPair = yield KeyPair.create({
+    store,
+    deployment: deployment.id,
   }, trx)
 
   // TODO: mock the kubectl handler for tests
@@ -61,6 +67,8 @@ const DeploymentCreate = ({
   if(existingNamespace) throw new Error(`there is already a namespace called ${namespace}`)
 
   yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
+
+  yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
   const templateDirectory = yield renderTemplates({
     deployment_type,

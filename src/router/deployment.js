@@ -1,4 +1,9 @@
+const fs = require('fs')
+const Promise = require('bluebird')
+const tmp = require('tmp')
 const config = require('../config')
+
+const tempFile = Promise.promisify(tmp.file)
 
 const {
   DEPLOYMENT_STATUS,
@@ -139,6 +144,156 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const getKeyManagerKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getKeyManagerKeys({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const getEnrolledKeys = async (req, res, next) => {
+    const data = await controllers.deployment.getEnrolledKeys({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const addEnrolledKey = async (req, res, next) => {
+    const data = await controllers.deployment.addEnrolledKey({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
+  const getParticipants = async (req, res, next) => {
+    const data = await controllers.deployment.getParticipants({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const registerParticipant = async (req, res, next) => {
+    const data = await controllers.deployment.registerParticipant({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const rotateParticipantKey = async (req, res, next) => {
+    const data = await controllers.deployment.rotateParticipantKey({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const addParty = async (req, res, next) => {
+    const data = await controllers.deployment.addParty({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+      partyName: req.body.partyName,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
+  const removeParties = async (req, res, next) => {
+    const data = await controllers.deployment.removeParties({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+      partyNames: req.body.partyNames,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const generatePartyToken = async (req, res, next) => {
+    const data = await controllers.deployment.generatePartyToken({
+      id: req.params.id,
+      publicKey: req.body.publicKey,
+      partyNames: req.body.partyNames,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const getArchives = async (req, res, next) => {
+    const data = await controllers.deployment.getArchives({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const uploadArchive = async (req, res, next) => {
+
+    const {
+      name,
+      type,
+      size,
+    } = req.query
+
+    const localFilepath = await tempFile()
+
+    const removeFile = () => {
+      fs.unlink(localFilepath, () => {})
+    }
+
+    try {
+      const writeStream = fs.createWriteStream(localFilepath)
+
+      await new Promise((resolve, reject) => {
+        writeStream.on('error', reject)
+        req.on('end', resolve)
+        req.pipe(writeStream)
+      })
+
+      const data = await controllers.deployment.uploadArchive({
+        id: req.params.id,
+        name,
+        type,
+        size,
+        localFilepath,
+      })
+
+      removeFile()
+
+      res
+        .status(201)
+        .json(data)
+    } catch(e) {
+      removeFile()
+      throw e
+    }    
+  }
+
+  const getTimeServiceInfo = async (req, res, next) => {
+    const data = await controllers.deployment.getTimeServiceInfo({
+      id: req.params.id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   return {
     list,
     get,
@@ -151,6 +306,24 @@ const DeploymentRoutes = (controllers) => {
     resources,
     summary,
     delete: del,
+
+    getKeyManagerKeys,
+    getEnrolledKeys,
+    addEnrolledKey,
+
+    getParticipants,
+    registerParticipant,
+    rotateParticipantKey,
+
+    addParty,
+    removeParties,
+    generatePartyToken,
+
+    getArchives,
+    uploadArchive,
+
+    getTimeServiceInfo,
+    
   }
 }
 

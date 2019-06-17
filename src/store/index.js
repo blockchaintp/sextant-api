@@ -1,10 +1,10 @@
-const databaseTools = require('../utils/database')
 const UserStore = require('./user')
 const RoleStore = require('./role')
 const ClusterStore = require('./cluster')
 const ClusterFileStore = require('./clusterfile')
 const ClusterSecretStore = require('./clustersecret')
 const DeploymentStore = require('./deployment')
+const DeploymentSecretStore = require('./deploymentsecret')
 const TaskStore = require('./task')
 
 const Store = (knex) => {
@@ -14,6 +14,7 @@ const Store = (knex) => {
   const clusterfile = ClusterFileStore(knex)
   const clustersecret = ClusterSecretStore(knex)
   const deployment = DeploymentStore(knex)
+  const deploymentsecret = DeploymentSecretStore(knex)
   const task = TaskStore(knex)
 
   const transaction = knex.transaction
@@ -26,6 +27,7 @@ const Store = (knex) => {
     clusterfile,
     clustersecret,
     deployment,
+    deploymentsecret,
     task,
     transaction,
   }
