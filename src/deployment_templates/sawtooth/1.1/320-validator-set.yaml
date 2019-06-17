@@ -151,7 +151,7 @@ spec:
           image: {{.images.identity_tp}}
           command: [ "bash", "-xc" ]
           args: 
-          - "identity-tp -v -connect tcp://127.0.0.1:4004"
+          - "identity-tp -v -C tcp://127.0.0.1:4004"
           resources:
             limits:
               cpu: "250m"
