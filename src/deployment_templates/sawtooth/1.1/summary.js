@@ -36,6 +36,9 @@ const summary = (values) => {
     title: 'Custom Transaction Processors',
     value: sawtooth.customTPs.map(tp => `${tp.name} (${tp.image})`),
   }, {
+    title: 'DAML enabled?',
+    value: sawtooth.daml.enabled ? 'Yes' : 'No',
+  }, {
     title: 'Sabre enabled?',
     value: sawtooth.sabre.enabled ? 'Yes' : 'No',
   }, {
