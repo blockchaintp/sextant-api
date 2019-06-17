@@ -15,7 +15,7 @@ affinity:
 imagePullSecrets:
   enabled: true
   value: 
-    - regcred
+    - name: regcred
 sawtooth:
   permissioned: false
   #This MUST be chosen by the user

@@ -3,6 +3,10 @@ const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 
+const pino = require('pino')({
+  name: 'deployment.update',
+})
+
 const DeploymentUpdate = ({
   testMode,
 }) => function* deploymentUpdateTask(params) {
@@ -72,6 +76,12 @@ const DeploymentUpdate = ({
   })
 
   yield clusterKubectl.command(`apply -f ${templateDirectory}`)
+
+  pino.info({
+    action: 'applyTemplates',
+    deployment: id,
+    templateDirectory,
+  })
 
   yield saveAppliedState({
     id,
