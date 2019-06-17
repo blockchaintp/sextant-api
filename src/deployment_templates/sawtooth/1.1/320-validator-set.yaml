@@ -34,10 +34,10 @@ spec:
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
-      {{ if .imagePullSecrets }}
+      {{ if .imagePullSecrets.enabled }}
       imagePullSecrets: 
       {{range .imagePullSecrets.value }}
-        - name: {{ . }}
+        - name: {{ .name }}
       {{ end }}
       {{ end }}
       containers:

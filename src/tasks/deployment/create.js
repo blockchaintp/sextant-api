@@ -5,6 +5,10 @@ const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
 
+const pino = require('pino')({
+  name: 'deployment.create',
+})
+
 const DeploymentCreate = ({
   testMode,
 }) => function* deploymentCreateTask(params) {
@@ -77,6 +81,12 @@ const DeploymentCreate = ({
   })
 
   yield clusterKubectl.command(`apply -f ${templateDirectory}`)
+
+  pino.info({
+    action: 'applyTemplates',
+    deployment: id,
+    templateDirectory,
+  })
 
   yield saveAppliedState({
     id,

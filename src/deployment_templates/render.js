@@ -15,6 +15,8 @@ const exec = Promise.promisify(childProcess.exec)
 
 const DEFAULTS_FILE = 'defaults.yaml'
 
+const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
+
 
 /*
 
@@ -92,7 +94,7 @@ const getTemplateData = async ({
     deployment_type,
     deployment_version,
   })
-  return merge(defaults, desired_state)
+  return merge(defaults, desired_state, { arrayMerge: overwriteMerge })
 }
 
 /*
