@@ -106,7 +106,7 @@ const form = [
   ],
 
   {
-    id: 'affinity',
+    id: 'affinity.enabled',
     title: 'Affinity',
     helperText: 'If enabled - pods will only deploy to nodes that have the label: app={{.sawtooth.networkName}}-validator',
     component: 'radio',
