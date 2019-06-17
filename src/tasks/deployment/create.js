@@ -3,7 +3,7 @@ const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
-const KeyPair = require('./utils/keyPair')
+const KeyPair = require('../../utils/sextantKeyPair')
 
 const DeploymentCreate = ({
   testMode,

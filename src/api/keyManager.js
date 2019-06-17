@@ -10,9 +10,12 @@ const KeyManager = () => {
     
   */
   const getKeys = async ({
-    
+    sextantPublicKey,
   } = {}) => {
-    return database.keyManagerKeys
+    return [{
+      publicKey: sextantPublicKey,
+      name: 'sextant',
+    }].concat(database.keyManagerKeys)
   }
 
   

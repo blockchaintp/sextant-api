@@ -11,9 +11,7 @@ const SettingsTP = () => {
      * id
     
   */
-  const getEnrolledKeys = async ({
-    
-  } = {}) => {
+  const getEnrolledKeys = async ({} = {}) => {
     return database.sawtoothEnrolledKeys
   }
 

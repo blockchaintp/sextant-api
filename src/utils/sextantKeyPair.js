@@ -1,5 +1,5 @@
-const secp256k1 = require('../../../utils/secp256k1')
-const base64 = require('../../../utils/base64')
+const secp256k1 = require('./secp256k1')
+const base64 = require('./base64')
 
 const create = async ({
   store,

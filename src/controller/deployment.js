@@ -14,6 +14,7 @@ const validate = require('../forms/validate')
 
 const Address = require('../utils/address')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const KeyPair = require('../utils/sextantKeyPair')
 const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
@@ -627,7 +628,14 @@ const DeployentController = ({ store, settings }) => {
   const getKeyManagerKeys = async ({
     id,
   }) => {
-    return keyManager.getKeys()
+    const keyPair = await KeyPair.get({
+      store,
+      deployment: id,
+    })
+
+    return keyManager.getKeys({
+      sextantPublicKey: keyPair.publicKey,
+    })
   }
 
   const getEnrolledKeys = async ({
@@ -660,6 +668,7 @@ const DeployentController = ({ store, settings }) => {
     console.log('--------------------------------------------')
     console.dir(result)
 */
+
     return settingsTP.getEnrolledKeys()
   }
 

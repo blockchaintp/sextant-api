@@ -1,9 +1,5 @@
 Now:
 
- * add the registry credentials UI
- * add the affinity rules UI
- * Include the sextant public key in the list with the name `sextant`
-
 Future:
 
  * add the hostpath base directory to 1.1 (don't add to UI)
@@ -23,6 +19,9 @@ Done:
  * order local participants before remote ones in the `All Parties By Participant`
  * add a `.dar` filter to the dropzone on package uploads
  * add the DAML enabled to 1.1
+ * add the registry credentials UI
+ * add the affinity rules UI
+ * Include the sextant public key in the list with the name `sextant`
 
 KeyManager request:
 
