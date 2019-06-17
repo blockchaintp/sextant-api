@@ -23,7 +23,7 @@ sawtooth:
   namespace: prod
   # This MUST be chosen by the user.
   # Follows DNS naming rules
-  networkName: mynetwork2
+  networkName: mynetwork8
   # serial or parallel
   scheduler: serial
   # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
@@ -36,7 +36,12 @@ sawtooth:
     # the node chosen will be the "alpha" node, the one node which has no 
     # other SEEDS or PEERS configured dynamically
     enabled: true
+    # The seed is an arbitrary string which identifies a given genesis
+    # If the data of a given set of nodes is to be wiped out, change 
+    # this value.
+    seed: 9a2de774-90b5-11e9-9df0-87e889b0f1c9
   # Dynamic Peering should default to false, since it is a bit unreliable
+  # PBFT and RAFT should have dynamic peering
   dynamicPeering: false
   externalSeeds: []
   seth:
@@ -49,10 +54,16 @@ sawtooth:
   smallbank:
     # default this to false since you probably don't want it in real life
     enabled: false
+  daml:
+    # default daml to false at the moment 
+    enabled: false
   volumes:
     # This MUST be set, and SHOULD be presented to the user as an option, as it is a likely area 
     # of customization
     hostPathBaseDir: /var/lib/btp/
+  # This is an arbitrary cool down period to wait for validators to initialize
+  # before starting any client operations
+  client_wait: 90
   customTPs:
           # A list of basic container definitions
           #    - name: intkey-tp
@@ -64,28 +75,28 @@ sawtooth:
 # The below are mostly controlled by BTP, although an "advanced" option to customize them may be 
 # presented    
 images:
-  block_info_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-block-info-tp:BTP2.0.0-27-g2b29c5b-1.1.5
-  daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc:BTP2.0.0-27-g2b29c5b-0.0.0-65-gd722782
-  daml_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-tp:BTP2.0.0-27-g2b29c5b-0.0.0-65-gd722782
+  daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc:BTP2.0.0-51-g1889dcc-0.0.0-154-g8837a92
+  daml_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-tp:BTP2.0.0-51-g1889dcc-0.0.0-154-g8837a92
+  timekeeper: dev.catenasys.com:8083/blockchaintp/timekeeper:BTP2.0.0-51-g1889dcc-0.0.0-154-g8837a92
   devmode_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-devmode-engine-rust:BTP2.0.0-27-g2b29c5b-1.2.1
-  identity_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-identity-tp:BTP2.0.0-27-g2b29c5b-1.1.5
-  intkey_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-intkey-tp-go:BTP2.0.0-27-g2b29c5b-1.1.5
   pbft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-pbft-engine:BTP2.0.0-27-g2b29c5b-0.1.3
   poet_cli: dev.catenasys.com:8083/blockchaintp/sawtooth-poet-cli:BTP2.0.0-27-g2b29c5b-1.1.2
   poet_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-poet-engine:BTP2.0.0-27-g2b29c5b-1.1.2
   poet_validator_registry_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-poet-validator-registry-tp:BTP2.0.0-27-g2b29c5b-1.1.2
   raft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-raft-engine:BTP2.0.0-27-g2b29c5b-0.1.2
-  rest_api: dev.catenasys.com:8083/blockchaintp/sawtooth-rest-api:BTP2.0.0-27-g2b29c5b-1.1.5
+  block_info_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-block-info-tp:BTP2.0.0-51-g1889dcc-1.1.5
+  identity_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-identity-tp:BTP2.0.0-51-g1889dcc-1.1.5
+  intkey_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-intkey-tp-go:BTP2.0.0-51-g1889dcc-1.1.5
+  settings_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-settings-tp:BTP2.0.0-51-g1889dcc-1.1.5
+  shell: dev.catenasys.com:8083/blockchaintp/sawtooth-shell:BTP2.0.0-51-g1889dcc-1.1.5
+  smallbank_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-smallbank-tp-go:BTP2.0.0-51-g1889dcc-1.1.5
+  grafana: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-grafana:BTP2.0.0-51-g1889dcc-1.1.5
+  influxdb: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-influxdb:BTP2.0.0-51-g1889dcc-1.1.5
+  validator: dev.catenasys.com:8083/blockchaintp/sawtooth-validator:BTP2.0.0-51-g1889dcc-1.1.5
+  xo_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-xo-tp-go:BTP2.0.0-51-g1889dcc-1.1.5
+  rest_api: dev.catenasys.com:8083/blockchaintp/sawtooth-rest-api:BTP2.0.0-51-g1889dcc-1.1.5
   sabre_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-sabre-tp:BTP2.0.0-27-g2b29c5b-0.2.1
   seth_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-rpc:BTP2.0.0-27-g2b29c5b-0.2.2p1
   seth_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-seth-tp:BTP2.0.0-27-g2b29c5b-0.2.2p1
-  settings_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-settings-tp:BTP2.0.0-27-g2b29c5b-1.1.5
-  shell: dev.catenasys.com:8083/blockchaintp/sawtooth-shell:BTP2.0.0-27-g2b29c5b-1.1.5
-  smallbank_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-smallbank-tp-go:BTP2.0.0-27-g2b29c5b-1.1.5
-  grafana: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-grafana:BTP2.0.0-27-g2b29c5b-1.1.5
-  influxdb: dev.catenasys.com:8083/blockchaintp/sawtooth-stats-influxdb:BTP2.0.0-27-g2b29c5b-1.1.5
-  validator: dev.catenasys.com:8083/blockchaintp/sawtooth-validator:BTP2.0.0-27-g2b29c5b-1.1.5
-  xo_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-xo-tp-go:BTP2.0.0-27-g2b29c5b-1.1.5
-  timekeeper: dev.catenasys.com:8083/blockchaintp/timekeeper:BTP2.0.0-27-g2b29c5b-0.0.0-65-gd722782
   xo_demo: dev.catenasys.com:8083/blockchaintp/xo-demo:BTP2.0.0-27-g2b29c5b-1.0.1
 
