@@ -274,7 +274,7 @@ const form = [
         ['required', 'Required']
       ],
     },
-  }],
+  }, ''],
 
 
 ]
