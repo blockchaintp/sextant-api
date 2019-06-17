@@ -51,7 +51,7 @@ spec:
           image: {{.images.pbft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "pbft-engine -v -C tcp://127.0.0.1:5050 --storage_location disk+/var/lib/sawtooth/pbft.log"
+          - "pbft-engine -C tcp://127.0.0.1:5050 --storage_location disk+/var/lib/sawtooth/pbft.log"
           resources:
             limits:
               cpu: "250m"
@@ -173,7 +173,7 @@ spec:
           image: {{.images.seth_rpc}}
           command: [ "bash", "-xc"]
           args: 
-          - "seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:4004 "
+          - "sleep {{.sawtooth.client_wait}} && seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:4004 "
           ports:
             - containerPort: 3030
               name: seth-rpc
@@ -233,9 +233,21 @@ spec:
           command: [ "bash", "-xc"]
           args: 
           - |
-            /opt/sawtooth-daml-rpc/entrypoint.sh --port 9000 \
-              --connect tcp://localhost:4004 \
-              $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
+            sleep {{.sawtooth.client_wait}}
+            if [ -r /etc/sawtooth/genesis/000-genesis.batch ]; then 
+              if [ -r /etc/sawtooth/genesis/dars-loaded ]; then
+                /opt/sawtooth-daml-rpc/entrypoint.sh --port 9000 \
+                  --connect tcp://localhost:4004 
+              else
+                touch /etc/sawtooth/genesis/dars-loaded
+                /opt/sawtooth-daml-rpc/entrypoint.sh --port 9000 \
+                  --connect tcp://localhost:4004 \
+                  $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
+              fi
+            else
+              /opt/sawtooth-daml-rpc/entrypoint.sh --port 9000 \
+                --connect tcp://localhost:4004
+            fi
           resources:
             limits:
               cpu: "250m"
@@ -246,6 +258,9 @@ spec:
               name: daml-ledger-api
             - containerPort: 5051
               name: tracer
+          volumeMounts:
+            - mountPath: "/etc/sawtooth"
+              name: sawtooth-etc
         - name: timekeeper
           image: {{.images.timekeeper}}
           command: [ "bash", "-xc"]
@@ -268,6 +283,7 @@ spec:
           command: [ "bash", "-xc"]
           args: 
           - |
+            sleep {{.sawtooth.client_wait}} 
             sawtooth-rest-api -v --bind 0.0.0.0:8008 \
               --connect tcp://127.0.0.1:4004 \
               --opentsdb-db metrics \
@@ -287,7 +303,7 @@ spec:
           args:
             - |
               sawtooth keygen && \
-              sleep 90 && \
+              sleep {{.sawtooth.client_wait}} && \
               /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:8008 test-$RANDOM 30
           volumeMounts:
             - mountPath: "/etc/sawtooth"
@@ -308,11 +324,12 @@ spec:
           command: ["bash", "-xc" ]
           args:
             - |
+              sleep 30
               source /usr/local/bin/validator_env.sh {{.sawtooth.namespace}} {{.sawtooth.networkName}} \
                 ${POD_NAME} ${POD_IP} ${NODE_NAME}
               start_delay=$(( $DELAY * 5 ))
+              sleep $start_delay
               if [ ! -r /etc/sawtooth/initialized ]; then
-                sleep $start_delay
                 if [ $RUN_GENESIS -eq 1 ]; then
             {{ if eq .sawtooth.consensus 400 }}
                   bash -x /usr/local/bin/pbft_genesis_config.sh {{.sawtooth.namespace}}
@@ -356,6 +373,8 @@ spec:
             initialDelaySeconds: 120
             periodSeconds: 60
           env:
+            - name: RUST_BACKTRACE
+              value: "1"
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
@@ -392,7 +411,20 @@ spec:
                   fieldPath: spec.nodeName
           args: 
             - |
-              mkdir -p /etc/sawtooth/data
+              if [ -r /etc/sawtooth/genesis.seed ]; then
+                OLD_SEED=`cat /etc/sawtooth/genesis.seed`
+                if [ "$OLD_SEED" != "{{.sawtooth.genesis.seed}}" ]; then
+                  echo "${OLD_SEED} != ${{.sawtooth.genesis.seed}} -- resetting environment"
+                  rm -rf /etc/sawtooth/*
+                  rm -rf /var/lib/sawtooth/*
+                  echo {{.sawtooth.genesis.seed}} > /etc/sawtooth/genesis.seed
+                fi
+              else 
+                  echo "Resetting environment and setting Genesis Seed to {{.sawtooth.genesis.seed}}"
+                  rm -rf /etc/sawtooth/*
+                  rm -rf /var/lib/sawtooth/*
+                  echo {{.sawtooth.genesis.seed}} > /etc/sawtooth/genesis.seed
+              fi
               mkdir -p /etc/sawtooth/genesis
               mkdir -p /etc/sawtooth/keys
               if [ ! -r /etc/sawtooth/keys/validator.priv ]; then
