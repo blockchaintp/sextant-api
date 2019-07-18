@@ -11,12 +11,14 @@ const DamlRPC = () => {
   }
 
   const registerParticipant = ({
+    participantId,
     publicKey,
   }) => {
     if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.registerParticipant`)
 
     database.damlParticipants.push({
       damlId: database.getKey(),
+      participantId,
       publicKey,
       parties: [],
     })

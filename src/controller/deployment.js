@@ -688,12 +688,42 @@ const DeployentController = ({ store, settings }) => {
   }
 
   const registerParticipant = async ({
-    id,
+    deploymentId,
     publicKey,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
+
+    if(!deploymentId) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
     if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.registerParticipant`) 
+
+    // Connection to DAML sawtooth rpc via GRPC.
+    const proxy = await DeploymentPodProxy({
+      store,
+      id: deploymentId,
+    })
+
+    const pods = await proxy.getPods()
+    const participantId = await proxy.request({
+      pod: pods[0].metadata.name,
+      port: 9000,
+      handler: async ({
+        port, // the local host port given to you
+      }) => {
+         const client = await ledger.DamlLedgerClient.connect({
+           host: 'localhost',
+           port
+         })
+
+        try{
+          const client = await ledger.DamlLedgerClient.connect({host,port})
+          return client.ledgerId
+        }catch(err){
+          throw err
+        } 
+      }
+    })
+
     return damlRPC.registerParticipant({
+      participantId,
       publicKey,
     })
   }
