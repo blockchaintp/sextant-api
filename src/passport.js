@@ -34,7 +34,7 @@ const PassportHandlers = ({
     secret: settings.sessionSecret,
     resave: false,
     saveUninitialized: true,
-    rolling: false,
+    rolling: true,
 
     // in production this will be the postgres session store
     // otherwise default in the in-memory store for testing
