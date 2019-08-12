@@ -77,6 +77,8 @@ sawtooth:
 images:
   daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc:BTP2.0.0-51-g1889dcc-0.0.0-154-g8837a92
   daml_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-tp:BTP2.0.0-51-g1889dcc-0.0.0-154-g8837a92
+  tracer_ui: dev.catenasys.com:8083/catenasys/tracer-ui:0.1-alpha
+  noxy: binocarlos/noxy
   timekeeper: dev.catenasys.com:8083/blockchaintp/timekeeper:BTP2.0.0-51-g1889dcc-0.0.0-154-g8837a92
   devmode_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-devmode-engine-rust:BTP2.0.0-27-g2b29c5b-1.2.1
   pbft_engine: dev.catenasys.com:8083/blockchaintp/sawtooth-pbft-engine:BTP2.0.0-27-g2b29c5b-0.1.3
