@@ -42,7 +42,7 @@ const App = ({
     res.set('Cache-Control', 'no-cache')
     next()
   })
-  
+
   // hook up the session store
   Passport({
     app,
@@ -50,7 +50,20 @@ const App = ({
     controllers,
     sessionStore,
   })
- 
+
+  // check for query string
+  app.use((req, res, next) => {
+    console.log('TRIGGERED_QUERY_CHECK');
+    // ?test=1
+    if(req.query.test === '1'){
+      console.log("FIRST_COOKIE", req.session.cookie);
+      req.session.cookie.expires = new Date(Date.now() + 10 * 1000)
+      console.log("add 10 seconds");
+      console.log("SECOND_COOKIE", req.session.cookie);
+    }
+    next()
+  })
+
   // bind routes to the HTTP server
   Router({
     app,
@@ -59,6 +72,7 @@ const App = ({
     settings,
   })
 
+
   const taskProcessor = TaskProcessor({
     store,
     handlers: taskHandlers || {},
@@ -66,10 +80,10 @@ const App = ({
   })
 
   /*
-  
+
     404 handler - any route that didn't match in routes/index.js
     will hit this handler - always prefer a JSON response
-    
+
   */
   app.use((req, res, next) => {
     const error = `url ${req.url} not found`
@@ -85,10 +99,10 @@ const App = ({
   })
 
   /*
-  
+
     error handler - any route that calls the err handler will end up here
     always prefer a JSON response
-    
+
   */
   app.use((err, req, res, next) => {
     if(settings.logging) {
