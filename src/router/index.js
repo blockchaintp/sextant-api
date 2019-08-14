@@ -9,6 +9,17 @@ const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
 const DeploymentRoutes = require('./deployment')
 
+
+// middleware function looks for '?mode=<background or foreground>' on incoming requests
+const ignoreBackgroundRequests = (req) => {
+  if(req.query.mode !== 'background'){
+    // update session expiration by maxAge
+    req.session._garbage = Date()
+    req.session.touch()
+  }
+  // if req.query.mode === 'background do nothing
+}
+
 const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
     const canAccess = await rbac(store, req.user, {
@@ -18,6 +29,7 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
     })
 
     if(canAccess) {
+      ignoreBackgroundRequests(req)
       next()
     }
     else {
@@ -37,6 +49,8 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
     next(err)
   }
 }
+
+
 
 const requireUser = (req, res, next) => {
   if(!req.user) {
