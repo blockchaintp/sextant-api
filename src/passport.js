@@ -34,22 +34,16 @@ const PassportHandlers = ({
     secret: settings.sessionSecret,
     resave: false,
     saveUninitialized: true,
-    rolling: true,
+    rolling: false,
 
     // in production this will be the postgres session store
     // otherwise default in the in-memory store for testing
     store: sessionStore,
-    // 15 seconds
-    cookie: { maxAge: 15 * 1000 },
+    // 1 hour
+    cookie: { maxAge: 1 * 60 * 60 * 1000 },
   }))
   app.use(passport.initialize())
   app.use(passport.session())
-
-// testing . . .
-//   app.use((req, res, next) => {
-//   console.log('SESSION', req.session, '\nCOOKIE: ', req.session.cookie)
-//   next()
-// })
 
   // JWT token based access
   app.use(async (req, res, next) => {
