@@ -51,19 +51,6 @@ const App = ({
     sessionStore,
   })
 
-  // check for query string
-  app.use((req, res, next) => {
-    console.log('TRIGGERED_QUERY_CHECK');
-    // ?test=1
-    if(req.query.test === '1'){
-      console.log("FIRST_COOKIE", req.session.cookie);
-      req.session.cookie.expires = new Date(Date.now() + 10 * 1000)
-      console.log("add 10 seconds");
-      console.log("SECOND_COOKIE", req.session.cookie);
-    }
-    next()
-  })
-
   // bind routes to the HTTP server
   Router({
     app,
