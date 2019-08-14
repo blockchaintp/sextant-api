@@ -53,7 +53,6 @@ const UserRoutes = (controllers) => {
         resolve()
       })
     })
-
     res.status(200)
     res.json({
       ok: true,
