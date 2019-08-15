@@ -11,7 +11,7 @@ const UserRoutes = (controllers) => {
       const roles = await controllers.user.getRoles({
         id: result.id,
       })
-  
+
       result.roles = roles
     }
 
@@ -53,7 +53,6 @@ const UserRoutes = (controllers) => {
         resolve()
       })
     })
-
     res.status(200)
     res.json({
       ok: true,
@@ -112,7 +111,7 @@ const UserRoutes = (controllers) => {
       res._code = 403
       return next(`cannot change server_side_key via update`)
     }
-    
+
     const user = await controllers.user.update({
       id: req.params.id,
       data: req.body,
@@ -163,7 +162,7 @@ const UserRoutes = (controllers) => {
     await controllers.user.delete({
       id: req.params.id,
     })
-      
+
     res
       .status(200)
       .json({
