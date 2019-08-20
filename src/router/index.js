@@ -20,6 +20,8 @@ const ignoreBackgroundRequests = (req) => {
   // if req.query.mode === 'background do nothing
 }
 
+
+
 const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
     const canAccess = await rbac(store, req.user, {
@@ -36,6 +38,8 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
       res.status(403)
       res.json({
         error: 'Error: access denied',
+        // Is there an active session for the user associated with this request? If not, the user should be logged out in the UI
+        logout: req.user ? false : true
       })
     }
   } catch(err) {
@@ -80,7 +84,7 @@ const Routes = ({
   app.get(basePath('/user/status'), asyncHandler(user.status))
   app.get(basePath('/user/hasInitialUser'), asyncHandler(user.hasInitialUser))
   app.post(basePath('/user/login'), asyncHandler(user.login))
-  app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout))
+  app.get(basePath('/user/logout'), asyncHandler(user.logout)) // removed requireUser
 
   app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), asyncHandler(user.list))
   app.get(basePath('/user/search'), requireUser, asyncHandler(user.search))
