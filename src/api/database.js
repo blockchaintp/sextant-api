@@ -44,6 +44,7 @@ const damlKeys = keyManagerKeys.filter(key => key.name.indexOf('daml:') == 0)
 */
 const damlParticipants = [{
   publicKey: damlKeys[0].publicKey,
+  participantId: "123",
   damlId: getKey(),
   parties: [{
     name: 'Alice',
@@ -52,12 +53,14 @@ const damlParticipants = [{
   }]
 },{
   publicKey: damlKeys[1].publicKey,
+  participantId: "456",
   damlId: getKey(),
   parties: [{
     name: 'Harry',
   }]
 }, {
   publicKey: getKey(),
+  participantId: "789",
   damlId: random.string(),
   parties: [{
     name: 'Nigel',
