@@ -30,16 +30,17 @@ const PassportHandlers = ({
   const passport = new Passport()
 
   app.use(cookieParser())
-  app.use(session({ 
+  app.use(session({
     secret: settings.sessionSecret,
     resave: false,
     saveUninitialized: true,
+    rolling: false,
 
     // in production this will be the postgres session store
     // otherwise default in the in-memory store for testing
     store: sessionStore,
-    // 30 days
-    cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
+    // 1 hour
+    cookie: { maxAge: 1 * 60 * 60 * 1000 },
   }))
   app.use(passport.initialize())
   app.use(passport.session())
@@ -75,7 +76,7 @@ const PassportHandlers = ({
           const user = await controllers.user.get({
             id: decoded.id,
           })
-            
+
           if(!user || user.server_side_key != decoded.server_side_key) {
             res._code = 403
             throw new Error(`access denied`)
@@ -117,7 +118,7 @@ const PassportHandlers = ({
         return done(errorInfo)
       }
       else {
-        return done(null, userUtils.safe(user)) 
+        return done(null, userUtils.safe(user))
       }
     } catch(err) {
       const errorInfo = {

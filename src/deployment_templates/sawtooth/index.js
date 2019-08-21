@@ -9,12 +9,12 @@ module.exports = {
   forms: {
     '1.0': version_1_0_form,
     '1.1': version_1_1_form,
-    '1.2': version_1_2_form,
+    //'1.2': version_1_2_form,
   },
   summary: {
     '1.0': version_1_0_summary,
     '1.1': version_1_1_summary,
-    '1.2': version_1_2_summary,
+    //'1.2': version_1_2_summary,
   },
   // paths to specific fields in the deployment
   paths: {
@@ -26,10 +26,10 @@ module.exports = {
       name: 'sawtooth.networkName',
       namespace: 'sawtooth.namespace',
     },
-    '1.2': {
-      name: 'sawtooth.networkName',
-      namespace: 'sawtooth.namespace',
-    },
+    // '1.2': {
+    //   name: 'sawtooth.networkName',
+    //   namespace: 'sawtooth.namespace',
+    // },
   },
   button: {
     title: 'Sawtooth',
@@ -39,9 +39,11 @@ module.exports = {
     },{
       title: 'Version 1.1 (BTP2)',
       form: '1.1',
-    },{
-      title: 'Version 1.2',
-      form: '1.2',
-    }],
+    },
+    // {
+    //   title: 'Version 1.2',
+    //   form: '1.2',
+    // }
+  ],
   },
 }

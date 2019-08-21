@@ -36,7 +36,7 @@ const form = [
         type: 'string',
         methods: [
           ['required', 'Required'],
-          ['matches', `^[a-zA-Z0-9]+$`, 'Only alphanumeric characters']
+          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`, 'i'], 'Must follow RFC952 standards.']
         ],
       },
     },
@@ -52,7 +52,7 @@ const form = [
         type: 'string',
         methods: [
           ['required', 'Required'],
-          ['matches', `^[a-zA-Z0-9]+$`, 'Only alphanumeric characters']
+          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`, 'i'], 'Must follow RFC952 standards.']
         ],
       },
     },
@@ -255,7 +255,7 @@ const form = [
         ['required', 'Required']
       ],
     },
-  }], 
+  }],
   [{
     id: 'sawtooth.seth.enabled',
     title: 'SETH Enabled',
