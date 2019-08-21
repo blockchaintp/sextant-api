@@ -84,7 +84,7 @@ const Routes = ({
   app.get(basePath('/user/status'), asyncHandler(user.status))
   app.get(basePath('/user/hasInitialUser'), asyncHandler(user.hasInitialUser))
   app.post(basePath('/user/login'), asyncHandler(user.login))
-  app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout)) // removed requireUser
+  app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout))
 
   app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), asyncHandler(user.list))
   app.get(basePath('/user/search'), requireUser, asyncHandler(user.search))
