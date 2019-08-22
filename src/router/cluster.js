@@ -73,7 +73,7 @@ const ClusterRoutes = (controllers) => {
         user: req.user,
       })
     }
-    
+
     res
       .status(200)
       .json(data)
