@@ -33,6 +33,7 @@ module.exports = {
   },
   button: {
     title: 'Sawtooth',
+    icon: "thirdParty/hyperledger-sawtooth.png",
     versions: [{
       title: 'Version 1.0 (BTP1)',
       form: '1.0',
