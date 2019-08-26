@@ -33,17 +33,20 @@ module.exports = {
   },
   button: {
     title: 'Sawtooth',
-    icon: "thirdParty/hyperledger-sawtooth.png",
+    icon: "/thirdParty/hyperledger-sawtooth.png",
     versions: [{
       title: 'Version 1.0 (BTP1)',
       form: '1.0',
+      description: "Summary place holder text about this volume of awesomeness.",
     },{
       title: 'Version 1.1 (BTP2)',
       form: '1.1',
+      description: "Summary place holder text about this volume of awesomeness.",
     },
     // {
     //   title: 'Version 1.2',
     //   form: '1.2',
+    //   description: "Summary place holder text about this volume of awesomeness.",
     // }
   ],
   },
