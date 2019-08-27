@@ -35,7 +35,7 @@ spec:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       {{ if .imagePullSecrets.enabled }}
-      imagePullSecrets: 
+      imagePullSecrets:
       {{range .imagePullSecrets.value }}
         - name: {{ .name }}
       {{ end }}
@@ -92,7 +92,7 @@ spec:
         - name: poet-validator-registry-tp
           image: {{.images.poet_validator_registry_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "poet-validator-registry-tp -v -C tcp://127.0.0.1:4004"
           volumeMounts:
             - mountPath: "/etc/sawtooth"
@@ -119,7 +119,7 @@ spec:
         - name: settings-tp
           image: {{.images.settings_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "settings-tp -v --connect tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -129,7 +129,7 @@ spec:
         - name: block-info-tp
           image: {{.images.block_info_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "block-info-tp -v -C tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -139,7 +139,7 @@ spec:
         - name: intkey-tp
           image: {{.images.intkey_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "intkey-tp-go -v --connect tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -150,7 +150,7 @@ spec:
         - name: identity-tp
           image: {{.images.identity_tp}}
           command: [ "bash", "-xc" ]
-          args: 
+          args:
           - "identity-tp -v -C tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -162,7 +162,7 @@ spec:
         - name: seth-tp
           image: {{.images.seth_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "seth-tp -v --connect tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -172,7 +172,7 @@ spec:
         - name: seth-rpc
           image: {{.images.seth_rpc}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "sleep {{.sawtooth.client_wait}} && seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:4004 "
           ports:
             - containerPort: 3030
@@ -187,7 +187,7 @@ spec:
         - name: smallbank-tp
           image: {{.images.smallbank_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "smallbank-tp-go -v --connect tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -199,7 +199,7 @@ spec:
         - name: xo-tp
           image: {{.images.xo_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "xo-tp-go -v --connect tcp://127.0.0.1:4004"
           resources:
             limits:
@@ -221,27 +221,33 @@ spec:
         - name: tracer-ui
           image: {{ .images.tracer_ui }}
           ports:
-            - 8080:8080
-          environment:
-            - NODE_ENV=production
-        -name: router
+            - containerPort: 8080
+              name: tracer-ui
+          env:
+            - name: NODE_ENV
+              value: production
+        - name: router
           image: {{ .images.noxy }}
           ports:
-            - 80:80
-          depends_on:
-            - daml-rpc
-            - tracer-ui
-          environment:
-            - NOXY_DEFAULT_HOST=tracer-ui
-            - NOXY_DEFAULT_PORT=8080
-            - NOXY_DEFAULT_WS=1
-            - NOXY_API_FRONT=/transactions
-            - NOXY_API_HOST=sawtooth-daml-rpc
-            - NOXY_API_PORT=5051
+            - containerPort: 80
+              name: router
+          env:
+            - name: NOXY_DEFAULT_HOST
+              value: localhost
+            - name: NOXY_DEFAULT_PORT
+              value: "8080"
+            - name: NOXY_DEFAULT_WS
+              value: "1"
+            - name: NOXY_API_FRONT
+              value: /transactions
+            - name: NOXY_API_HOST
+              value: localhost
+            - name: NOXY_API_PORT
+              value: "5051"
         - name: daml-tp
           image: {{.images.daml_tp}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "/opt/sawtooth-daml-tp/entrypoint.sh tcp://localhost:4004"
           resources:
             limits:
@@ -251,7 +257,7 @@ spec:
         - name: daml-rpc
           image: {{.images.daml_rpc}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - |
             sleep {{.sawtooth.client_wait}}
             /opt/sawtooth-daml-rpc/entrypoint.sh --port 39000 \
@@ -274,13 +280,13 @@ spec:
         - name: timekeeper
           image: {{.images.timekeeper}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - "/opt/timekeeper/entrypoint.sh tcp://localhost:4004"
           resources:
             limits:
               cpu: "250m"
             requests:
-              cpu: "50m"          
+              cpu: "50m"
         {{ end }}
         {{range .sawtooth.customTPs}}
         - name: {{.name}}
@@ -291,9 +297,9 @@ spec:
         - name: rest-api
           image: {{.images.rest_api}}
           command: [ "bash", "-xc"]
-          args: 
+          args:
           - |
-            sleep {{.sawtooth.client_wait}} 
+            sleep {{.sawtooth.client_wait}}
             sawtooth-rest-api -v --bind 0.0.0.0:8008 \
               --connect tcp://127.0.0.1:4004 \
               --opentsdb-db metrics \
@@ -327,7 +333,7 @@ spec:
             limits:
               cpu: "100m"
             requests:
-              cpu: "100m"            
+              cpu: "100m"
         - name: validator
           image: {{.images.validator}}
           imagePullPolicy: Always
@@ -419,7 +425,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-          args: 
+          args:
             - |
               if [ -r /etc/sawtooth/genesis.seed ]; then
                 OLD_SEED=`cat /etc/sawtooth/genesis.seed`
@@ -429,7 +435,7 @@ spec:
                   rm -rf /var/lib/sawtooth/*
                   echo {{.sawtooth.genesis.seed}} > /etc/sawtooth/genesis.seed
                 fi
-              else 
+              else
                   echo "Resetting environment and setting Genesis Seed to {{.sawtooth.genesis.seed}}"
                   rm -rf /etc/sawtooth/*
                   rm -rf /var/lib/sawtooth/*
@@ -439,7 +445,7 @@ spec:
               mkdir -p /etc/sawtooth/keys
               if [ ! -r /etc/sawtooth/keys/validator.priv ]; then
                 sawadm keygen --force
-              fi 
+              fi
               ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
               etcdctl --endpoint $ETCD_URL set validator/$NODE_NAME/pubKey $(cat /etc/sawtooth/keys/validator.pub)
               EXIT=$?
@@ -457,12 +463,12 @@ spec:
           - |
             mkdir -p /sawtooth-etc/poet
             cp /etc/sawtooth/simulator_rk_pub.pem /sawtooth-etc/;
-            if [ ! -f /sawtooth-etc/poet/poet-enclave-measurement ]; then 
-              poet enclave measurement > /sawtooth-etc/poet/poet-enclave-measurement; 
-            fi 
-            if [ ! -f /sawtooth-etc/poet/poet-enclave-basename ]; then 
-              poet enclave basename > /sawtooth-etc/poet/poet-enclave-basename; 
-            fi 
+            if [ ! -f /sawtooth-etc/poet/poet-enclave-measurement ]; then
+              poet enclave measurement > /sawtooth-etc/poet/poet-enclave-measurement;
+            fi
+            if [ ! -f /sawtooth-etc/poet/poet-enclave-basename ]; then
+              poet enclave basename > /sawtooth-etc/poet/poet-enclave-basename;
+            fi
             poet registration create --enclave-module simulator \
                   -k /sawtooth-etc/keys/validator.priv \
                   -o /sawtooth-etc/genesis/200.poet.batch
@@ -475,11 +481,11 @@ spec:
         {{ end }}
       volumes:
         - name: sawtooth-etc
-          hostPath: 
+          hostPath:
             type: DirectoryOrCreate
             path: {{.sawtooth.volumes.hostPathBaseDir}}/{{.sawtooth.namespace}}/{{.sawtooth.networkName}}/sawtooth-etc
         - name: sawtooth-data
-          hostPath: 
+          hostPath:
             type: DirectoryOrCreate
             path: {{.sawtooth.volumes.hostPathBaseDir}}/{{.sawtooth.namespace}}/{{.sawtooth.networkName}}/sawtooth-data
         - name: config-volume
@@ -489,4 +495,3 @@ spec:
               - key: telegraf.conf
                 path: telegraf.conf
 ---
-

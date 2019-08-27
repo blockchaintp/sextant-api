@@ -12,7 +12,6 @@ spec:
     shortNames:
     - etcd
     singular: etcdcluster
-  preserveUnknownFields: true
   scope: Namespaced
   version: v1beta2
   versions:
