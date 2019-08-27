@@ -147,7 +147,7 @@ const getTemplates = async ({
     if(!filename.match(/\.yaml$/)) return false
     if(filename == DEFAULTS_FILE) return false
     return true
-  })
+  }).sort()
 }
 
 /*
