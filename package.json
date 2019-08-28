@@ -10,6 +10,7 @@
     "test": "tape {src,test}/**/*.test.js | tap-spec"
   },
   "dependencies": {
+    "@digitalasset/daml-ledger": "0.7.0",
     "async": "^2.6.0",
     "aws-regions": "^1.4.1",
     "aws-sdk": "2.364.0",
@@ -30,7 +31,7 @@
     "js-yaml": "^3.13.1",
     "jsonist": "^2.1.0",
     "jsonwebtoken": "^8.5.0",
-    "knex": "^0.13.0",
+    "knex": "^0.15.2",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "node-cidr": "^1.0.0",
@@ -44,10 +45,12 @@
     "split": "^1.0.1",
     "tap-spec": "^5.0.0",
     "tmp": "^0.0.33",
-    "yup": "^0.27.0",
-    "@digitalasset/daml-ledger": "0.7.0"
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "tape": "^4.9.1"
+  },
+  "resolutions": {
+    "lodash": "~4.17.13"
   }
 }
