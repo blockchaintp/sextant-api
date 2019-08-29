@@ -21,7 +21,7 @@ RUN apt-get update -y && \
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
 COPY ./yarn.lock /app/api/yarn.lock
-RUN yarn install
+RUN yarn install --frozen-lockfile
 COPY . /app/api
 
 # this is the default noop metering module
@@ -33,4 +33,3 @@ COPY . /app/api
 
 ENTRYPOINT ["yarn"]
 CMD ["run", "serve"]
-
