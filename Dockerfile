@@ -18,7 +18,7 @@ RUN apt-get update -y && \
 # install api server
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
-COPY ./node-package.json /app/api/node-package.json
+COPY ./package-lock.json /app/api/package-lock.json
 RUN npm install
 COPY . /app/api
 
