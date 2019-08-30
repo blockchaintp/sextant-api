@@ -34,8 +34,7 @@ RUN curl -L -o kubectl https://storage.googleapis.com/kubernetes-release/release
 # install api server
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
-COPY ./yarn.lock /app/api/yarn.lock
-RUN yarn install
+COPY ./package-lock.json /app/api/package-lock.json
+RUN npm install
 COPY . /app/api
 ENTRYPOINT ["bash", "run.sh"]
-
