@@ -51,7 +51,7 @@ spec:
           image: {{.images.pbft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "pbft-engine -C tcp://127.0.0.1:5050 --storage_location disk+/var/lib/sawtooth/pbft.log"
+          - "pbft-engine -C tcp://127.0.0.1:5050 --storage-location disk+/var/lib/sawtooth/pbft.log"
           resources:
             limits:
               cpu: "250m"
