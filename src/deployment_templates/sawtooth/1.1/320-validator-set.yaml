@@ -358,7 +358,7 @@ spec:
             {{ end }}
                   ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
             {{ if .sawtooth.permissioned }}
-                  /usr/local/bin/identity_genesis_config.sh
+                  /usr/local/bin/identity_genesis_config.sh {{.sawtooth.namespace}}}
             {{ end }}
                   sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/000-genesis.batch
                   cd /etc/sawtooth/genesis
@@ -368,7 +368,7 @@ spec:
                 touch /etc/sawtooth/initialized;
               fi
               sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
-                --endpoint tcp://${POD_IP}:8800 \
+                --endpoint tcp://${NODE_NAME}:8800 \
                 --bind component:tcp://0.0.0.0:4004 \
                 --bind consensus:tcp://0.0.0.0:5050 \
                 --bind network:tcp://0.0.0.0:8800 \
