@@ -51,12 +51,15 @@ spec:
           image: {{.images.pbft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "pbft-engine -C tcp://127.0.0.1:5050 --storage-location disk+/var/lib/sawtooth/pbft.log"
+          - "pbft-engine -v -C tcp://127.0.0.1:5050 --storage-location disk+/var/lib/sawtooth/pbft.log"
           resources:
             limits:
               cpu: "250m"
             requests:
               cpu: "50m"
+          volumeMounts:
+            - mountPath: "/var/lib/sawtooth"
+              name: sawtooth-data
         {{ else if eq .sawtooth.consensus 300 }}
         - name: raft-engine
           image: {{.images.raft_engine}}
@@ -78,7 +81,7 @@ spec:
           image: {{.images.poet_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "poet-engine --connect tcp://127.0.0.1:5050 --component tcp://127.0.0.1:4004 -v"
+          - "poet-engine -v --connect tcp://127.0.0.1:5050 --component tcp://127.0.0.1:4004 -v"
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
