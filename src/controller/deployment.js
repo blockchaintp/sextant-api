@@ -32,7 +32,9 @@ const {
 const DeployentController = ({ store, settings }) => {
   
   const keyManager = KeyManager()
-  const damlRPC = DamlRPC()
+  const damlRPC = DamlRPC({
+    store,
+  })
   const settingsTP = SettingsTP()
 
   /*
@@ -684,7 +686,9 @@ const DeployentController = ({ store, settings }) => {
   const getParticipants = async ({
     id,
   }) => {
-    return damlRPC.getParticipants()
+    return damlRPC.getParticipants({
+      id
+    })
   }
 
   const registerParticipant = async ({
@@ -708,17 +712,8 @@ const DeployentController = ({ store, settings }) => {
       handler: async ({
         port, // the local host port given to you
       }) => {
-         const client = await ledger.DamlLedgerClient.connect({
-           host: 'localhost',
-           port
-         })
-
-        try{
-          const client = await ledger.DamlLedgerClient.connect({host,port})
-          return client.ledgerId
-        }catch(err){
-          throw err
-        } 
+        const client = await ledger.DamlLedgerClient.connect({host,port})
+        return client.ledgerId
       }
     })
 
@@ -757,6 +752,7 @@ const DeployentController = ({ store, settings }) => {
     if(!partyName) throw new Error(`partyName must be given to controller.deployment.addParty`) 
 
     await damlRPC.addParty({
+      id,
       publicKey,
       partyName,
     })

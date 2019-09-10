@@ -10,7 +10,7 @@
     "test": "tape {src,test}/**/*.test.js | tap-spec"
   },
   "dependencies": {
-    "@digitalasset/daml-ledger": "0.7.0",
+    "@digitalasset/daml-ledger": "0.8.1",
     "async": "^2.6.0",
     "aws-regions": "^1.4.1",
     "aws-sdk": "2.364.0",

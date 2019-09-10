@@ -20,19 +20,7 @@ const keyManagerKeys = [{
   name: 'validator:1',
 },{
   publicKey: getKey(),
-  name: 'validator:2',
-},{
-  publicKey: getKey(),
-  name: 'validator:3',
-},{
-  publicKey: getKey(),
   name: 'daml:1',
-},{
-  publicKey: getKey(),
-  name: 'daml:2',
-},{
-  publicKey: getKey(),
-  name: 'daml:3',
 }]
 
 const damlKeys = keyManagerKeys.filter(key => key.name.indexOf('daml:') == 0)
@@ -51,35 +39,17 @@ const damlParticipants = [{
   }, {
     name: 'Bob',
   }]
-},{
-  publicKey: damlKeys[1].publicKey,
-  participantId: "456",
-  damlId: getKey(),
-  parties: [{
-    name: 'Harry',
-  }]
-}, {
-  publicKey: getKey(),
-  participantId: "789",
-  damlId: random.string(),
-  parties: [{
-    name: 'Nigel',
-  },{
-    name: 'Sally',
-  },{
-    name: 'Tabitha',
-  }]
 }]
 
 const damlArchives = [{
   packageid: '3ab37fe8d_some.daml.package',
   size: 3123987,
-  uploadedBy: damlParticipants[0].publicKey,
+  uploadedBy: getKey(),
   uploaded: new Date().getTime(),
 }]
 
 const damlTimeService = [{
-  publicKey: damlParticipants[0].publicKey,
+  publicKey: getKey(),
   lastClockUpdate: new Date().getTime(),
 }]
 
