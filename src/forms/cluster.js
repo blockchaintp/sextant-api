@@ -8,7 +8,7 @@ const validators = {
   ],
   ca: [
     'matches',
-    ['^-----BEGIN CERTIFICATE-----[\s\S]*-----END CERTIFICATE-----$'],
+    ['^-----BEGIN CERTIFICATE-----[\\s\\S]*-----END CERTIFICATE-----$'],
     {
       message: 'Must be a valid certificate',
       excludeEmptyString: true,
