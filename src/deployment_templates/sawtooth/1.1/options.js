@@ -6,6 +6,14 @@ const activated = [{
   title: 'Disabled'
 }]
 
+const yesNo = [{
+  value: true,
+  title: 'Yes'
+},{
+  value: false,
+  title: 'No'
+}]
+
 const consensus = [{
   value: 100,
   title: 'DevMode'
@@ -32,4 +40,5 @@ module.exports = {
   activated,
   consensus,
   peering,
+  yesNo
 }

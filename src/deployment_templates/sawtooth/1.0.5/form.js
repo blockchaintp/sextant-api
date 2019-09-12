@@ -22,6 +22,14 @@ const peeringOptions = [{
   title: 'Static'
 }]
 
+const yesNo = [{
+  value: true,
+  title: 'Yes'
+},{
+  value: false,
+  title: 'No'
+}]
+
 const form = [
 
   'Network',
@@ -124,13 +132,13 @@ const form = [
 
   {
     id: 'sawtooth.poet.enabled',
-    title: 'POET Enabled',
-    helperText: 'Should the POET consensus protocol be active on this network?',
+    title: 'Should the POET consensus protocol be active on this network?',
+    helperText: null,
     component: 'radio',
     default: false,
     dataType: 'boolean',
     row: true,
-    options: consensusOptions,
+    options: yesNo,
     validate: {
       type: 'string',
       methods: [
@@ -139,12 +147,12 @@ const form = [
     },
   },
 
-  'Transaction Processors',
+  'Custom Transaction Processors',
 
   {
     id: 'sawtooth.customTPs',
-    title: 'Custom Transaction Processors',
-    helperText: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
+    title: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
+    helperText: 'Click add to configure.',
     list: {
       mainField: 'name',
       schema: [{
@@ -208,30 +216,36 @@ const form = [
     }
   },
 
+  'Smart Contract Language Support',
+
   [{
     id: 'sawtooth.seth.enabled',
-    title: 'SETH Enabled',
-    helperText: 'Should the SETH transaction processor be active on this network?',
+    title: 'Should SETH be supported on this network?',
+    helperText: null,
     component: 'radio',
-    default: true,
+    default: false,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: yesNo,
     validate: {
       type: 'string',
       methods: [
         ['required', 'Required']
       ],
     },
-  }], [{
+  }],
+
+  'Sample Applications',
+
+  [{
     id: 'sawtooth.xo.enabled',
-    title: 'XO Enabled',
-    helperText: 'Should the XO transaction processor be active on this network?',
+    title: 'Should the XO demo be deployed on this network?',
+    helperText: null,
     component: 'radio',
-    default: true,
+    default: false,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: yesNo,
     validate: {
       type: 'string',
       methods: [
@@ -240,13 +254,13 @@ const form = [
     },
   }, {
     id: 'sawtooth.smallbank.enabled',
-    title: 'Smallbank Enabled',
-    helperText: 'Should the Smallbank transaction processor be active on this network?',
+    title: 'Should the Smallbank demo be deployed on this network?',
+    helperText: null,
     component: 'radio',
-    default: true,
+    default: false,
     dataType: 'boolean',
     row: true,
-    options: activatedOptions,
+    options: yesNo,
     validate: {
       type: 'string',
       methods: [
