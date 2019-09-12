@@ -220,7 +220,7 @@ const form = [
 
   [{
     id: 'sawtooth.seth.enabled',
-    title: 'Should the SETH transaction processor be active on this network?',
+    title: 'Should SETH be supported on this network?',
     helperText: null,
     component: 'radio',
     default: false,
@@ -239,7 +239,7 @@ const form = [
 
   [{
     id: 'sawtooth.xo.enabled',
-    title: 'Should the XO transaction processor be active on this network?',
+    title: 'Should the XO demo be deployed on this network?',
     helperText: null,
     component: 'radio',
     default: false,
@@ -254,7 +254,7 @@ const form = [
     },
   }, {
     id: 'sawtooth.smallbank.enabled',
-    title: 'Should the Smallbank transaction processor be active on this network?',
+    title: 'Should the Smallbank demo be deployed on this network?',
     helperText: null,
     component: 'radio',
     default: false,
