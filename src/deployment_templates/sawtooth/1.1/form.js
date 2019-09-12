@@ -304,13 +304,13 @@ const form = [
 
   {
     id: 'imagePullSecrets.enabled',
-    title: 'Enable Image Pull Secrets',
+    title: 'Do you want to enable image pull secrets?',
     helperText: 'Inject the image pull secrets into the pod to get images from secure registries',
     component: 'radio',
     default: false,
     dataType: 'boolean',
     row: true,
-    options: options.activated,
+    options: options.yesNo,
     validate: {
       type: 'string',
       methods: [
