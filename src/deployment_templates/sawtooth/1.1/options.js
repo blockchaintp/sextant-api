@@ -18,14 +18,14 @@ const consensus = [{
   value: 100,
   title: 'DevMode'
 },{
+  value: 400,
+  title: 'PBFT'
+},{
   value: 200,
   title: 'PoET'
 },{
   value: 300,
   title: 'Raft'
-},{
-  value: 400,
-  title: 'PBFT'
 }]
 
 const peering = [{
