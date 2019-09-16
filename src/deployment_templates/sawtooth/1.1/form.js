@@ -304,8 +304,8 @@ const form = [
 
   {
     id: 'imagePullSecrets.enabled',
-    title: 'Do you want to enable image pull secrets?',
-    helperText: 'Inject the image pull secrets into the pod to get images from secure registries',
+    title: 'Do you need to enable image pull secrets?',
+    helperText: 'Provide secrets to be injected into Sawtooth namespace and used to pull images from your secure registry',
     component: 'radio',
     default: false,
     dataType: 'boolean',
@@ -319,11 +319,9 @@ const form = [
     },
   }, {
     id: 'imagePullSecrets.value',
-    title: 'Image Pull Secret Names',
-    helperText: 'A list of image pull secret names in the same namespace used to get images from secure registries',
-    default: [{
-      name: 'regcred',
-    }],
+    title: 'Image Pull Secrets',
+    helperText: null,
+    default: null,
     list: {
       mainField: 'name',
       schema: [{
