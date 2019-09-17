@@ -57,7 +57,23 @@ const DeploymentDelete = ({
     store,
   })
 
-  yield clusterKubectl.command(`delete ns ${namespace}`)
+  const interceptError = async () => {
+    try {
+      // try to connect to a remote cluster and delete it
+      await clusterKubectl.command(`delete ns ${namespace}`)
+    } catch (err) {
+      // read the error, if it's NOT a server error - then throw an error
+      // status will be set to error
+      // otherwise ignore the error and let the status be set to delete
+      const match = err.message.match(/Unable to connect to the server/g)
+      if (match[0] !== 'Unable to connect to the server') {
+        throw err
+      }
+    }
+  }
+
+  yield interceptError()
+
 }
 
 module.exports = DeploymentDelete
