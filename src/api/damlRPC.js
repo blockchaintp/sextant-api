@@ -27,7 +27,7 @@ const DamlRPC = ({
     })
 
     const pods = await proxy.getPods()
-    const results = await Promise.map(pods, async pod => {
+    const participantDetails = await Promise.map(pods, async pod => {
       const result = await proxy.request({
         pod: pod.metadata.name,
         port: 39000,
@@ -47,22 +47,25 @@ const DamlRPC = ({
           })
 
           const participantDetail = {
-            publicKey: database.getKey(),
             participantId: participantId.participantId,
             damlId: `${client.ledgerId}-${pod.metadata.name}` ,
             parties: partyNames,
           };
-          console.log(`Pod - ${pod.metadata.name} Participant detail - ${JSON.stringify(participantDetail)}`)
-          console.log(`---------------------------`)
           return participantDetail
         }
       })
       return result
     })
-
-    console.log(`results: ${JSON.stringify(results)}`)
     
-    return results
+    const participantKeys = database.keyManagerKeys
+    const updatedDetails = participantDetails.map( (pD) => {
+      const filteredKeys = participantKeys.filter( (pK) => {
+        return pK.name == pD.participantId
+      })
+      pD.publicKey = filteredKeys[0].publicKey
+      return pD
+    })
+    return updatedDetails
   }
 
   const registerParticipant = ({
@@ -76,12 +79,12 @@ const DamlRPC = ({
 
     if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.registerParticipant`)
 
-    // database.damlParticipants.push({
-    //   damlId: database.getKey(),
-    //   participantId,
-    //   publicKey,
-    //   parties: [],
-    // })
+    database.damlParticipants.push({
+      damlId: database.getKey(),
+      participantId,
+      publicKey,
+      parties: [],
+    })
 
     return database.damlParticipants
   }
@@ -113,6 +116,7 @@ const DamlRPC = ({
       id,
     })
 
+    var counter = 0
     const pods = await proxy.getPods()
     const results = await Promise.map(pods, async pod => {
       const result = await proxy.request({
@@ -121,17 +125,22 @@ const DamlRPC = ({
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
-          const response = await client.partyManagementClient.allocateParty({
-              partyIdHint: publicKey,
-              displayName: partyName
-          })
-          return response.partyDetails
+          counter++
+          console.log(`value -> ${counter}`)
+          if (counter == 1) {
+            console.log(`Allocating party to ${pod.metadata.name}`)
+            const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+            const response = await client.partyManagementClient.allocateParty({
+                partyIdHint: database.getToken(),
+                displayName: partyName
+            })
+            return response.partyDetails
+          }
         }
       })
       return result
     })
-
+    
     if (results.length > 0) {
       return true
     } else {

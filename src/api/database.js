@@ -2,6 +2,7 @@ const random = require('../utils/random')
 const secp256k1 = require('../utils/secp256k1')
 
 const getKey = () => secp256k1.binaryToHex(secp256k1.createKeyPair()).publicKey
+const getToken = () => secp256k1.binaryToHex(secp256k1.createKeyPair()).publicKey
 
 /*
 
@@ -20,7 +21,19 @@ const keyManagerKeys = [{
   name: 'validator:1',
 },{
   publicKey: getKey(),
+  name: 'validator:2',
+},{
+  publicKey: getKey(),
+  name: 'validator:3',
+},{
+  publicKey: getKey(),
   name: 'daml:1',
+},{
+  publicKey: getKey(),
+  name: 'daml:2',
+},{
+  publicKey: getKey(),
+  name: 'daml:3',
 }]
 
 const damlKeys = keyManagerKeys.filter(key => key.name.indexOf('daml:') == 0)
@@ -60,4 +73,5 @@ module.exports = {
   damlArchives,
   damlTimeService,
   getKey,
+  getToken,
 }
