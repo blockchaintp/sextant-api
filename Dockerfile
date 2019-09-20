@@ -1,3 +1,26 @@
+# run npm install after adding the .npmrc file - this way the npm has the credentials to install @catenasys packages from github
+# then copy the node-modules into the final image so that the creds are not passed along
+
+# stage one
+FROM ubuntu:bionic AS builder
+ENV NODEJS_MAJOR_VERSION=10
+
+RUN apt-get update -y && \
+       apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python-minimal mime-support gnupg && \
+       curl --silent --location https://deb.nodesource.com/setup_${NODEJS_MAJOR_VERSION}.x | bash -  && \
+       update-ca-certificates && \
+       apt-get update -y && apt-get upgrade -y  && \
+       apt-get install --yes nodejs
+
+# install api server
+WORKDIR /app/api
+COPY ./package.json /app/api/package.json
+COPY ./package-lock.json /app/api/package-lock.json
+ADD ./.npmrc /app/api/.npmrc
+RUN npm install
+
+
+# stage two
 FROM ubuntu:bionic
 MAINTAINER kai@blockchaintp.com
 ENV NODEJS_MAJOR_VERSION=10
@@ -19,7 +42,7 @@ RUN apt-get update -y && \
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
-RUN npm install
+COPY --from=builder /app/api/node_modules /app/api/node_modules
 COPY . /app/api
 
 # this is the default noop metering module
