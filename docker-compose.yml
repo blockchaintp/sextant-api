@@ -6,13 +6,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args: 
+      args:
         METERING_MODULE: ecs.js
     image: sextant-api-ecs:${ISOLATION_ID}
   api:
     build:
       context: .
       dockerfile: Dockerfile
-      args: 
+      args:
         METERING_MODULE: dev.js
     image: sextant-api:${ISOLATION_ID}
