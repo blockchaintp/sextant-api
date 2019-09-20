@@ -10,6 +10,7 @@
     "test": "tape {src,test}/**/*.test.js | tap-spec"
   },
   "dependencies": {
+    "@catenasys/sextant-ext-stl": "1.1.1",
     "@digitalasset/daml-ledger": "0.7.0",
     "async": "^2.6.0",
     "aws-regions": "^1.4.1",
