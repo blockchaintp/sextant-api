@@ -131,7 +131,7 @@ const DamlRPC = ({
             console.log(`Allocating party to ${pod.metadata.name}`)
             const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
             const response = await client.partyManagementClient.allocateParty({
-                partyIdHint: database.getToken(),
+                partyIdHint: partyName,
                 displayName: partyName
             })
             return response.partyDetails
