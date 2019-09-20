@@ -68,3 +68,13 @@ cat aws-instances-raw.json | jq 'map({name: .Name, apiName: ."API Name", memory:
 ```
 
 The api server will consume the `sextant-api/src/data/aws-instances-minimal.json` file.
+
+#### installing private packages
+In order to install the node_modules needed for this project, create a .npmrc file in the root of this directory and configure the file as follows.
+  * In order to install privately scoped packages stored in the github package registry your .npmrc file needs a github auth token and must instruct npm to look in the github registry for packages scoped to catenasys.
+  ```bash
+  #instructs npm to install packages scoped to catenasys from the github registry
+  //npm.pkg.github.com/:_authToken={$GITHUB_AUTH_TOKEN}
+  @catenasys:registry=https://npm.pkg.github.com/
+  ```
+  * If you don't have a github auth token you can read about making one [here](https://help.github.com/en/articles/configuring-npm-for-use-with-github-package-registry#authenticating-to-github-package-registry)
