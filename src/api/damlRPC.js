@@ -181,10 +181,54 @@ const DamlRPC = ({
     })
   }
 
-  const getArchives = ({
+  const extractModuleNames = (payload) => {
+    return payload.getDamlLf1().getModulesList().map(a => 
+      a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`)
+    )
+  }
 
+  const getArchives = async ({
+    id
   } = {}) => {
-    return database.damlArchives
+
+    console.log(`********************************************`)
+    console.log(`***        Get Archives                  ***`)
+    console.log(`********************************************`)
+
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+    })
+
+    const pods = await proxy.getPods()
+    const results = await Promise.map(pods, async pod => {
+      const result = await proxy.request({
+        pod: pod.metadata.name,
+        port: 39000,
+        handler: async ({
+          port,
+        }) => {
+          const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+          const packages = await client.packageClient.listPackages()
+          const mods = await Promise.map(packages.packageIds, async id => {
+            const package = await client.packageClient.getPackage(id);
+            const payload = await ledger.lf.ArchivePayload.deserializeBinary(package.archivePayload);
+            const numberOfModules = payload.getDamlLf1().getModulesList().length
+            return {
+              validator: pod.metadata.name,
+              packageId: id,
+              //module_name: extractModuleNames(payload)
+              numberOfModules: numberOfModules
+            }
+          })
+          return mods
+        }
+      })
+      return result
+    })
+    
+    const flattenResult = [].concat.apply([],results)
+    return flattenResult
   }
 
   const getTimeServiceInfo = ({

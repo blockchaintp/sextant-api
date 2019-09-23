@@ -804,7 +804,9 @@ const DeployentController = ({ store, settings }) => {
   const getArchives = async ({
     id,
   }) => {
-    return damlRPC.getArchives()
+    return damlRPC.getArchives({
+      id,
+    })
   }
 
   const uploadArchive = async ({
