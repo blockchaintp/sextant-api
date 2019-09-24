@@ -18,6 +18,7 @@ const KeyPair = require('../utils/sextantKeyPair')
 const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
+const ledger = require('@digitalasset/daml-ledger')
 
 const {
   CLUSTER_STATUS,
@@ -31,8 +32,12 @@ const {
 
 const DeployentController = ({ store, settings }) => {
   
-  const keyManager = KeyManager()
-  const damlRPC = DamlRPC()
+  const keyManager = KeyManager({
+    store,
+  })
+  const damlRPC = DamlRPC({
+    store,
+  })
   const settingsTP = SettingsTP()
 
   /*
@@ -634,6 +639,7 @@ const DeployentController = ({ store, settings }) => {
     })
 
     return keyManager.getKeys({
+      id,
       sextantPublicKey: keyPair.publicKey,
     })
   }
@@ -684,41 +690,35 @@ const DeployentController = ({ store, settings }) => {
   const getParticipants = async ({
     id,
   }) => {
-    return damlRPC.getParticipants()
+    return damlRPC.getParticipants({
+      id
+    })
   }
 
   const registerParticipant = async ({
-    deploymentId,
+    id,
     publicKey,
   }) => {
 
-    if(!deploymentId) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
     if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.registerParticipant`) 
 
     // Connection to DAML sawtooth rpc via GRPC.
     const proxy = await DeploymentPodProxy({
       store,
-      id: deploymentId,
+      id,
     })
 
     const pods = await proxy.getPods()
     const participantId = await proxy.request({
       pod: pods[0].metadata.name,
-      port: 9000,
+      port: 39000,
       handler: async ({
         port, // the local host port given to you
       }) => {
-         const client = await ledger.DamlLedgerClient.connect({
-           host: 'localhost',
-           port
-         })
-
-        try{
-          const client = await ledger.DamlLedgerClient.connect({host,port})
-          return client.ledgerId
-        }catch(err){
-          throw err
-        } 
+        const client = await ledger.DamlLedgerClient.connect({host: "localhost", port})
+        const participantId = await client.partyManagementClient.getParticipantId();
+        return participantId.participantId;
       }
     })
 
@@ -757,6 +757,7 @@ const DeployentController = ({ store, settings }) => {
     if(!partyName) throw new Error(`partyName must be given to controller.deployment.addParty`) 
 
     await damlRPC.addParty({
+      id,
       publicKey,
       partyName,
     })
@@ -803,7 +804,9 @@ const DeployentController = ({ store, settings }) => {
   const getArchives = async ({
     id,
   }) => {
-    return damlRPC.getArchives()
+    return damlRPC.getArchives({
+      id,
+    })
   }
 
   const uploadArchive = async ({

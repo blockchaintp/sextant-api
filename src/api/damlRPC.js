@@ -1,19 +1,82 @@
 const jwt = require('jsonwebtoken')
 const settings = require('../settings')
 const database = require('./database')
+const ledger = require('@digitalasset/daml-ledger')
+const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const Promise = require('bluebird')
 
-const DamlRPC = () => {
+const damRPCHost = "localhost"
 
-  const getParticipants = ({
+const DamlRPC = ({
+  store,
+} = {}) => {
+
+  if (!store) {
+    throw new Error("Daml rpc requires a store")
+  }
+
+  const getParticipants = async ({id}) => {
+
+    console.log(`********************************************`)
+    console.log(`***          Get Participants            ***`)
+    console.log(`********************************************`)
+
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+    })
+
+    const pods = await proxy.getPods()
+    const participantDetails = await Promise.map(pods, async pod => {
+      const result = await proxy.request({
+        pod: pod.metadata.name,
+        port: 39000,
+        handler: async ({
+          port,
+        }) => {
+          console.log('-------------------------------------------------------------')
+          console.log(`Forwarded port: "${port}" for pod name "${pod.metadata.name}"`)
+          console.log('-------------------------------------------------------------')
+          const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+          const participantId = await client.partyManagementClient.getParticipantId();
+          const parties = await client.partyManagementClient.listKnownParties();
+          const partyNames = parties.partyDetails.map(item => {
+            return {
+              name: item.displayName
+            }
+          })
+
+          const participantDetail = {
+            participantId: participantId.participantId,
+            damlId: `${client.ledgerId}-${pod.metadata.name}` ,
+            parties: partyNames,
+          };
+          return participantDetail
+        }
+      })
+      return result
+    })
     
-  } = {}) => {
-    return database.damlParticipants
+    const participantKeys = database.keyManagerKeys
+    const updatedDetails = participantDetails.map( (pD) => {
+      const filteredKeys = participantKeys.filter( (pK) => {
+        return pK.name == pD.participantId
+      })
+      pD.publicKey = filteredKeys[0].publicKey
+      return pD
+    })
+    return updatedDetails
   }
 
   const registerParticipant = ({
     participantId,
     publicKey,
   }) => {
+
+    console.log(`********************************************`)
+    console.log(`***         Register Participants        ***`)
+    console.log(`********************************************`)
+
     if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.registerParticipant`)
 
     database.damlParticipants.push({
@@ -38,22 +101,56 @@ const DamlRPC = () => {
     return true
   }
 
-  const addParty = ({
+  const addParty = async ({
+    id,
     publicKey,
     partyName,
   }) => {
-    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.addParty`)
-    if(!partyName) throw new Error(`partyName must be given to api.damlRPC.addParty`)
-    const participant = database.damlParticipants.find(participant => participant.publicKey == publicKey)
-    if(!participant) throw new Error(`participant with publicKey not found: ${publicKey}`)
-    const existingParty = participant.parties.find(party => party.name.toLowerCase() == partyName.toLowerCase())
-    if(existingParty) throw new Error(`participant already has party with that name: ${partyName}`)
-    participant.parties.push({
-      name: partyName,
+
+    console.log(`********************************************`)
+    console.log(`***        Add Party                     ***`)
+    console.log(`********************************************`)
+
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
     })
-    return true
+
+    var counter = 0
+    const pods = await proxy.getPods()
+    const results = await Promise.map(pods, async pod => {
+      const result = await proxy.request({
+        pod: pod.metadata.name,
+        port: 39000,
+        handler: async ({
+          port,
+        }) => {
+          counter++
+          console.log(`value -> ${counter}`)
+          if (counter == 1) {
+            console.log(`Allocating party to ${pod.metadata.name}`)
+            const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+            const response = await client.partyManagementClient.allocateParty({
+                partyIdHint: partyName,
+                displayName: partyName
+            })
+            return response.partyDetails
+          }
+        }
+      })
+      return result
+    })
+    
+    if (results.length > 0) {
+      return true
+    } else {
+      return false
+    }
+    
   }
 
+  // Removal of parties not allowed
+  // Methods to be taken out
   const removeParties = ({
     publicKey,
     partyNames,
@@ -84,10 +181,54 @@ const DamlRPC = () => {
     })
   }
 
-  const getArchives = ({
+  const extractModuleNames = (payload) => {
+    return payload.getDamlLf1().getModulesList().map(a => 
+      a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`)
+    )
+  }
 
+  const getArchives = async ({
+    id
   } = {}) => {
-    return database.damlArchives
+
+    console.log(`********************************************`)
+    console.log(`***        Get Archives                  ***`)
+    console.log(`********************************************`)
+
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+    })
+
+    const pods = await proxy.getPods()
+    const results = await Promise.map(pods, async pod => {
+      const result = await proxy.request({
+        pod: pod.metadata.name,
+        port: 39000,
+        handler: async ({
+          port,
+        }) => {
+          const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+          const packages = await client.packageClient.listPackages()
+          const mods = await Promise.map(packages.packageIds, async id => {
+            const package = await client.packageClient.getPackage(id);
+            const payload = await ledger.lf.ArchivePayload.deserializeBinary(package.archivePayload);
+            const numberOfModules = payload.getDamlLf1().getModulesList().length
+            return {
+              validator: pod.metadata.name,
+              packageId: id,
+              //module_name: extractModuleNames(payload)
+              numberOfModules: numberOfModules
+            }
+          })
+          return mods
+        }
+      })
+      return result
+    })
+    
+    const flattenResult = [].concat.apply([],results)
+    return flattenResult
   }
 
   const getTimeServiceInfo = ({

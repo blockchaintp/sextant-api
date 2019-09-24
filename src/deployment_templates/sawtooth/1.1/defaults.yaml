@@ -75,7 +75,7 @@ sawtooth:
 # The below are mostly controlled by BTP, although an "advanced" option to customize them may be 
 # presented    
 images:
-  daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc:BTP2.0.1-5-g8e40500-0.1.2-21-g4fd157f
+  daml_rpc: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-rpc:BTP2.0.1-9-g6663e8f-0.1.2-21-gc4bb4cb
   daml_tp: dev.catenasys.com:8083/blockchaintp/sawtooth-daml-tp:BTP2.0.1-5-g8e40500-0.1.2-21-g4fd157f
   tracer_ui: dev.catenasys.com:8083/blockchaintp/tracer-ui:BTP2.0.1-5-g8e40500-0.1.2-21-g4fd157f
   noxy: binocarlos/noxy

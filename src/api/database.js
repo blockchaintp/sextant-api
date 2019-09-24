@@ -2,6 +2,7 @@ const random = require('../utils/random')
 const secp256k1 = require('../utils/secp256k1')
 
 const getKey = () => secp256k1.binaryToHex(secp256k1.createKeyPair()).publicKey
+const getToken = () => secp256k1.binaryToHex(secp256k1.createKeyPair()).publicKey
 
 /*
 
@@ -51,35 +52,17 @@ const damlParticipants = [{
   }, {
     name: 'Bob',
   }]
-},{
-  publicKey: damlKeys[1].publicKey,
-  participantId: "456",
-  damlId: getKey(),
-  parties: [{
-    name: 'Harry',
-  }]
-}, {
-  publicKey: getKey(),
-  participantId: "789",
-  damlId: random.string(),
-  parties: [{
-    name: 'Nigel',
-  },{
-    name: 'Sally',
-  },{
-    name: 'Tabitha',
-  }]
 }]
 
 const damlArchives = [{
   packageid: '3ab37fe8d_some.daml.package',
   size: 3123987,
-  uploadedBy: damlParticipants[0].publicKey,
+  uploadedBy: getKey(),
   uploaded: new Date().getTime(),
 }]
 
 const damlTimeService = [{
-  publicKey: damlParticipants[0].publicKey,
+  publicKey: getKey(),
   lastClockUpdate: new Date().getTime(),
 }]
 
@@ -90,4 +73,5 @@ module.exports = {
   damlArchives,
   damlTimeService,
   getKey,
+  getToken,
 }
