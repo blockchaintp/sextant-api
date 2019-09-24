@@ -198,6 +198,12 @@ const DamlRPC = ({
     // We need to get all pods here
     const pods = await proxy.getPods()
 
+    const extractModuleNames = (payload) => {
+      return payload.getDamlLf1().getModulesList().map(a => 
+          a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`)
+      );
+    }
+
     // Extract archive information from one pod only
     // This is regardless of all validator pods 
     // reaching consensus
@@ -209,13 +215,15 @@ const DamlRPC = ({
       }) => {
         const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
         const packages = await client.packageClient.listPackages()
-        const mods = await Promise.map(packages.packageIds, async id => {
-          const package = await client.packageClient.getPackage(id);
+        const mods = await Promise.map(packages.packageIds, async packageId => {
+          const package = await client.packageClient.getPackage(packageId);
           const payload = await ledger.lf.ArchivePayload.deserializeBinary(package.archivePayload);
           const numberOfModules = payload.getDamlLf1().getModulesList().length
+          const moduleNames = extractModuleNames(payload)
+          console.log(`packageId: ${packageId} || moduleNames: ${moduleNames}`)
           return {
-            packageId: id,
-            numberOfModules: numberOfModules
+            packageId: packageId,
+            modules: moduleNames
           }
         })
         return mods
