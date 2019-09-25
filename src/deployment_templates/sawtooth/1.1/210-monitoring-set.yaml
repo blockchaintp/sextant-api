@@ -1,13 +1,13 @@
 # kubetpl:syntax:go-template
 ---
 ###
-# Monitoring consists of 
+# Monitoring consists of
 #   a) an influxdb database which is targeted by all of the validators
 #     as well as a telegraf instance on each validator.
 #   b) a grafana instance which reads from the influxdb
 ##
 apiVersion: apps/v1
-kind: StatefulSet 
+kind: StatefulSet
 metadata:
   name: {{.sawtooth.networkName}}-monitoring
   namespace: {{.sawtooth.namespace}}
@@ -23,8 +23,9 @@ spec:
       labels:
         app: {{.sawtooth.networkName}}-monitoring
     spec:
+      serviceAccountName: {{.sawtooth.networkName}}-sa
       {{ if .imagePullSecrets.enabled }}
-      imagePullSecrets: 
+      imagePullSecrets:
       {{range .imagePullSecrets.value }}
         - name: {{ .name }}
       {{ end }}
@@ -38,7 +39,7 @@ spec:
         resources:
           limits:
             cpu: "100m"
-          requests: 
+          requests:
             cpu: "50m"
       - name: grafana
         image: {{.images.grafana}}
@@ -48,7 +49,6 @@ spec:
         resources:
           limits:
             cpu: "100m"
-          requests: 
+          requests:
             cpu: "50m"
 ---
-
