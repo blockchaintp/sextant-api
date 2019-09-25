@@ -43,7 +43,7 @@ const DeploymentCreate = ({
     })
 
     return
-  } 
+  }
 
   const {
     deployment_type,
@@ -64,15 +64,17 @@ const DeploymentCreate = ({
   })
 
   // test we can connect to the remote cluster with the details provided
+  // If the namespace exists, continue. If not, create it.
   const namespaces = yield clusterKubectl.jsonCommand('get ns')
-
   const existingNamespace = namespaces.items.find(namespaceItem => namespaceItem.metadata.name == namespace)
 
-  if(existingNamespace) throw new Error(`there is already a namespace called ${namespace}`)
+  if(!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
 
-  yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
+  // If the secret exists, continue. If not, create it.
+  const secretsArray = yield clusterKubectl.jsonCommand(`get secret -n ${namespace}`)
+  const existingSecret = secretsArray.items.find(item => item.metadata.name == "sextant-public-key")
 
-  yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
+  if(!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
   const templateDirectory = yield renderTemplates({
     deployment_type,
@@ -94,7 +96,7 @@ const DeploymentCreate = ({
     trx,
   })
 
-  
+
 }
 
 module.exports = DeploymentCreate

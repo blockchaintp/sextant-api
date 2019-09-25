@@ -60,7 +60,8 @@ const DeploymentDelete = ({
   const interceptError = async () => {
     try {
       // try to connect to a remote cluster and delete it
-      await clusterKubectl.command(`delete ns ${namespace}`)
+      await clusterKubectl.command(`delete all --all -n ${namespace}`)
+      await clusterKubectl.command(`delete etcdcluster etcd -n ${namespace} || true`)
     } catch (err) {
       // read the error, if it's NOT a server error - then throw an error
       // status will be set to error
