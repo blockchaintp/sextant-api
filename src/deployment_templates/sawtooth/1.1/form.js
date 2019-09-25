@@ -93,6 +93,7 @@ const form = [
       title: 'Consensus Algorithm',
       helperText: 'Which consensus algorithm should this network use?',
       component: 'select',
+      alternateText: true,
       default: 400,
       dataType: 'number',
       options: options.consensus,
@@ -152,8 +153,8 @@ const form = [
 
   {
     id: 'sawtooth.customTPs',
-    title: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
-    helperText: 'Click add to configure.',
+    title: 'skip',
+    helperText: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
     list: {
       mainField: 'name',
       schema: [{
