@@ -12,8 +12,8 @@
    * apiServer
    * token
    * ca
-  
-  
+
+
 
 */
 
@@ -58,10 +58,10 @@ const LOCAL_API_SERVER = 'https://kubernetes.default.svc'
    * apiServer
    * token
    * ca
-  
+
   'localCredentials' object means we are running on the cluster we should connect to
-  
-  
+
+
 
 */
 const Kubectl = ({
@@ -85,9 +85,9 @@ const Kubectl = ({
   let connectionArguments = []
 
   /*
-  
+
     write the ca data to a tempfile so we can inject it into kubectl commands
-  
+
   */
   const setup = async () => {
     if(isSetup) return
@@ -97,7 +97,7 @@ const Kubectl = ({
       const caPath = await tempFile({
         postfix: '.txt',
       })
-  
+
       await writeFile(caPath, remoteCredentials.ca, 'base64')
 
       connectionArguments = [
@@ -107,6 +107,7 @@ const Kubectl = ({
         base64.decode(remoteCredentials.token),
         '--server',
         remoteCredentials.apiServer,
+        '--insecure-skip-tls-verify=false'
       ]
     }
     else if(mode == 'local') {
@@ -128,7 +129,7 @@ const Kubectl = ({
 
   const getOptions = (options) => {
     const useOptions = Object.assign({}, options, {
-      // allow 5MB back on stdout 
+      // allow 5MB back on stdout
       //(which should not happen but some logs might be longer than 200kb which is the default)
       maxBuffer: 1024 * 1024 * 5,
     })
@@ -180,7 +181,7 @@ const Kubectl = ({
         .on('data', (line) => {
           stderr += line + "\n"
         })
-      
+
       spawnedProcess.on('exit', (code) => {
         if(code > 0 && !complete) {
           complete = true
