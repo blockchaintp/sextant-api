@@ -107,7 +107,7 @@ const Kubectl = ({
         base64.decode(remoteCredentials.token),
         '--server',
         remoteCredentials.apiServer,
-        '--insecure-skip-tls-verify=false'
+        '--insecure-skip-tls-verify=true'
       ]
     }
     else if(mode == 'local') {
