@@ -3,13 +3,13 @@ const config = require('../config')
 const ClusterStore = (knex) => {
 
   /*
-  
+
     list all clusters
 
     params:
 
       * deleted - include the deleted clusters in the list
-  
+
   */
   const list = ({
     deleted,
@@ -29,9 +29,9 @@ const ClusterStore = (knex) => {
 
     return sqlQuery
   }
-  
+
   /*
-  
+
     get a single cluster
 
     params:
@@ -52,7 +52,7 @@ const ClusterStore = (knex) => {
   }
 
   /*
-  
+
     insert a new cluster
 
     params:
@@ -62,7 +62,7 @@ const ClusterStore = (knex) => {
         * provision_type
         * capabilities
         * desired_state
-    
+
   */
   const create = ({
     data: {
@@ -72,7 +72,7 @@ const ClusterStore = (knex) => {
       desired_state,
     }
   }, trx) => {
-    
+
     if(!name) throw new Error(`data.name param must be given to store.cluster.create`)
     if(!provision_type) throw new Error(`data.provision_type param must be given to store.cluster.create`)
     if(!desired_state) throw new Error(`data.desired_state param must be given to store.cluster.create`)
@@ -89,7 +89,7 @@ const ClusterStore = (knex) => {
   }
 
   /*
-  
+
     update a cluster
 
     params:
@@ -102,7 +102,7 @@ const ClusterStore = (knex) => {
         * desired_state
         * applied_state
         * maintenance_flag
-  
+
   */
   const update = ({
     id,
@@ -122,7 +122,7 @@ const ClusterStore = (knex) => {
   }
 
   /*
-  
+
     delete a single cluster
 
     this means updating the 'deleted' flag to true
@@ -136,7 +136,7 @@ const ClusterStore = (knex) => {
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.delete`)
-    
+
     return (trx || knex)(config.TABLES.cluster)
       .where({
         id,
@@ -152,7 +152,7 @@ const ClusterStore = (knex) => {
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.deletePermenantly`)
-    
+
     return (trx || knex)(config.TABLES.cluster)
       .where({
         id,
