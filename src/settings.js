@@ -4,8 +4,6 @@ const required_env = [
   'POSTGRES_USER',
   'POSTGRES_DB',
   'POSTGRES_PASSWORD',
-  'SESSION_SECRET',
-  'TOKEN_SECRET',
 ]
 
 const missing_env = required_env.filter(name => process.env[name] ? false : true)
