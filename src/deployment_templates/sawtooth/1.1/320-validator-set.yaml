@@ -232,7 +232,7 @@ spec:
         - name: router
           image: {{ .images.noxy }}
           ports:
-            - containerPort: 80
+            - containerPort: 9080
               name: router
           env:
             - name: NOXY_DEFAULT_HOST
