@@ -1,3 +1,10 @@
+const options = require('./options')
+
+const getConsensusTitle = (value) => {
+  const option = options.consensus.find(o => o.value == value)
+  return option ? option.title : 'unknown'
+}
+
 const summary = (values) => {
 
   const {
@@ -20,11 +27,11 @@ const summary = (values) => {
     title: 'Permissioned',
     value: sawtooth.permissioned ? 'Yes' : 'No',
   }, {
+    title: 'Consensus Algorithm',
+    value: getConsensusTitle(sawtooth.consensus),
+  }, {
     title: 'External Seeds',
     value: sawtooth.externalSeeds.map(seed => seed.address),
-  }, {
-    title: 'Consensus Algorithm',
-    value: sawtooth.poet.enabled ? 'POET' : 'Dev Mode',
   }, {
     title: 'Custom Transaction Processors',
     value: sawtooth.customTPs.map(tp => `${tp.name} (${tp.image})`),
@@ -32,8 +39,8 @@ const summary = (values) => {
     title: 'DAML enabled?',
     value: sawtooth.daml.enabled ? 'Yes' : 'No',
   }, {
-    title: 'RBAC enabled?',
-    value: sawtooth.rbac.enabled ? 'Yes' : 'No',
+    title: 'Sabre enabled?',
+    value: sawtooth.sabre.enabled ? 'Yes' : 'No',
   }, {
     title: 'SETH enabled?',
     value: sawtooth.seth.enabled ? 'Yes' : 'No',
@@ -43,9 +50,6 @@ const summary = (values) => {
   }, {
     title: 'Smallbank enabled?',
     value: sawtooth.smallbank.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'Simple enabled?',
-    value: sawtooth.simple.enabled ? 'Yes' : 'No',
   }]
 }
 

@@ -1,7 +1,7 @@
 const sawtooth = require('./sawtooth')
-//const ethereum = require('./ethereum')
+const daml = require('./daml')
 
 module.exports = {
   sawtooth,
-  //ethereum,
+  daml,
 }

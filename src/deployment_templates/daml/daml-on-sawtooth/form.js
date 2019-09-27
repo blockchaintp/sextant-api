@@ -1,35 +1,5 @@
-const activatedOptions = [{
-  value: true,
-  title: 'Enabled'
-},{
-  value: false,
-  title: 'Disabled'
-}]
-
-const consensusOptions = [{
-  value: true,
-  title: 'Poet'
-},{
-  value: false,
-  title: 'Dev Mode'
-}]
-
-const peeringOptions = [{
-  value: true,
-  title: 'Dynamic'
-},{
-  value: false,
-  title: 'Static'
-}]
-
-const yesNo = [{
-  value: true,
-  title: 'Yes'
-},{
-  value: false,
-  title: 'No'
-}]
-
+const options = require('./options')
+//`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*`
 const form = [
 
   'Network',
@@ -44,7 +14,7 @@ const form = [
         type: 'string',
         methods: [
           ['required', 'Required'],
-          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`, 'i'], 'Must follow RFC952 standards.']
+          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
         ],
       },
     },
@@ -60,7 +30,7 @@ const form = [
         type: 'string',
         methods: [
           ['required', 'Required'],
-          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`, 'i'], 'Must follow RFC952 standards.']
+          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
         ],
       },
     },
@@ -76,7 +46,7 @@ const form = [
       default: true,
       dataType: 'boolean',
       row: true,
-      options: peeringOptions,
+      options: options.peering,
       validate: {
         type: 'string',
         methods: [
@@ -92,7 +62,7 @@ const form = [
       default: true,
       dataType: 'boolean',
       row: true,
-      options: activatedOptions,
+      options: options.activated,
       validate: {
         type: 'string',
         methods: [
@@ -101,6 +71,57 @@ const form = [
       },
     },
   ],
+  [
+    {
+      id: 'sawtooth.permissioned',
+      title: 'Permissioned Network',
+      helperText: 'Should this network be permissioned?',
+      component: 'radio',
+      default: false,
+      dataType: 'boolean',
+      row: true,
+      options: options.activated,
+      validate: {
+        type: 'string',
+        methods: [
+          ['required', 'Required']
+        ],
+      },
+    },
+    {
+      id: 'sawtooth.consensus',
+      title: 'Consensus Algorithm',
+      helperText: 'Which consensus algorithm should this network use?',
+      component: 'select',
+      alternateText: true,
+      default: 400,
+      dataType: 'number',
+      options: options.consensus,
+      validate: {
+        type: 'number',
+        methods: [
+          ['required', 'Required']
+        ],
+      },
+    },
+  ],
+
+  {
+    id: 'affinity.enabled',
+    title: 'Affinity',
+    helperText: 'If enabled - pods will only deploy to nodes that have the label: app={{.sawtooth.networkName}}-validator',
+    component: 'radio',
+    default: false,
+    dataType: 'boolean',
+    row: true,
+    options: options.activated,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  },
 
 
   {
@@ -128,31 +149,12 @@ const form = [
     }
   },
 
-  'Consensus Algorithm',
-
-  {
-    id: 'sawtooth.poet.enabled',
-    title: 'Should the POET consensus protocol be active on this network?',
-    helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  },
-
   'Custom Transaction Processors',
 
   {
     id: 'sawtooth.customTPs',
-    title: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
-    helperText: 'Click add to configure.',
+    title: 'skip',
+    helperText: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
     list: {
       mainField: 'name',
       schema: [{
@@ -216,36 +218,17 @@ const form = [
     }
   },
 
-  'Smart Contract Language Support',
+  'Image Pull Secrets',
 
-  [{
-    id: 'sawtooth.seth.enabled',
-    title: 'Should SETH be supported on this network?',
-    helperText: null,
+  {
+    id: 'imagePullSecrets.enabled',
+    title: 'Do you need to enable image pull secrets?',
+    helperText: 'Provide secrets to be injected into Sawtooth namespace and used to pull images from your secure registry',
     component: 'radio',
     default: false,
     dataType: 'boolean',
     row: true,
-    options: yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }],
-
-  'Sample Applications',
-
-  [{
-    id: 'sawtooth.xo.enabled',
-    title: 'Should the XO demo be deployed on this network?',
-    helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: yesNo,
+    options: options.yesNo,
     validate: {
       type: 'string',
       methods: [
@@ -253,21 +236,32 @@ const form = [
       ],
     },
   }, {
-    id: 'sawtooth.smallbank.enabled',
-    title: 'Should the Smallbank demo be deployed on this network?',
+    id: 'imagePullSecrets.value',
+    title: 'Image Pull Secrets',
     helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }],
+    default: null,
+    list: {
+      mainField: 'name',
+      schema: [{
+        id: 'name',
+        title: 'Name',
+        helperText: 'The name of the secret',
+        component: 'text',
+        validate: {
+          type: 'string',
+          methods: [
+            ['required', 'Required'],
+            ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
+          ],
+        },
+      }],
+      table: [{
+        title: 'Name',
+        name: 'name',
+      }]
+    }
+  },
+
 
 ]
 
