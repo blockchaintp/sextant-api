@@ -35,21 +35,6 @@ const summary = (values) => {
   }, {
     title: 'Custom Transaction Processors',
     value: sawtooth.customTPs.map(tp => `${tp.name} (${tp.image})`),
-  }, {
-    title: 'DAML enabled?',
-    value: sawtooth.daml.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'Sabre enabled?',
-    value: sawtooth.sabre.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'SETH enabled?',
-    value: sawtooth.seth.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'XO enabled?',
-    value: sawtooth.xo.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'Smallbank enabled?',
-    value: sawtooth.smallbank.enabled ? 'Yes' : 'No',
   }]
 }
 
