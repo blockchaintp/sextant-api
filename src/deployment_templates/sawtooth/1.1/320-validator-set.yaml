@@ -209,16 +209,6 @@ spec:
               cpu: "250m"
             requests:
               cpu: "50m"
-        - name: xo-demo
-          image: {{.images.xo_demo}}
-          ports:
-            - containerPort: 80
-              name: xo-demo
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
         {{ end }}
         {{ if .sawtooth.daml.enabled }}
         - name: tracer-ui
@@ -232,7 +222,7 @@ spec:
         - name: router
           image: {{ .images.noxy }}
           ports:
-            - containerPort: 9080
+            - containerPort: 80
               name: router
           env:
             - name: NOXY_DEFAULT_HOST
