@@ -101,12 +101,11 @@ const Kubectl = ({
       await writeFile(caPath, remoteCredentials.ca, 'base64')
 
       connectionArguments = [
-        '--certificate-authority',
-        caPath,
         '--token',
         base64.decode(remoteCredentials.token),
         '--server',
         remoteCredentials.apiServer,
+        '--insecure-skip-tls-verify=true'
       ]
     }
     else if(mode == 'local') {
