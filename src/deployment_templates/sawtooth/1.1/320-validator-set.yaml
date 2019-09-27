@@ -351,7 +351,7 @@ spec:
             {{ end }}
                   ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
             {{ if .sawtooth.permissioned }}
-                  /usr/local/bin/identity_genesis_config.sh {{.sawtooth.namespace}}}
+                  /usr/local/bin/identity_genesis_config.sh {{.sawtooth.namespace}}
             {{ end }}
                   sawset genesis -k /etc/sawtooth/keys/validator.priv -o /etc/sawtooth/genesis/000-genesis.batch
                   cd /etc/sawtooth/genesis
