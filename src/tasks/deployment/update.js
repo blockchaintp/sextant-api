@@ -10,7 +10,7 @@ const pino = require('pino')({
 const DeploymentUpdate = ({
   testMode,
 }) => function* deploymentUpdateTask(params) {
-  
+
   const {
     store,
     task,
@@ -49,7 +49,7 @@ const DeploymentUpdate = ({
   })
 
   // check that the user is not trying to change the k8s namespace
-  if(desiredNamespace != appliedNamespace) {
+  if(appliedNamespace && desiredNamespace != appliedNamespace) {
     throw new Error(`you cannot change the namespace of a deployment`)
   }
 

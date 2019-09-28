@@ -56,7 +56,7 @@ sawtooth:
     enabled: false
   daml:
     # default daml to false at the moment
-    enabled: false
+    enabled: true
   volumes:
     # This MUST be set, and SHOULD be presented to the user as an option, as it is a likely area
     # of customization

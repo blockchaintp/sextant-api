@@ -79,6 +79,7 @@ const CLUSTER_STATUS_DEFAULT = CLUSTER_STATUS.created
 const DEPLOYMENT_TYPE = {
   sawtooth: 'sawtooth',
   ethereum: 'ethereum',
+  daml: 'daml'
 }
 
 const DEPLOYMENT_STATUS = {

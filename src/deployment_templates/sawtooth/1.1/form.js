@@ -1,5 +1,5 @@
 const options = require('./options')
-//`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*`
+
 const form = [
 
   'Network',
@@ -221,21 +221,6 @@ const form = [
   'Smart Contract Language Support',
 
   [{
-    id: 'sawtooth.daml.enabled',
-    title: 'Should DAML be supported on this network?',
-    helperText: null,
-    component: 'radio',
-    default: true,
-    dataType: 'boolean',
-    row: true,
-    options: options.yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  },{
     id: 'sawtooth.sabre.enabled',
     title: 'Should Sabre be supported on this network?',
     helperText: null,
@@ -334,6 +319,7 @@ const form = [
           type: 'string',
           methods: [
             ['required', 'Required'],
+            ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
           ],
         },
       }],

@@ -6,6 +6,7 @@ const ClusterSecretStore = require('./clustersecret')
 const DeploymentStore = require('./deployment')
 const DeploymentSecretStore = require('./deploymentsecret')
 const TaskStore = require('./task')
+const SettingsStore = require('./settings')
 
 const Store = (knex) => {
   const user = UserStore(knex)
@@ -16,6 +17,7 @@ const Store = (knex) => {
   const deployment = DeploymentStore(knex)
   const deploymentsecret = DeploymentSecretStore(knex)
   const task = TaskStore(knex)
+  const settings = SettingsStore(knex)
 
   const transaction = knex.transaction
 
@@ -30,6 +32,7 @@ const Store = (knex) => {
     deploymentsecret,
     task,
     transaction,
+    settings
   }
 }
 

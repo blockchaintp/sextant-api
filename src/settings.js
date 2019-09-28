@@ -4,8 +4,6 @@ const required_env = [
   'POSTGRES_USER',
   'POSTGRES_DB',
   'POSTGRES_PASSWORD',
-  'SESSION_SECRET',
-  'TOKEN_SECRET',
 ]
 
 const missing_env = required_env.filter(name => process.env[name] ? false : true)
@@ -22,7 +20,7 @@ ${missing_env.join("\n")}
 /*
 
   the settings passed in via the command line or environment
-  
+
 */
 const args = require('minimist')(process.argv, {
   alias: {
@@ -45,8 +43,8 @@ const args = require('minimist')(process.argv, {
     postgrestls: process.env.POSTGRES_TLS,
 
     // sessions
-    sessionSecret: process.env.SESSION_SECRET,
-    tokenSecret: process.env.TOKEN_SECRET,
+    sessionSecret: 'unset',
+    tokenSecret: 'unset',
 
     // the name of the initial root user to create if it doesn't exist
     initialUser: process.env.INITIAL_USER,

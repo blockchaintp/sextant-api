@@ -5,6 +5,7 @@ const pg = require('pg')
 const Knex = require('knex')
 const pgSession = require('connect-pg-simple')(session)
 const settings = require('./settings')
+const Metering = require('./metering')
 const App = require('./app')
 const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
@@ -47,13 +48,13 @@ const boot = async () => {
       })
     }
   })
-  
+
   app.taskProcessor.start(() => {
     pino.info({
       action: 'taskProcessor.start',
       message: `taskProcessor started`,
     })
-  })  
+  })
 }
 
 boot()

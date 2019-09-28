@@ -24,10 +24,10 @@ COPY . /app/api
 
 # this is the default noop metering module
 # override this with --build-arg METERING_MODULE=./src/metering/ecs.js
-#ARG METERING_MODULE=dev.js
+ARG METERING_MODULE=dev.js
 
 # overwrite the imported metering module with the one we want to use for this image
-#COPY ./src/metering/${METERING_MODULE} /app/api/src/metering/index.js
+COPY ./src/metering/${METERING_MODULE} /app/api/src/metering/index.js
 
 ENTRYPOINT ["npm"]
 CMD ["run", "serve"]
