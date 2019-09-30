@@ -29,5 +29,7 @@ ARG METERING_MODULE=dev.js
 # overwrite the imported metering module with the one we want to use for this image
 COPY ./src/metering/${METERING_MODULE} /app/api/src/metering/index.js
 
+COPY ./src/deployment_templates/${METERING_MODULE} /app/api/src/deployment_templates/index.js
+
 ENTRYPOINT ["npm"]
 CMD ["run", "serve"]

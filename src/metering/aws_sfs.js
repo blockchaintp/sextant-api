@@ -5,7 +5,8 @@ const pino = require('pino')({
   name: 'metering.ecs',
 })
 
-const PRODUCT_CODE = '90e15i980lrlbxxnm0w7hsw15'
+//Sextant for Sawtooth
+const PRODUCT_CODE = '965zq9jyoo7ry5e2cryolgi2l'
 const PUBLIC_KEY_VERSION = 1
 
 // 10 minutes
