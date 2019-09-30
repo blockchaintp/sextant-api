@@ -349,7 +349,6 @@ spec:
             {{ else }}
                   bash -x /usr/local/bin/devmode_genesis_config.sh {{.sawtooth.namespace}}
             {{ end }}
-                  ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
             {{ if .sawtooth.permissioned }}
                   /usr/local/bin/identity_genesis_config.sh {{.sawtooth.namespace}}
             {{ end }}
@@ -439,14 +438,6 @@ spec:
               if [ ! -r /etc/sawtooth/keys/validator.priv ]; then
                 sawadm keygen --force
               fi
-              ETCD_URL=http://etcd.{{.sawtooth.namespace}}:2379
-              etcdctl --endpoint $ETCD_URL set validator/$NODE_NAME/pubKey $(cat /etc/sawtooth/keys/validator.pub)
-              EXIT=$?
-              while [ $EXIT -ne 0 ]; do
-                sleep 5
-                etcdctl --endpoint $ETCD_URL set validator/$NODE_NAME/pubKey $(cat /etc/sawtooth/keys/validator.pub)
-                EXIT=$?
-              done
         {{ if .sawtooth.genesis.enabled }}
           {{ if eq .sawtooth.consensus 200 }}
         - name: poet-registration
