@@ -285,7 +285,7 @@ const form = [
         ['required', 'Required']
       ],
     },
-  }, ''],
+  }],
 
   'Image Pull Secrets',
 
