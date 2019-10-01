@@ -17,7 +17,7 @@ module.exports = {
   },
   button: {
     title: 'DAML on Sawtooth',
-    icon: "/thirdParty/a.png",
+    icon: "/thirdParty/daml.png",
     versions: [
     {
       title: 'daml-on-sawtooth(v0.1.3), BTP Sawtooth(BTP2.0)',
