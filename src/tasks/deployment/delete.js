@@ -61,7 +61,7 @@ const DeploymentDelete = ({
     try {
       // try to connect to a remote cluster and delete it
       await clusterKubectl.command(`delete all --all -n ${namespace}`)
-      await clusterKubectl.command(`delete etcdcluster etcd -n ${namespace} || true`)
+      await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)
     } catch (err) {
       // read the error, if it's NOT a server error - then throw an error
       // status will be set to error
