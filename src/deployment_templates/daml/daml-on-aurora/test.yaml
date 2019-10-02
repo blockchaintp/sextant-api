@@ -1,0 +1,83 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: test
+  name: test-svc
+  namespace: test
+spec:
+  ports:
+  - name: ledger-api
+    port: 39000
+    protocol: TCP
+    targetPort: 39000
+  selector:
+    app: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test
+  name: test-dep
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - args:
+        - |
+          sleep 30
+          /opt/digitalasset/bin/entrypoint.sh -w
+        command:
+        - bash
+        - -xc
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: postgressecret
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: postgressecret
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              key: host
+              name: postgressecret
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              key: database
+              name: postgressecret
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              key: port
+              name: postgressecret
+        - name: LEDGER_ID
+          value: someIdentifyingString
+        image: blockchaintp/daml-on-postgres:BTP2.0
+        imagePullPolicy: Always
+        name: daml-on-aurora
+        ports:
+        - containerPort: 39000
+      imagePullSecrets:
+      - name: regcred
+
