@@ -139,6 +139,7 @@ const form = [
           type: 'string',
           methods: [
             ['required', 'Required'],
+            ['matches', [`(([a-z]([-a-z0-9]*[a-z0-9])*)|([0-9]+[.0-9]*)):[0-9]+`], "Must use a DNS-1123 label or an IP address followed by a ':' and a port number."]
           ],
         },
       }],
