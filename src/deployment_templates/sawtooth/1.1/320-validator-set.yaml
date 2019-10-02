@@ -365,7 +365,7 @@ spec:
                 --bind consensus:tcp://0.0.0.0:5050 \
                 --bind network:tcp://0.0.0.0:8800 \
                 --peering {{if ($peering)}}dynamic{{else}}static{{end}} \
-                {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.}} {{end}} \
+                {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.address}} {{end}} \
                 {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} \
                 --opentsdb-db metrics \
                 --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
