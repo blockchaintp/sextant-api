@@ -1,4 +1,5 @@
 const options = require('./options')
+const randomString = require('randomstring')
 
 const form = [
 
@@ -154,7 +155,8 @@ const form = [
 
   {
     id: 'sawtooth.customTPs',
-    title: 'skip',
+    title: 'Custom Transaction Processors',
+    skip: true,
     helperText: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
     list: {
       mainField: 'name',
@@ -285,7 +287,7 @@ const form = [
         ['required', 'Required']
       ],
     },
-  }, ''],
+  }],
 
   'Image Pull Secrets',
 
@@ -330,6 +332,25 @@ const form = [
       }]
     }
   },
+
+  'Advanced Options',
+
+    {
+      id: 'sawtooth.genesis.seed',
+      title: 'Genesis Seed',
+      hidden: true,
+      default: randomString.generate(24),
+      warning: true,
+      helperText: 'WARNING: Changing the Genesis Seed will cause any exisiting data on the deployment to be deleted.',
+      component: 'text',
+      validate: {
+        type: 'string',
+        methods: [
+          ['required', 'Required']
+        ],
+      },
+    },
+
 
 
 ]
