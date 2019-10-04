@@ -16,11 +16,11 @@ module.exports = {
     },
   },
   button: {
-    title: 'DAML on Sawtooth',
-    icon: "/thirdParty/daml.png",
     versions: [
     {
-      title: 'daml-on-sawtooth(v0.1.3), BTP Sawtooth(BTP2.0)',
+      title: 'DAML on Sawtooth',
+      icon: "/thirdParty/daml.png",
+      version: 'daml-on-sawtooth(v0.1.3), BTP Sawtooth(BTP2.0)',
       form: 'daml-on-sawtooth',
       description: "The DAML smart contract runtime engine with Hyperledger Sawtooth as the backing DLT.",
     },

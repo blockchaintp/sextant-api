@@ -16,11 +16,11 @@ module.exports = {
     },
   },
   button: {
-    title: 'BTP Sawtooth',
-    icon: "/thirdParty/hyperledger-sawtooth.png",
     versions: [
     {
-      title: 'BTP2.0',
+      title: 'BTP Sawtooth',
+      icon: "/thirdParty/hyperledger-sawtooth.png",
+      version: 'BTP2.0',
       form: '1.1',
       description: "BTP's Sawtooth distribution based on Hyperledger Sawtooth 1.1",
     },
