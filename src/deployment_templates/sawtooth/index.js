@@ -17,13 +17,15 @@ module.exports = {
   },
   button: {
     versions: [
-    {
-      title: 'BTP Sawtooth',
-      icon: "/thirdParty/hyperledger-sawtooth.png",
-      version: 'BTP2.0',
-      form: '1.1',
-      description: "BTP's Sawtooth distribution based on Hyperledger Sawtooth 1.1",
-    },
-  ],
+      {
+        title: 'BTP Sawtooth',
+        icon: "/thirdParty/hyperledger-sawtooth.png",
+        version: 'BTP2.0',
+        form: '1.1',
+        description: "BTP's Sawtooth distribution based on Hyperledger Sawtooth 1.1",
+        features: [
+        ]
+      },
+    ],
   },
 }
