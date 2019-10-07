@@ -32,6 +32,7 @@ module.exports = {
         version: 'daml-on-sawtooth(v0.1.3), BTP Sawtooth(BTP2.0)',
         form: 'daml-on-sawtooth',
         description: "The DAML smart contract runtime engine with Hyperledger Sawtooth as the backing DLT.",
+<<<<<<< HEAD
         features: [
           "daml.parties",
           "daml.archives"
@@ -40,6 +41,12 @@ module.exports = {
         title: 'DAML on Aurora',
         icon: "/thirdParty/daml.png",
         version: 'daml-on-postgres(v0.1.3), AWS Aurora(Postgresql)',
+=======
+      }, {
+        icon: "/thirdParty/daml.png",
+        title: 'DAML on Postgres',
+        version: 'daml-on-postgres(v0.13.27)',
+>>>>>>> Fix index.js for new format
         form: 'daml-on-postgres',
         description: "The DAML smart contract runtime engine with AWS Aurora as the backing DLT.",
         features: [
