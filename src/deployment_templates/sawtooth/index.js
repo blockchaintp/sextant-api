@@ -23,6 +23,9 @@ module.exports = {
         version: 'BTP2.0',
         form: '1.1',
         description: "BTP's Sawtooth distribution based on Hyperledger Sawtooth 1.1",
+        features: [
+          "sawtooth.identity"
+        ]
       },
     ],
   },
