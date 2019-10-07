@@ -1,5 +1,6 @@
 const options = require('./options')
-//`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*`
+const randomString = require('randomstring')
+
 const form = [
 
   'Network',
@@ -139,6 +140,7 @@ const form = [
           type: 'string',
           methods: [
             ['required', 'Required'],
+            ['matches', [`(([a-z]([-a-z0-9]*[a-z0-9])*)|([0-9]+[.0-9]*)):[0-9]+`], "Must use a DNS-1123 label or an IP address followed by a ':' and a port number."]
           ],
         },
       }],
@@ -153,7 +155,8 @@ const form = [
 
   {
     id: 'sawtooth.customTPs',
-    title: 'skip',
+    title: 'Custom Transaction Processors',
+    skip: true,
     helperText: 'Custom transaction processors to start and connect to the validator on tcp://localhost:4004',
     list: {
       mainField: 'name',
@@ -262,6 +265,23 @@ const form = [
     }
   },
 
+  'Advanced Options',
+
+  {
+    id: 'sawtooth.genesis.seed',
+    title: 'Genesis Seed',
+    hidden: true,
+    default: randomString.generate(24),
+    warning: true,
+    helperText: 'WARNING: Changing the Genesis Seed will cause any exisiting data on the deployment to be deleted.',
+    component: 'text',
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  },
 
 ]
 
