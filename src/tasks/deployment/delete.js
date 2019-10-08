@@ -86,7 +86,9 @@ const DeploymentDelete = ({
   const deleteHelmCharts = async () => {
     try {
       const chartList = await clusterKubectl.helmCommand(`list -n ${namespace} -q`)
-      chartList.forEach( (chart) => {
+      // re-format the return of list - it is probably a string with "\n' seperators
+
+      chartList.forEach( async (chart) => {
         await clusterKubectl.helmCommand(`uninstall -n ${namespace} -q ${chart}`)
       })
     } catch(err) {
