@@ -9,11 +9,15 @@ imagePullSecrets:
   value:
     - name: regcred
 
+
+
 aws:
+  db:
+    create: true
 
 daml:
   postgres:
-    secret: postgressecret
+      secret: postgressecret
   ledgerId: someIdentifyingString
 
 deployment:

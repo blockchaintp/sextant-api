@@ -1,0 +1,10 @@
+# Default values for cloudformation-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+aws:
+  region: us-east-1
+
+images:
+  operator: quay.io/linki/cloudformation-operator:v0.6.0

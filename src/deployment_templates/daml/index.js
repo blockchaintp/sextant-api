@@ -41,7 +41,7 @@ module.exports = {
         icon: "/thirdParty/daml.png",
         version: 'daml-on-postgres(v0.1.3), AWS Aurora(Postgresql)',
         form: 'daml-on-postgres',
-        description: "The DAML smart contract runtime engine with AWS Aurora as the backing DLT.",
+        description: "The DAML smart contract runtime engine with AWS Aurora(Postgresql) as the backing DLT.",
         features: [
           "daml.parties",
           "daml.archives"

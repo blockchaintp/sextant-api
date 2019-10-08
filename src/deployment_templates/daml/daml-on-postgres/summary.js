@@ -8,15 +8,16 @@ const getConsensusTitle = (value) => {
 const summary = (values) => {
 
   const {
-    sawtooth,
+    deployment,
+    daml
   } = values
 
   return [{
     title: 'Network Name',
-    value: sawtooth.networkName,
+    value: deployment.networkName,
   }, {
     title: 'Namespace',
-    value: sawtooth.namespace,
+    value: deployment.namespace,
     }, {
       title: 'DAML DB Connection Secret',
       value: daml.postgres.secret,

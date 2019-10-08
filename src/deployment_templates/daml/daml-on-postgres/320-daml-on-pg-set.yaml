@@ -32,9 +32,13 @@ spec:
         command: [ "bash","-xc"]
         args:
         - |
+          {{ if .aws.db.create }}
+          echo source /usr/local/bin/set_db_creds.sh {{.deployment.name}}-aurora-pg-stack
+          {{end}}
           sleep 30
           /opt/digitalasset/bin/entrypoint.sh -w
         env:
+        {{ if .daml.postgres.secret }}
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
@@ -60,6 +64,7 @@ spec:
             secretKeyRef:
               name: {{.daml.postgres.secret}}
               key: port
+        {{end}}
         - name: LEDGER_ID
           value: {{.daml.ledgerId}}
 ---

@@ -10,6 +10,9 @@ const form = [
       title: 'Network Name',
       helperText: 'The name of the DAML on Aurora Deployment',
       component: 'text',
+      editable: {
+        new: true,
+      },
       validate: {
         type: 'string',
         methods: [
@@ -37,15 +40,30 @@ const form = [
 
   ],
 
+  'AWS Details',
+  [{
+    id: 'aws.db.create',
+    title: 'Create Aurora DB?',
+    helperText: 'Should this deployment create an Aurora Postgresql Database?',
+    component: 'radio',
+    default: false,
+    dataType: 'boolean',
+    row: true,
+    options: options.activated,
+    validate: {
+      type: 'string',
+      methods: [
+        ['required', 'Required']
+      ],
+    },
+  }],
+
   'DAML Details',
   [{
     id: 'daml.postgres.secret',
     title: 'Database DB Connection Secret',
     helperText: 'The name of the secret containing the database connection details and credentials',
     component: 'text',
-    editable: {
-      new: true,
-    },
     validate: {
       type: 'string',
       methods: [
