@@ -59,6 +59,11 @@ const DeploymentDelete = ({
 
   const interceptError = async () => {
     try {
+
+      //  clusterKubectl.helmCommand('list -a -q')  -> list of charts
+      //  for each of those
+      //  clusterKubectl.helmCommand('uninstall <name>')
+
       // try to connect to a remote cluster and delete it
       await clusterKubectl.command(`delete all --all -n ${namespace}`)
       await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)

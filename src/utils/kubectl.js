@@ -105,10 +105,6 @@ const Kubectl = ({
 
     if (mode == 'remote') {
 
-      const caPath = await tempFile({
-        postfix: '.txt',
-      })
-
       const kubeConfigPath = await tempFile({
         postfix: '.yaml'
       })
@@ -138,7 +134,7 @@ const Kubectl = ({
           {
             cluster: {
               'certificate-authority-data': remoteCredentials.ca,
-              server: remoteCredentials.apiServer
+              server: remoteCredentials.apiServer,
             },
             name:'target'
 
@@ -146,15 +142,8 @@ const Kubectl = ({
         ]
       }
       await writeYaml(kubeConfigPath, kubeconfigData)
-      await writeFile(caPath, remoteCredentials.ca, 'base64')
 
       connectionArguments = [
-        // '--certificate-authority',
-        // caPath,
-        // '--token',
-        // base64.decode(remoteCredentials.token),
-        // '--server',
-        // remoteCredentials.apiServer
         '--kubeconfig', kubeConfigPath
       ]
     }
@@ -263,6 +252,29 @@ const Kubectl = ({
         throw err
       })
   }
+
+    // run a helm command and return [ stdout, stderr ]
+  // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
+  // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
+  const helmCommand = async (cmd, options = {}) => {
+      await setup()
+    const useOptions = getOptions(options)
+    const args = connectionArguments.concat([
+      '-n', namespace,
+    ])
+      const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
+      return exec(runCommand, useOptions)
+        // remove the command itself from the error message so we don't leak credentials
+        .catch(err => {
+          const errorParts = err.toString().split("\n")
+          const okErrorParts = errorParts
+            .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
+            .filter(line => line)
+            .map(line => line.replace(/error: /, ''))
+          err.message = okErrorParts.join("\n")
+          throw err
+        })
+    }
 
   // process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {

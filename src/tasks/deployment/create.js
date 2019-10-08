@@ -82,6 +82,9 @@ const DeploymentCreate = ({
     desired_state,
   })
 
+  // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
+  // for each file in ${templateDirectory}/charts/*.tgz
+  // yield clusterKubectl.helmCommand(`-n ${namespace} install <someName>-<theChartfile> -f <theChartFile>.tgz `)
   yield clusterKubectl.command(`apply -f ${templateDirectory}`)
 
   pino.info({
