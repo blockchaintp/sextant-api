@@ -20,7 +20,7 @@ module.exports = {
       namespace: 'sawtooth.namespace',
     },
     'daml-on-postgres': {
-      name: 'deployment.networkName',
+      name: 'deployment.name',
       namespace: 'deployment.namespace',
     },
   },

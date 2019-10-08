@@ -6,16 +6,16 @@ metadata:
   name: {{.deployment.name}}-dep
   namespace: {{.deployment.namespace}}
   labels:
-    app: {{.deployment.name}}
+    app: {{.deployment.name}}-validator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{.deployment.name}}
+      app: {{.deployment.name}}-validator
   template:
     metadata:
       labels:
-        app: {{.deployment.name}}
+        app: {{.deployment.name}}-validator
     spec:
       {{ if .imagePullSecrets.enabled }}
       imagePullSecrets:

@@ -14,7 +14,7 @@ const summary = (values) => {
 
   return [{
     title: 'Network Name',
-    value: deployment.networkName,
+    value: deployment.name,
   }, {
     title: 'Namespace',
     value: deployment.namespace,
@@ -23,7 +23,7 @@ const summary = (values) => {
       value: daml.postgres.secret,
     },{
       title: 'DAML Ledger ID',
-      value: daml.postgres.ledgerId,
+      value: daml.ledgerId,
   }]
 }
 

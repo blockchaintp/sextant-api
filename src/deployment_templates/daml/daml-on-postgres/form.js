@@ -6,7 +6,7 @@ const form = [
 
   [
     {
-      id: 'deployment.networkName',
+      id: 'deployment.name',
       title: 'Network Name',
       helperText: 'The name of the DAML on Aurora Deployment',
       component: 'text',
@@ -72,7 +72,7 @@ const form = [
       ],
     },
   },{
-    id: 'daml.postgres.ledgerId',
+    id: 'daml.ledgerId',
     title: 'DAML Ledger ID',
     helperText: 'A unique string identying this ledger',
     component: 'text',
@@ -83,7 +83,7 @@ const form = [
       type: 'string',
       methods: [
         ['required', 'Required'],
-        ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
+        ['matches', [`^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])*$`], "a ledger id must consist of alphanumeric characters or '-', and must start and end with an alphanumeric character"]
       ],
     },
   },],
