@@ -17,6 +17,7 @@ spec:
       labels:
         app: {{.deployment.name}}-validator
     spec:
+      serviceAccountName: {{.deployment.name}}-sa
       {{ if .imagePullSecrets.enabled }}
       imagePullSecrets:
       {{range .imagePullSecrets.value }}
@@ -33,9 +34,9 @@ spec:
         args:
         - |
           {{ if .aws.db.create }}
-          echo source /usr/local/bin/set_db_creds.sh {{.deployment.name}}-aurora-pg-stack
-          {{end}}
           sleep 30
+          source /usr/local/bin/set_db_creds.sh {{.deployment.name}}-aurora-pg-stack
+          {{end}}
           /opt/digitalasset/bin/entrypoint.sh -w
         env:
         {{ if .daml.postgres.secret }}

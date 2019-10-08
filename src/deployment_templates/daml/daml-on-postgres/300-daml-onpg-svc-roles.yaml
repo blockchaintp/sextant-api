@@ -1,0 +1,34 @@
+# kubetpl:syntax:go-template
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{.deployment.name}}-sa
+  namespace: {{.deployment.namespace}}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{.deployment.name}}:role
+  namespace: {{.deployment.namespace}}
+rules:
+  - apiGroups: ["cloudformation.linki.space"] # "" refers to the core API group
+    resources: ["stacks",]
+    verbs: ["get","list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: {{.deployment.namespace}}:{{.deployment.name}}
+  namespace: {{.deployment.namespace}}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{.deployment.name}}:role
+subjects:
+- kind: ServiceAccount
+  name: {{.deployment.name}}-sa
+  namespace: {{.deployment.namespace}}
+---
