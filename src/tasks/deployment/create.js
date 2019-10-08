@@ -93,6 +93,7 @@ const DeploymentCreate = ({
     deployment_version,
     desired_state,
   })
+  console.log("charts1",charts)
 
   // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
   // for each file in ${templateDirectory}/charts/*.tgz
@@ -110,7 +111,7 @@ const DeploymentCreate = ({
 
   // if there is a charts directory, do a helm command for each chart
   //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
-
+  console.log("charts",charts)
   if (charts) {
     const chartsFolder = getChartsFolder({
       deployment_type,
@@ -120,6 +121,7 @@ const DeploymentCreate = ({
     charts.forEach(
       yield (chartFile) => {
         let safeFileName = makeSafeFileName(chartFile)
+        console.log(`Applying chart ${chartsFolder}/${chartFile} to ns ${namespace} with name ${networkName}-${safeFileName}`)
         clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${safeFileName} ${chartsFolder}/${chartFile}`)
     })
   }
