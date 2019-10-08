@@ -59,14 +59,11 @@ const DeploymentDelete = ({
 
   const interceptError = async () => {
     try {
-
-      //  clusterKubectl.helmCommand('list -a -q')  -> list of charts
-      //  for each of those
-      //  clusterKubectl.helmCommand('uninstall <name>')
-
       // try to connect to a remote cluster and delete it
       await clusterKubectl.command(`delete all --all -n ${namespace}`)
       await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)
+      // delete stacks if they are there
+      await clusterKubectl.command(`delete stacks --all -n ${namespace} || true`)
     } catch (err) {
       // read the error, if it's NOT a server error - then throw an error
       // status will be set to error
@@ -79,6 +76,27 @@ const DeploymentDelete = ({
   }
 
   yield interceptError()
+
+  // delete helm chartsFolder
+  // list all of the charts
+  // helm list -n <namespace> -q
+  // uninstall the charts listed
+  // helm uninstall -n <namespace>
+
+  const deleteHelmCharts = async () => {
+    try {
+      const chartList = await clusterKubectl.helmCommand(`list -n ${namespace} -q`)
+      chartList.forEach( (chart) => {
+        await clusterKubectl.helmCommand(`uninstall -n ${namespace} -q ${chart}`)
+      })
+    } catch(err) {
+      console.log("------------\n-------------\n You probably don't have any helm charts to delete\n");
+      console.log(err);
+      console.log("------------\n-------------\n");
+    }
+  }
+
+  yield deleteHelmCharts()
 
 }
 
