@@ -259,9 +259,6 @@ const Kubectl = ({
   const helmCommand = async (cmd, options = {}) => {
       await setup()
     const useOptions = getOptions(options)
-    const args = connectionArguments.concat([
-      '-n', namespace,
-    ])
       const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
       return exec(runCommand, useOptions)
         // remove the command itself from the error message so we don't leak credentials
@@ -310,6 +307,7 @@ const Kubectl = ({
 
   return {
     command,
+    helmCommand,
     portForward,
     jsonCommand,
     apply,
