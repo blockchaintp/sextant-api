@@ -41,12 +41,13 @@ const form = [
   ],
 
   'AWS Details',
-  [{
+  [
+    {
     id: 'aws.db.create',
     title: 'Create Aurora DB?',
     helperText: 'Should this deployment create an Aurora Postgresql Database?',
     component: 'radio',
-    default: false,
+    default: true,
     dataType: 'boolean',
     row: true,
     options: options.activated,
@@ -56,10 +57,8 @@ const form = [
         ['required', 'Required']
       ],
     },
-  }],
-
-  'DAML Details',
-  [{
+  },
+  {
     id: 'daml.postgres.secret',
     title: 'Database DB Connection Secret',
     helperText: 'The name of the secret containing the database connection details and credentials',
@@ -71,7 +70,11 @@ const form = [
         ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
       ],
     },
-  },{
+  }
+],
+
+  'DAML Details',
+  [,{
     id: 'daml.ledgerId',
     title: 'DAML Ledger ID',
     helperText: 'A unique string identying this ledger',
