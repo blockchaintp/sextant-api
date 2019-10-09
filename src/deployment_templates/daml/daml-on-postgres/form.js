@@ -40,7 +40,7 @@ const form = [
 
   ],
 
-  'AWS Details',
+  'AWS Aurora Details',
   [
     {
     id: 'aws.db.create',
@@ -50,7 +50,7 @@ const form = [
     default: true,
     dataType: 'boolean',
     row: true,
-    options: options.activated,
+    options: options.yesNo,
     validate: {
       type: 'string',
       methods: [
@@ -60,7 +60,7 @@ const form = [
   },
   {
     id: 'daml.postgres.secret',
-    title: 'Database DB Connection Secret',
+    title: 'Database Connection Secret',
     helperText: 'The name of the secret containing the database connection details and credentials',
     component: 'text',
     validate: {
@@ -74,7 +74,8 @@ const form = [
 ],
 
   'DAML Details',
-  [,{
+  [
+    {
     id: 'daml.ledgerId',
     title: 'DAML Ledger ID',
     helperText: 'A unique string identying this ledger',
@@ -89,7 +90,9 @@ const form = [
         ['matches', [`^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])*$`], "a ledger id must consist of alphanumeric characters or '-', and must start and end with an alphanumeric character"]
       ],
     },
-  },],
+  },
+  ''//empty string for form spacing
+],
 
   'Image Pull Secrets',
 
