@@ -24,7 +24,7 @@ const async = require('async')
 const getPort = require('get-port')
 const fs = require('fs')
 const childProcess = require('child_process')
-
+const yaml = require('js-yaml')
 const base64 = require('./base64')
 
 const pino = require('pino')({
@@ -69,14 +69,14 @@ const Kubectl = ({
   remoteCredentials,
 } = {}) => {
 
-  if(!mode) throw new Error(`mode required for Kubectl`)
-  if(MODES.indexOf(mode) < 0) throw new Error(`unknown mode for Kubectl: ${mode}`)
+  if (!mode) throw new Error(`mode required for Kubectl`)
+  if (MODES.indexOf(mode) < 0) throw new Error(`unknown mode for Kubectl: ${mode}`)
 
-  if(mode == 'remote') {
-    if(!remoteCredentials) throw new Error(`remoteCredentials required for Kubectl remote mode`)
-    if(!remoteCredentials.ca) throw new Error(`ca required for remote credentials`)
-    if(!remoteCredentials.token) throw new Error(`token required for remote credentials`)
-    if(!remoteCredentials.apiServer) throw new Error(`apiServer required for remote credentials`)
+  if (mode == 'remote') {
+    if (!remoteCredentials) throw new Error(`remoteCredentials required for Kubectl remote mode`)
+    if (!remoteCredentials.ca) throw new Error(`ca required for remote credentials`)
+    if (!remoteCredentials.token) throw new Error(`token required for remote credentials`)
+    if (!remoteCredentials.apiServer) throw new Error(`apiServer required for remote credentials`)
   }
 
   let isSetup = false
@@ -86,30 +86,68 @@ const Kubectl = ({
 
   /*
 
+  write a YAML file
+
+  */
+  const writeYaml = async (filepath, data) => {
+    const yamlText = yaml.safeDump(data)
+    return writeFile(filepath, yamlText, 'utf8')
+  }
+
+
+  /*
+
     write the ca data to a tempfile so we can inject it into kubectl commands
 
   */
   const setup = async () => {
-    if(isSetup) return
+    if (isSetup) return
 
-    if(mode == 'remote') {
+    if (mode == 'remote') {
 
-      const caPath = await tempFile({
-        postfix: '.txt',
+      const kubeConfigPath = await tempFile({
+        postfix: '.yaml'
       })
 
-      await writeFile(caPath, remoteCredentials.ca, 'base64')
+      const kubeconfigData = {
+        kind: 'Config',
+        preferences: {},
+        users: [
+          {
+            name: 'sextant',
+            user: {
+              token: base64.decode(remoteCredentials.token).toString()
+            }
+          }
+        ],
+        contexts: [
+          {
+            context: {
+              cluster: 'target',
+              user: 'sextant',
+            },
+            name: 'target-context'
+          }
+        ],
+        "current-context":'target-context',
+        clusters: [
+          {
+            cluster: {
+              'certificate-authority-data': remoteCredentials.ca,
+              server: remoteCredentials.apiServer,
+            },
+            name:'target'
+
+          }
+        ]
+      }
+      await writeYaml(kubeConfigPath, kubeconfigData)
 
       connectionArguments = [
-        '--certificate-authority',
-       caPath,
-        '--token',
-        base64.decode(remoteCredentials.token),
-        '--server',
-        remoteCredentials.apiServer
+        '--kubeconfig', kubeConfigPath
       ]
     }
-    else if(mode == 'local') {
+    else if (mode == 'local') {
 
       const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
 
@@ -169,8 +207,8 @@ const Kubectl = ({
         .pipe(split())
         .on('data', (line) => {
           // this is the key line kubectl port-forward prints once the proxy is setup
-          if(line == `Forwarding from 127.0.0.1:${localPort} -> ${port}`)
-          complete = true
+          if (line == `Forwarding from 127.0.0.1:${localPort} -> ${port}`)
+            complete = true
           resolve(spawnedProcess)
         })
 
@@ -182,7 +220,7 @@ const Kubectl = ({
         })
 
       spawnedProcess.on('exit', (code) => {
-        if(code > 0 && !complete) {
+        if (code > 0 && !complete) {
           complete = true
           reject(new Error(stderr))
         }
@@ -215,16 +253,36 @@ const Kubectl = ({
       })
   }
 
+    // run a helm command and return [ stdout, stderr ]
+  // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
+  // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
+  const helmCommand = async (cmd, options = {}) => {
+      await setup()
+    const useOptions = getOptions(options)
+      const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
+      return exec(runCommand, useOptions)
+        // remove the command itself from the error message so we don't leak credentials
+        .catch(err => {
+          const errorParts = err.toString().split("\n")
+          const okErrorParts = errorParts
+            .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
+            .filter(line => line)
+            .map(line => line.replace(/error: /, ''))
+          err.message = okErrorParts.join("\n")
+          throw err
+        })
+    }
+
   // process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
-    const runCommand = `${ cmd } --output json`
+    const runCommand = `${cmd} --output json`
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
     return processedOutput
   }
 
   // apply a filename
-  const apply = (filepath) => command(`apply -f ${ filepath }`)
+  const apply = (filepath) => command(`apply -f ${filepath}`)
 
   // given some YAML content - write a tempfile then apply it
   const applyInline = async (data) => {
@@ -236,7 +294,7 @@ const Kubectl = ({
   }
 
   // delete a filename
-  const del = (filepath) => command(`delete -f ${ filepath }`)
+  const del = (filepath) => command(`delete -f ${filepath}`)
 
   // given some YAML content - write a tempfile then delete it
   const deleteInline = async (data) => {
@@ -249,6 +307,7 @@ const Kubectl = ({
 
   return {
     command,
+    helmCommand,
     portForward,
     jsonCommand,
     apply,

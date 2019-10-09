@@ -1,0 +1,71 @@
+# kubetpl:syntax:go-template
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.deployment.name}}-dep
+  namespace: {{.deployment.namespace}}
+  labels:
+    app: {{.deployment.name}}-validator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{.deployment.name}}-validator
+  template:
+    metadata:
+      labels:
+        app: {{.deployment.name}}-validator
+    spec:
+      serviceAccountName: {{.deployment.name}}-sa
+      {{ if .imagePullSecrets.enabled }}
+      imagePullSecrets:
+      {{range .imagePullSecrets.value }}
+        - name: {{ .name }}
+      {{ end }}
+      {{ end }}
+      containers:
+      - name: daml-on-aurora
+        image: {{.images.damlpostgres}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 39000
+        command: [ "bash","-xc"]
+        args:
+        - |
+          {{ if .aws.db.create }}
+          sleep 30
+          source /usr/local/bin/set_db_creds.sh {{.deployment.name}}-aurora-pg-stack
+          {{end}}
+          /opt/digitalasset/bin/entrypoint.sh -w
+        env:
+        {{ if .daml.postgres.secret }}
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{.daml.postgres.secret}}
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{.daml.postgres.secret}}
+              key: password
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{.daml.postgres.secret}}
+              key: host
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: {{.daml.postgres.secret}}
+              key: database
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{.daml.postgres.secret}}
+              key: port
+        {{end}}
+        - name: LEDGER_ID
+          value: {{.daml.ledgerId}}
+---

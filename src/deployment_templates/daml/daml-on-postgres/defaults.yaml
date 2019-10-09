@@ -1,0 +1,30 @@
+#This file is a reasonable defaults file for daml-on-aurora
+
+# This is optional,
+# if false the values are ignored,
+# if true then there should exist a secret within the namespace
+#   of the given names, multiple values are acceptable
+imagePullSecrets:
+  enabled: true
+  value:
+    - name: regcred
+
+
+
+aws:
+  db:
+    create: true
+
+daml:
+  postgres:
+      secret: postgressecret
+  ledgerId: someIdentifyingString
+
+deployment:
+  namespace:  test
+  name: test
+
+# The below are mostly controlled by BTP, although an "advanced" option to customize them may be
+# presented
+images:
+  damlpostgres: blockchaintp/daml-on-postgres:BTP2.0
