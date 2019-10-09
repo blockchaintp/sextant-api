@@ -40,28 +40,27 @@ const form = [
 
   ],
 
-  'AWS Details',
-  [{
+  'AWS Aurora Details',
+  [
+    {
     id: 'aws.db.create',
     title: 'Create Aurora DB?',
     helperText: 'Should this deployment create an Aurora Postgresql Database?',
     component: 'radio',
-    default: false,
+    default: true,
     dataType: 'boolean',
     row: true,
-    options: options.activated,
+    options: options.yesNo,
     validate: {
       type: 'string',
       methods: [
         ['required', 'Required']
       ],
     },
-  }],
-
-  'DAML Details',
-  [{
+  },
+  {
     id: 'daml.postgres.secret',
-    title: 'Database DB Connection Secret',
+    title: 'Database Connection Secret',
     helperText: 'The name of the secret containing the database connection details and credentials',
     component: 'text',
     validate: {
@@ -71,7 +70,12 @@ const form = [
         ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
       ],
     },
-  },{
+  }
+],
+
+  'DAML Details',
+  [
+    {
     id: 'daml.ledgerId',
     title: 'DAML Ledger ID',
     helperText: 'A unique string identying this ledger',
@@ -86,7 +90,9 @@ const form = [
         ['matches', [`^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])*$`], "a ledger id must consist of alphanumeric characters or '-', and must start and end with an alphanumeric character"]
       ],
     },
-  },],
+  },
+  ''//empty string for form spacing
+],
 
   'Image Pull Secrets',
 
