@@ -11,6 +11,9 @@ const form = [
       title: 'Network Name',
       helperText: 'The name of the sawtooth network',
       component: 'text',
+      editable: {
+        new: true,
+      },
       validate: {
         type: 'string',
         methods: [
