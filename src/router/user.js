@@ -100,7 +100,7 @@ const UserRoutes = (controllers) => {
     //
     //  * an superuser user locking themselves out of the system (by downgrading)
     //  * a normal user giving themselves superuser access
-    if(req.user.id == req.params.id && req.body.permission) {
+    if(req.user.id == req.params.id && req.body.permission && req.body.permission !== req.user.permission) {
       res._code = 403
       return next(`cannot change own permission`)
     }
