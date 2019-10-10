@@ -93,7 +93,6 @@ const DeploymentCreate = ({
     deployment_version,
     desired_state,
   })
-  console.log("charts1",charts)
 
   // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
   // for each file in ${templateDirectory}/charts/*.tgz

@@ -39,6 +39,8 @@ spec:
           {{end}}
           /opt/digitalasset/bin/entrypoint.sh -w
         env:
+        {{ if .aws.db.create }}
+        {{ else }}
         {{ if .daml.postgres.secret }}
         - name: POSTGRES_USER
           valueFrom:
@@ -65,7 +67,7 @@ spec:
             secretKeyRef:
               name: {{.daml.postgres.secret}}
               key: port
-        {{end}}
+        {{end}}{{end}}
         - name: LEDGER_ID
           value: {{.daml.ledgerId}}
 ---
