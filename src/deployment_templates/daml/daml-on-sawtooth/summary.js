@@ -12,7 +12,7 @@ const summary = (values) => {
   } = values
 
   return [{
-    title: 'Network Name',
+    title: 'Deployment Name',
     value: sawtooth.networkName,
   }, {
     title: 'Namespace',
@@ -35,6 +35,15 @@ const summary = (values) => {
   }, {
     title: 'Custom Transaction Processors',
     value: sawtooth.customTPs.map(tp => `${tp.name} (${tp.image})`),
+  },{
+    title: 'Sawtooth Validator Port',
+    value: '8800'
+  },{
+    title: 'DAML GRPC Port',
+    value: '39000'
+  },{
+    title: 'DAML Tracer UI Port',
+    value: '5051'
   }]
 }
 
