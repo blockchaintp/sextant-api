@@ -13,17 +13,20 @@ const summary = (values) => {
   } = values
 
   return [{
-    title: 'Network Name',
+    title: 'Deployment Name',
     value: deployment.name,
   }, {
     title: 'Namespace',
     value: deployment.namespace,
-    }, {
-      title: 'DAML DB Connection Secret',
-      value: daml.postgres.secret,
-    },{
-      title: 'DAML Ledger ID',
-      value: daml.ledgerId,
+  }, {
+    title: 'DAML DB Connection Secret',
+    value: daml.postgres.secret,
+  }, {
+    title: 'DAML Ledger ID',
+    value: daml.ledgerId,
+  }, {
+    title: 'DAML GRPC Port',
+    value: '39000'
   }]
 }
 

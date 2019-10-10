@@ -33,6 +33,9 @@ const summary = (values) => {
     title: 'External Seeds',
     value: sawtooth.externalSeeds.map(seed => seed.address),
   }, {
+    title: 'Sawtooth Validator Port',
+    value: '8800'
+  }, {
     title: 'Custom Transaction Processors',
     value: sawtooth.customTPs.map(tp => `${tp.name} (${tp.image})`),
   }, {
