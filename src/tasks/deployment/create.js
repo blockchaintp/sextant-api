@@ -110,7 +110,8 @@ const DeploymentCreate = ({
 
   // if there is a charts directory, do a helm command for each chart
   //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
-  console.log("charts",charts)
+  console.log("\ncharts\n", charts ? charts : '\nThere are NO charts\n')
+
   if (charts) {
     const chartsFolder = getChartsFolder({
       deployment_type,
