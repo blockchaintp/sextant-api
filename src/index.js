@@ -15,6 +15,12 @@ const pino = require('pino')({
   name: 'app',
 })
 
+const { Meter }= require('./metering')
+const { edition } = require('./edition')
+// Start metering
+const meter = new Meter(edition.metering)
+meter.start()
+
 const pgPool = new pg.Pool(settings.postgres.connection)
 const sessionStore = new pgSession({
   pool: pgPool,

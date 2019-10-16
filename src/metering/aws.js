@@ -6,18 +6,16 @@ const pino = require('pino')({
   name: 'metering.ecs',
 })
 
-//Sextant for Sawtooth
-const PRODUCT_CODE = '965zq9jyoo7ry5e2cryolgi2l'
-const PUBLIC_KEY_VERSION = 1
 
-// 10 minutes
-const LOOP_DELAY = 1000 * 60 * 10
+const start = (meteringDetails) => {
+  const PRODUCT_CODE = meteringDetails.productCode
+  const PUBLIC_KEY_VERSION = meteringDetails.publicKeyVersion
+  const LOOP_DELAY = 1000 * 60 * 10
+  let marketplaceMetering
 
-let marketplacemetering
-// get region of aws cluster
-axios.get('http://169.254.169.254/latest/dynamic/instance-identity/document')
+  axios.get('http://169.254.169.254/latest/dynamic/instance-identity/document')
     .then(response => {
-      marketplacemetering = new AWS.MarketplaceMetering({
+      marketplaceMetering = new AWS.MarketplaceMetering({
         region: response.data.region
       })
     })
@@ -26,12 +24,12 @@ axios.get('http://169.254.169.254/latest/dynamic/instance-identity/document')
         type: 'registerUsage',
         error: error,
       })
-      marketplacemetering = new AWS.MarketplaceMetering({
+      marketplaceMetering = new AWS.MarketplaceMetering({
         region: 'us-east-1'
       })
     }).then ( response => {
       const registerUsage = () => {
-        marketplacemetering.registerUsage({
+        marketplaceMetering.registerUsage({
           ProductCode: PRODUCT_CODE,
           PublicKeyVersion: PUBLIC_KEY_VERSION,
         }, (err, result) => {
@@ -61,3 +59,25 @@ axios.get('http://169.254.169.254/latest/dynamic/instance-identity/document')
       setInterval(registerUsage, LOOP_DELAY)
     }
   )
+}
+
+const stop = () => {
+  // We never want to stop AWS meter, so return null
+  return null
+}
+
+const isAllowed = (entitlement) => {
+  return true
+}
+
+const record = (dimension, value) => {
+  return null
+}
+
+
+module.exports = {
+  start,
+  stop,
+  isAllowed,
+  record
+}
