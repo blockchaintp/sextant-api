@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        METERING_MODULE: dev.js
+        EDITION_MODULE: dev.js
     entrypoint: bash -c 'tail -f /dev/null'
     depends_on:
       - postgres
