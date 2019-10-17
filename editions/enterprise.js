@@ -1,4 +1,4 @@
-// Edition object for dev mode
+// Edition object for enterprise editions (sawtooth+DAML)
 
 const edition = {
   metering: {

@@ -34,17 +34,11 @@ RUN npm install
 COPY . /app/api
 
 # this is the default noop metering module
-# override this with --build-arg METERING_MODULE=./src/metering/ecs.js
-ARG METERING_MODULE=dev.js
-
 # copy in the edition module
 ARG EDITION_MODULE=dev.js
 COPY ./editions/${EDITION_MODULE} /app/api/src/edition.js
 
-# overwrite the imported metering module with the one we want to use for this image
-# COPY ./src/metering/${METERING_MODULE} /app/api/src/metering/index.js
-
-COPY ./src/deployment_templates/${METERING_MODULE} /app/api/src/deployment_templates/index.js
+COPY ./src/deployment_templates/${EDITION_MODULE} /app/api/src/deployment_templates/index.js
 
 ENTRYPOINT ["npm"]
 CMD ["run", "serve"]
