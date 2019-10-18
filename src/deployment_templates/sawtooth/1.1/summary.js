@@ -31,7 +31,7 @@ const summary = (values) => {
     value: getConsensusTitle(sawtooth.consensus),
   }, {
     title: 'External Seeds',
-    value: sawtooth.externalSeeds.map(seed => seed.address),
+    value: sawtooth.externalSeeds.map(seed => seed.ip),
   }, {
     title: 'Sawtooth Validator Port',
     value: '8800'
