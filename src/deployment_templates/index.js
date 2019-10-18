@@ -1,7 +1,7 @@
-const sawtooth = require('./sawtooth')
-const daml = require('./daml')
+const { edition } = require('../edition')
+const { TemplateLoader } = require('./templateLoader')
 
-module.exports = {
-  sawtooth,
-  daml,
-}
+const deployment = edition.deployment
+const templateLoader = new TemplateLoader(deployment.types)
+
+module.exports = templateLoader.load()

@@ -38,7 +38,5 @@ COPY . /app/api
 ARG EDITION_MODULE=dev.js
 COPY ./editions/${EDITION_MODULE} /app/api/src/edition.js
 
-COPY ./src/deployment_templates/${EDITION_MODULE} /app/api/src/deployment_templates/index.js
-
 ENTRYPOINT ["npm"]
 CMD ["run", "serve"]
