@@ -133,11 +133,11 @@ const form = [
     title: 'External Seeds',
     helperText: 'The list of external addresses to connect to',
     list: {
-      mainField: 'host',
+      mainField: 'hostname',
       schema: [{
-          id: 'host',
-          title: 'Host Name',
-          helperText: 'Type the host name of a new external seed.',
+          id: 'hostname',
+          title: 'Hostname',
+          helperText: 'Type the hostname of a new external seed.',
           component: 'text',
           validate: {
             type: 'string',
@@ -174,8 +174,8 @@ const form = [
         }
       ],
       table: [{
-        title: 'Host Name',
-        name: 'host',
+        title: 'Hostname',
+        name: 'hostname',
       },{
         title: 'IP Address',
         name: 'ip',
