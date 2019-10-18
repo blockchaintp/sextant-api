@@ -1,7 +1,7 @@
 const { edition } = require('../edition')
-const { Templates } = require('./templates')
+const { TemplateLoader } = require('./templates')
 
 const deployment = edition.deployment
-const templates = new Templates(deployment.types)
+const templateLoader = new TemplateLoader(deployment.types)
 
-module.exports = templates.get()
+module.exports = templateLoader.load()

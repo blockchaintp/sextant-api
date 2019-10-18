@@ -1,11 +1,11 @@
 
 
-class Templates {
+class TemplateLoader {
   constructor(deploymentTypes) {
     this.deploymentTypes = deploymentTypes
   }
 
-  get() {
+  load() {
     return this.deploymentTypes
     .reduce((allTemplates, type) => {
       allTemplates[type] = require(`./${type}`)
@@ -16,5 +16,5 @@ class Templates {
 }
 
 module.exports = {
-  Templates
+  TemplateLoader
 }
