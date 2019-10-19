@@ -821,8 +821,10 @@ const DeployentController = ({ store, settings }) => {
     if(!localFilepath) throw new Error(`localFilepath must be given to controller.deployment.uploadArchive`) 
 
     const data = await damlRPC.uploadArchive({
+      id,
       name,
       size,
+      localFilepath,
     })
 
     return data

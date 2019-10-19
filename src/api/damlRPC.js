@@ -4,6 +4,7 @@ const database = require('./database')
 const ledger = require('@digitalasset/daml-ledger')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const Promise = require('bluebird')
+const fs = require('fs')
 
 const damRPCHost = "localhost"
 
@@ -38,8 +39,8 @@ const DamlRPC = ({
           console.log(`Forwarded port: "${port}" for pod name "${pod.metadata.name}"`)
           console.log('-------------------------------------------------------------')
           const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
-          const participantId = await client.partyManagementClient.getParticipantId();
-          const parties = await client.partyManagementClient.listKnownParties();
+          const participantId = await client.partyManagementClient.getParticipantId()
+          const parties = await client.partyManagementClient.listKnownParties()
           const partyNames = parties.partyDetails.map(item => {
             return {
               name: item.displayName
@@ -238,18 +239,44 @@ const DamlRPC = ({
     return database.damlTimeService
   }
 
-  const uploadArchive = ({
+  const uploadArchive = async ({
+    id,
     name,
     size,
+    localFilepath,
   } = {}) => {
-    const archive = {
-      packageid: name,
-      size,
-      uploadedBy: database.damlParticipants[0].publicKey,
-      uploaded: new Date().getTime(),
-    }
-    database.damlArchives.push(archive)
-    return database.damlArchives
+    
+    console.log(`********************************************`)
+    console.log(`***          Upload Archives             ***`)
+    console.log(`********************************************`)
+
+    const content = fs.readFileSync(localFilepath);
+    const contentBase64 = content.toString('base64');
+
+    // This is responsible for port forwarding
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+    })
+
+    // We need to get all pods here
+    const pods = await proxy.getPods()
+
+    const result = await proxy.request({
+      pod: pods[0].metadata.name,
+      port: 39000,
+      handler: async ({
+        port,
+      }) => {
+        const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+        client.packageManagementClient.uploadDarFile({
+          darFile: contentBase64
+        })
+        const packages = client.packageManagementClient.listKnownPackages()
+        return packages
+      }
+    })
+    return result
   }
 
   return {
