@@ -33,7 +33,7 @@ const pino = require('pino')({
 
 const exec = Promise.promisify(childProcess.exec)
 
-const tempName = Promise.promisify(tmp.tempName)
+const tempName = Promise.promisify(tmp.tmpName)
 const writeFile = Promise.promisify(fs.writeFile)
 const readFile = Promise.promisify(fs.readFile)
 
@@ -80,7 +80,7 @@ const Kubectl = ({
   }
 
   let isSetup = false
-
+  let kubeConfigPath = '/dev/null'
   // we inject these arguments to every kubectl call
   let connectionArguments = []
 
@@ -92,7 +92,7 @@ const Kubectl = ({
   const writeTempYaml = async (data) => {
     const yamlText = yaml.safeDump(data)
     const tmpPath = await tempName({ postfix: '.yaml' })
-    await writeFile(filepath, yamlText, 'utf8')
+    await writeFile(tmpPath, yamlText, 'utf8')
     return tmpPath
   }
 
@@ -139,7 +139,7 @@ const Kubectl = ({
           }
         ]
       }
-      kubeconfigPath = await writeTempYaml(kubeconfigData)
+      kubeConfigPath = await writeTempYaml(kubeconfigData)
 
       connectionArguments = [
         '--kubeconfig', kubeConfigPath
@@ -164,7 +164,9 @@ const Kubectl = ({
 
   //
   const tearDown = async () => {
-    await fs.unlink(kubeConfigPath)
+    await fs.unlink(kubeConfigPath, (err) => {
+      // if err !== null, log err
+    })
     isSetup = false
   }
 
@@ -245,7 +247,7 @@ const Kubectl = ({
     await setup()
     const useOptions = getOptions(options)
     const runCommand = `kubectl ${connectionArguments.join(' ')} ${cmd}`
-    return exec(runCommand, useOptions)
+    const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch(err => {
         const errorParts = err.toString().split("\n")
@@ -256,9 +258,8 @@ const Kubectl = ({
         err.message = okErrorParts.join("\n")
         throw err
       })
-      .then(() => {
-        tearDown()
-      })
+      await tearDown()
+      return result
   }
 
   // run a helm command and return [ stdout, stderr ]
@@ -268,7 +269,7 @@ const Kubectl = ({
     await setup()
     const useOptions = getOptions(options)
     const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
-    return exec(runCommand, useOptions)
+    const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch(err => {
         const errorParts = err.toString().split("\n")
@@ -279,9 +280,8 @@ const Kubectl = ({
         err.message = okErrorParts.join("\n")
         throw err
       })
-      .then(() => {
-        tearDown()
-      })
+      await tearDown()
+      return result
   }
 
   // run a kubectl command and process stdout as JSON
