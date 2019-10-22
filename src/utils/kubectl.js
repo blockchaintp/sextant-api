@@ -33,7 +33,7 @@ const pino = require('pino')({
 
 const exec = Promise.promisify(childProcess.exec)
 
-const tempFile = Promise.promisify(tmp.file)
+const tempName = Promise.promisify(tmp.tempName)
 const writeFile = Promise.promisify(fs.writeFile)
 const readFile = Promise.promisify(fs.readFile)
 
@@ -89,9 +89,11 @@ const Kubectl = ({
   write a YAML file
 
   */
-  const writeYaml = async (filepath, data) => {
+  const writeTempYaml = async (data) => {
     const yamlText = yaml.safeDump(data)
-    return writeFile(filepath, yamlText, 'utf8')
+    const tmpPath = await tempName({ postfix: '.yaml' })
+    await writeFile(filepath, yamlText, 'utf8')
+    return tmpPath
   }
 
 
@@ -104,10 +106,6 @@ const Kubectl = ({
     if (isSetup) return
 
     if (mode == 'remote') {
-
-      const kubeConfigPath = await tempFile({
-        postfix: '.yaml'
-      })
 
       const kubeconfigData = {
         kind: 'Config',
@@ -129,19 +127,19 @@ const Kubectl = ({
             name: 'target-context'
           }
         ],
-        "current-context":'target-context',
+        "current-context": 'target-context',
         clusters: [
           {
             cluster: {
               'certificate-authority-data': remoteCredentials.ca,
               server: remoteCredentials.apiServer,
             },
-            name:'target'
+            name: 'target'
 
           }
         ]
       }
-      await writeYaml(kubeConfigPath, kubeconfigData)
+      kubeconfigPath = await writeTempYaml(kubeconfigData)
 
       connectionArguments = [
         '--kubeconfig', kubeConfigPath
@@ -162,6 +160,12 @@ const Kubectl = ({
     }
 
     isSetup = true
+  }
+
+  //
+  const tearDown = async () => {
+    await fs.unlink(kubeConfigPath)
+    isSetup = false
   }
 
   const getOptions = (options) => {
@@ -227,6 +231,7 @@ const Kubectl = ({
       })
     })
 
+    await tearDown()
     return {
       port: localPort,
       stop: async () => {
@@ -251,29 +256,35 @@ const Kubectl = ({
         err.message = okErrorParts.join("\n")
         throw err
       })
+      .then(() => {
+        tearDown()
+      })
   }
 
-    // run a helm command and return [ stdout, stderr ]
+  // run a helm command and return [ stdout, stderr ]
   // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
   // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
   const helmCommand = async (cmd, options = {}) => {
-      await setup()
+    await setup()
     const useOptions = getOptions(options)
-      const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
-      return exec(runCommand, useOptions)
-        // remove the command itself from the error message so we don't leak credentials
-        .catch(err => {
-          const errorParts = err.toString().split("\n")
-          const okErrorParts = errorParts
-            .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
-            .filter(line => line)
-            .map(line => line.replace(/error: /, ''))
-          err.message = okErrorParts.join("\n")
-          throw err
-        })
-    }
+    const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
+    return exec(runCommand, useOptions)
+      // remove the command itself from the error message so we don't leak credentials
+      .catch(err => {
+        const errorParts = err.toString().split("\n")
+        const okErrorParts = errorParts
+          .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
+          .filter(line => line)
+          .map(line => line.replace(/error: /, ''))
+        err.message = okErrorParts.join("\n")
+        throw err
+      })
+      .then(() => {
+        tearDown()
+      })
+  }
 
-  // process stdout as JSON
+  // run a kubectl command and process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
     const runCommand = `${cmd} --output json`
     const stdout = await command(runCommand, options)
@@ -286,19 +297,19 @@ const Kubectl = ({
 
   // given some YAML content - write a tempfile then apply it
   const applyInline = async (data) => {
-    const filepath = await tempFile({
+    const filepath = await tempName({
       postfix: '.yaml',
     })
     await writeFile(filepath, data, 'utf8')
     return apply(filepath)
   }
 
-  // delete a filename
+  // delete the resources defined in filepath
   const del = (filepath) => command(`delete -f ${filepath}`)
 
-  // given some YAML content - write a tempfile then delete it
+  // given some YAML content - write a tempfile then delete the resources defined in it
   const deleteInline = async (data) => {
-    const filepath = await tempFile({
+    const filepath = await tempName({
       postfix: '.yaml',
     })
     await writeFile(filepath, data, 'utf8')
