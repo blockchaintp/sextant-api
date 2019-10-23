@@ -9,9 +9,13 @@ const childProcess = require('child_process')
 const readFile = Promise.promisify(fs.readFile)
 const readdir = Promise.promisify(fs.readdir)
 const writeFile = Promise.promisify(fs.writeFile)
-const tempFile = Promise.promisify(tmp.file)
+const tempName = Promise.promisify(tmp.tmpName)
 const tmpDir = Promise.promisify(tmp.dir)
 const exec = Promise.promisify(childProcess.exec)
+
+const pino = require('pino')({
+  name: 'render.js',
+})
 
 const DEFAULTS_FILE = 'defaults.yaml'
 
@@ -111,7 +115,7 @@ const writeTemplateValues = async ({
   deployment_version,
   desired_state,
 }) => {
-  const valuesPath = await tempFile({
+  const valuesPath = await tempName({
     postfix: '.yaml',
   })
 
@@ -155,6 +159,16 @@ const getTemplates = async ({
   get the result of a template render
 
 */
+
+const cleanUp = async (filePath) => {
+  await fs.unlink(filePath, (err) => {
+    pino.info({
+      action: 'unlinkFile',
+      filepath: filePath
+    })
+  })
+}
+
 const renderTemplate = async ({
   templateName,
   valuesPath,
@@ -191,7 +205,8 @@ const renderTemplate = async ({
         .join("\n")
       throw err
     })
-  return writeFile(outputTemplatePath, stdout, 'utf8')
+  const retFile=await writeFile(outputTemplatePath, stdout, 'utf8')
+  return retFile
 }
 
 /*
@@ -230,7 +245,9 @@ const renderDeployment = async({
     valuesPath,
     inputDirectory,
     outputDirectory,
-  }))
+  })).then(() => {
+    cleanUp(valuesPath)
+  })
 
   return outputDirectory
 }
