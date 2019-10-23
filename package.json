@@ -40,7 +40,6 @@
     "pino": "^4.17.6",
     "randomstring": "^1.1.5",
     "request": "^2.81.0",
-    "rmdir": "^1.2.0",
     "sawtooth-sdk": "^1.0.5",
     "split": "^1.0.1",
     "tap-spec": "^5.0.0",
