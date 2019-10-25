@@ -8,14 +8,21 @@ services:
       dockerfile: Dockerfile
       args:
         EDITION_MODULE: aws_sfs.js
-    image: sextant-api-ecs-sfs:${ISOLATION_ID}
+    image: sextant-api-aws-sfs:${ISOLATION_ID}
   api-ecs-sfd:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         EDITION_MODULE: aws_sfd.js
-    image: sextant-api-ecs-sfd:${ISOLATION_ID}
+    image: sextant-api-aws-sfd:${ISOLATION_ID}
+  api-enterprise:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: enterprise.js
+    image: sextant-api-enterprise:${ISOLATION_ID}
   api:
     build:
       context: .
