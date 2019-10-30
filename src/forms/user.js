@@ -33,6 +33,7 @@ const fields = {
     title: `Username`,
     helperText: 'Enter your username',
     component: 'text',
+
     validate: {
       type: 'string',
       methods: [
@@ -130,6 +131,7 @@ const schema = {
 }
 
 const getUserForm = ({
+  usernameDisabled,
   permissionDisabled,
   schema,
   required,
@@ -138,7 +140,7 @@ const getUserForm = ({
   schema,
   required,
   mapField: (field) => {
-    return field.id == 'permission' && permissionDisabled ? Object.assign({}, field, {
+    return (field.id == 'permission' && permissionDisabled) || (field.id == 'username' && usernameDisabled) ? Object.assign({}, field, {
       extraProps: {
         disabled: true,
       }
@@ -149,21 +151,25 @@ const getUserForm = ({
 const forms = {
   browser: {
     initialUser: getUserForm({
+      usernameDisabled: true,
       permissionDisabled: true,
       schema: schema.browser,
       required: required.browser.add,
     }),
     userAdd: getUserForm({
+      usernameDisabled: false,
       permissionDisabled: false,
       schema: schema.browser,
       required: required.browser.add,
     }),
     userEdit: getUserForm({
+      usernameDisabled: true,
       permissionDisabled: false,
       schema: schema.browser,
       required: required.browser.edit,
     }),
     userSelf: getUserForm({
+      usernameDisabled: true,
       permissionDisabled: true,
       schema: schema.browser,
       required: required.browser.edit,
