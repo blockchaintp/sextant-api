@@ -34,7 +34,7 @@
 
     * superuser
         * if the user is not an superuser - deny
-    * userPermission
+    * minimumUserType
         * the user permission must be at least the given level
     * resourcePermission
         * use the role_resource_type and role_resource_id to check the user 
@@ -58,6 +58,10 @@ const {
   PERMISSION_ROLE_ACCESS_LEVELS,
 } = config
 
+const USER_TYPES = PERMISSION_USER
+const PERMISSIONS = PERMISSION_ROLE
+const PERMISSIONS_ACCESS_LEVELS = PERMISSION_ROLE_ACCESS_LEVELS
+
 const HELPERS = {
 
   // allow a logged in user to read or update it's own record
@@ -68,6 +72,9 @@ const HELPERS = {
 
     // superuser gets access if configured
     if(user && userUtils.isSuperuser(user) && opts.allowSuperuser) return true
+
+    // admin gets access if configured
+    if (user && userUtils.isAdminuser(user) && opts.allowAdmin) return true
   
     // if the user is getting it's own data - allow
     if(action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
@@ -78,7 +85,7 @@ const HELPERS = {
     // if there is a user - they must be an admin
   allowInitialAccountCreation: (opts) => async (store, user, action) => {
     if(user) {
-      if(userUtils.isSuperuser(user)) return true
+      if (userUtils.isSuperuser(user) || userUtils.isAdminuser(user)) return true
       else return false
     }
     else {
@@ -92,20 +99,22 @@ const HELPERS = {
 const METHOD_CONFIG = {
   user: {
     list: {
-      superuser: true,
+      minimumUserType: USER_TYPES.admin,
     },
     get: HELPERS.allowUserAccessToOwnRecord({
       allowSuperuser: true,
+      allowAdmin: true
     }),
     create: HELPERS.allowInitialAccountCreation(),
     update: HELPERS.allowUserAccessToOwnRecord({
       allowSuperuser: true,
+      allowAdmin: true
     }),
     token: HELPERS.allowUserAccessToOwnRecord({
       allowSuperuser: false,
     }),
     delete: {
-      superuser: true,
+      minimumUserType: USER_TYPES.superuser,
     },
   },
 
@@ -113,45 +122,60 @@ const METHOD_CONFIG = {
     // the controller will only list clusters the user has access to
     list: {},
     get: {
-      resourcePermission: PERMISSION_ROLE.read,
+      minimumResourcePermission: PERMISSIONS.read,
+      minimumUserType: USER_TYPES.user
     },
     create: {
-      userPermission: PERMISSION_USER.admin,
+      minimumUserType: USER_TYPES.admin,
     },
     update: {
-      resourcePermission: PERMISSION_ROLE.write,
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.user
+    },
+    updateRole: {
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.admin,
     },
     delete: {
-      resourcePermission: PERMISSION_ROLE.write,
-    }
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.admin,
+    },
   },
 
   deployment: {
     // the controller will only list deployments the user has access to
     list: {},
     get: {
-      resourcePermission: PERMISSION_ROLE.read,
+      minimumResourcePermission: PERMISSIONS.read,
+      minimumUserType: USER_TYPES.user
     },
     // the resource_id, resource_type for deployment create will be cluster
     create: {
-      resourcePermission: PERMISSION_ROLE.write,
       resourcePermissionForType: RESOURCE_TYPES.cluster,
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.user
     },
     update: {
-      resourcePermission: PERMISSION_ROLE.write,
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.user
+    },
+    updateRole: {
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.admin,
     },
     delete: {
-      resourcePermission: PERMISSION_ROLE.write,
+      minimumResourcePermission: PERMISSIONS.write,
+      minimumUserType: USER_TYPES.user
     }
   }
 }
 
-const RBAC = async (store, user, action) => {
-
+const RBAC = async (store, user, action) => {  
   const {
     resource_type,
     resource_id,
     method,
+    cluster_id
   } = action
 
   if(!resource_type) throw new Error(`resource_type required`)
@@ -180,23 +204,24 @@ const RBAC = async (store, user, action) => {
     if(methodConfig.superuser && !userUtils.isSuperuser(user)) return false
 
     // require at least X user permission - deny
-    if(methodConfig.userPermission && !userUtils.hasPermission(user, methodConfig.userPermission)) return false
+    if(methodConfig.minimumUserType && !userUtils.hasPermission(user, methodConfig.minimumUserType)) return false
       
     // require a resource role with the given permission
-    if(methodConfig.resourcePermission) {
-
-      // we need a resource_id if we are performing a resourcePermission check
-      if(!resource_id) return false
+    if(methodConfig.minimumResourcePermission) {
 
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
       const resourceType = methodConfig.resourcePermissionForType || resource_type
+      const resourceId = methodConfig.resourcePermissionForType === 'cluster' ? cluster_id : resource_id
+
+      // we need a resource_id if we are performing a minimumResourcePermission) check
+      if (!resourceId) return false
 
       const roleQuery = {
         user: user.id,
         resource_type: resourceType,
-        resource_id,
+        resource_id: resourceId
       }
-
+      
       // load the role and check it
       const role = await store.role.get(roleQuery)
       
@@ -204,10 +229,10 @@ const RBAC = async (store, user, action) => {
       if(!role) return false
 
       // ensure the role has a correct permission value
-      if(!PERMISSION_ROLE_ACCESS_LEVELS[role.permission]) return false
+      if(!PERMISSIONS_ACCESS_LEVELS[role.permission]) return false
 
       // check the granted role is at least the required type
-      if(PERMISSION_ROLE_ACCESS_LEVELS[role.permission] < PERMISSION_ROLE_ACCESS_LEVELS[methodConfig.resourcePermission]) return false
+      if(PERMISSIONS_ACCESS_LEVELS[role.permission] < PERMISSIONS_ACCESS_LEVELS[methodConfig.minimumResourcePermission]) return false
 
       // ok - we are allowed
       return true
