@@ -217,6 +217,9 @@ const DeployentController = ({ store, settings }) => {
     const deployments = await store.deployment.list({
       cluster,
     })
+
+    // Check ot make sure there isn't a deployment on the cluster yet
+    if (deployments.length > 0) throw new Error("there is already a deployment provisioned for this cluster")
     const existingDeployment = deployments.find(deployment => deployment.name.toLowerCase() == name.toLowerCase())
     if(existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
 
