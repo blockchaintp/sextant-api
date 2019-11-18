@@ -558,6 +558,7 @@ database.testSuiteWithDatabase(getConnection => {
       user: userMap.admin,
       action: {
         resource_type: RESOURCE_TYPES.deployment,
+        cluster_id: 1,
         resource_id: 1,
         method: 'create',
       },
