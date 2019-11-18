@@ -36,7 +36,7 @@
         * if the user is not an superuser - deny
     * minimumUserType
         * the user permission must be at least the given level
-    * resourcePermission
+    * minimumResourcePermission
         * use the role_resource_type and role_resource_id to check the user 
           has at least the given level for the resource
         * required a role_resource_id in the action 
