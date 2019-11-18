@@ -480,6 +480,27 @@ app.testSuiteWithApp(({
     
   })
 
+  // reset previous user's permissions
+  tape('user routes -> (as superuser) allow update other user role', (t) => {
+
+    tools.sessionRequest({
+      t,
+      method: 'put',
+      url: `${url}/user/${USER_RECORDS.normal.id}`,
+      json: true,
+      body: {
+        permission: PERMISSION_USER.user,
+      },
+    }, (err, res, body) => {
+      t.notok(err, `there is no error`)
+      t.equal(res.statusCode, 200, `200 code`)
+      t.equal(body.username, NORMAL_USER.username, `the username is correct`)
+      t.equal(body.permission, PERMISSION_USER.user, 'the user is reset to user permissions')
+      t.end()
+    })
+
+  })
+
   tape('user routes -> (as superuser) get other user record as admin but cannot see server_side_key', (t) => {
 
     tools.sessionRequest({
@@ -571,6 +592,7 @@ app.testSuiteWithApp(({
   })
 
   tape('user routes -> (as normal user) check route access', (t) => {
+    
     const routes = [{
       method: 'get',
       url: `${url}/user`,
