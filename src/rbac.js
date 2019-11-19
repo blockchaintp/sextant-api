@@ -58,6 +58,7 @@ const {
   PERMISSION_ROLE_ACCESS_LEVELS,
 } = config
 
+// Here we rename variables for readability and clarity in the rbac definition. Eventually the config variables will be refactored, but until then we will rename them as needed
 const USER_TYPES = PERMISSION_USER
 const PERMISSIONS = PERMISSION_ROLE
 const PERMISSIONS_ACCESS_LEVELS = PERMISSION_ROLE_ACCESS_LEVELS
@@ -204,16 +205,19 @@ const RBAC = async (store, user, action) => {
     if(methodConfig.superuser && !userUtils.isSuperuser(user)) return false
 
     // require at least X user permission - deny
-    if(methodConfig.minimumUserType && !userUtils.hasPermission(user, methodConfig.minimumUserType)) return false
+    if(methodConfig.minimumUserType && !userUtils.hasMinimumUserType(user, methodConfig.minimumUserType)) return false
       
     // require a resource role with the given permission
     if(methodConfig.minimumResourcePermission) {
 
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
       const resourceType = methodConfig.resourcePermissionForType || resource_type
-      const resourceId = methodConfig.resourcePermissionForType === 'cluster' ? cluster_id : resource_id
+      
+      // if the resourceType is cluster, use the cluster_id for the resourceId
+      const resourceId = resource_id
+      if (methodConfig.resourcePermissionForType === 'cluster') {resourceId = cluster_id}
 
-      // we need a resource_id if we are performing a minimumResourcePermission) check
+      // we need a resource_id if we are performing a minimumResourcePermission check
       if (!resourceId) return false
 
       const roleQuery = {
