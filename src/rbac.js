@@ -214,7 +214,7 @@ const RBAC = async (store, user, action) => {
       const resourceType = methodConfig.resourcePermissionForType || resource_type
       
       // if the resourceType is cluster, use the cluster_id for the resourceId
-      const resourceId = resource_id
+      let resourceId = resource_id
       if (methodConfig.resourcePermissionForType === 'cluster') {resourceId = cluster_id}
 
       // we need a resource_id if we are performing a minimumResourcePermission check
