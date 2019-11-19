@@ -60,14 +60,14 @@ const decodeToken = (token, secret) => new Promise((resolve, reject) => {
   })
 })
 
-const hasPermission = (user, permission) => {
+const hasMinimumUserType = (user, permission) => {
   const userAccessLevel = PERMISSION_USER_ACCESS_LEVELS[user.permission]
   const requiredAccessLevel = PERMISSION_USER_ACCESS_LEVELS[permission]
   return userAccessLevel >= requiredAccessLevel
 }
 
-const isSuperuser = (user) => hasPermission(user, PERMISSION_USER.superuser)
-const isAdminuser = (user) => hasPermission(user, PERMISSION_USER.admin)
+const isSuperuser = (user) => hasMinimumUserType(user, PERMISSION_USER.superuser)
+const isAdminuser = (user) => hasMinimumUserType(user, PERMISSION_USER.admin)
 
 module.exports = {
   safe,
@@ -76,7 +76,7 @@ module.exports = {
   getTokenServerSideKey,
   getToken,
   decodeToken,
-  hasPermission,
+  hasMinimumUserType,
   isSuperuser,
   isAdminuser,
 }

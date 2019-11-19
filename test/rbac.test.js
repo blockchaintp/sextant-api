@@ -124,7 +124,7 @@ database.testSuiteWithDatabase(getConnection => {
     await testWithUserTypes(t, RESOURCE_TYPES.user, 'list', {
       none: false,
       user: false,
-      admin: false,
+      admin: true,
       superuser: true,
     })
   })
@@ -133,7 +133,7 @@ database.testSuiteWithDatabase(getConnection => {
     await testWithUserTypes(t, RESOURCE_TYPES.user, 'get', {
       none: false,
       user: false,
-      admin: false,
+      admin: true,
       superuser: true,
     })
   })
@@ -142,7 +142,7 @@ database.testSuiteWithDatabase(getConnection => {
     await testWithUserTypes(t, RESOURCE_TYPES.user, 'create', {
       none: false,
       user: false,
-      admin: false,
+      admin: true,
       superuser: true,
     })
   })
@@ -151,7 +151,7 @@ database.testSuiteWithDatabase(getConnection => {
     await testWithUserTypes(t, RESOURCE_TYPES.user, 'update', {
       none: false,
       user: false,
-      admin: false,
+      admin: true,
       superuser: true,
     })
   })
@@ -558,6 +558,7 @@ database.testSuiteWithDatabase(getConnection => {
       user: userMap.admin,
       action: {
         resource_type: RESOURCE_TYPES.deployment,
+        cluster_id: 1,
         resource_id: 1,
         method: 'create',
       },

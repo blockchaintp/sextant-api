@@ -145,6 +145,7 @@ const ACCESS_LEVELS = {
   all: 3,
 }
 
+// Maps to USER_TYPE = PERMISSION_USER in rbac definition
 const PERMISSION_USER = {
   superuser: 'superuser',  // can do anything
   admin: 'admin',          // can create clusters
@@ -157,11 +158,13 @@ const PERMISSION_USER_ACCESS_LEVELS = {
   [PERMISSION_USER.user]: ACCESS_LEVELS.read,
 }
 
+// Maps to PERMISSION = PERMISSION_ROLE in rbac definition 
 const PERMISSION_ROLE = {
   read: 'read',
   write: 'write',
 }
 
+// Maps to PERMISSION_ACCESS_LEVELS = PERMISSION_ROLE_ACCESS_LEVELS in rbac definition
 const PERMISSION_ROLE_ACCESS_LEVELS = {
   [PERMISSION_ROLE.read]: ACCESS_LEVELS.read,
   [PERMISSION_ROLE.write]: ACCESS_LEVELS.write,
