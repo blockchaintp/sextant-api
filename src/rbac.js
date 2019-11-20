@@ -46,6 +46,8 @@
           role for another type - for example when creating deployments for a cluster
           we need to check for a write role on the cluster even though the action.type is deployment
 
+  -------- >>>> See /sextant-api/docs/rbac.md for a table documenting expected behavior - any changes made to RBAC should be reflected in rbac.md as well. 
+
 */
 
 const config = require('./config')
