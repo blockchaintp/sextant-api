@@ -47,6 +47,18 @@ const SIMPLE_CLUSTER_DATA = [{
   },
   capabilities: {
     otherFunkyFeature: true,
+  }
+}]
+
+// additional cluster data to test get route 
+const GET_CLUSTER_DATA = [{
+  name: 'joinedcluster',
+  provision_type: CLUSTER_PROVISION_TYPE.remote,
+  desired_state: {
+    apples: 5,
+  },
+  capabilities: {
+    funkyFeature: true,
   },
 }]
 
@@ -232,6 +244,7 @@ const insertTestTasks = async (databaseConnection, user, data) => {
 module.exports = {
   SIMPLE_USER_DATA,
   SIMPLE_CLUSTER_DATA,
+  GET_CLUSTER_DATA,
   SIMPLE_DEPLOYMENT_DATA,
   SIMPLE_ROLE_DATA,
   SIMPLE_TASK_DATA,
