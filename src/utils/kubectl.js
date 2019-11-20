@@ -162,11 +162,8 @@ const Kubectl = ({
     isSetup = true
   }
 
-  //
   const tearDown = async () => {
-    await fs.unlink(kubeConfigPath, (err) => {
-      // if err !== null, log err
-    })
+    await fs.unlinkSync(kubeConfigPath)
     isSetup = false
   }
 
