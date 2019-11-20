@@ -70,6 +70,7 @@ database.testSuiteWithDatabase(getConnection => {
     const clusters = await fixtures.insertTestClusters(getConnection())
 
     testCluster = clusters[compareCluster.name]
+    
 
     t.deepEqual(testCluster.applied_state, {}, `the applied_state defaults to empty object`)
     t.deepEqual(testCluster.desired_state, compareCluster.desired_state, `the desired_state is correct`)
@@ -87,20 +88,29 @@ database.testSuiteWithDatabase(getConnection => {
 
     const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
     const expectedOrder = fixtures.SIMPLE_CLUSTER_DATA.map(d => d.name)
-
+    
     expectedOrder.sort()
   
     const clusters = await store.list({})
+    
     t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
     t.deepEqual(clusters.map(cluster => cluster.name), expectedOrder, 'the clusters were in the correct order')
   })
 
   asyncTest('cluster store -> get', async (t) => {
+    const compareCluster = fixtures.GET_CLUSTER_DATA[0]
+
+    const clusters = await fixtures.insertTestClusters(getConnection(), fixtures.GET_CLUSTER_DATA)
+
+    // add the active deployment feild that shows up in the get route response after the join with the deployment table
+    const joinedCluster = clusters[compareCluster.name]
+    joinedCluster['active_deployments'] = '0'
+
     const store = ClusterStore(getConnection())
     const cluster = await store.get({
-      id: testCluster.id,
+      id: joinedCluster.id,
     })
-    t.deepEqual(cluster, testCluster, 'the returned cluster is correct')
+    t.deepEqual(cluster, joinedCluster, 'the returned cluster is correct')
   })
 
   asyncTest('cluster store -> update with bad status', async (t) => {
@@ -140,7 +150,8 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster store -> delete', async (t) => {
-  
+    const allClusterDataLength = fixtures.SIMPLE_CLUSTER_DATA.length + fixtures.GET_CLUSTER_DATA.length
+    
     const store = ClusterStore(getConnection())
 
     await store.delete({
@@ -148,14 +159,15 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
     const clusters = await store.list({})
-    t.equal(clusters.length, fixtures.SIMPLE_CLUSTER_DATA.length-1, `there is 1 less cluster`)
+    t.equal(clusters.length, allClusterDataLength-1, `there is 1 less cluster`)
   })
 
   asyncTest('cluster store -> list with deleted', async (t) => {
-  
+    const allClusterDataLength = fixtures.SIMPLE_CLUSTER_DATA.length + fixtures.GET_CLUSTER_DATA.length
+
     const store = ClusterStore(getConnection())
 
-    const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
+    const expectedCount = allClusterDataLength
   
     const clusters = await store.list({
       deleted: true,

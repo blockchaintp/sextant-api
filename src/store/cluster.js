@@ -8,8 +8,6 @@ const ClusterStore = (knex) => {
 
     params:
 
-      * deleted - include the deleted clusters in the list
-
   */
   const list = ({
     deleted,
@@ -17,14 +15,18 @@ const ClusterStore = (knex) => {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.cluster
 
-    const sqlQuery = (trx || knex).select('*')
-      .from(config.TABLES.cluster)
-      .orderBy(orderBy.field, orderBy.direction)
+    const sqlQuery = (trx || knex)(config.TABLES.cluster)
+      .select(`${config.TABLES.cluster}.*`)
+      .count(`${config.TABLES.deployment}.id as active_deployments`)
+      .leftOuterJoin(config.TABLES.deployment, function () { 
+        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
+      })
+      .groupBy(`${config.TABLES.cluster}.id`)
 
     if(!deleted) {
-      sqlQuery.whereNot({
-        status: config.CLUSTER_STATUS.deleted,
-      })
+      sqlQuery.whereNot(
+        `${config.TABLES.cluster}.status`, config.CLUSTER_STATUS.deleted
+      )
     }
 
     return sqlQuery
@@ -36,18 +38,19 @@ const ClusterStore = (knex) => {
 
     params:
 
-      * id
-
   */
   const get = ({
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.get`)
-    return (trx || knex).select('*')
-      .from(config.TABLES.cluster)
-      .where({
-        id,
+    return (trx || knex)(config.TABLES.cluster).where(
+      `${config.TABLES.cluster}.id`, id
+    ).select(`${config.TABLES.cluster}.*`)
+      .count(`${config.TABLES.deployment}.id as active_deployments`)
+      .leftOuterJoin(config.TABLES.deployment, function () {
+        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
       })
+      .groupBy(`${config.TABLES.cluster}.id`)
       .first()
   }
 
