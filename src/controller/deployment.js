@@ -589,20 +589,20 @@ const DeployentController = ({ store, settings }) => {
       field: 'namespace',
     })
 
-    const results = await Promise.props({
-      pods: kubectl
+    const results = await {
+      pods: await kubectl
         .jsonCommand(`-n ${namespace} get po`)
         .then(result => result.items),
-      nodes: kubectl
+      nodes: await kubectl
         .jsonCommand(`-n ${namespace} get no`)
         .then(result => result.items),
-      services: kubectl
+      services: await kubectl
         .jsonCommand(`-n ${namespace} get svc`)
         .then(result => result.items),
-      volumes: kubectl
+      volumes: await kubectl
         .jsonCommand(`-n ${namespace} get pvc`)
         .then(result => result.items),
-    })
+    }
 
     return results
   }
