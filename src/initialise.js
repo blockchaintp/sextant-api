@@ -20,7 +20,7 @@ const createInitialUser = async ({
       await store.user.create({
         data: {
           username: settings.initialUser,
-          permission: config.PERMISSION_USER.superuser,
+          permission: config.USER_TYPES.superuser,
           hashed_password,
           server_side_key: userUtils.getTokenServerSideKey(),
         }

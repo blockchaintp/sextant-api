@@ -17,8 +17,8 @@ const fixtures = require('./fixtures')
 
 const {
   RESOURCE_TYPES,
-  PERMISSION_ROLE,
-  PERMISSION_USER,
+  PERMISSION_TYPES,
+  USER_TYPES,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -353,7 +353,7 @@ database.testSuiteWithDatabase(getConnection => {
     await store.role.create({
       data: {
         user: userMap.user.id,
-        permission: PERMISSION_ROLE.read,
+        permission: PERMISSION_TYPES.read,
         resource_type: RESOURCE_TYPES.cluster,
         resource_id: 1,
       }
@@ -529,7 +529,7 @@ database.testSuiteWithDatabase(getConnection => {
     await store.role.create({
       data: {
         user: userMap.admin.id,
-        permission: PERMISSION_ROLE.write,
+        permission: PERMISSION_TYPES.write,
         resource_type: RESOURCE_TYPES.cluster,
         resource_id: 1,
       }
@@ -725,7 +725,7 @@ database.testSuiteWithDatabase(getConnection => {
     await store.role.create({
       data: {
         user: userMap.user.id,
-        permission: PERMISSION_ROLE.read,
+        permission: PERMISSION_TYPES.read,
         resource_type: RESOURCE_TYPES.deployment,
         resource_id: 1,
       }
@@ -770,7 +770,7 @@ database.testSuiteWithDatabase(getConnection => {
     await store.role.create({
       data: {
         user: userMap.admin.id,
-        permission: PERMISSION_ROLE.write,
+        permission: PERMISSION_TYPES.write,
         resource_type: RESOURCE_TYPES.deployment,
         resource_id: 1,
       }

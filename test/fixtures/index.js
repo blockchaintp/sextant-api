@@ -10,17 +10,17 @@ const RoleStore = require('../../src/store/role')
 const TaskStore = require('../../src/store/task')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
   CLUSTER_PROVISION_TYPE,
-  PERMISSION_ROLE,
+  PERMISSION_TYPES,
   RESOURCE_TYPES,
   TASK_ACTION,
 } = config
 
 const SIMPLE_USER_DATA = [
-  PERMISSION_USER.superuser,
-  PERMISSION_USER.admin,
-  PERMISSION_USER.user,
+  USER_TYPES.superuser,
+  USER_TYPES.admin,
+  USER_TYPES.user,
 ].map(permission => ({
   username: permission,
   password: `${permission}password`,
@@ -79,11 +79,11 @@ const SIMPLE_DEPLOYMENT_DATA = [{
 }]
 
 const SIMPLE_ROLE_DATA = [{
-  permission: PERMISSION_ROLE.read,
+  permission: PERMISSION_TYPES.read,
   resource_type: RESOURCE_TYPES.cluster,
   resource_id: 10,
 }, {
-  permission: PERMISSION_ROLE.write,
+  permission: PERMISSION_TYPES.write,
   resource_type: RESOURCE_TYPES.deployment,
   resource_id: 11,
 }]

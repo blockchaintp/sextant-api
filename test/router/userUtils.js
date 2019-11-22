@@ -5,24 +5,24 @@ const tools = require('../tools')
 const config = require('../../src/config')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
 } = config
 
 const USERS = {
   superuser: {
     username: 'superuser',
     password: 'apples',
-    permission: PERMISSION_USER.superuser,
+    permission: USER_TYPES.superuser,
   },
   admin: {
     username: 'admin',
     password: 'peaches',
-    permission: PERMISSION_USER.admin,
+    permission: USER_TYPES.admin,
   },
   user: {
     username: 'user',
     password: 'oranges',
-    permission: PERMISSION_USER.user,
+    permission: USER_TYPES.user,
   }
 }
 

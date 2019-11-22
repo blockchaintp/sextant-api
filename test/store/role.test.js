@@ -11,8 +11,8 @@ const config = require('../../src/config')
 
 const {
   RESOURCE_TYPES,
-  PERMISSION_USER,
-  PERMISSION_ROLE,
+  USER_TYPES,
+  PERMISSION_TYPES,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -25,7 +25,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const users = await fixtures.insertTestUsers(getConnection())
     userMap = users
-    testUser = users[PERMISSION_USER.admin]
+    testUser = users[USER_TYPES.admin]
   
   })
 
@@ -56,7 +56,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     await tools.insertWithMissingValues(t, store, {
       user: testUser.id,
-      permission: PERMISSION_ROLE.read,
+      permission: PERMISSION_TYPES.read,
       resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
     })
@@ -70,7 +70,7 @@ database.testSuiteWithDatabase(getConnection => {
       await store.create({
         data: {
           user: testUser.id,
-          permission: PERMISSION_ROLE.read,
+          permission: PERMISSION_TYPES.read,
           resource_type: 'oranges',
           resource_id: 10,
         }

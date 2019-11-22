@@ -1,8 +1,8 @@
 
 Role based access for Cluster routes
 
-| userName | USER_TYPE | PERMISSION | create | read  | update | delete | create deployment | updateRoles |
-|----------|-----------|------------|--------|-------|--------|--------|-------------------|-------------|
+| userName | USER_TYPE | PERMISSION_TYPE | create | read  | update | delete | create deployment | updateRoles |
+|:----------:|:-----------:|:------------:|:--------:|:-------:|:--------:|:--------:|:-------------------:|:-------------:|
 | Billy    | user      | none       | FALSE  | FALSE | FALSE  | FALSE  | FALSE             | FALSE       |
 | Oliver   | user      | read       | FALSE  | TRUE  | FALSE  | FALSE  | FALSE             | FALSE       |
 | Alex     | user      | write      | FALSE  | TRUE  | TRUE   | FALSE  | TRUE              | FALSE       |
@@ -14,7 +14,7 @@ Role based access for Cluster routes
 
 Role based access for Deployment Routes
 
-| userName | USER_TYPE | PERMISSION |  read | update | delete | updateRoles |
+| userName | USER_TYPE | PERMISSION_TYPE |  read | update | delete | updateRoles |
 |:--------:|:---------:|:----------:|:-----:|:------:|:------:|:-----------:|
 |   Billy  |    user   |    none    | FALSE |  FALSE |  FALSE |    FALSE    |
 |  Oliver  |    user   |    read    |  TRUE |  FALSE |  FALSE |    FALSE    |

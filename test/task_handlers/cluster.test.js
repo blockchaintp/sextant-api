@@ -17,7 +17,7 @@ const config = require('../../src/config')
 
 const {
   CLUSTER_STATUS,
-  PERMISSION_USER,
+  USER_TYPES,
   TASK_ACTION,
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
@@ -56,7 +56,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
     const controller = getController()
     const taskProcessor = getTaskProcessor(handlers)
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
     await taskProcessor.start()
@@ -91,7 +91,7 @@ database.testSuiteWithDatabase(getConnection => {
     }
     const controller = getController()
     const taskProcessor = getTaskProcessor(handlers)
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
     const insertData = Object.assign({}, clusterData, {
@@ -124,7 +124,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
     const NEW_NAME = 'new name'
@@ -174,7 +174,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
     
     async.series([
 

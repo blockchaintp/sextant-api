@@ -4,8 +4,8 @@ const randomstring = require('randomstring')
 const config = require('../config')
 
 const {
-  PERMISSION_USER,
-  PERMISSION_USER_ACCESS_LEVELS,
+  USER_TYPES,
+  USER_ACCESS_LEVELS,
 } = config
 
 const SALT_ROUNDS = 10
@@ -61,13 +61,13 @@ const decodeToken = (token, secret) => new Promise((resolve, reject) => {
 })
 
 const hasMinimumUserType = (user, permission) => {
-  const userAccessLevel = PERMISSION_USER_ACCESS_LEVELS[user.permission]
-  const requiredAccessLevel = PERMISSION_USER_ACCESS_LEVELS[permission]
+  const userAccessLevel = USER_ACCESS_LEVELS[user.permission]
+  const requiredAccessLevel = USER_ACCESS_LEVELS[permission]
   return userAccessLevel >= requiredAccessLevel
 }
 
-const isSuperuser = (user) => hasMinimumUserType(user, PERMISSION_USER.superuser)
-const isAdminuser = (user) => hasMinimumUserType(user, PERMISSION_USER.admin)
+const isSuperuser = (user) => hasMinimumUserType(user, USER_TYPES.superuser)
+const isAdminuser = (user) => hasMinimumUserType(user, USER_TYPES.admin)
 
 module.exports = {
   safe,

@@ -11,6 +11,6 @@ module.exports = {
   DEPLOYMENT_STATUS: getEnumeration(config.DEPLOYMENT_STATUS),
   TASK_STATUS: getEnumeration(config.TASK_STATUS),
   TASK_ACTION: getEnumeration(config.TASK_ACTION),
-  PERMISSION_USER: getEnumeration(config.PERMISSION_USER),
-  PERMISSION_ROLE: getEnumeration(config.PERMISSION_ROLE),
+  USER_TYPES: getEnumeration(config.USER_TYPES),
+  PERMISSION_TYPES: getEnumeration(config.PERMISSION_TYPES),
 }
