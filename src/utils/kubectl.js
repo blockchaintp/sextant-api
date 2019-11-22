@@ -93,6 +93,7 @@ const Kubectl = ({
     const yamlText = yaml.safeDump(data)
     const tmpPath = await tempName({ postfix: '.yaml' })
     await writeFile(tmpPath, yamlText, 'utf8')
+    pino.debug({ message: `Wrote - ${tmpPath}`})
     return tmpPath
   }
 
@@ -162,8 +163,11 @@ const Kubectl = ({
     isSetup = true
   }
 
-  const tearDown = async () => {
-    await fs.unlinkSync(kubeConfigPath)
+  const tearDown = async() => {
+    pino.debug({
+      message: `UNLINK ${kubeConfigPath}`
+    })
+    fs.unlinkSync(kubeConfigPath)  
     isSetup = false
   }
 
