@@ -21,8 +21,8 @@ const TABLES = {
 
 const LIST_ORDER_BY_FIELDS = {
   cluster: {
-    field: 'name',
-    direction: 'asc',
+    field: 'status',
+    direction: 'desc',
   },
   clusterfile: {
     field: 'name',
