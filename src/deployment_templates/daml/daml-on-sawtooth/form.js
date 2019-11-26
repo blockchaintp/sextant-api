@@ -203,8 +203,8 @@ const form = [
         component: 'text',
         validate: {
           type: 'string',
+        //removed ['required', 'Required'] from methods to make field optional
           methods: [
-            ['required', 'Required'],
           ],
         },
       }],

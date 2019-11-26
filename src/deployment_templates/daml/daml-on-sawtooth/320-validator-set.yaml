@@ -284,8 +284,8 @@ spec:
         {{range .sawtooth.customTPs}}
         - name: {{.name}}
           image: {{.image}}
-          {{if .command}}command: [ {{ range .command }}"{{.}}",{{end}} ]{{end}}
-          {{if .args}}args: [ {{ range .args}}"{{.}}", {{end}} ]{{end}}
+          command: [{{.command}}]
+          {{ if .args }}args: [{{.args}}]{{ end }}
         {{end}}
         - name: rest-api
           image: {{.images.rest_api}}
