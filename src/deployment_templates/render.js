@@ -112,9 +112,6 @@ const getTemplateData = async ({
       args: tp.args.split(' '),
       }
     })
-
-   console.log(formatedCustomTPs);
-    
   
   initialData.sawtooth.customTPs = formatedCustomTPs
   const formatedData = initialData
