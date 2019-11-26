@@ -28,7 +28,7 @@ const DeploymentStore = (knex) => {
       })
     }
      
-    sqlQuery.orderBy(orderBy.field, orderBy.direction)
+    sqlQuery.orderBy('status', 'desc').orderBy('cluster', 'asc')
 
     if(!deleted) {
       sqlQuery.andWhereNot({
