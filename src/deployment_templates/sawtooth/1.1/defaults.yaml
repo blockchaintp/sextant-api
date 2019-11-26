@@ -92,8 +92,8 @@ images:
   settings_tp: blockchaintp/sawtooth-settings-tp:BTP2.0
   shell: blockchaintp/sawtooth-shell:BTP2.0
   smallbank_tp: blockchaintp/sawtooth-smallbank-tp-go:BTP2.0
-  grafana: blockchaintp/sawtooth-stats-grafana:BTP2.0
-  influxdb: blockchaintp/sawtooth-stats-influxdb:BTP2.0
+  grafana: blockchaintp/metrics-grafana:BTP2.0
+  influxdb: blockchaintp/metrics-influxdb:BTP2.0
   validator: blockchaintp/sawtooth-validator:BTP2.0
   xo_tp: blockchaintp/sawtooth-xo-tp-go:BTP2.0
   rest_api: blockchaintp/sawtooth-rest-api:BTP2.0
