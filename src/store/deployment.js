@@ -17,8 +17,6 @@ const DeploymentStore = (knex) => {
   }, trx) => {
     if(!cluster) throw new Error(`cluster must be given to store.deployment.list`)
     
-    const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
-
     const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.deployment)
 
