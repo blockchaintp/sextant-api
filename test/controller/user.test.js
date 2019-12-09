@@ -8,7 +8,7 @@ const userUtils = require('../../src/utils/user')
 const config = require('../../src/config')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
 } = config
 
 database.testSuiteWithDatabase(getConnection => {
@@ -26,7 +26,7 @@ database.testSuiteWithDatabase(getConnection => {
   const TEST_USER = {
     username: 'apples',
     password: 'oranges',
-    permission: PERMISSION_USER.user,
+    permission: USER_TYPES.user,
   }
 
   let TEST_USER_RECORD = null
@@ -55,7 +55,7 @@ database.testSuiteWithDatabase(getConnection => {
     t.equal(user.username, TEST_USER.username)
 
     // make sure the permission is forced to superuser as the initial user
-    t.equal(user.permission, PERMISSION_USER.superuser)
+    t.equal(user.permission, USER_TYPES.superuser)
     t.ok(user.hashed_password, 'there is a hashed password')
     t.ok(user.server_side_key, 'there is a server_side_key')
 

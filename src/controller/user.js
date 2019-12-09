@@ -110,7 +110,7 @@ const UserController = ({ store, settings }) => {
 
      * username - string
      * password - string
-     * permission - enumerations.PERMISSION_USER
+     * permission - enumerations.USER_TYPES
     
   */
   const create = async ({
@@ -128,7 +128,7 @@ const UserController = ({ store, settings }) => {
     const formData = {
       username,
       password,
-      permission: existingUsers == 0 ? config.PERMISSION_USER.superuser : permission,
+      permission: existingUsers == 0 ? config.USER_TYPES.superuser : permission,
     }
 
     await validate({

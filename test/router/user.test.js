@@ -8,7 +8,7 @@ const tools = require('../tools')
 const config = require('../../src/config')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
 } = config
 
 app.testSuiteWithApp(({
@@ -20,13 +20,13 @@ app.testSuiteWithApp(({
     username: 'admin',
     password: 'apples',
     // we pass the read role as the initial user to ensure it's upgraded to admin
-    permission: PERMISSION_USER.user,
+    permission: USER_TYPES.user,
   }
 
   const NORMAL_USER = {
     username: 'user',
     password: 'oranges',
-    permission: PERMISSION_USER.user,
+    permission: USER_TYPES.user,
   }
 
   const USER_RECORDS = {}
@@ -181,7 +181,7 @@ app.testSuiteWithApp(({
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 201, `201 code`)
       t.equal(body.username, SUPER_USER.username, `the username is correct`)
-      t.equal(body.permission, PERMISSION_USER.superuser, 'the user was created with superuser permission')
+      t.equal(body.permission, USER_TYPES.superuser, 'the user was created with superuser permission')
       t.notok(body.hashed_password, 'the hashed_password is not in the result')
       t.notok(body.server_side_key, 'the server_side_key is not in the result')
       t.end()
@@ -272,7 +272,7 @@ app.testSuiteWithApp(({
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 status`)
       t.equal(body.username, SUPER_USER.username, `username correct`)
-      t.equal(body.permission, PERMISSION_USER.superuser, `permission correct`)
+      t.equal(body.permission, USER_TYPES.superuser, `permission correct`)
       USER_RECORDS.superuser = body
       t.end()
     })
@@ -320,7 +320,7 @@ app.testSuiteWithApp(({
       url: `${url}/user/${USER_RECORDS.superuser.id}`,
       json: true,
       body: {
-        permission: PERMISSION_USER.user,
+        permission: USER_TYPES.user,
       }
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
@@ -434,7 +434,7 @@ app.testSuiteWithApp(({
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 201, `201 code`)
       t.equal(body.username, NORMAL_USER.username, `the username is correct`)
-      t.equal(body.permission, PERMISSION_USER.user, 'the user was created with user permission')
+      t.equal(body.permission, USER_TYPES.user, 'the user was created with user permission')
       USER_RECORDS.normal = body
       t.end()
     })
@@ -468,13 +468,13 @@ app.testSuiteWithApp(({
       url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
       body: {
-        permission: PERMISSION_USER.admin,
+        permission: USER_TYPES.admin,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
       t.equal(body.username, NORMAL_USER.username, `the username is correct`)
-      t.equal(body.permission, PERMISSION_USER.admin, 'the user is updated with admin permission')
+      t.equal(body.permission, USER_TYPES.admin, 'the user is updated with admin permission')
       t.end()
     })
     
@@ -489,13 +489,13 @@ app.testSuiteWithApp(({
       url: `${url}/user/${USER_RECORDS.normal.id}`,
       json: true,
       body: {
-        permission: PERMISSION_USER.user,
+        permission: USER_TYPES.user,
       },
     }, (err, res, body) => {
       t.notok(err, `there is no error`)
       t.equal(res.statusCode, 200, `200 code`)
       t.equal(body.username, NORMAL_USER.username, `the username is correct`)
-      t.equal(body.permission, PERMISSION_USER.user, 'the user is reset to user permissions')
+      t.equal(body.permission, USER_TYPES.user, 'the user is reset to user permissions')
       t.end()
     })
 
@@ -613,7 +613,7 @@ app.testSuiteWithApp(({
       body: {
         username: 'hacker',
         password: 'hacker',
-        role: PERMISSION_USER.superuser,
+        role: USER_TYPES.superuser,
         meta: {
           apples: 10,
         },

@@ -12,7 +12,7 @@ const database = require('./database')
 const fixtures = require('./fixtures')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
   RESOURCE_TYPES,
   TASK_ACTION,
   TASK_STATUS,
@@ -30,7 +30,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   const getTaskFixture = () => ({
-    user: userMap[PERMISSION_USER.superuser].id,
+    user: userMap[USER_TYPES.superuser].id,
     resource_type: RESOURCE_TYPES.cluster,
     resource_id: 10,
     restartable: true,

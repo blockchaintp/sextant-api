@@ -55,15 +55,15 @@ const userUtils = require('./utils/user')
 
 const {
   RESOURCE_TYPES,
-  PERMISSION_USER,
-  PERMISSION_ROLE,
-  PERMISSION_ROLE_ACCESS_LEVELS,
+  USER_TYPES,
+  PERMISSION_TYPES,
+  PERMISSION_ACCESS_LEVELS,
 } = config
 
 // Here we rename variables for readability and clarity in the rbac definition. Eventually the config variables will be refactored, but until then we will rename them as needed
-const USER_TYPES = PERMISSION_USER
-const PERMISSIONS = PERMISSION_ROLE
-const PERMISSIONS_ACCESS_LEVELS = PERMISSION_ROLE_ACCESS_LEVELS
+// const USER_TYPES = USER_TYPES
+// const PERMISSION_TYPES = PERMISSION_TYPES
+// const PERMISSION_ACCESS_LEVELS = PERMISSION_ACCESS_LEVELS
 
 const HELPERS = {
 
@@ -125,22 +125,22 @@ const METHOD_CONFIG = {
     // the controller will only list clusters the user has access to
     list: {},
     get: {
-      minimumResourcePermission: PERMISSIONS.read,
+      minimumResourcePermission: PERMISSION_TYPES.read,
       minimumUserType: USER_TYPES.user
     },
     create: {
       minimumUserType: USER_TYPES.admin,
     },
     update: {
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.user
     },
     updateRole: {
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.admin,
     },
     delete: {
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.admin,
     },
   },
@@ -149,25 +149,25 @@ const METHOD_CONFIG = {
     // the controller will only list deployments the user has access to
     list: {},
     get: {
-      minimumResourcePermission: PERMISSIONS.read,
+      minimumResourcePermission: PERMISSION_TYPES.read,
       minimumUserType: USER_TYPES.user
     },
     // the resource_id, resource_type for deployment create will be cluster
     create: {
       resourcePermissionForType: RESOURCE_TYPES.cluster,
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.user
     },
     update: {
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.user
     },
     updateRole: {
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.admin,
     },
     delete: {
-      minimumResourcePermission: PERMISSIONS.write,
+      minimumResourcePermission: PERMISSION_TYPES.write,
       minimumUserType: USER_TYPES.user
     }
   }
@@ -235,10 +235,10 @@ const RBAC = async (store, user, action) => {
       if(!role) return false
 
       // ensure the role has a correct permission value
-      if(!PERMISSIONS_ACCESS_LEVELS[role.permission]) return false
+      if(!PERMISSION_ACCESS_LEVELS[role.permission]) return false
 
       // check the granted role is at least the required type
-      if(PERMISSIONS_ACCESS_LEVELS[role.permission] < PERMISSIONS_ACCESS_LEVELS[methodConfig.minimumResourcePermission]) return false
+      if(PERMISSION_ACCESS_LEVELS[role.permission] < PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission]) return false
 
       // ok - we are allowed
       return true

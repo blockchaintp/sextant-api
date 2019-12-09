@@ -10,7 +10,7 @@ const config = require('../../src/config')
 
 const {
   RESOURCE_TYPES,
-  PERMISSION_USER,
+  USER_TYPES,
   TASK_STATUS,
 } = config
 
@@ -35,7 +35,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = TaskStore(getConnection())
 
     await tools.insertWithMissingValues(t, store, {
-      user: userMap[PERMISSION_USER.admin].id,
+      user: userMap[USER_TYPES.admin].id,
       resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
       restartable: true,
@@ -46,7 +46,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('task store -> create tasks for admin user', async (t) => {
-    const tasks = await fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.admin].id)
+    const tasks = await fixtures.insertTestTasks(getConnection(), userMap[USER_TYPES.admin].id)
     taskMap = tasks
   })
 
@@ -56,7 +56,7 @@ database.testSuiteWithDatabase(getConnection => {
         resource_id: task.resource_id + 10,
       })
     })
-    const tasks = await fixtures.insertTestTasks(getConnection(), userMap[PERMISSION_USER.user].id, insertData)
+    const tasks = await fixtures.insertTestTasks(getConnection(), userMap[USER_TYPES.user].id, insertData)
     Object.keys(tasks).forEach(key => {
       taskMap[key] = tasks[key]
     })
@@ -103,7 +103,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = TaskStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_TASK_DATA.length
-    const userId = userMap[PERMISSION_USER.admin].id
+    const userId = userMap[USER_TYPES.admin].id
 
     const tasks = await store.list({
       user: userId,

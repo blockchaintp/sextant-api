@@ -8,7 +8,7 @@ const tools = require('../tools')
 const config = require('../../src/config')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
 } = config
 
 app.testSuiteWithApp(({
@@ -19,7 +19,7 @@ app.testSuiteWithApp(({
   const USER_DATA = {
     username: 'superuser',
     password: 'apples',
-    permission: PERMISSION_USER.superuser,
+    permission: USER_TYPES.superuser,
   }
 
   let USER_RECORD = null

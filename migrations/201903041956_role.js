@@ -10,7 +10,7 @@ const up = (knex, Promise) => {
         .inTable('useraccount')
         .notNullable()
         .onDelete('cascade')
-      table.enu('permission', enumerations.PERMISSION_ROLE).notNullable()
+      table.enu('permission', enumerations.PERMISSION_TYPES).notNullable()
       table.enu('resource_type', enumerations.RESOURCE_TYPES).notNullable()
       table.integer('resource_id')
         .notNullable()

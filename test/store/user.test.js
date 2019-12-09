@@ -69,7 +69,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     const store = UserStore(getConnection())
 
-    const correctOrder = [].concat(enumerations.PERMISSION_USER)
+    const correctOrder = [].concat(enumerations.USER_TYPES)
     correctOrder.sort()
   
     const users = await store.list({})
@@ -82,15 +82,15 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
 
     const usernameUser = await store.get({
-      username: config.PERMISSION_USER.admin,
+      username: config.USER_TYPES.admin,
     })
 
     const idUser = await store.get({
       id: usernameUser.id,
     })
 
-    t.equal(usernameUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
-    t.equal(idUser.username, config.PERMISSION_USER.admin, `the returned username is correct`)
+    t.equal(usernameUser.username, config.USER_TYPES.admin, `the returned username is correct`)
+    t.equal(idUser.username, config.USER_TYPES.admin, `the returned username is correct`)
   })
   
   asyncTest('user store -> update user', async (t) => {
@@ -98,7 +98,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     const updateUser = await store.update({
-      id: userMap[config.PERMISSION_USER.admin].id,
+      id: userMap[config.USER_TYPES.admin].id,
       data: {
         username: 'oranges',
       }
@@ -117,7 +117,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = UserStore(getConnection())
   
     await store.delete({
-      id: userMap[config.PERMISSION_USER.admin].id,
+      id: userMap[config.USER_TYPES.admin].id,
     })
     
     const users = await store.list({})

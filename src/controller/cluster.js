@@ -13,8 +13,8 @@ const {
   CLUSTER_STATUS,
   DEPLOYMENT_STATUS,
   CLUSTER_PROVISION_TYPE,
-  PERMISSION_ROLE_ACCESS_LEVELS,
-  PERMISSION_USER,
+  PERMISSION_ACCESS_LEVELS,
+  USER_TYPES,
 } = config
 
 const ClusterController = ({ store, settings }) => {
@@ -272,7 +272,7 @@ const ClusterController = ({ store, settings }) => {
       await store.role.create({
         data: {
           user: user.id,
-          permission: config.PERMISSION_ROLE.write,
+          permission: config.PERMISSION_TYPES.write,
           resource_type: config.RESOURCE_TYPES.cluster,
           resource_id: cluster.id,
         },
@@ -563,7 +563,7 @@ const ClusterController = ({ store, settings }) => {
     const userRecord = await store.user.get(userQuery, trx)
 
     if(!userRecord) throw new Error(`no user found`)
-    if(userRecord.permission == PERMISSION_USER.superuser) throw new Error(`cannot create role for superuser`)
+    if(userRecord.permission == USER_TYPES.superuser) throw new Error(`cannot create role for superuser`)
     
     const existingRoles = await store.role.listForResource({
       resource_type: 'cluster',

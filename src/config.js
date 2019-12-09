@@ -139,35 +139,35 @@ const TASK_CONTROLLER_LOOP_DELAY = 500
 
 */
 
-const ACCESS_LEVELS = {
-  read: 1,
-  write: 2,
-  all: 3,
-}
+// const ACCESS_LEVELS = {
+//   read: 1,
+//   write: 2,
+//   all: 3,
+// }
 
-// Maps to USER_TYPE = PERMISSION_USER in rbac definition
-const PERMISSION_USER = {
+// Maps to USER_TYPES = USER_TYPES in rbac definition
+const USER_TYPES = {
   superuser: 'superuser',  // can do anything
   admin: 'admin',          // can create clusters
   user: 'user',            // requires role to do things
 }
 
-const PERMISSION_USER_ACCESS_LEVELS = {
-  [PERMISSION_USER.superuser]: ACCESS_LEVELS.all,
-  [PERMISSION_USER.admin]: ACCESS_LEVELS.write,
-  [PERMISSION_USER.user]: ACCESS_LEVELS.read,
+const USER_ACCESS_LEVELS = {
+  [USER_TYPES.superuser]: 3,
+  [USER_TYPES.admin]: 2,
+  [USER_TYPES.user]: 1
 }
 
-// Maps to PERMISSION = PERMISSION_ROLE in rbac definition 
-const PERMISSION_ROLE = {
+// Maps to PERMISSION = PERMISSION_TYPES in rbac definition 
+const PERMISSION_TYPES = {
   read: 'read',
   write: 'write',
 }
 
-// Maps to PERMISSION_ACCESS_LEVELS = PERMISSION_ROLE_ACCESS_LEVELS in rbac definition
-const PERMISSION_ROLE_ACCESS_LEVELS = {
-  [PERMISSION_ROLE.read]: ACCESS_LEVELS.read,
-  [PERMISSION_ROLE.write]: ACCESS_LEVELS.write,
+// Maps to PERMISSION_ACCESS_LEVELS = PERMISSION_ACCESS_LEVELS in rbac definition
+const PERMISSION_ACCESS_LEVELS = {
+  [PERMISSION_TYPES.read]: 1,
+  [PERMISSION_TYPES.write]: 2
 }
 
 /*
@@ -194,11 +194,11 @@ const config = {
   TASK_STATUS_DEFAULT,
   TASK_RESOURCE_COMPLETE_STATUS,
   TASK_CONTROLLER_LOOP_DELAY,
-  ACCESS_LEVELS,
-  PERMISSION_USER,
-  PERMISSION_USER_ACCESS_LEVELS,
-  PERMISSION_ROLE,
-  PERMISSION_ROLE_ACCESS_LEVELS,
+  //ACCESS_LEVELS,
+  USER_TYPES,
+  USER_ACCESS_LEVELS,
+  PERMISSION_TYPES,
+  PERMISSION_ACCESS_LEVELS,
 }
 
 module.exports = config

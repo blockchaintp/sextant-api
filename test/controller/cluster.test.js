@@ -16,10 +16,10 @@ const config = require('../../src/config')
 const errorClusters = require('../fixtures/errorClusters')
 
 const {
-  PERMISSION_USER,
+  USER_TYPES,
   CLUSTER_PROVISION_TYPE,
   CLUSTER_STATUS,
-  PERMISSION_ROLE,
+  PERMISSION_TYPES,
   RESOURCE_TYPES,
   TASK_STATUS,
   TASK_ACTION,
@@ -58,7 +58,7 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('cluster controller -> create cluster with bad values', async (t) => {
   
     const controller = getController()
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     await Promise.each(Object.keys(errorClusters), async type => {
       const {
@@ -87,7 +87,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
 
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const createTask = await controller.create({
       user: testUser,
@@ -108,7 +108,7 @@ database.testSuiteWithDatabase(getConnection => {
       cluster: cluster.id
     })
 
-    testClusters[PERMISSION_USER.admin] = cluster
+    testClusters[USER_TYPES.admin] = cluster
     const task = tasks[0]
 
     t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
@@ -133,7 +133,7 @@ database.testSuiteWithDatabase(getConnection => {
     const controller = getController()
 
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[0]
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     let error = null
 
@@ -152,10 +152,10 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('cluster controller -> get roles for created cluster', async (t) => {
   
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
     const controller = getController()
 
-    const createdCluster = testClusters[PERMISSION_USER.admin]
+    const createdCluster = testClusters[USER_TYPES.admin]
     
     const roles = await controller.getRoles({
       id: createdCluster.id,
@@ -168,16 +168,16 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster controller -> create additional role for created cluster', async (t) => {
-    const normalUser = userMap[PERMISSION_USER.user]
+    const normalUser = userMap[USER_TYPES.user]
 
     const controller = getController()
 
-    const createdCluster = testClusters[PERMISSION_USER.admin]
+    const createdCluster = testClusters[USER_TYPES.admin]
     
     await controller.createRole({
       id: createdCluster.id,
       user: normalUser.id,
-      permission: PERMISSION_ROLE.write,
+      permission: PERMISSION_TYPES.write,
     })
 
     const roles = await controller.getRoles({
@@ -209,8 +209,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     try {
       await controller.update({
-        user: userMap[PERMISSION_USER.admin],
-        id: testClusters[PERMISSION_USER.admin].id,
+        user: userMap[USER_TYPES.admin],
+        id: testClusters[USER_TYPES.admin].id,
         data: {
           desired_state,
         },
@@ -229,7 +229,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
 
     const tasks = await store.task.list({
-      cluster: testClusters[PERMISSION_USER.admin].id
+      cluster: testClusters[USER_TYPES.admin].id
     })
 
     await store.task.update({
@@ -249,8 +249,8 @@ database.testSuiteWithDatabase(getConnection => {
       oranges: 11,
     })
 
-    const testCluster = testClusters[PERMISSION_USER.admin]
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testCluster = testClusters[USER_TYPES.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     await controller.update({
       user: testUser,
@@ -284,7 +284,7 @@ database.testSuiteWithDatabase(getConnection => {
     const store = Store(getConnection())
     
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
-    const testUser = userMap[PERMISSION_USER.superuser]
+    const testUser = userMap[USER_TYPES.superuser]
 
     const createTask = await controller.create({
       user: testUser,
@@ -296,14 +296,14 @@ database.testSuiteWithDatabase(getConnection => {
     })
     t.equal(cluster.name, clusterData.name, `the cluster name is correct`)
     t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), `the cluster desired_state is correct`)
-    testClusters[PERMISSION_USER.superuser] = cluster
+    testClusters[USER_TYPES.superuser] = cluster
   })
 
   asyncTest('cluster controller -> get cluster', async (t) => {
   
     const controller = getController()
 
-    const testCluster = testClusters[PERMISSION_USER.superuser]
+    const testCluster = testClusters[USER_TYPES.superuser]
 
     const cluster = await controller.get({
       id: testCluster.id,
@@ -316,7 +316,7 @@ database.testSuiteWithDatabase(getConnection => {
   
     const controller = getController()
 
-    const testCluster = testClusters[PERMISSION_USER.superuser]
+    const testCluster = testClusters[USER_TYPES.superuser]
 
     const cluster = await controller.get({
       id: testCluster.id,
@@ -330,7 +330,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    const testUser = userMap[PERMISSION_USER.superuser]
+    const testUser = userMap[USER_TYPES.superuser]
 
     const clusters = await controller.list({
       user: testUser,
@@ -342,7 +342,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const clusters = await controller.list({
       user: testUser,
@@ -354,7 +354,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    const testUser = userMap[PERMISSION_USER.user]
+    const testUser = userMap[USER_TYPES.user]
 
     const clusters = await controller.list({
       user: testUser,
@@ -381,7 +381,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const clusters = await controller.list({
       user: testUser,
@@ -395,8 +395,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     const controller = getController()
 
-    const testCluster = testClusters[PERMISSION_USER.admin]
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testCluster = testClusters[USER_TYPES.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     let error = null 
 
@@ -418,7 +418,7 @@ database.testSuiteWithDatabase(getConnection => {
 
     const store = Store(getConnection())
 
-    const testCluster = testClusters[PERMISSION_USER.admin]
+    const testCluster = testClusters[USER_TYPES.admin]
 
     const tasks = await store.task.list({
       cluster: testCluster.id
@@ -437,8 +437,8 @@ database.testSuiteWithDatabase(getConnection => {
     const controller = getController()
     const store = Store(getConnection())
 
-    const testCluster = testClusters[PERMISSION_USER.admin]
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testCluster = testClusters[USER_TYPES.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const taskProcessor = TaskProcessor({
       store,
@@ -547,7 +547,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
     }
 
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const context = {}
 
@@ -672,7 +672,7 @@ database.testSuiteWithDatabase(getConnection => {
     const controller = getController()
     const store = Store(getConnection())
 
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const testCluster = testClusters.withSecrets
 
@@ -695,7 +695,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
 
-    const testUser = userMap[PERMISSION_USER.admin]
+    const testUser = userMap[USER_TYPES.admin]
 
     const testCluster = testClusters.withSecrets
 

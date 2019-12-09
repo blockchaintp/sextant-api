@@ -29,8 +29,8 @@ const ConfigBackend = () => {
     return {
       version: packageJSON.version,
       forms,
-      userAccessLevels: config.PERMISSION_USER_ACCESS_LEVELS,
-      roleAccessLevels: config.PERMISSION_ROLE_ACCESS_LEVELS,
+      userAccessLevels: config.USER_ACCESS_LEVELS,
+      roleAccessLevels: config.PERMISSION_ACCESS_LEVELS,
     }
   }
 
