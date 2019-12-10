@@ -51,7 +51,7 @@ spec:
           image: {{.images.pbft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "pbft-engine -v -C tcp://127.0.0.1:5050 --storage-location disk+/var/lib/sawtooth/pbft.log"
+          - "pbft-engine -vv -C tcp://127.0.0.1:5050 --storage-location disk+/var/lib/sawtooth/pbft.log"
           resources:
             limits:
               cpu: "250m"
@@ -313,7 +313,7 @@ spec:
             - |
               sawtooth keygen && \
               sleep {{.sawtooth.client_wait}} && \
-              /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:8008 test-$RANDOM 30
+              /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:8008 test-$RANDOM 300
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
@@ -367,6 +367,7 @@ spec:
                 --peering {{if ($peering)}}dynamic{{else}}static{{end}} \
                 {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.address}} {{end}} \
                 {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} \
+                --maximum-peer-connectivity 255 \
                 --opentsdb-db metrics \
                 --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
           volumeMounts:
@@ -374,12 +375,12 @@ spec:
               name: sawtooth-etc
             - mountPath: "/var/lib/sawtooth"
               name: sawtooth-data
-          # livenessProbe:
-          #   exec:
-          #     command:
-          #       - /usr/local/bin/liveness_probe.sh
-          #   initialDelaySeconds: 120
-          #   periodSeconds: 60
+          livenessProbe:
+            exec:
+              command:
+                - /usr/local/bin/liveness_probe.sh
+            initialDelaySeconds: 300
+            periodSeconds: 120
           env:
             - name: RUST_BACKTRACE
               value: "1"
