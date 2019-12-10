@@ -380,7 +380,7 @@ spec:
               command:
                 - /usr/local/bin/liveness_probe.sh
             initialDelaySeconds: 300
-            periodSeconds: 90
+            periodSeconds: 120
           env:
             - name: RUST_BACKTRACE
               value: "1"
