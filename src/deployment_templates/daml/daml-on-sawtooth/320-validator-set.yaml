@@ -40,6 +40,12 @@ spec:
         - name: {{ .name }}
       {{ end }}
       {{ end }}
+      hostAliases:
+      {{ range .sawtooth.externalSeeds }}
+      - ip: {{.ip}}
+        hostnames:
+        - {{.hostname}}
+      {{ end }}
       containers:
         - name: telegraf
           image: telegraf:1.10.4
@@ -365,7 +371,7 @@ spec:
                 --bind consensus:tcp://0.0.0.0:5050 \
                 --bind network:tcp://0.0.0.0:8800 \
                 --peering {{if ($peering)}}dynamic{{else}}static{{end}} \
-                {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.address}} {{end}} \
+                {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.hostname}}:{{.port}} {{end}} \
                 {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} \
                 --maximum-peer-connectivity 255 \
                 --opentsdb-db metrics \
