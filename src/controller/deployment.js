@@ -192,6 +192,7 @@ const DeployentController = ({ store, settings }) => {
       deployment_type,
       deployment_version,
       desired_state,
+      custom_yaml
     }
   }) => store.transaction(async trx => {
 
@@ -231,6 +232,7 @@ const DeployentController = ({ store, settings }) => {
         deployment_type,
         deployment_version,
         desired_state,
+        custom_yaml,
       },
     }, trx)
 

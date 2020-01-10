@@ -33,6 +33,7 @@ const DeploymentUpdate = ({
     deployment_version,
     applied_state,
     desired_state,
+    custom_yaml,
   } = deployment
 
   const desiredNamespace = getField({
@@ -81,6 +82,7 @@ const DeploymentUpdate = ({
     deployment_type,
     deployment_version,
     desired_state,
+    custom_yaml,
   })
 
 
