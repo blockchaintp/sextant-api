@@ -142,9 +142,18 @@ const writeTemplateValues = async ({
     deployment_type,
     deployment_version,
     desired_state,
+    custom_yaml,
   })
 
-  await writeYaml(valuesPath, templateData)
+  // parse string into yaml object
+  const customYaml = yaml.safeLoad(custom_yaml)
+
+  // merge yaml from the form input with custom yaml input
+  // TODO  - error handling for custom yaml
+
+  const mergedYamlData = merge(templateData, customYaml, { arrayMerge: overwriteMerge })
+
+  await writeYaml(valuesPath, mergedYamlData)
 
   return valuesPath
 }
@@ -243,6 +252,7 @@ const renderDeployment = async({
   deployment_type,
   deployment_version,
   desired_state,
+  custom_yaml,
 }) => {
   const outputDirectory = await tmpDir()
   const inputDirectory = getTemplateFolder({
@@ -253,6 +263,7 @@ const renderDeployment = async({
     deployment_type,
     deployment_version,
     desired_state,
+    custom_yaml,
   })
   const templates = await getTemplates({
     deployment_type,
