@@ -270,21 +270,24 @@ const form = [
 
   'Advanced Options',
 
-  {
-    id: 'sawtooth.genesis.seed',
-    title: 'Genesis Seed',
-    hidden: true,
-    default: randomString.generate(24),
-    warning: true,
-    helperText: 'WARNING: Changing the Genesis Seed will cause any exisiting data on the deployment to be deleted.',
-    component: 'text',
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
+  [
+    {
+      id: 'sawtooth.genesis.seed',
+      title: 'Genesis Seed',
+      hidden: true,
+      default: randomString.generate(24),
+      warning: true,
+      helperText: 'WARNING: Changing the Genesis Seed will cause any exisiting data on the deployment to be deleted.',
+      component: 'text',
+      validate: {
+        type: 'string',
+        methods: [
+          ['required', 'Required']
+        ],
+      },
     },
-  },
+    '' // Emptry string acts as space in UI
+  ]
 
 ]
 
