@@ -129,10 +129,12 @@ const getTemplateData = async ({
   return the filepath to the values.yaml
 
 */
+// TODO  - error handling for custom yaml
 const writeTemplateValues = async ({
   deployment_type,
   deployment_version,
   desired_state,
+  custom_yaml
 }) => {
   const valuesPath = await tempName({
     postfix: '.yaml',
@@ -142,16 +144,18 @@ const writeTemplateValues = async ({
     deployment_type,
     deployment_version,
     desired_state,
-    custom_yaml,
   })
-
+  let mergedYamlData
+  
   // parse string into yaml object
   const customYaml = yaml.safeLoad(custom_yaml)
-
-  // merge yaml from the form input with custom yaml input
-  // TODO  - error handling for custom yaml
-
-  const mergedYamlData = merge(templateData, customYaml, { arrayMerge: overwriteMerge })
+  
+  if (customYaml) {
+    // merge yaml from the form input with custom yaml input
+    mergedYamlData = merge(templateData, customYaml, { arrayMerge: overwriteMerge })
+  } else {
+    mergedYamlData = templateData
+  }
 
   await writeYaml(valuesPath, mergedYamlData)
 
