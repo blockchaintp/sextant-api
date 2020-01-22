@@ -100,20 +100,22 @@ const getTemplateData = async ({
   })
   const initialData = merge(defaults, desired_state, { arrayMerge: overwriteMerge })
 
-  const initialCustomTPs = initialData.sawtooth.customTPs
+  if ( initialData.sawtooth && initialData.sawtooth.customTPs ) {
+    const initialCustomTPs = initialData.sawtooth.customTPs
 
-  const formatedCustomTPs = initialCustomTPs.map( (tp) => {
-    return {
-      id: tp.id,
-      index: tp.index,
-      name: tp.name,
-      image: tp.image,
-      command: tp.command.split(' '),
-      args: tp.args.split(' '),
-      }
-    })
-  
-  initialData.sawtooth.customTPs = formatedCustomTPs
+    const formatedCustomTPs = initialCustomTPs.map( (tp) => {
+      return {
+        id: tp.id,
+        index: tp.index,
+        name: tp.name,
+        image: tp.image,
+        command: tp.command.split(' '),
+        args: tp.args.split(' '),
+        }
+      })
+    
+    initialData.sawtooth.customTPs = formatedCustomTPs
+  }
   const formatedData = initialData
   
   return formatedData
