@@ -14,6 +14,12 @@ const yesNo = [{
   title: 'No'
 }]
 
+const never = [{
+  value: false,
+  title: 'No'
+}]
+
+
 module.exports = {
   activated,
   yesNo
