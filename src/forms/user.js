@@ -151,7 +151,7 @@ const getUserForm = ({
 const forms = {
   browser: {
     initialUser: getUserForm({
-      usernameDisabled: true,
+      usernameDisabled: false,
       permissionDisabled: true,
       schema: schema.browser,
       required: required.browser.add,
