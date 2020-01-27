@@ -17,8 +17,6 @@ const DeploymentStore = (knex) => {
   }, trx) => {
     if(!cluster) throw new Error(`cluster must be given to store.deployment.list`)
     
-    const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
-
     const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.deployment)
 
@@ -28,7 +26,7 @@ const DeploymentStore = (knex) => {
       })
     }
      
-    sqlQuery.orderBy(orderBy.field, orderBy.direction)
+    sqlQuery.orderBy('status', 'desc').orderBy('cluster', 'asc').orderBy('name', 'asc')
 
     if(!deleted) {
       sqlQuery.andWhereNot({
