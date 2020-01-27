@@ -63,6 +63,10 @@ const form = [
     title: 'Database Connection Secret',
     helperText: 'The name of the secret containing the database connection details and credentials',
     component: 'text',
+    linked: {
+      linkedId: 'aws.db.create',
+      visibilityParameter: 'false'
+    },
     validate: {
       type: 'string',
       methods: [

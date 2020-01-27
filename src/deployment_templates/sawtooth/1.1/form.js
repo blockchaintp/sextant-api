@@ -326,7 +326,7 @@ const form = [
 
   'Image Pull Secrets',
 
-  {
+  [{
     id: 'imagePullSecrets.enabled',
     title: 'Do you need to enable image pull secrets?',
     helperText: 'Provide secrets to be injected into Sawtooth namespace and used to pull images from your secure registry',
@@ -346,6 +346,10 @@ const form = [
     title: 'Image Pull Secrets',
     helperText: null,
     default: null,
+    linked: {
+      linkedId: 'imagePullSecrets.enabled',
+      visibilityParameter: 'true'
+    },
     list: {
       mainField: 'name',
       schema: [{
@@ -366,7 +370,7 @@ const form = [
         name: 'name',
       }]
     }
-  },
+  }],
 
   'Advanced Options',
 
