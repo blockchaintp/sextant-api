@@ -370,6 +370,7 @@ const form = [
 
   'Advanced Options',
 
+  [
     {
       id: 'sawtooth.genesis.seed',
       title: 'Genesis Seed',
@@ -385,8 +386,8 @@ const form = [
         ],
       },
     },
-
-
+    '' // emptry string acts as space in UI
+  ]
 
 ]
 

@@ -81,6 +81,7 @@ const DeploymentStore = (knex) => {
       deployment_type,
       deployment_version,
       desired_state,
+      custom_yaml,
     }
   }, trx) => {
     if(!cluster) throw new Error(`data.cluster param must be given to store.deployment.create`)
@@ -96,6 +97,7 @@ const DeploymentStore = (knex) => {
         deployment_type,
         deployment_version,
         desired_state,
+        custom_yaml,
       })
       .returning('*')
       .get(0)

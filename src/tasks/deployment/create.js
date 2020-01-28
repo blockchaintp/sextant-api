@@ -54,6 +54,7 @@ const DeploymentCreate = ({
     deployment_type,
     deployment_version,
     desired_state,
+    custom_yaml,
   } = deployment
 
   const namespace = getField({
@@ -92,6 +93,7 @@ const DeploymentCreate = ({
     deployment_type,
     deployment_version,
     desired_state,
+    custom_yaml,
   })
 
   // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
