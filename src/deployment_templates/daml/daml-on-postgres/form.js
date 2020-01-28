@@ -120,6 +120,10 @@ const form = [
     title: 'Image Pull Secrets',
     helperText: null,
     default: null,
+    linked: {
+      linkedId: 'imagePullSecrets.enabled',
+      visibilityParameter: 'true' // for what value of linkedId, will this component be visible
+    },
     list: {
       mainField: 'name',
       schema: [{
