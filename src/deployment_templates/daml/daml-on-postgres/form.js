@@ -63,6 +63,10 @@ const form = [
     title: 'Database Connection Secret',
     helperText: 'The name of the secret containing the database connection details and credentials',
     component: 'text',
+    linked: {
+      linkedId: 'aws.db.create',
+      visibilityParameter: 'false'
+    },
     validate: {
       type: 'string',
       methods: [
@@ -116,6 +120,10 @@ const form = [
     title: 'Image Pull Secrets',
     helperText: null,
     default: null,
+    linked: {
+      linkedId: 'imagePullSecrets.enabled',
+      visibilityParameter: 'true' // for what value of linkedId, will this component be visible
+    },
     list: {
       mainField: 'name',
       schema: [{
