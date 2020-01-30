@@ -79,11 +79,6 @@ const Kubectl = ({
     if (!remoteCredentials.apiServer) throw new Error(`apiServer required for remote credentials`)
   }
 
-  let isSetup = false
-  let kubeConfigPath = '/dev/null'
-  // we inject these arguments to every kubectl call
-  let connectionArguments = []
-
   /*
 
   write a YAML file
@@ -103,9 +98,9 @@ const Kubectl = ({
     write the ca data to a tempfile so we can inject it into kubectl commands
 
   */
-  const setup = async () => {
-    if (isSetup) return
 
+  // creates/writes kubeconfig to tmp file for remote modes and returns connection arguments and kubeconfig path (setupDetails) to be used by following functions
+  const localSetup = async () => {
     if (mode == 'remote') {
 
       const kubeconfigData = {
@@ -140,17 +135,22 @@ const Kubectl = ({
           }
         ]
       }
-      kubeConfigPath = await writeTempYaml(kubeconfigData)
+      const kubeConfigPath = await writeTempYaml(kubeconfigData)
 
-      connectionArguments = [
+      const connectionArguments = [
         '--kubeconfig', kubeConfigPath
       ]
-    }
-    else if (mode == 'local') {
+
+      return {
+        kubeConfigPath,
+        connectionArguments
+      }
+
+    } else if (mode == 'local') {
 
       const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
 
-      connectionArguments = [
+      const connectionArguments = [
         '--certificate-authority',
         LOCAL_CA_PATH,
         '--token',
@@ -158,17 +158,16 @@ const Kubectl = ({
         '--server',
         LOCAL_API_SERVER,
       ]
-    }
 
-    isSetup = true
+      return {connectionArguments}
+    }
   }
 
-  const tearDown = async() => {
-    pino.debug({
-      message: `UNLINK ${kubeConfigPath}`
-    })
-    fs.unlinkSync(kubeConfigPath)  
-    isSetup = false
+  // trashes the tmp file if there is a kubeconfigPath in the setupDetails
+  const localTeardown = async (setupDetails) => {
+    if (setupDetails.kubeConfigPath) {
+      fs.unlinkSync(setupDetails.kubeConfigPath)
+    }  
   }
 
   const getOptions = (options) => {
@@ -188,11 +187,11 @@ const Kubectl = ({
     pod,
     port,
   }) => {
-    await setup()
+    const setupDetails = await localSetup()
     const useOptions = getOptions({})
     const localPort = await getPort()
 
-    const args = connectionArguments.concat([
+    const args = setupDetails.connectionArguments.concat([
       '-n', namespace,
       'port-forward',
       `pod/${pod}`,
@@ -234,7 +233,7 @@ const Kubectl = ({
       })
     })
 
-    await tearDown()
+    await localTeardown(setupDetails)
     return {
       port: localPort,
       stop: async () => {
@@ -245,9 +244,9 @@ const Kubectl = ({
 
   // run a kubectl command and return [ stdout, stderr ]
   const command = async (cmd, options = {}) => {
-    await setup()
+    const setupDetails = await localSetup()
     const useOptions = getOptions(options)
-    const runCommand = `kubectl ${connectionArguments.join(' ')} ${cmd}`
+    const runCommand = `kubectl ${setupDetails.connectionArguments.join(' ')} ${cmd}`
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch(err => {
@@ -259,17 +258,17 @@ const Kubectl = ({
         err.message = okErrorParts.join("\n")
         throw err
       })
-      await tearDown()
-      return result
+      await localTeardown(setupDetails)
+    return result
   }
 
   // run a helm command and return [ stdout, stderr ]
   // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
   // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
   const helmCommand = async (cmd, options = {}) => {
-    await setup()
+    const setupDetails = await localSetup()
     const useOptions = getOptions(options)
-    const runCommand = `helm ${connectionArguments.join(' ')} ${cmd}`
+    const runCommand = `helm ${setupDetails.connectionArguments.join(' ')} ${cmd}`
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch(err => {
@@ -281,8 +280,8 @@ const Kubectl = ({
         err.message = okErrorParts.join("\n")
         throw err
       })
-      await tearDown()
-      return result
+      await localTeardown(setupDetails)
+    return result
   }
 
   // run a kubectl command and process stdout as JSON
