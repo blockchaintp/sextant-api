@@ -160,6 +160,12 @@ const Kubectl = ({
       ]
 
       return {connectionArguments}
+    } else if (mode == 'test') {
+
+      return {
+        kubeConfigPath: '/dev/null',
+        connectionArguments: []
+      }
     }
   }
 
