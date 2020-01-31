@@ -133,23 +133,55 @@ const form = [
     title: 'External Seeds',
     helperText: 'The list of external addresses to connect to',
     list: {
-      mainField: 'address',
+      mainField: 'hostname',
       schema: [{
-        id: 'address',
-        title: 'Seed address',
-        helperText: 'Type the address of a new external seed (hostname:port or ip:port)',
+        id: 'hostname',
+        title: 'Hostname',
+        helperText: 'Type the hostname of a new external seed.',
         component: 'text',
         validate: {
           type: 'string',
           methods: [
             ['required', 'Required'],
-            ['matches', [`(([a-z]([-a-z0-9]*[a-z0-9])*)|([0-9]+[.0-9]*)):[0-9]+`], "Must use a DNS-1123 label or an IP address followed by a ':' and a port number."]
+            ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$`], "Must use a DNS-1123 safe label."]
           ],
         },
-      }],
+      },
+      {
+        id: 'ip',
+        title: 'IP Address',
+        helperText: 'Type the IP address of a new external seed.',
+        component: 'text',
+        validate: {
+          type: 'string',
+          methods: [
+            ['required', 'Required'],
+            ['matches', [`^[0-9]+[.0-9]*[0-9]$`], "Must be an IPv4 compatible address."]
+          ],
+        }
+      }, {
+        id: 'port',
+        title: 'Port',
+        helperText: 'Type the port of a new external seed.',
+        component: 'text',
+        validate: {
+          type: 'string',
+          methods: [
+            ['required', 'Required'],
+            ['matches', [`^[0-9]+$`], "Must be a number."]
+          ],
+        }
+      }
+      ],
       table: [{
-        title: 'Seed address',
-        name: 'address',
+        title: 'Hostname',
+        name: 'hostname',
+      }, {
+        title: 'IP Address',
+        name: 'ip',
+      }, {
+        title: 'Port',
+        name: 'port',
       }]
     }
   },
