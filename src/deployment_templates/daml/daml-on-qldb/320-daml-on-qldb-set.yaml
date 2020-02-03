@@ -25,6 +25,10 @@ spec:
       {{ end }}
       {{ end }}
       containers:
+      - name: postgres
+        image: postgres
+        ports:
+        - containerPort: 5432
       - name: daml-on-qldb
         image: {{.images.damlqldb}}
         imagePullPolicy: Always
@@ -33,40 +37,12 @@ spec:
         command: [ "bash","-xc"]
         args:
         - |
-          {{ if .aws.db.create }}
           sleep 30
-          source /usr/local/bin/set_db_creds.sh {{.deployment.name}}-aurora-pg-stack
-          {{end}}
           /opt/daml-on-qldb/entrypoint.sh --port 39000 \
-            --jdbc-url jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB}:${POSTGRES_PORT}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD} \
+            --jdbc-url jdbc:postgresql://localhost/postgres?user=postgres \
             --ledger ${LEDGER_ID} \
             --participant-id daml-on-qldb-participant 
         env:
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: {{.daml.postgres.secret}}
-              key: username
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{.daml.postgres.secret}}
-              key: password
-        - name: POSTGRES_HOST
-          valueFrom:
-            secretKeyRef:
-              name: {{.daml.postgres.secret}}
-              key: host
-        - name: POSTGRES_DB
-          valueFrom:
-            secretKeyRef:
-              name: {{.daml.postgres.secret}}
-              key: database
-        - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: {{.daml.postgres.secret}}
-              key: port
         - name: LEDGER_ID
           value: {{.daml.ledgerId}}
 ---
