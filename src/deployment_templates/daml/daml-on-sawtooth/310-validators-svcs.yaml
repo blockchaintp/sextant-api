@@ -34,12 +34,16 @@ metadata:
     app: {{.sawtooth.networkName}}-validator
 spec:
   type: ClusterIP
-  clusterIP: None
+  sessionAffinity: ClientIP
   ports:
   - port: 8800
     protocol: TCP 
     targetPort: 8800
     name: sawnet
+  - port: 4004
+    protocol: TCP 
+    targetPort: 4004
+    name: sawcomp
   selector:
     app: {{.sawtooth.networkName}}-validator
 ---
