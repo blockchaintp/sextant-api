@@ -40,39 +40,6 @@ const form = [
 
   ],
 
-  'Postgres Index Database Details',
-  [
-    {
-      id: 'aws.db.create',
-      title: 'Create QLDB?',
-      helperText: 'Should this deployment create an QLDB Database?',
-      component: 'radio',
-      default: false,
-      dataType: 'boolean',
-      row: true,
-      options: options.never,
-      validate: {
-        type: 'string',
-        methods: [
-          ['required', 'Required']
-        ],
-      },
-    },
-    {
-      id: 'daml.postgres.secret',
-      title: 'Database Connection Secret',
-      helperText: 'The name of the secret containing the database connection details and credentials',
-      component: 'text',
-      validate: {
-        type: 'string',
-        methods: [
-          //['required', 'Required'],
-          ['matches', [`^[a-z]([-a-z0-9]*[a-z0-9])*$|^(?![\\s\\S])$`], "a DNS-1123 label must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"]
-        ],
-      },
-    }
-  ],
-
   'DAML Details',
   [
     {

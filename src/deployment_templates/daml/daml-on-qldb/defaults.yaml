@@ -22,3 +22,4 @@ deployment:
 # presented
 images:
   damlqldb: blockchaintp/daml-on-qldb:BTP2.0-alpha
+  postgres: postgres:11
