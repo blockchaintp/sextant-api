@@ -167,43 +167,6 @@ spec:
             requests:
               cpu: "50m"
         {{ end }}
-        {{ if .sawtooth.seth.enabled }}
-        - name: seth-tp
-          image: {{.images.seth_tp}}
-          command: [ "bash", "-xc"]
-          args:
-          - "seth-tp -v --connect tcp://127.0.0.1:4004"
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        - name: seth-rpc
-          image: {{.images.seth_rpc}}
-          command: [ "bash", "-xc"]
-          args:
-          - "sleep {{.sawtooth.client_wait}} && seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:4004 "
-          ports:
-            - containerPort: 3030
-              name: seth-rpc
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        {{ end }}
-        {{ if .sawtooth.smallbank.enabled }}
-        - name: smallbank-tp
-          image: {{.images.smallbank_tp}}
-          command: [ "bash", "-xc"]
-          args:
-          - "smallbank-tp-go -v --connect tcp://127.0.0.1:4004"
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        {{ end }}
         {{ if .sawtooth.xo.enabled }}
         - name: xo-tp
           image: {{.images.xo_tp}}
@@ -216,33 +179,6 @@ spec:
             requests:
               cpu: "50m"
         {{ end }}
-        {{ if .sawtooth.daml.enabled }}
-        - name: tracer-ui
-          image: {{ .images.tracer_ui }}
-          ports:
-            - containerPort: 8080
-              name: tracer-ui
-          env:
-            - name: NODE_ENV
-              value: production
-        - name: router
-          image: {{ .images.noxy }}
-          ports:
-            - containerPort: 80
-              name: router
-          env:
-            - name: NOXY_DEFAULT_HOST
-              value: localhost
-            - name: NOXY_DEFAULT_PORT
-              value: "8080"
-            - name: NOXY_DEFAULT_WS
-              value: "1"
-            - name: NOXY_API_FRONT
-              value: /transactions
-            - name: NOXY_API_HOST
-              value: localhost
-            - name: NOXY_API_PORT
-              value: "5051"
         - name: daml-tp
           image: {{.images.daml_tp}}
           command: [ "bash", "-xc"]
@@ -253,29 +189,6 @@ spec:
               cpu: "250m"
             requests:
               cpu: "50m"
-        - name: daml-rpc
-          image: {{.images.daml_rpc}}
-          command: [ "bash", "-xc"]
-          args:
-          - |
-            sleep {{.sawtooth.client_wait}}
-            /opt/sawtooth-daml-rpc/entrypoint.sh --port 39000 \
-              --connect tcp://localhost:4004 \
-              $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-          ports:
-            - containerPort: 39000
-              hostPort: 39000
-              name: daml-ledger-api
-            - containerPort: 5051
-              name: tracer
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
         - name: timekeeper
           image: {{.images.timekeeper}}
           command: [ "bash", "-xc"]
@@ -286,7 +199,6 @@ spec:
               cpu: "250m"
             requests:
               cpu: "50m"
-        {{ end }}
         {{range .sawtooth.customTPs}}
         - name: {{.name}}
           image: {{.image}}

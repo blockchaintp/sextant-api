@@ -1,0 +1,89 @@
+# kubetpl:syntax:go-template
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.sawtooth.networkName}}-daml-rpc
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-daml-rpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{.sawtooth.networkName}}-daml-rpc
+  template:
+    metadata:
+      labels:
+        app: {{.sawtooth.networkName}}-daml-rpc
+    spec:
+      serviceAccountName: {{.sawtooth.networkName}}-sa
+      {{ if .imagePullSecrets.enabled }}
+      imagePullSecrets:
+      {{range .imagePullSecrets.value }}
+        - name: {{ .name }}
+      {{ end }}
+      {{ end }}
+      containers:
+      - name: postgres
+        image: {{.images.postgres}}
+        ports:
+        - containerPort: 5432
+      - name: tracer-ui
+        image: {{ .images.tracer_ui }}
+        ports:
+        - containerPort: 8080
+          name: tracer-ui
+        env:
+          - name: NODE_ENV
+            value: production
+      - name: router
+        image: {{ .images.noxy }}
+        ports:
+        - containerPort: 80
+          name: router
+        env:
+          - name: NOXY_DEFAULT_HOST
+            value: localhost
+          - name: NOXY_DEFAULT_PORT
+            value: "8080"
+          - name: NOXY_DEFAULT_WS
+            value: "1"
+          - name: NOXY_API_FRONT
+            value: /transactions
+          - name: NOXY_API_HOST
+            value: localhost
+          - name: NOXY_API_PORT
+            value: "5051"
+
+      - name: daml-rpc
+        image: {{.images.daml_rpc}}
+        command: [ "bash", "-xc"]
+        args:
+        - |
+            sleep {{.sawtooth.client_wait}}
+            /opt/sawtooth-daml-rpc/entrypoint.sh --port 39000 \
+                --connect tcp://{{.sawtooth.networkName}}-validator:4004 \
+                --jdbc-url jdbc:postgresql://postgres/postgres?user=postgres \
+                --participant-id {{.sawtooth.networkName}} \
+                --auth wildcard
+        resources:
+          limits:
+            cpu: "250m"
+          requests:
+            cpu: "50m"
+        ports:
+        - containerPort: 39000
+          name: daml-ledger-api
+        - containerPort: 5051
+          name: tracer
+        volumeMounts:
+        - mountPath: "/etc/sawtooth"
+          name: sawtooth-etc
+      volumes:
+        - name: sawtooth-etc
+          hostPath:
+            type: DirectoryOrCreate
+            path: {{.sawtooth.volumes.hostPathBaseDir}}/{{.sawtooth.namespace}}/{{.sawtooth.networkName}}/sawtooth-etc
+      
+---
