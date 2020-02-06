@@ -66,7 +66,7 @@ spec:
                 --connect tcp://{{.sawtooth.networkName}}-validator:4004 \
                 --jdbc-url jdbc:postgresql://postgres/postgres?user=postgres \
                 --participant-id {{.sawtooth.networkName}} \
-                --auth wildcard
+                {{ if .sawtooth.daml.extra_args.enabled }}{{.sawtooth.daml.extra_args.arg_str}}{{ else }}--auth wildcard {{ end }}
         resources:
           limits:
             cpu: "250m"

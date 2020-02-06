@@ -41,7 +41,7 @@ spec:
           /opt/daml-on-qldb/entrypoint.sh --port 39000 \
             --jdbc-url jdbc:postgresql://localhost/postgres?user=postgres \
             --ledger ${LEDGER_ID} \
-            --participant-id daml-on-qldb-participant 
+            --participant-id daml-on-qldb-participant {{ if .daml.extra_args.enabled }}{{ .daml.extra_args.arg_str }}{{ end }}
         env:
         - name: LEDGER_ID
           value: {{.daml.ledgerId}}

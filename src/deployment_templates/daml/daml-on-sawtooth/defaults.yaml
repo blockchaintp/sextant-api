@@ -57,6 +57,9 @@ sawtooth:
   daml:
     # default daml to false at the moment
     enabled: true
+    extra_args:
+      enabled: false
+      arg_str: some args
   volumes:
     # This MUST be set, and SHOULD be presented to the user as an option, as it is a likely area
     # of customization

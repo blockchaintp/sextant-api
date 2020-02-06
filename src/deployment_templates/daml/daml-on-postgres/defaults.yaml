@@ -19,6 +19,9 @@ daml:
   postgres:
       secret: postgressecret
   ledgerId: someIdentifyingString
+  extra_args:
+    enabled: false
+    arg_str: some args
 
 deployment:
   namespace:  test
