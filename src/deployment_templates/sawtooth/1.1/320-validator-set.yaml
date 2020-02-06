@@ -381,12 +381,6 @@ spec:
               name: sawtooth-etc
             - mountPath: "/var/lib/sawtooth"
               name: sawtooth-data
-          livenessProbe:
-            exec:
-              command:
-                - /usr/local/bin/liveness_probe.sh
-            initialDelaySeconds: 300
-            periodSeconds: 120
           env:
             - name: RUST_BACKTRACE
               value: "1"

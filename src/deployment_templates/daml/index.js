@@ -38,7 +38,7 @@ module.exports = {
       {
         title: 'DAML on Sawtooth',
         icon: "/thirdParty/daml.png",
-        version: 'daml-on-sawtooth(~0.1.4), BTP Sawtooth(BTP2.0)',
+        version: 'daml-on-sawtooth(~0.1.4), BTP Sawtooth(BTP2.0), DAML 0.13.41',
         form: 'daml-on-sawtooth',
         description: "The DAML smart contract runtime engine with Hyperledger Sawtooth as the backing DLT.",
         features: [
@@ -48,7 +48,7 @@ module.exports = {
       },{
         title: 'DAML on Aurora',
         icon: "/thirdParty/daml.png",
-        version: 'daml-on-postgres(~0.13.37), AWS Aurora(Postgresql)',
+        version: 'daml-on-postgres(0.13.41), AWS Aurora(Postgresql), DAML 0.13.41',
         form: 'daml-on-postgres',
         description: "The DAML smart contract runtime engine with AWS Aurora(Postgresql) as the backing DLT.",
         features: [
@@ -58,7 +58,7 @@ module.exports = {
       },{
         title: 'DAML on QLDB',
         icon: "/thirdParty/daml.png",
-        version: 'daml-on-qldb(Early Access), AWS QLDB',
+        version: 'daml-on-qldb(Early Access), AWS QLDB, DAML 0.13.41',
         form: 'daml-on-qldb',
         description: "The DAML smart contract runtime engine with AWS QLDB as the backing DLT.",
         features: [
