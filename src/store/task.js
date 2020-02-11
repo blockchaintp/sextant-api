@@ -181,6 +181,7 @@ const TaskStore = (knex) => {
       action,
       restartable,
       payload,
+      resource_status
     }
   }, trx) => {
     if(!user) throw new Error(`data.user param must be given to store.task.create`)
@@ -198,6 +199,7 @@ const TaskStore = (knex) => {
         action,
         restartable,
         payload,
+        resource_status
       })
       .returning('*')
       .get(0)
