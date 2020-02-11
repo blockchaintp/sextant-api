@@ -37,7 +37,7 @@ spec:
           sleep 30
           source /usr/local/bin/set_db_creds.sh {{.deployment.name}}-aurora-pg-stack
           {{end}}
-          /opt/digitalasset/bin/entrypoint.sh -w
+          /opt/digitalasset/bin/entrypoint.sh -w {{ if .daml.extra_args.enabled }}{{ .daml.extra_args.arg_str }}{{ end }}
         env:
         {{ if .aws.db.create }}
         {{ else }}
