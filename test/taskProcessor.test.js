@@ -38,6 +38,10 @@ database.testSuiteWithDatabase(getConnection => {
     payload: {
       apples: 10,
     },
+    resource_status: {
+      completed: 'provisioned',
+      error: 'error'
+    }
   })
 
   const getCompareTask = (task) => ({
@@ -47,6 +51,7 @@ database.testSuiteWithDatabase(getConnection => {
     restartable: task.restartable,
     action: task.action,
     payload: task.payload,
+    resource_status: task.resource_status
   })
 
   let store = null
