@@ -500,7 +500,7 @@ const DeployentController = ({ store, settings }) => {
         action: config.TASK_ACTION['deployment.delete'],
         restartable: true,
         payload: {},
-       resource_status: {
+        resource_status: {
           completed: 'deleted',
           error: 'error'
         }
