@@ -178,7 +178,7 @@ const TaskProcessor = ({
     await resourceTypeStore.update({
       id: task.resource_id,
       data: {
-        status: errorResourceStatus,
+        status: task.resource_status.error,
       },
     })
   }
@@ -203,7 +203,7 @@ const TaskProcessor = ({
       await resourceTypeStore.update({
         id: task.resource_id,
         data: {
-          status: finalResourceStatus,
+          status: task.resource_status.completed,
         },
       }, trx)
     }

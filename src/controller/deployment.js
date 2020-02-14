@@ -256,6 +256,10 @@ const DeployentController = ({ store, settings }) => {
         action: config.TASK_ACTION['deployment.create'],
         restartable: true,
         payload: {},
+       resource_status: {
+          completed: 'provisioned',
+          error: 'error'
+        }
       },
     }, trx)
 
@@ -322,6 +326,10 @@ const DeployentController = ({ store, settings }) => {
         action: config.TASK_ACTION['deployment.update'],
         restartable: true,
         payload: {},
+       resource_status: {
+          completed: 'provisioned',
+          error: 'error'
+        }
       },
     }, trx)
 
@@ -492,6 +500,10 @@ const DeployentController = ({ store, settings }) => {
         action: config.TASK_ACTION['deployment.delete'],
         restartable: true,
         payload: {},
+        resource_status: {
+          completed: 'deleted',
+          error: 'error'
+        }
       },
     }, trx)
 

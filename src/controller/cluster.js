@@ -287,6 +287,10 @@ const ClusterController = ({ store, settings }) => {
         action: config.TASK_ACTION['cluster.create'],
         restartable: true,
         payload: {},
+       resource_status: {
+          completed: 'provisioned',
+          error: 'error'
+        }
       },
     }, trx)
 
@@ -386,6 +390,10 @@ const ClusterController = ({ store, settings }) => {
         action: config.TASK_ACTION['cluster.update'],
         restartable: true,
         payload: {},
+       resource_status: {
+          completed: 'provisioned',
+          error: 'error'
+        }
       },
     }, trx)
 
@@ -426,6 +434,10 @@ const ClusterController = ({ store, settings }) => {
         action: config.TASK_ACTION['cluster.delete'],
         restartable: true,
         payload: {},
+       resource_status: {
+          completed: 'deleted',
+          error: 'error'
+        }
       },
     }, trx)
 
