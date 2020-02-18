@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const jwt = require('jsonwebtoken')
 const settings = require('../settings')
 const database = require('./database')
@@ -200,9 +206,11 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     const extractModuleNames = (payload) => {
-      return payload.getDamlLf1().getModulesList().map(a =>
+      let mods = payload.getDamlLf1().getModulesList().filter(a => a.getName())
+        .map(a =>
           a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`)
       );
+      return mods
     }
 
     // Extract archive information from one pod only
@@ -274,10 +282,10 @@ const DamlRPC = ({
         port,
       }) => {
         const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
-        client.packageManagementClient.uploadDarFile({
+        await client.packageManagementClient.uploadDarFile({
           darFile: contentBase64
         })
-        const packages = client.packageManagementClient.listKnownPackages()
+        const packages = await client.packageManagementClient.listKnownPackages()
         return packages
       }
     })
