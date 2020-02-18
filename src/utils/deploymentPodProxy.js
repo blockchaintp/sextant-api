@@ -1,5 +1,14 @@
+/*
+ * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const getField = require('../deployment_templates/getField')
 const ClusterKubectl = require('./clusterKubectl')
+const pino = require('pino')({
+  name: 'deploymentPodProxy',
+})
 
 const ProxyRequest = async ({
   kubectl,
@@ -14,12 +23,24 @@ const ProxyRequest = async ({
     port,
   })
   try {
+    pino.info({
+      action:"executing handler",
+      port: portForward.port
+    })
     const result = await handler({
       port: portForward.port,
+    })
+    pino.info({
+      action:"stopping proxy",
+      port: portForward.port
     })
     await portForward.stop()
     return result
   } catch(err) {
+    pino.info({
+      action:"stopping proxy",
+      port: portForward.port
+    })
     await portForward.stop()
     throw err
   }
