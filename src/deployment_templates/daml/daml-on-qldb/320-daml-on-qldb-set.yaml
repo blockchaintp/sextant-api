@@ -32,6 +32,9 @@ spec:
         image: {{.images.postgres}}
         ports:
         - containerPort: 5432
+        env:
+        - name: POSTGRES_HOST_AUTH_METHOD
+          value: trust
       - name: daml-on-qldb
         image: {{.images.damlqldb}}
         imagePullPolicy: Always
