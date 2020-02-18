@@ -6,6 +6,10 @@ const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const Promise = require('bluebird')
 const fs = require('fs')
 
+const pino = require('pino')({
+  name: 'damlRPC',
+})
+
 const damRPCHost = "localhost"
 
 const DamlRPC = ({
@@ -18,10 +22,10 @@ const DamlRPC = ({
 
   const getParticipants = async ({id}) => {
 
-    console.log(`********************************************`)
-    console.log(`***          Get Participants            ***`)
-    console.log(`********************************************`)
-
+    pino.info({
+      action: "getParticipants",
+      id
+    })
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -36,9 +40,6 @@ const DamlRPC = ({
         handler: async ({
           port,
         }) => {
-          console.log('-------------------------------------------------------------')
-          console.log(`Forwarded port: "${port}" for pod name "${pod.metadata.name}"`)
-          console.log('-------------------------------------------------------------')
           const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
           const participantId = await client.partyManagementClient.getParticipantId()
           const parties = await client.partyManagementClient.listKnownParties()
@@ -59,26 +60,19 @@ const DamlRPC = ({
       return result
     })
 
-    const participantKeys = database.keyManagerKeys
-    const updatedDetails = participantDetails.map( (pD) => {
-      const filteredKeys = participantKeys.filter( (pK) => {
-        return pK.name == pD.participantId
-      })
-      pD.publicKey = filteredKeys[0].publicKey
-      return pD
-    })
-    return updatedDetails
+    participantDetails[0].publicKey = database.getKey()
+    return participantDetails
   }
 
   const registerParticipant = ({
     participantId,
     publicKey,
   }) => {
-
-    console.log(`********************************************`)
-    console.log(`***         Register Participants        ***`)
-    console.log(`********************************************`)
-
+    pino.info({
+      action:"registerParticipant",
+      participantId,
+      publicKey
+    })
     if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.registerParticipant`)
 
     database.damlParticipants.push({
@@ -108,14 +102,17 @@ const DamlRPC = ({
     publicKey,
     partyName,
   }) => {
-
-    console.log(`********************************************`)
-    console.log(`***        Add Party                     ***`)
-    console.log(`********************************************`)
+    pino.info({
+      action: "addParty",
+      id,
+      publicKey,
+      partyName
+    })
 
     const proxy = await DeploymentPodProxy({
       store,
       id,
+      label: "daml=<name>-daml-rpc"
     })
 
     var counter = 0
@@ -187,14 +184,16 @@ const DamlRPC = ({
     id
   } = {}) => {
 
-    console.log(`********************************************`)
-    console.log(`***        Get Archives                  ***`)
-    console.log(`********************************************`)
+    pino.info({
+      action: "getArchives",
+      id
+    })
 
     // This is responsible for port forwarding
     const proxy = await DeploymentPodProxy({
       store,
       id,
+      label: "daml=<name>-daml-rpc"
     })
 
     // We need to get all pods here
@@ -247,9 +246,13 @@ const DamlRPC = ({
     localFilepath,
   } = {}) => {
 
-    console.log(`********************************************`)
-    console.log(`***          Upload Archives             ***`)
-    console.log(`********************************************`)
+    pino.info({
+      action:"uploadArchive",
+      id,
+      name,
+      size,
+      localFilepath
+    })
 
     const content = fs.readFileSync(localFilepath);
     const contentBase64 = content.toString('base64');
@@ -258,6 +261,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
+      label: "daml=<name>-daml-rpc"
     })
 
     // We need to get all pods here

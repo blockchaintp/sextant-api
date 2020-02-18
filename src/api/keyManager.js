@@ -14,11 +14,11 @@ const KeyManager = ({
   }
 
   /*
-  
+
     get the list of keys from the key managers
 
     params:
-    
+
   */
   const getKeys = async ({
     id,
@@ -27,7 +27,8 @@ const KeyManager = ({
 
     const proxy = await DeploymentPodProxy({
       store,
-      id
+      id,
+      label: "daml=<name>-daml-rpc"
     })
 
     const pods = await proxy.getPods()
@@ -63,7 +64,7 @@ const KeyManager = ({
     var combinedResult = results.reduce((accumulator,currentItem) => {
       return accumulator.concat(currentItem)
     })
-    
+
     database.keyManagerKeys = [{
       publicKey: sextantPublicKey,
       name: 'sextant',
@@ -73,14 +74,14 @@ const KeyManager = ({
   }
 
   /*
-  
+
     add a remote key for a deployment
 
     params:
 
      * id
      * key
-    
+
   */
   const rotateRPCKey = async ({
     publicKey,

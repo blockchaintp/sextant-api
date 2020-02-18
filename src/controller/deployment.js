@@ -31,7 +31,7 @@ const {
 } = config
 
 const DeployentController = ({ store, settings }) => {
-  
+
   const keyManager = KeyManager({
     store,
   })
@@ -41,7 +41,7 @@ const DeployentController = ({ store, settings }) => {
   const settingsTP = SettingsTP()
 
   /*
-  
+
     list deployments
 
     params:
@@ -86,18 +86,18 @@ const DeployentController = ({ store, settings }) => {
     }
     else {
       return filteredDeployments
-    }    
+    }
   }
 
   /*
-  
+
     get a deployment
 
     params:
 
      * id
      * withTask - should we load the latest task into the result
-    
+
   */
   const get = async ({
     id,
@@ -115,7 +115,7 @@ const DeployentController = ({ store, settings }) => {
       const task = await store.task.mostRecentForResource({
         deployment: id,
       })
-  
+
       deployment.task = task
     }
 
@@ -123,7 +123,7 @@ const DeployentController = ({ store, settings }) => {
   }
 
   /*
-  
+
     load the most recent task for each cluster so the frontend can display
     the task status of clusters in the table
 
@@ -133,7 +133,7 @@ const DeployentController = ({ store, settings }) => {
     params:
 
      * clusters
-    
+
   */
   const loadAdditionalDeploymentData = ({
     deployments,
@@ -168,7 +168,7 @@ const DeployentController = ({ store, settings }) => {
   }
 
   /*
-  
+
     create a new deployment
 
     params:
@@ -179,10 +179,10 @@ const DeployentController = ({ store, settings }) => {
        * name
        * deployment_type
        * desired_state
-    
+
     if the user is not an superuser - we create a write role for that
     deployment on this cluster
-    
+
   */
   const create = ({
     user,
@@ -267,7 +267,7 @@ const DeployentController = ({ store, settings }) => {
   })
 
   /*
-  
+
     update a deployment
 
     params:
@@ -278,7 +278,7 @@ const DeployentController = ({ store, settings }) => {
         * name
         * desired_state
         * maintenance_flag
-    
+
   */
   const update = ({
     id,
@@ -338,13 +338,13 @@ const DeployentController = ({ store, settings }) => {
 
 
   /*
-  
+
     get the roles for a given deployment
 
     params:
 
      * id
-    
+
   */
   const getRoles = async ({
     id,
@@ -375,7 +375,7 @@ const DeployentController = ({ store, settings }) => {
     * user
     * username
     * permission
-    
+
   */
   const createRole = ({
     id,
@@ -396,7 +396,7 @@ const DeployentController = ({ store, settings }) => {
 
     if(!userRecord) throw new Error(`no user found`)
     if(userRecord.permission == USER_TYPES.superuser) throw new Error(`cannot create role for superuser`)
-    
+
     const existingRoles = await store.role.listForResource({
       resource_type: 'deployment',
       resource_id: id,
@@ -424,7 +424,7 @@ const DeployentController = ({ store, settings }) => {
 
     * id
     * user
-    
+
   */
   const deleteRole = ({
     id,
@@ -447,13 +447,13 @@ const DeployentController = ({ store, settings }) => {
   })
 
   /*
-  
+
     get the tasks for a given deployment
 
     params:
 
      * id
-    
+
   */
   const getTasks = ({
     id,
@@ -467,14 +467,14 @@ const DeployentController = ({ store, settings }) => {
 
 
   /*
-  
+
     delete a deployment
 
     params:
 
-     * user - the user that is deleting the deployment  
+     * user - the user that is deleting the deployment
      * id
-    
+
   */
   const del = ({
     user,
@@ -482,7 +482,7 @@ const DeployentController = ({ store, settings }) => {
   }) => store.transaction(async trx => {
 
     if(!user) throw new Error(`user required for controllers.deployment.delete`)
-    if(!id) throw new Error(`id must be given to controller.deployment.delete`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.delete`)
 
     // check there are no active tasks for this cluster
     const activeTasks = await store.task.activeForResource({
@@ -512,15 +512,15 @@ const DeployentController = ({ store, settings }) => {
 
 
   /*
-  
+
     delete a deployment - i.e. actually delete it from disk
     a deployment *must* be in the `deleted` state to do this
 
     params:
 
-     * user - the user that is deleting the deployment  
+     * user - the user that is deleting the deployment
      * id
-    
+
   */
   const deletePermenantly = ({
     user,
@@ -528,7 +528,7 @@ const DeployentController = ({ store, settings }) => {
   }) => store.transaction(async trx => {
 
     if(!user) throw new Error(`user required for controllers.deployment.delete`)
-    if(!id) throw new Error(`id must be given to controller.deployment.delete`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.delete`)
 
     // check there are no active tasks for this cluster
     const activeTasks = await store.task.activeForResource({
@@ -560,7 +560,7 @@ const DeployentController = ({ store, settings }) => {
   })
 
   /*
-  
+
     get a collection of kubernetes resources for this deployment
 
      * pods
@@ -570,12 +570,12 @@ const DeployentController = ({ store, settings }) => {
     params:
 
      * id - the deployment id
-  
+
   */
   const resources = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.resources`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.resources`)
 
     const deployment = await store.deployment.get({
       id,
@@ -622,18 +622,18 @@ const DeployentController = ({ store, settings }) => {
   }
 
   /*
-  
+
     get a summary of the deployment state
 
     params:
 
      * id - the deployment id
-  
+
   */
   const summary = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.summary`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.summary`)
 
     const deployment = await store.deployment.get({
       id,
@@ -717,13 +717,14 @@ const DeployentController = ({ store, settings }) => {
     publicKey,
   }) => {
 
-    if(!id) throw new Error(`id must be given to controller.deployment.registerParticipant`) 
-    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.registerParticipant`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.registerParticipant`)
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.registerParticipant`)
 
     // Connection to DAML sawtooth rpc via GRPC.
     const proxy = await DeploymentPodProxy({
       store,
       id,
+      label: "daml=<name>-daml-rpc"
     })
 
     const pods = await proxy.getPods()
@@ -749,8 +750,8 @@ const DeployentController = ({ store, settings }) => {
     id,
     publicKey,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.rotateParticipantKey`) 
-    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.rotateParticipantKey`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.rotateParticipantKey`)
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.rotateParticipantKey`)
 
     const newKey = await keyManager.rotateRPCKey({
       publicKey,
@@ -769,9 +770,9 @@ const DeployentController = ({ store, settings }) => {
     publicKey,
     partyName,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.addParty`) 
-    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.addParty`) 
-    if(!partyName) throw new Error(`partyName must be given to controller.deployment.addParty`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.addParty`)
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.addParty`)
+    if(!partyName) throw new Error(`partyName must be given to controller.deployment.addParty`)
 
     await damlRPC.addParty({
       id,
@@ -787,9 +788,9 @@ const DeployentController = ({ store, settings }) => {
     publicKey,
     partyNames,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.removeParties`) 
-    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.removeParties`) 
-    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.removeParties`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.removeParties`)
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.removeParties`)
+    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.removeParties`)
 
     await damlRPC.removeParties({
       publicKey,
@@ -804,9 +805,9 @@ const DeployentController = ({ store, settings }) => {
     publicKey,
     partyNames,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.generatePartyToken`) 
-    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.generatePartyToken`) 
-    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.generatePartyToken`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.generatePartyToken`)
+    if(!publicKey) throw new Error(`publicKey must be given to controller.deployment.generatePartyToken`)
+    if(!partyNames) throw new Error(`partyNames must be given to controller.deployment.generatePartyToken`)
 
     const token = await damlRPC.generatePartyToken({
       publicKey,
@@ -832,10 +833,10 @@ const DeployentController = ({ store, settings }) => {
     size,
     localFilepath,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.deployment.uploadArchive`) 
-    if(!name) throw new Error(`name must be given to controller.deployment.uploadArchive`) 
-    if(!size) throw new Error(`size must be given to controller.deployment.uploadArchive`) 
-    if(!localFilepath) throw new Error(`localFilepath must be given to controller.deployment.uploadArchive`) 
+    if(!id) throw new Error(`id must be given to controller.deployment.uploadArchive`)
+    if(!name) throw new Error(`name must be given to controller.deployment.uploadArchive`)
+    if(!size) throw new Error(`size must be given to controller.deployment.uploadArchive`)
+    if(!localFilepath) throw new Error(`localFilepath must be given to controller.deployment.uploadArchive`)
 
     const data = await damlRPC.uploadArchive({
       id,
@@ -881,7 +882,7 @@ const DeployentController = ({ store, settings }) => {
 
     getArchives,
     uploadArchive,
-    
+
     getTimeServiceInfo,
   }
 
