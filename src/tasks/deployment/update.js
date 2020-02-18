@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')
@@ -111,7 +117,14 @@ const DeploymentUpdate = ({
     charts.forEach(
       yield (chartFile) => {
         let safeFileName = makeSafeFileName(chartFile)
-        console.log(`Applying chart ${chartsFolder}/${chartFile} to ns ${appliedNamespace} with name ${appliedNetworkName}-${safeFileName}`)
+        pino.info({
+          action:"Applying chart",
+         chartFolder,
+         chartFile,
+         namespace,
+         networkName,
+         safeFileName
+        })
         clusterKubectl.helmCommand(`-n ${appliedNamespace} install ${appliedNetworkName}-${safeFileName} ${chartsFolder}/${chartFile} || true`)
     })
   }
