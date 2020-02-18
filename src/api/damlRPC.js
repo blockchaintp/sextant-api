@@ -25,6 +25,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
+      label: 'daml=<name>-daml-rpc'
     })
 
     const pods = await proxy.getPods()
@@ -57,7 +58,7 @@ const DamlRPC = ({
       })
       return result
     })
-    
+
     const participantKeys = database.keyManagerKeys
     const updatedDetails = participantDetails.map( (pD) => {
       const filteredKeys = participantKeys.filter( (pK) => {
@@ -141,13 +142,13 @@ const DamlRPC = ({
       })
       return result
     })
-    
+
     if (results.length > 0) {
       return true
     } else {
       return false
     }
-    
+
   }
 
   // Removal of parties not allowed
@@ -200,13 +201,13 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     const extractModuleNames = (payload) => {
-      return payload.getDamlLf1().getModulesList().map(a => 
+      return payload.getDamlLf1().getModulesList().map(a =>
           a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`)
       );
     }
 
     // Extract archive information from one pod only
-    // This is regardless of all validator pods 
+    // This is regardless of all validator pods
     // reaching consensus
     const result = await proxy.request({
       pod: pods[0].metadata.name,
@@ -245,7 +246,7 @@ const DamlRPC = ({
     size,
     localFilepath,
   } = {}) => {
-    
+
     console.log(`********************************************`)
     console.log(`***          Upload Archives             ***`)
     console.log(`********************************************`)

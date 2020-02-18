@@ -7,15 +7,18 @@ metadata:
   namespace: {{.deployment.namespace}}
   labels:
     app: {{.deployment.name}}-validator
+    daml: {{.deployment.name}}-daml-rpc
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: {{.deployment.name}}-validator
+      daml: {{.deployment.name}}-daml-rpc
   template:
     metadata:
       labels:
         app: {{.deployment.name}}-validator
+        daml: {{.deployment.name}}-daml-rpc
     spec:
       serviceAccountName: {{.deployment.name}}-sa
       {{ if .imagePullSecrets.enabled }}

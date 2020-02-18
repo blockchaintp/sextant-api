@@ -7,15 +7,18 @@ metadata:
   namespace: {{.sawtooth.namespace}}
   labels:
     app: {{.sawtooth.networkName}}-daml-rpc
+    daml: {{.sawtooth.networkName}}-daml-rpc
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: {{.sawtooth.networkName}}-daml-rpc
+      daml: {{.sawtooth.networkName}}-daml-rpc
   template:
     metadata:
       labels:
         app: {{.sawtooth.networkName}}-daml-rpc
+        daml: {{.sawtooth.networkName}}-daml-rpc
     spec:
       serviceAccountName: {{.sawtooth.networkName}}-sa
       {{ if .imagePullSecrets.enabled }}
@@ -85,5 +88,5 @@ spec:
           hostPath:
             type: DirectoryOrCreate
             path: {{.sawtooth.volumes.hostPathBaseDir}}/{{.sawtooth.namespace}}/{{.sawtooth.networkName}}/sawtooth-etc
-      
+
 ---
