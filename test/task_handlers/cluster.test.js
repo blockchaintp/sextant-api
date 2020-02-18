@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const Promise = require('bluebird')
@@ -48,7 +54,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster task_handlers -> create cluster', async (t) => {
-  
+
     const store = Store(getConnection())
 
     const handlers = Tasks({
@@ -83,7 +89,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster task_handlers -> create cluster error', async (t) => {
-  
+
     const handlers = {
       [TASK_ACTION['cluster.create']]: function* errorClusterCreate(params) {
         throw new Error('test')
@@ -112,7 +118,7 @@ database.testSuiteWithDatabase(getConnection => {
       withTask: true,
     })
 
-    
+
     t.equal(updatedCluster.status, CLUSTER_STATUS.error, `the cluster status is error`)
     t.equal(updatedCluster.task.error, `Error: test`, `the task error message is correct`)
 
@@ -121,7 +127,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   /*
   asyncTest('cluster controller -> update cluster', async (t) => {
-  
+
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
     const testUser = userMap[USER_TYPES.admin]
@@ -171,11 +177,11 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster controller -> delete cluster', async (t) => {
-  
+
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
     const testUser = userMap[USER_TYPES.admin]
-    
+
     async.series([
 
       next => taskProcessor.start(next),
@@ -205,5 +211,5 @@ database.testSuiteWithDatabase(getConnection => {
 
   })
 */
-  
+
 })

@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const Promise = require('bluebird')
 
 const ClusterKubectl = require('../../utils/clusterKubectl')
@@ -37,14 +43,14 @@ const ClusterCreate = ({
 
   // test we can connect to the remote cluster with the details provided
   yield clusterKubectl.jsonCommand('get ns')
-  
+
   yield saveAppliedState({
     id,
     store,
     trx,
   })
 
-  
+
 }
 
 module.exports = ClusterCreate

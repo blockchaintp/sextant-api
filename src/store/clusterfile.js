@@ -1,10 +1,16 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 const base64 = require('../utils/base64')
 
 const ClusterFileStore = (knex) => {
 
   /*
-  
+
     list all files for a single cluster
 
     params:
@@ -26,16 +32,16 @@ const ClusterFileStore = (knex) => {
       })
       .orderBy(orderBy.field, orderBy.direction)
   }
-  
+
   /*
-  
+
     get a single file for a single cluster
 
     params:
 
       * cluster
       * id or name
-    
+
   */
   const get = ({
     cluster,
@@ -59,7 +65,7 @@ const ClusterFileStore = (knex) => {
   }
 
   /*
-  
+
     insert a new clusterfile
 
     params:
@@ -69,7 +75,7 @@ const ClusterFileStore = (knex) => {
         * name
         * rawData
         * base64Data
-    
+
   */
   const create = ({
     data: {
@@ -96,7 +102,7 @@ const ClusterFileStore = (knex) => {
   }
 
   /*
-  
+
     update a clusterfile
 
     params:
@@ -105,7 +111,7 @@ const ClusterFileStore = (knex) => {
       * id or name
       * data
         * rawData
-    
+
   */
   const update = ({
     cluster,
@@ -138,7 +144,7 @@ const ClusterFileStore = (knex) => {
   }
 
   /*
-  
+
     delete a single clusterfile
 
     params:
@@ -161,7 +167,7 @@ const ClusterFileStore = (knex) => {
 
     if(id) queryParams.id = id
     if(name) queryParams.name = name
-    
+
     return (trx || knex)(config.TABLES.clusterfile)
       .where(queryParams)
       .del()
@@ -170,7 +176,7 @@ const ClusterFileStore = (knex) => {
   }
 
   /*
-  
+
     delete all files for a cluster
 
     params:

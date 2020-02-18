@@ -1,7 +1,13 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   wrap kubetpl to generate yaml text
-  
+
 */
 
 const fs = require('fs')

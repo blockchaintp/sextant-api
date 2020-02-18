@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const database = require('./database')
 const ledger = require('@digitalasset/daml-ledger')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')

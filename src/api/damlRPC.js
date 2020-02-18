@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const jwt = require('jsonwebtoken')
 const settings = require('../settings')
 const database = require('./database')

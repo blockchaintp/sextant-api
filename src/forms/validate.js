@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const yup = require('yup')
 const dotty = require('dotty')
 const bluebird = require('bluebird')
@@ -57,12 +63,12 @@ const validateHandlers = {
 }
 
 /*
-    
+
   loop over each of the method args and apply them in a chain
 
   return a flat object with dot notation fields
 
-  e.g. 
+  e.g.
 
   {
     type: 'string',
@@ -184,7 +190,7 @@ const validate = ({
   return validateSchema
     .validate(data)
     .catch(err => {
-      const errorString = 
+      const errorString =
         `${err.path} ${err.toString()}`
           .toLowerCase()
           .replace('validationerror', 'validation error')

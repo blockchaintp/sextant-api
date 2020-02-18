@@ -1,7 +1,13 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   used to tell you if a user can do a certain thing
-  
+
   actions are objects with the following fields:
 
     * type - the resource type we are performing an action on
@@ -17,7 +23,7 @@
       * delete
 
     * resource_id - the resource id we require a role for
-      
+
   superuser users are automatically allowed access to all methods
 
   METHOD CONFIG
@@ -29,7 +35,7 @@
       * a logged in user is automatically required
       * an superuser user is automatically allowed
     * if the method config is a function it looks after it's own case
-      
+
   here are the meanings of the various config values for each method:
 
     * superuser
@@ -37,16 +43,16 @@
     * minimumUserType
         * the user permission must be at least the given level
     * minimumResourcePermission
-        * use the role_resource_type and role_resource_id to check the user 
+        * use the role_resource_type and role_resource_id to check the user
           has at least the given level for the resource
-        * required a role_resource_id in the action 
+        * required a role_resource_id in the action
     * resourcePermissionForType
         * ensure the role_resource_type being asked for is the given type
         * used when we are performing an action for a resource that needs a certain
           role for another type - for example when creating deployments for a cluster
           we need to check for a write role on the cluster even though the action.type is deployment
 
-  -------- >>>> See /sextant-api/docs/rbac.md for a table documenting expected behavior - any changes made to RBAC should be reflected in rbac.md as well. 
+  -------- >>>> See /sextant-api/docs/rbac.md for a table documenting expected behavior - any changes made to RBAC should be reflected in rbac.md as well.
 
 */
 
@@ -78,7 +84,7 @@ const HELPERS = {
 
     // admin gets access if configured
     if (user && userUtils.isAdminuser(user) && opts.allowAdmin) return true
-  
+
     // if the user is getting it's own data - allow
     if(action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
     else return false
@@ -173,7 +179,7 @@ const METHOD_CONFIG = {
   }
 }
 
-const RBAC = async (store, user, action) => {  
+const RBAC = async (store, user, action) => {
   const {
     resource_type,
     resource_id,
@@ -208,13 +214,13 @@ const RBAC = async (store, user, action) => {
 
     // require at least X user permission - deny
     if(methodConfig.minimumUserType && !userUtils.hasMinimumUserType(user, methodConfig.minimumUserType)) return false
-      
+
     // require a resource role with the given permission
     if(methodConfig.minimumResourcePermission) {
 
       // if the method config is asking for another type of resource type use it - otherwise default to the action type
       const resourceType = methodConfig.resourcePermissionForType || resource_type
-      
+
       // if the resourceType is cluster, use the cluster_id for the resourceId
       let resourceId = resource_id
       if (methodConfig.resourcePermissionForType === 'cluster') {resourceId = cluster_id}
@@ -227,10 +233,10 @@ const RBAC = async (store, user, action) => {
         resource_type: resourceType,
         resource_id: resourceId
       }
-      
+
       // load the role and check it
       const role = await store.role.get(roleQuery)
-      
+
       // if there is no role we can't grant access
       if(!role) return false
 

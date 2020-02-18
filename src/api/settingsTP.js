@@ -1,29 +1,35 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const database = require('./database')
 
 const SettingsTP = () => {
 
   /*
-  
+
     get the local validator keys for a deployment
 
     params:
 
      * id
-    
+
   */
   const getEnrolledKeys = async ({} = {}) => {
     return database.sawtoothEnrolledKeys
   }
 
   /*
-  
+
     add a remote key for a deployment
 
     params:
 
      * id
      * key
-    
+
   */
   const addEnrolledKey = async ({
     publicKey,

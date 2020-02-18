@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const random = require('../utils/random')
 const secp256k1 = require('../utils/secp256k1')
 

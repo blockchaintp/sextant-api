@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const Kubectl = require('./kubectl')
 
 // return a kubectl instance that is bound to a certain cluster via it's
@@ -9,7 +15,7 @@ const getKubectl = (store, clustername, done) => {
 }
 
 /*
-  
+
   extract the cluster secrets from the desired state
   this is so we never save secrets inside of tasks or cluster records
   they are only saved in the clustersecret store (which can be replaced later)

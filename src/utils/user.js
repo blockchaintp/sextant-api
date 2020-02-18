@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const randomstring = require('randomstring')
@@ -50,7 +56,7 @@ const getToken = (id, server_side_key, secret) => {
       resolve(result)
     })
   })
-  
+
 }
 
 const decodeToken = (token, secret) => new Promise((resolve, reject) => {

@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const Promise = require('bluebird')
@@ -26,7 +32,7 @@ database.testSuiteWithDatabase(getConnection => {
     const users = await fixtures.insertTestUsers(getConnection())
     userMap = users
     testUser = users[USER_TYPES.admin]
-  
+
   })
 
   asyncTest('role store -> list with no user', async (t) => {
@@ -43,7 +49,7 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('role store -> list no data', async (t) => {
 
     const store = RoleStore(getConnection())
-  
+
     const roles = await store.listForUser({
       user: testUser.id,
     })
@@ -95,11 +101,11 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('role store -> list for user', async (t) => {
-  
+
     const store = RoleStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length
-  
+
     const roles = await store.listForUser({
       user: testUser.id,
     })
@@ -114,11 +120,11 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('role store -> list for resource', async (t) => {
-  
+
     const store = RoleStore(getConnection())
 
     const role = fixtures.SIMPLE_ROLE_DATA[0]
-  
+
     const roles = await store.listForResource({
       resource_type: role.resource_type,
       resource_id: role.resource_id,
@@ -127,7 +133,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('role store -> get with missing values', async (t) => {
-  
+
     const store = RoleStore(getConnection())
 
     const baseObject = {
@@ -146,11 +152,11 @@ database.testSuiteWithDatabase(getConnection => {
         error = err
       }
       t.ok(error, `there was an error for missing field: ${field}`)
-    })  
+    })
   })
 
   asyncTest('role store -> get for cluster', async (t) => {
-  
+
     const store = RoleStore(getConnection())
 
     const role = await store.get({
@@ -158,11 +164,11 @@ database.testSuiteWithDatabase(getConnection => {
       resource_type: RESOURCE_TYPES.cluster,
       resource_id: 10,
     })
-    t.deepEqual(role, roleMap.cluster, `the loaded cluster role is correct`)  
+    t.deepEqual(role, roleMap.cluster, `the loaded cluster role is correct`)
   })
 
   asyncTest('role store -> get for deployment', async (t) => {
-  
+
     const store = RoleStore(getConnection())
 
     const role = await store.get({
@@ -174,7 +180,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('role store -> delete', async (t) => {
-  
+
     const store = RoleStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length - 1

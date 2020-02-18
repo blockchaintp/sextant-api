@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 // save the desired_state to applied_state
 // this should be the last step of a task
 const SaveAppliedState = async ({
@@ -15,7 +21,7 @@ const SaveAppliedState = async ({
     data: {
       applied_state: deployment.desired_state,
     },
-  }, trx)  
+  }, trx)
 }
 
 module.exports = SaveAppliedState

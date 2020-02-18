@@ -1,9 +1,15 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 
 const DeploymentStore = (knex) => {
 
   /*
-  
+
     list all deployments for a cluster
 
     params:
@@ -16,7 +22,7 @@ const DeploymentStore = (knex) => {
     deleted,
   }, trx) => {
     if(!cluster) throw new Error(`cluster must be given to store.deployment.list`)
-    
+
     const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.deployment)
 
@@ -25,7 +31,7 @@ const DeploymentStore = (knex) => {
         cluster,
       })
     }
-     
+
     sqlQuery.orderBy('status', 'desc').orderBy('cluster', 'asc').orderBy('name', 'asc')
 
     if(!deleted) {
@@ -38,7 +44,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     get a single deployment
 
     params:
@@ -60,7 +66,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     insert a new deployment
 
     params:
@@ -70,7 +76,7 @@ const DeploymentStore = (knex) => {
         * deployment_type
         * name
         * desired_state
-    
+
     status is set to 'created' for a new deployment
 
   */
@@ -104,7 +110,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     update a deployment
 
     params:
@@ -116,7 +122,7 @@ const DeploymentStore = (knex) => {
         * desired_state
         * applied_state
         * maintenance_flag
-  
+
   */
   const update = ({
     id,
@@ -134,7 +140,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     delete a single deployment
 
     params:

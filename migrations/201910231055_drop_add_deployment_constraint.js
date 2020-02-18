@@ -1,4 +1,10 @@
 
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const up = (knex, Promise) => {
   return Promise.all([
     knex.schema.table('deployment', (table) => {

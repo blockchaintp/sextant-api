@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 const base64 = require('../utils/base64')
 
@@ -11,7 +17,7 @@ const base64 = require('../utils/base64')
 const ClusterSecretStore = (knex) => {
 
   /*
-  
+
     list all secrets for a single cluster
 
     params:
@@ -33,16 +39,16 @@ const ClusterSecretStore = (knex) => {
       })
       .orderBy(orderBy.field, orderBy.direction)
   }
-  
+
   /*
-  
+
     get a single secret for a single cluster
 
     params:
 
       * cluster
       * id or name
-    
+
   */
   const get = ({
     cluster,
@@ -66,7 +72,7 @@ const ClusterSecretStore = (knex) => {
   }
 
   /*
-  
+
     insert a new clustersecret
 
     params:
@@ -75,7 +81,7 @@ const ClusterSecretStore = (knex) => {
         * cluster
         * name
         * rawData || base64Data
-    
+
   */
   const create = ({
     data: {
@@ -102,7 +108,7 @@ const ClusterSecretStore = (knex) => {
   }
 
   /*
-  
+
     update a clustersecret
 
     params:
@@ -111,7 +117,7 @@ const ClusterSecretStore = (knex) => {
       * id or name
       * data
         * rawData || base64Data
-  
+
   */
   const update = ({
     cluster,
@@ -144,7 +150,7 @@ const ClusterSecretStore = (knex) => {
   }
 
   /*
-  
+
     delete a single clustersecret
 
     params:
@@ -167,7 +173,7 @@ const ClusterSecretStore = (knex) => {
 
     if(id) queryParams.id = id
     if(name) queryParams.name = name
-    
+
     return (trx || knex)(config.TABLES.clustersecret)
       .where(queryParams)
       .del()
@@ -176,7 +182,7 @@ const ClusterSecretStore = (knex) => {
   }
 
   /*
-  
+
     replace a single clustersecret
 
     i.e. one of create or update
@@ -187,7 +193,7 @@ const ClusterSecretStore = (knex) => {
         * cluster
         * name
         * rawData || base64Data
-    
+
   */
   const replace = async ({
     data: {
@@ -214,7 +220,7 @@ const ClusterSecretStore = (knex) => {
   }
 
   /*
-  
+
     delete all secrets for a cluster
 
     params:

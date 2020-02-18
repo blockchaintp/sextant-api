@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const version_1_1_form = require('./1.1/form')
 const version_1_1_summary = require('./1.1/summary')
 

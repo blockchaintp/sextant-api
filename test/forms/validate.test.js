@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const asyncTest = require('../asyncTest')
@@ -39,7 +45,7 @@ const forms = {
       type: 'string',
       methods: [
         [
-          'matches', 
+          'matches',
           ['^-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----$', 's'],
           'Must be a valid certificate'
         ]
@@ -49,7 +55,7 @@ const forms = {
 }
 
 asyncTest('test basic validation fails', async (t) => {
-  
+
   let error = null
 
   try {
@@ -87,7 +93,7 @@ asyncTest('test validator without required - no value', async (t) => {
 })
 
 asyncTest('test validator without required - bad value', async (t) => {
-  
+
   let error = null
 
   try {

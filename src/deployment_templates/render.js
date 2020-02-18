@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const fs = require('fs')
 const path = require('path')
 const Promise = require('bluebird')
@@ -113,13 +119,13 @@ const getTemplateData = async ({
         args: tp.args.split(' '),
         }
       })
-    
+
     initialData.sawtooth.customTPs = formatedCustomTPs
   }
   const formatedData = initialData
-  
+
   return formatedData
-  
+
 }
 
 /*
@@ -148,10 +154,10 @@ const writeTemplateValues = async ({
     desired_state,
   })
   let mergedYamlData
-  
+
   // parse string into yaml object
   const customYaml = yaml.safeLoad(custom_yaml)
-  
+
   if (customYaml) {
     // merge yaml from the form input with custom yaml input
     mergedYamlData = merge(templateData, customYaml, { arrayMerge: overwriteMerge })

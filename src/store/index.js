@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const UserStore = require('./user')
 const RoleStore = require('./role')
 const ClusterStore = require('./cluster')

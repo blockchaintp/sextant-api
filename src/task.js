@@ -1,4 +1,10 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   looks after looping over each step in a generator function
   checking to see if the task has been cancelled before calling
@@ -23,7 +29,7 @@ const Task = ({
     cancel: () => task.cancelled = true,
     isCancelled: () => task.cancelled,
   })
-  
+
   // build a stack of generators so we can call inner generators from
   // the task and the stack will unwind
   const iterators = [generator(useParams)]

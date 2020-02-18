@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 const utils = require('../utils/user')
 
@@ -5,12 +11,12 @@ const userForms = require('../forms/user')
 const validate = require('../forms/validate')
 
 const UserController = ({ store, settings }) => {
-  
+
   if(!settings) throw new Error(`settings required for user controller`)
   if(!settings.tokenSecret) throw new Error(`settings.tokenSecret required for user controller`)
-  
+
   /*
-  
+
     count the number of users
 
     params:
@@ -22,11 +28,11 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     search current users - used for the role form
     only return the username because all users should be able to
     add other users
-  
+
   */
   const search = async ({
     search,
@@ -43,7 +49,7 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     list the current users
 
     params:
@@ -56,16 +62,16 @@ const UserController = ({ store, settings }) => {
   const list = (params) => store.user.list({})
 
   /*
-  
+
     get a user given the username or id
 
     params:
 
      * id
      * username
-    
+
     one of username of id must be given
-    
+
   */
   const get = ({
     id,
@@ -79,14 +85,14 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     check a user password
 
     params:
 
      * username - string
      * password - string
-    
+
   */
   const checkPassword = async ({
     username,
@@ -103,7 +109,7 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     add a new user
 
     params:
@@ -111,7 +117,7 @@ const UserController = ({ store, settings }) => {
      * username - string
      * password - string
      * permission - enumerations.USER_TYPES
-    
+
   */
   const create = async ({
     username,
@@ -149,7 +155,7 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     update a user
 
     params:
@@ -160,7 +166,7 @@ const UserController = ({ store, settings }) => {
         * password
         * permission
         * meta
-    
+
   */
   const update = async ({
     id,
@@ -189,17 +195,17 @@ const UserController = ({ store, settings }) => {
     return store.user.update({
       id,
       data,
-    })    
+    })
   }
 
   /*
-  
+
     get a users token
 
     params:
 
       * id
-    
+
   */
   const getToken = async ({
     id,
@@ -215,13 +221,13 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     get a users roles
 
     params:
 
       * id
-    
+
   */
   const getRoles = ({
     id,
@@ -235,13 +241,13 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     update a users token server_side_key
 
     params:
 
       * id
-    
+
   */
   const updateToken = async ({
     id,
@@ -262,13 +268,13 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     delete a user
 
     params:
 
      * id
-    
+
   */
   const del = ({
     id,

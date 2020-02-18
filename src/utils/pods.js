@@ -1,16 +1,22 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   utility function for the status of pods in a sawtooth network
 
   used for the deploy and undeploy steps to decide when pods are ready
-  
+
 */
 
 const Pods = (kubectl) => {
-  
+
   /*
-  
-    tells you if a single pod is ready based on the 
+
+    tells you if a single pod is ready based on the
     stats.containerStatuses[].ready fields
   */
   const isPodReady = (pod) => {
@@ -21,7 +27,7 @@ const Pods = (kubectl) => {
   }
 
   /*
-  
+
     check for the status of pods starting up
 
     returns one of:
@@ -31,7 +37,7 @@ const Pods = (kubectl) => {
      * running
 
     if any of the pods are failed - it will return that status
-    
+
   */
   const isDeployed = (done) => {
     kubectl.jsonCommand({
@@ -59,14 +65,14 @@ const Pods = (kubectl) => {
   }
 
   /*
-  
+
     check for the status of pods terminating
 
     returns one of:
 
      * terminating
      * terminated
-    
+
   */
   const isUndeployed = (done) => {
     kubectl.jsonCommand({

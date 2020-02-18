@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const Promise = require('bluebird')
 
 const config = require('../../config')
@@ -7,7 +13,7 @@ const {
 } = config
 
 const ClusterDelete = ({
-  
+
 }) => function* clusterCreateTask(params) {
 
   const {
@@ -26,7 +32,7 @@ const ClusterDelete = ({
 
   if(nonDeletedDeployments.length > 0) throw new Error(`all deployments for this cluster must be in deleted state`)
 
-  
+
 }
 
 module.exports = ClusterDelete

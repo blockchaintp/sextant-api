@@ -1,9 +1,15 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const ConfigController = require('./config')
 const UserController = require('./user')
 const ClusterController = require('./cluster')
 const DeploymentController = require('./deployment')
 
-const Controllers = ({ 
+const Controllers = ({
   store,
   settings,
 }) => {
@@ -27,7 +33,7 @@ const Controllers = ({
     store,
     settings,
   })
-  
+
   return {
     config,
     user,

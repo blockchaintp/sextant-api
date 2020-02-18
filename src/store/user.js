@@ -1,9 +1,15 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 
 const UserStore = (knex) => {
 
   /*
-  
+
     list all users
 
     params:
@@ -19,7 +25,7 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     get a single user
 
     params:
@@ -27,9 +33,9 @@ const UserStore = (knex) => {
       * id or username
 
       * transaction - used if present
-    
+
     one of id or username must be given
-  
+
   */
   const get = ({
     id,
@@ -40,7 +46,7 @@ const UserStore = (knex) => {
     const query = {}
     if(id) query.id = id
     if(username) query.username = username
-    
+
     return (trx || knex).select('*')
       .from(config.TABLES.user)
       .where(query)
@@ -48,7 +54,7 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     insert a new user
 
     params:
@@ -88,7 +94,7 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     update a user
 
     params:
@@ -99,9 +105,9 @@ const UserStore = (knex) => {
         * hashed_password
         * permission
         * meta
-    
+
     one of id or username must be given
-  
+
   */
   const update = ({
     id,
@@ -120,13 +126,13 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     delete a single user
 
     params:
 
       * id
-    
+
   */
   const del = ({
     id,

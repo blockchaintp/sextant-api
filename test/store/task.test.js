@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const database = require('../database')
@@ -85,7 +91,7 @@ database.testSuiteWithDatabase(getConnection => {
     t.equal(tasks[0].resource_type, RESOURCE_TYPES.cluster, `the resource_type is correct`)
     t.equal(tasks[0].resource_id, 10, `the resource_id is correct`)
   })
-  
+
   asyncTest('task store -> list by deployment', async (t) => {
 
     const store = TaskStore(getConnection())

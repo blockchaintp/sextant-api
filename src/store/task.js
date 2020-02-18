@@ -1,10 +1,16 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 const enumerations = require('../enumerations')
 
 const TaskStore = (knex) => {
 
   /*
-  
+
     list all tasks
 
     we can filter tasks based on the following params:
@@ -14,9 +20,9 @@ const TaskStore = (knex) => {
      * user - list all tasks started by a user
      * status - list all tasks that have the given status
      * limit - whether the limit the number of results
-    
+
     all the above are optional - if nothing is defined we list all tasks across the system
-  
+
   */
   const list = ({
     cluster,
@@ -80,7 +86,7 @@ const TaskStore = (knex) => {
 
 
   /*
-  
+
     get active tasks for either a specific resource
 
     params:
@@ -109,7 +115,7 @@ const TaskStore = (knex) => {
   }
 
   /*
-  
+
     load the most recent task for a given resource
 
     params:
@@ -136,7 +142,7 @@ const TaskStore = (knex) => {
 
 
   /*
-  
+
     get a single task
 
     params:
@@ -158,7 +164,7 @@ const TaskStore = (knex) => {
   }
 
   /*
-  
+
     insert a new task
 
     params:
@@ -171,7 +177,7 @@ const TaskStore = (knex) => {
         * restartable
         * payload
         * status
-    
+
   */
   const create = ({
     data: {
@@ -206,7 +212,7 @@ const TaskStore = (knex) => {
   }
 
   /*
-  
+
     update a task status
 
     params:
@@ -217,7 +223,7 @@ const TaskStore = (knex) => {
         * error
         * started_at
         * ended_at
-  
+
   */
   const update = ({
     id,
@@ -251,13 +257,13 @@ const TaskStore = (knex) => {
   }
 
   /*
-  
+
     delete tasks for a resource
 
     params:
 
      * id
-  
+
   */
   const deleteForResource = ({
     resource_type,

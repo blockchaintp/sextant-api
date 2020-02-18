@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const getBody = (raw) => raw.result || raw.rows || raw
@@ -60,7 +66,7 @@ const transaction = (knex, handler, done) => {
               })
           })
       }
-    })  
+    })
   }).catch((e) => {
     if(!callbackReached) {
       runDone(`error in transaction: ${e.toString()}`)

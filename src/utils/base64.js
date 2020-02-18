@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 // get encoded base64 string of given data
 const encode = (data) => Buffer.from(data).toString('base64')
 // get decoded buffer of base64 string

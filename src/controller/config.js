@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 const packageJSON = require('../../package.json')
 
@@ -14,7 +20,7 @@ const forms = {
 const ConfigBackend = () => {
 
   /*
-  
+
     return any values required by the frontend api
 
     params:

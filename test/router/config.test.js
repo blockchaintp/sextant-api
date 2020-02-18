@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -23,7 +29,7 @@ app.testSuiteWithApp(({
       t.equal(body.version, packageJSON.version, 'the version is correct')
       t.end()
     }))
-    
+
   })
 
 })

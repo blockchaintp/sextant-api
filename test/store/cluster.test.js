@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const database = require('../database')
@@ -22,10 +28,10 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('cluster store -> list no data', async (t) => {
 
     const store = ClusterStore(getConnection())
-  
+
     const clusters = await store.list({})
     t.equal(clusters.length, 0, `there were no clusters`)
-    
+
   })
 
   asyncTest('cluster store -> create with missing values', async (t) => {
@@ -42,9 +48,9 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster store -> create with bad provision_type', async (t) => {
-  
+
     const store = ClusterStore(getConnection())
-  
+
     let error = null
 
     try {
@@ -70,7 +76,7 @@ database.testSuiteWithDatabase(getConnection => {
     const clusters = await fixtures.insertTestClusters(getConnection())
 
     testCluster = clusters[compareCluster.name]
-    
+
 
     t.deepEqual(testCluster.applied_state, {}, `the applied_state defaults to empty object`)
     t.deepEqual(testCluster.desired_state, compareCluster.desired_state, `the desired_state is correct`)
@@ -79,20 +85,20 @@ database.testSuiteWithDatabase(getConnection => {
     t.equal(testCluster.status, CLUSTER_STATUS_DEFAULT, `the state defaults to created`)
     t.equal(testCluster.maintenance_flag, false, `the maintenance_flag defaults to false`)
     clusterMap = clusters
-  
+
   })
 
   asyncTest('cluster store -> list with ordered data', async (t) => {
-  
+
     const store = ClusterStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
     const expectedOrder = fixtures.SIMPLE_CLUSTER_DATA.map(d => d.name)
-    
+
     expectedOrder.sort()
-  
+
     const clusters = await store.list({})
-    
+
     t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
     t.deepEqual(clusters.map(cluster => cluster.name), expectedOrder, 'the clusters were in the correct order')
   })
@@ -130,7 +136,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster store -> update', async (t) => {
-  
+
     const store = ClusterStore(getConnection())
 
     const insertedCluster = await store.update({
@@ -151,7 +157,7 @@ database.testSuiteWithDatabase(getConnection => {
 
   asyncTest('cluster store -> delete', async (t) => {
     const allClusterDataLength = fixtures.SIMPLE_CLUSTER_DATA.length + fixtures.GET_CLUSTER_DATA.length
-    
+
     const store = ClusterStore(getConnection())
 
     await store.delete({
@@ -168,12 +174,12 @@ database.testSuiteWithDatabase(getConnection => {
     const store = ClusterStore(getConnection())
 
     const expectedCount = allClusterDataLength
-  
+
     const clusters = await store.list({
       deleted: true,
     })
     t.equal(clusters.length, expectedCount, `there are ${expectedCount} clusters`)
-    
+
   })
 
 })

@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const Promise = require('bluebird')
@@ -50,7 +56,7 @@ const SIMPLE_CLUSTER_DATA = [{
   }
 }]
 
-// additional cluster data to test get route 
+// additional cluster data to test get route
 const GET_CLUSTER_DATA = [{
   name: 'joinedcluster',
   provision_type: CLUSTER_PROVISION_TYPE.remote,
@@ -142,7 +148,7 @@ const insertTestUsers = async (databaseConnection, data) => {
 const insertTestClusters = async (databaseConnection, data) => {
 
   data = data || SIMPLE_CLUSTER_DATA
-  
+
   const store = ClusterStore(databaseConnection)
 
   // map of cluster names onto database records
@@ -191,7 +197,7 @@ const insertTestDeployments = async (databaseConnection, cluster, data) => {
 const insertTestRoles = async (databaseConnection, user, data) => {
 
   data = data || SIMPLE_ROLE_DATA
-  
+
 
   const store = RoleStore(databaseConnection)
 
@@ -218,7 +224,7 @@ const insertTestRoles = async (databaseConnection, user, data) => {
 const insertTestTasks = async (databaseConnection, user, data) => {
 
   data = data || SIMPLE_TASK_DATA
-  
+
   const store = TaskStore(databaseConnection)
 
   // map of resource types onto database records

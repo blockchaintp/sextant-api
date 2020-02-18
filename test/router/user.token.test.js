@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -39,7 +45,7 @@ app.testSuiteWithApp(({
       USER_RECORD = body
       t.end()
     })
-    
+
   })
 
   tape('user token routes -> login', (t) => {
@@ -59,7 +65,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, 'result was ok')
       t.end()
     })
-    
+
   })
 
   tape('user token routes -> get', (t) => {
@@ -75,7 +81,7 @@ app.testSuiteWithApp(({
       t.equal(body.username, USER_DATA.username, `username correct`)
       t.end()
     })
-    
+
   })
 
   tape('user token routes -> (as admin) get token', (t) => {
@@ -92,7 +98,7 @@ app.testSuiteWithApp(({
       USER_TOKEN = body.token
       t.end()
     })
-    
+
   })
 
   tape('user token routes -> logout', (t) => {
@@ -108,7 +114,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, `ok was true`)
       t.end()
     })
-    
+
   })
 
   tape('user token routes -> list users with no token', (t) => {
@@ -122,7 +128,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     }))
-    
+
   })
 
   tape('user token routes -> list users with bad header', (t) => {
@@ -140,7 +146,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `Error: bad authorization header format`, `correct error`)
       t.end()
     }))
-    
+
   })
 
   tape('user token routes -> list users with extra header value', (t) => {
@@ -158,7 +164,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `Error: bad authorization header format`, `correct error`)
       t.end()
     }))
-    
+
   })
 
   tape('user token routes -> list users with bad token', (t) => {
@@ -176,7 +182,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `JsonWebTokenError: invalid signature`, `correct error`)
       t.end()
     }))
-    
+
   })
 
   tape('user token routes -> list users with token', (t) => {
@@ -194,7 +200,7 @@ app.testSuiteWithApp(({
       t.equal(body.length, 1, `correct number of users`)
       t.end()
     }))
-    
+
   })
 
   tape('user token routes -> get user status with token', (t) => {
@@ -212,7 +218,7 @@ app.testSuiteWithApp(({
       t.equal(body.username, USER_DATA.username, `username correct`)
       t.end()
     }))
-    
+
   })
 
 

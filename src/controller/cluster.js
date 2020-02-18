@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const Promise = require('bluebird')
 const async = require('async')
 const config = require('../config')
@@ -18,9 +24,9 @@ const {
 } = config
 
 const ClusterController = ({ store, settings }) => {
-  
+
   /*
-  
+
     list clusters
 
     params:
@@ -61,18 +67,18 @@ const ClusterController = ({ store, settings }) => {
     }
     else {
       return filteredClusters
-    }    
+    }
   }
 
   /*
-  
+
     get a cluster
 
     params:
 
      * id
      * withTask - should we load the latest task into the result
-    
+
   */
   const get = async ({
     id,
@@ -90,7 +96,7 @@ const ClusterController = ({ store, settings }) => {
       const task = await store.task.mostRecentForResource({
         cluster: id,
       })
-  
+
       cluster.task = task
     }
 
@@ -98,14 +104,14 @@ const ClusterController = ({ store, settings }) => {
   }
 
   /*
-  
+
     load the most recent task for each cluster so the frontend can display
     the task status of clusters in the table
 
     params:
 
      * clusters
-    
+
   */
   const loadMostRecentTasksForClusters = ({
     clusters,
@@ -117,12 +123,12 @@ const ClusterController = ({ store, settings }) => {
     cluster.task = task
     return cluster
   })
-    
 
-  
+
+
 
   /*
-  
+
     insert the cluster secrets into the store
     and update the cluster desired_state to point at their ids
 
@@ -131,7 +137,7 @@ const ClusterController = ({ store, settings }) => {
      * cluster
      * desired_state
      * secrets
-  
+
   */
   const createClusterSecrets = async ({
     cluster,
@@ -188,7 +194,7 @@ const ClusterController = ({ store, settings }) => {
   }
 
   /*
-  
+
     create a new cluster
 
     params:
@@ -199,10 +205,10 @@ const ClusterController = ({ store, settings }) => {
        * provision_type
        * desired_state
        * capabilities
-    
+
     if the user is not an superuser - we create a write role for that
     user on this cluster
-    
+
   */
   const create = ({
     user,
@@ -298,7 +304,7 @@ const ClusterController = ({ store, settings }) => {
   })
 
   /*
-  
+
     update a cluster
 
     params:
@@ -310,7 +316,7 @@ const ClusterController = ({ store, settings }) => {
         * provision_type
         * desired_state
         * maintenance_flag
-    
+
   */
   const update = ({
     id,
@@ -353,7 +359,7 @@ const ClusterController = ({ store, settings }) => {
       data: formData,
     })
 
-    
+
 
     // inject the processed desired state into the submission data
     if(formData.desired_state) {
@@ -381,7 +387,7 @@ const ClusterController = ({ store, settings }) => {
 
     // if there is an update to the desired state
     // trigger a task to update it
-    
+
     const task = await store.task.create({
       data: {
         user: user.id,
@@ -401,14 +407,14 @@ const ClusterController = ({ store, settings }) => {
   })
 
   /*
-  
+
     delete a cluster
 
     params:
 
-     * user - the user that is creating the cluster  
+     * user - the user that is creating the cluster
      * id
-    
+
   */
   const del = ({
     user,
@@ -416,7 +422,7 @@ const ClusterController = ({ store, settings }) => {
   }) => store.transaction(async trx => {
 
     if(!user) throw new Error(`user required for controllers.cluster.delete`)
-    if(!id) throw new Error(`id must be given to controller.cluster.delete`) 
+    if(!id) throw new Error(`id must be given to controller.cluster.delete`)
 
     // check there are no active tasks for this cluster
     const activeTasks = await store.task.activeForResource({
@@ -445,15 +451,15 @@ const ClusterController = ({ store, settings }) => {
   })
 
   /*
-  
+
     delete a cluster - i.e. actually delete it from disk
     a cluster *must* be in the `deleted` state to do this
 
     params:
 
-     * user - the user that is creating the cluster  
+     * user - the user that is creating the cluster
      * id
-    
+
   */
   const deletePermenantly = ({
     user,
@@ -461,7 +467,7 @@ const ClusterController = ({ store, settings }) => {
   }) => store.transaction(async trx => {
 
     if(!user) throw new Error(`user required for controllers.cluster.delete`)
-    if(!id) throw new Error(`id must be given to controller.cluster.delete`) 
+    if(!id) throw new Error(`id must be given to controller.cluster.delete`)
 
     // check there are no active tasks for this cluster
     const activeTasks = await store.task.activeForResource({
@@ -485,7 +491,7 @@ const ClusterController = ({ store, settings }) => {
     const nonDeletedDeployments = deployments.filter(deployment => deployment.status != DEPLOYMENT_STATUS.deleted)
 
     if(nonDeletedDeployments.length > 0) throw new Error(`all deployments for this cluster must be in deleted state to be deleted permenantly`)
-    
+
     // loop over each deployment and remove, tasks and roles and then the deployment
     await Promise.each(deployments, async deployment => {
       await store.task.deleteForResource({
@@ -518,13 +524,13 @@ const ClusterController = ({ store, settings }) => {
   })
 
   /*
-  
+
     get the roles for a given cluster
 
     params:
 
      * id
-    
+
   */
   const getRoles = async ({
     id,
@@ -546,7 +552,7 @@ const ClusterController = ({ store, settings }) => {
   }
 
   /*
-  
+
     create a role for a given cluster
 
     params:
@@ -555,7 +561,7 @@ const ClusterController = ({ store, settings }) => {
      * user
      * username
      * permission
-    
+
   */
   const createRole = ({
     id,
@@ -576,7 +582,7 @@ const ClusterController = ({ store, settings }) => {
 
     if(!userRecord) throw new Error(`no user found`)
     if(userRecord.permission == USER_TYPES.superuser) throw new Error(`cannot create role for superuser`)
-    
+
     const existingRoles = await store.role.listForResource({
       resource_type: 'cluster',
       resource_id: id,
@@ -597,14 +603,14 @@ const ClusterController = ({ store, settings }) => {
   })
 
   /*
-  
+
     delete a role for a given cluster
 
     params:
 
      * id
      * user
-    
+
   */
   const deleteRole = ({
     id,
@@ -627,13 +633,13 @@ const ClusterController = ({ store, settings }) => {
   })
 
   /*
-  
+
     get the tasks for a given cluster
 
     params:
 
      * id
-    
+
   */
   const getTasks = ({
     id,
@@ -646,7 +652,7 @@ const ClusterController = ({ store, settings }) => {
   }
 
   /*
-  
+
     get a collection of kubernetes resources for this cluster
 
      * nodes
@@ -654,12 +660,12 @@ const ClusterController = ({ store, settings }) => {
     params:
 
      * id - the cluster id
-  
+
   */
   const resources = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.cluster.resources`) 
+    if(!id) throw new Error(`id must be given to controller.cluster.resources`)
 
     const cluster = await store.cluster.get({
       id,
@@ -680,18 +686,18 @@ const ClusterController = ({ store, settings }) => {
   }
 
   /*
-  
+
     get a summary of the cluster state
 
     params:
 
      * id - the cluster id
-  
+
   */
   const summary = async ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.cluster.summary`) 
+    if(!id) throw new Error(`id must be given to controller.cluster.summary`)
 
     const cluster = await store.cluster.get({
       id,

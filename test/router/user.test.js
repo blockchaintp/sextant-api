@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -98,7 +104,7 @@ app.testSuiteWithApp(({
       t.equal(body, null, `there is no user data`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (not logged in) hasInitialUser', (t) => {
@@ -114,7 +120,7 @@ app.testSuiteWithApp(({
       t.equal(body, false, `there is no initial user`)
       t.end()
     })
-    
+
   })
 
   tape('user routes ->  (not logged in) logout', (t) => {
@@ -130,7 +136,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `not logged in`, `correct error message`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (not logged in) check routes are denied access', (t) => {
@@ -186,7 +192,7 @@ app.testSuiteWithApp(({
       t.notok(body.server_side_key, 'the server_side_key is not in the result')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (not logged in) hasInitialUser (with user)', (t) => {
@@ -202,7 +208,7 @@ app.testSuiteWithApp(({
       t.equal(body, true, `there is an initial user`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (not logged in) try creating a user now there is an existing user', (t) => {
@@ -219,7 +225,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, 'Error: access denied', 'correct error message')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (not logged in) login with bad details', (t) => {
@@ -239,7 +245,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, 'incorrect login details', 'correct error message')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) login', (t) => {
@@ -259,7 +265,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, 'result was ok')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) status', (t) => {
@@ -276,7 +282,7 @@ app.testSuiteWithApp(({
       USER_RECORDS.superuser = body
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) list', (t) => {
@@ -293,7 +299,7 @@ app.testSuiteWithApp(({
       t.equal(body[0].username, SUPER_USER.username, `username correct`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) get user', (t) => {
@@ -309,7 +315,7 @@ app.testSuiteWithApp(({
       t.equal(body.username, SUPER_USER.username, `username correct`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) try to update own permission', (t) => {
@@ -328,7 +334,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, 'cannot change own permission', 'correct error message')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) try to delete self', (t) => {
@@ -344,7 +350,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, 'cannot delete yourself', 'correct error message')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) update own password', (t) => {
@@ -364,10 +370,10 @@ app.testSuiteWithApp(({
       t.equal(res.statusCode, 200, `200 code`)
       t.equal(body.id, USER_RECORDS.superuser.id, `returned user id is correct`)
       t.equal(body.username, USER_RECORDS.superuser.username, `returned user id is correct`)
-      t.notok(body.hashed_password, `no hashed_password in response`)      
+      t.notok(body.hashed_password, `no hashed_password in response`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) logout', (t) => {
@@ -383,7 +389,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, `ok was true`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (not logged in) status', (t) => {
@@ -399,7 +405,7 @@ app.testSuiteWithApp(({
       t.equal(body, null, `there is no user data`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) login with new password', (t) => {
@@ -419,7 +425,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, 'result was ok')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) register read only user', (t) => {
@@ -438,7 +444,7 @@ app.testSuiteWithApp(({
       USER_RECORDS.normal = body
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) update with empty password', (t) => {
@@ -457,7 +463,7 @@ app.testSuiteWithApp(({
       t.equal(res.statusCode, 200, `200 code`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) allow update other user role', (t) => {
@@ -477,7 +483,7 @@ app.testSuiteWithApp(({
       t.equal(body.permission, USER_TYPES.admin, 'the user is updated with admin permission')
       t.end()
     })
-    
+
   })
 
   // reset previous user's permissions
@@ -514,7 +520,7 @@ app.testSuiteWithApp(({
       t.notok(body.server_side_key, 'there is no server_side_key in the reply')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) attempt to update other users token', (t) => {
@@ -530,7 +536,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) attempt to get other users token', (t) => {
@@ -546,13 +552,13 @@ app.testSuiteWithApp(({
       t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) update own token', (t) => {
 
     updateToken(t, USER_RECORDS.superuser.id)
-    
+
   })
 
   tape('user routes -> (as superuser) logout', (t) => {
@@ -568,7 +574,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, `ok was true`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as normal user) login', (t) => {
@@ -588,11 +594,11 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, 'result was ok')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as normal user) check route access', (t) => {
-    
+
     const routes = [{
       method: 'get',
       url: `${url}/user`,
@@ -657,7 +663,7 @@ app.testSuiteWithApp(({
       t.notok(body.server_side_key, `cannot see server_side_key for read user reading own record`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as normal user) update own record', (t) => {
@@ -687,7 +693,7 @@ app.testSuiteWithApp(({
         t.end()
       })
     })
-    
+
   })
 
   tape('user routes -> (as normal user) attempt to update server_side_key via update method', (t) => {
@@ -706,7 +712,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, 'cannot change server_side_key via update', `error message was correct`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as normal user) attempt to update other users token', (t) => {
@@ -722,7 +728,7 @@ app.testSuiteWithApp(({
       t.equal(body.error, `Error: access denied`, `correct error`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as normal user) update own token', (t) => {
@@ -742,7 +748,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, `ok was true`)
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) login', (t) => {
@@ -762,7 +768,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, 'result was ok')
       t.end()
     })
-    
+
   })
 
   tape('user routes -> (as superuser) delete user', (t) => {
@@ -822,7 +828,7 @@ app.testSuiteWithApp(({
       t.equal(body.ok, true, `ok was true`)
       t.end()
     })
-    
+
   })
 
 })

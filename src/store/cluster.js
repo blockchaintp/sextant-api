@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 
 const ClusterStore = (knex) => {
@@ -18,7 +24,7 @@ const ClusterStore = (knex) => {
     const sqlQuery = (trx || knex)(config.TABLES.cluster)
       .select(`${config.TABLES.cluster}.*`)
       .count(`${config.TABLES.deployment}.id as active_deployments`)
-      .leftOuterJoin(config.TABLES.deployment, function () { 
+      .leftOuterJoin(config.TABLES.deployment, function () {
         this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
       })
       .groupBy(`${config.TABLES.cluster}.id`)

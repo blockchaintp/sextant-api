@@ -1,10 +1,16 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const ClusterUpdate = ({
   testMode,
 }) => function* clusterUpdateTask(params) {
-  
+
   const {
     store,
     task,

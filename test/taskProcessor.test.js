@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -78,7 +84,7 @@ database.testSuiteWithDatabase(getConnection => {
     })
 
     await new Promise(resolve => taskProcessor.on('task.processed', resolve))
-    
+
     await taskProcessor.stop()
 
     return createdTask

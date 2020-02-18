@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const asyncTest = require('../asyncTest')
@@ -34,9 +40,9 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('user controller -> list no data', async (t) => {
 
     const controller = getController()
-    
+
     const users = await controller.list({})
-    t.equal(users.length, 0, `there were no users`)    
+    t.equal(users.length, 0, `there were no users`)
   })
 
   asyncTest('user controller -> count no data', async (t) => {
@@ -48,9 +54,9 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> create', async (t) => {
-  
+
     const controller = getController()
-  
+
     const user = await controller.create(TEST_USER)
     t.equal(user.username, TEST_USER.username)
 
@@ -61,8 +67,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     TEST_USER_RECORD = user
   })
-  
-  
+
+
   asyncTest('user controller -> check password (correct)', async (t) => {
 
     const controller = getController()
@@ -211,8 +217,8 @@ database.testSuiteWithDatabase(getConnection => {
       id: TEST_USER_RECORD.id,
     })
 
-    const count = await controller.count({})  
+    const count = await controller.count({})
     t.equal(count, 0, `there were no users`)
   })
-  
+
 })

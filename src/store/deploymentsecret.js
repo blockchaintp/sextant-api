@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 const base64 = require('../utils/base64')
 
@@ -11,7 +17,7 @@ const base64 = require('../utils/base64')
 const DeploymentSecretStore = (knex) => {
 
   /*
-  
+
     list all secrets for a single deployment
 
     params:
@@ -33,16 +39,16 @@ const DeploymentSecretStore = (knex) => {
       })
       .orderBy(orderBy.field, orderBy.direction)
   }
-  
+
   /*
-  
+
     get a single secret for a single deployment
 
     params:
 
       * deployment
       * id or name
-    
+
   */
   const get = ({
     deployment,
@@ -66,7 +72,7 @@ const DeploymentSecretStore = (knex) => {
   }
 
   /*
-  
+
     insert a new deploymentsecret
 
     params:
@@ -75,7 +81,7 @@ const DeploymentSecretStore = (knex) => {
         * deployment
         * name
         * rawData || base64Data
-    
+
   */
   const create = ({
     data: {
@@ -102,7 +108,7 @@ const DeploymentSecretStore = (knex) => {
   }
 
   /*
-  
+
     update a deploymentsecret
 
     params:
@@ -111,7 +117,7 @@ const DeploymentSecretStore = (knex) => {
       * id or name
       * data
         * rawData || base64Data
-  
+
   */
   const update = ({
     deployment,
@@ -144,7 +150,7 @@ const DeploymentSecretStore = (knex) => {
   }
 
   /*
-  
+
     delete a single deploymentsecret
 
     params:
@@ -167,7 +173,7 @@ const DeploymentSecretStore = (knex) => {
 
     if(id) queryParams.id = id
     if(name) queryParams.name = name
-    
+
     return (trx || knex)(config.TABLES.deploymentsecret)
       .where(queryParams)
       .del()
@@ -176,7 +182,7 @@ const DeploymentSecretStore = (knex) => {
   }
 
   /*
-  
+
     replace a single deploymentsecret
 
     i.e. one of create or update
@@ -187,7 +193,7 @@ const DeploymentSecretStore = (knex) => {
         * deployment
         * name
         * rawData || base64Data
-    
+
   */
   const replace = async ({
     data: {
@@ -214,7 +220,7 @@ const DeploymentSecretStore = (knex) => {
   }
 
   /*
-  
+
     delete all secrets for a deployment
 
     params:

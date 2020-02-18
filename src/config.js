@@ -1,4 +1,10 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   schema
 
@@ -158,7 +164,7 @@ const USER_ACCESS_LEVELS = {
   [USER_TYPES.user]: 1
 }
 
-// Maps to PERMISSION = PERMISSION_TYPES in rbac definition 
+// Maps to PERMISSION = PERMISSION_TYPES in rbac definition
 const PERMISSION_TYPES = {
   read: 'read',
   write: 'write',

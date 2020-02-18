@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const fs = require('fs')
 const Promise = require('bluebird')
 const tmp = require('tmp')
@@ -138,7 +144,7 @@ const DeploymentRoutes = (controllers) => {
         user: req.user,
       })
     }
-    
+
     res
       .status(200)
       .json(data)
@@ -282,7 +288,7 @@ const DeploymentRoutes = (controllers) => {
     } catch(e) {
       removeFile()
       throw e
-    }    
+    }
   }
 
   const getTimeServiceInfo = async (req, res, next) => {
@@ -323,7 +329,7 @@ const DeploymentRoutes = (controllers) => {
     uploadArchive,
 
     getTimeServiceInfo,
-    
+
   }
 }
 

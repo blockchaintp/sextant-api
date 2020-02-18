@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')

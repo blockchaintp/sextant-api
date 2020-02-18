@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const { createContext } = require('sawtooth-sdk/signing')
 const { Secp256k1PrivateKey } = require('sawtooth-sdk/signing/secp256k1')
 const context = createContext('secp256k1')

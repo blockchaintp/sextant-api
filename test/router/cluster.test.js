@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -24,13 +30,13 @@ const getClusterWithoutTask = (cluster) => {
 
 app.testSuiteWithAppTaskHandlers({
   [TASK_ACTION['cluster.create']]: function* (params) {
-    
+
   },
   [TASK_ACTION['cluster.update']]: function* (params) {
-    
+
   },
   [TASK_ACTION['cluster.delete']]: function* (params) {
-    
+
   }
 }, ({
   getConnection,
@@ -57,7 +63,7 @@ app.testSuiteWithAppTaskHandlers({
         url,
         t,
         user: userUtils.USERS[userKey],
-      }, 
+      },
       (next) => {
         tools.sessionRequest({
           t,
@@ -85,7 +91,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.user,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -112,7 +118,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.admin,
-    }, 
+    },
     (next) => {
 
       async.waterfall([
@@ -167,7 +173,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.admin,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -192,7 +198,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.admin,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -217,7 +223,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.superuser,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -249,7 +255,7 @@ app.testSuiteWithAppTaskHandlers({
           url,
           t,
           user: userUtils.USERS.admin,
-        }, 
+        },
         (next) => {
           tools.sessionRequest({
             t,
@@ -273,7 +279,7 @@ app.testSuiteWithAppTaskHandlers({
           url,
           t,
           user: userUtils.USERS.admin,
-        }, 
+        },
         (next) => {
           tools.sessionRequest({
             t,
@@ -300,7 +306,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.admin,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -329,7 +335,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.admin,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -358,7 +364,7 @@ app.testSuiteWithAppTaskHandlers({
           url,
           t,
           user: userUtils.USERS.admin,
-        }, 
+        },
         (next) => {
           tools.sessionRequest({
             t,
@@ -386,7 +392,7 @@ app.testSuiteWithAppTaskHandlers({
           url,
           t,
           user: userUtils.USERS.user,
-        }, 
+        },
         (next) => {
           tools.sessionRequest({
             t,
@@ -417,7 +423,7 @@ app.testSuiteWithAppTaskHandlers({
       url,
       t,
       user: userUtils.USERS.admin,
-    }, 
+    },
     (next) => {
       tools.sessionRequest({
         t,
@@ -447,7 +453,7 @@ app.testSuiteWithAppTaskHandlers({
           url,
           t,
           user: userUtils.USERS.admin,
-        }, 
+        },
         (next) => {
           tools.sessionRequest({
             t,
@@ -468,7 +474,7 @@ app.testSuiteWithAppTaskHandlers({
           url,
           t,
           user: userUtils.USERS.user,
-        }, 
+        },
         (next) => {
           tools.sessionRequest({
             t,

@@ -1,14 +1,20 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 // base user form that operates in the following modes:
 
 //  * initialUser
 //    * the accessLevel is fixed to 'superuser' and not editable
 //    * passwords are required
 //  * userAdd
-//    * used by superadmin to add users  
+//    * used by superadmin to add users
 //    * passwords are required
 //  * userEdit
-//    * used by superadmin to edit users 
-//    * passwords are optional - if left blank, existing details are used 
+//    * used by superadmin to edit users
+//    * passwords are optional - if left blank, existing details are used
 //  * userSelf
 //    * used by logged in user to change password
 //    * the accessLevel is not editable
@@ -195,7 +201,7 @@ const forms = {
       permissionDisabled: false,
       schema: schema.server,
       required: required.server.edit,
-    }), 
+    }),
   },
 }
 

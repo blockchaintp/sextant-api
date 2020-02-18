@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const database = require('../database')
@@ -30,24 +36,24 @@ database.testSuiteWithDatabase(getConnection => {
     const store = DeploymentStore(getConnection())
 
     let error = null
-  
+
     try {
       await store.list({})
     } catch(err) {
       error = err
     }
-    
+
     t.ok(error, `there was an error`)
   })
 
   asyncTest('deployment store -> list no data', async (t) => {
 
     const store = DeploymentStore(getConnection())
-  
+
     const deployments = await store.list({
       cluster: testCluster.id,
     })
-      
+
     t.equal(deployments.length, 0, `there were no deployments`)
   })
 
@@ -79,21 +85,21 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('deployment store -> list with ordered data', async (t) => {
-  
+
     const store = DeploymentStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_DEPLOYMENT_DATA.length
     const expectedOrder = fixtures.SIMPLE_DEPLOYMENT_DATA.map(d => d.name)
 
     expectedOrder.sort()
-  
+
     const deployments = await store.list({
       cluster: testCluster.id,
     })
-      
+
     t.equal(deployments.length, expectedCount, `there were ${expectedCount} deployments`)
     t.deepEqual(deployments.map(deployment => deployment.name), expectedOrder, 'the deployments were in the correct order')
-    
+
   })
 
   asyncTest('deployment store -> get', async (t) => {
@@ -105,7 +111,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('deployment store -> update with bad status', async (t) => {
-  
+
     const store = DeploymentStore(getConnection())
 
     let error = null
@@ -124,7 +130,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('deployment store -> update', async (t) => {
-  
+
     const store = DeploymentStore(getConnection())
 
     const createdDeployment = await store.update({
@@ -144,7 +150,7 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('deployment store -> delete', async (t) => {
-  
+
     const store = DeploymentStore(getConnection())
 
     await store.delete({
@@ -154,7 +160,7 @@ database.testSuiteWithDatabase(getConnection => {
     const deployments = await store.list({
         cluster: testCluster.id,
     })
-        
+
     t.equal(deployments.length, fixtures.SIMPLE_DEPLOYMENT_DATA.length-1, `there is 1 less deployment`)
   })
 

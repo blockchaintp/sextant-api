@@ -1,4 +1,10 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   an abstraction onto deployments of k8s objects
 
@@ -10,7 +16,7 @@
 
   each method represents a single resource - how that resource is actually
   deployed is up to it
-  
+
 */
 
 const path = require('path')
@@ -28,42 +34,42 @@ const settings = require('../settings')
 const Deploy = ({ kubectl }) => {
 
   /*
-  
+
     creates a cluster-admin clusterrole for the "system:serviceaccount:kube-system:default"
 
     this is needed by the route53Mapper in particular so it can list all other services to check
     if they have match a "dns=route53" selector
-    
+
   */
   const createClusterAdminServiceAccount = (params, done) => {
     kubectl.command(`create clusterrolebinding \
       --user system:serviceaccount:kube-system:default \
-      kube-system-cluster-admin --clusterrole cluster-admin`, 
+      kube-system-cluster-admin --clusterrole cluster-admin`,
     done)
   }
 
   /*
-  
+
     creates a cluster-admin clusterrole for the "system:serviceaccount:kube-system:kubernetes-dashboard"
 
     this is so the user can skip authentication for the dashboard
-    
+
   */
   const createDashboardServiceAccount = (params, done) => {
     kubectl.command(`create clusterrolebinding \
       --user system:serviceaccount:kube-system:kubernetes-dashboard \
-      kube-dashboard-cluster-admin --clusterrole cluster-admin`, 
+      kube-dashboard-cluster-admin --clusterrole cluster-admin`,
     done)
   }
 
   /*
-  
+
     dashboard
 
     deploy the k8s dashboard from a remote url (configured in settings.js)
 
     params:
-    
+
   */
   const dashboard = (params, done) => {
     const dashboardParams = {
@@ -77,14 +83,14 @@ const Deploy = ({ kubectl }) => {
   }
 
   /*
-  
+
     route 53 mapper
 
     we have downloaded this locally so we can add the toleration such that this pod
     can schedule to the master
 
     params:
-    
+
   */
   const route53Mapper = (params, done) => {
     const resource = templateUtils.fullTemplatePath('route53-mapper/v1.3.0.yml')
@@ -97,13 +103,13 @@ const Deploy = ({ kubectl }) => {
   }
 
   /*
-  
+
     deploy the manifests for a sawtooth cluster
 
     params:
 
      * deploymentYamlPath - the settings used to create the cluster
-    
+
   */
   const sawtoothManifestsApply = (params, done) => {
     if(!params.deploymentYamlPath) return done(`deploymentYamlPath param needed for deploy.sawtoothManifestsApply`)
@@ -135,17 +141,17 @@ const Deploy = ({ kubectl }) => {
           }, nextw)
         }
       ], next)
-    }, done)    
+    }, done)
   }
 
   /*
-  
+
     delete the manifests for a sawtooth cluster
 
     params:
 
      * deploymentYamlPath - the settings used to create the cluster
-    
+
   */
   const sawtoothManifestsDelete = (params, done) => {
     if(!params.deploymentYamlPath) return done(`deploymentYamlPath param needed for deploy.sawtoothManifestsDelete`)
@@ -169,9 +175,9 @@ const Deploy = ({ kubectl }) => {
           }, nextw)
         }
       ], next)
-    }, done)    
+    }, done)
   }
-  
+
   return {
     createClusterAdminServiceAccount,
     createDashboardServiceAccount,

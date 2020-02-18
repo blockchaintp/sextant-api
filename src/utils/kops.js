@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const fs = require('fs')
 const exec = require('child_process').exec
 const yaml = require('js-yaml')
@@ -14,7 +20,7 @@ const command = (cmd, options, done) => {
   }
 
   const useOptions = Object.assign({}, options, {
-    // allow 5MB back on stdout 
+    // allow 5MB back on stdout
     //(which should not happen but some logs might be longer than 200kb which is the default)
     maxBuffer: 1024 * 1024 * 5,
   })
@@ -75,7 +81,7 @@ const createCluster = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const clusterExists = (params, done) => {
 
@@ -101,7 +107,7 @@ const clusterExists = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const destroyCluster = (params, done) => {
 
@@ -125,7 +131,7 @@ const destroyCluster = (params, done) => {
    * domain
    * keyFilePath
    * bucket
-  
+
 */
 const createSecret = (params, done) => {
   if(!params.name) return done(`name param required for kops.createSecret`)
@@ -149,7 +155,7 @@ const createSecret = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const updateCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.updateCluster`)
@@ -171,7 +177,7 @@ const updateCluster = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const validateCluster = (params, done) => {
   if(!params.name) return done(`name param required for kops.validateCluster`)
@@ -210,13 +216,13 @@ const exportKubeConfig = (params, done) => {
 
   command(`export kubecfg ${ name }.${ domain } \\
     --state ${ getStateStore(bucket) }
-`, 
+`,
   {
     env: {
       KUBECONFIG: kubeConfigPath,
     }
   },
-  done)  
+  done)
 }
 
 /*
@@ -225,11 +231,11 @@ const exportKubeConfig = (params, done) => {
 
   params:
 
-   * name 
+   * name
    * domain
    * kubeConfigPath
    * bucket
-  
+
 */
 const extractKubeConfigAuthDetails = (params, done) => {
   if(!params.name) return done(`name param required for kops.extractKubeConfigAuthDetails`)

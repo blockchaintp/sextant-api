@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const S3FS = require('s3fs')
 const S3 = require('s3')
 const fs = require('fs')
@@ -12,15 +18,15 @@ const pino = require('pino')({
 
 const S3Factory = (name) => {
   const sdkS3 = new AWS.S3({
-	  signatureVersion:'v4'
+          signatureVersion:'v4'
   })
   const s3fs = new S3FS(name, sdkS3
   )
-  s3fs.s3.config.update({ 
-	  signatureVersion: 'v4'
+  s3fs.s3.config.update({
+          signatureVersion: 'v4'
   })
   const client = S3.createClient({
-	  s3Client:sdkS3,
+          s3Client:sdkS3,
   })
   return {
     s3fs,

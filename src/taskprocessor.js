@@ -1,4 +1,10 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   keeps looping waiting for tasks to be in 'created' state
 
@@ -35,8 +41,8 @@
       * invoke the task handler
       * if callback is error - switch task to 'error'
       * if callback has result - switch task to 'finished'
-  
-  
+
+
   task handlers
   -------------
 
@@ -53,7 +59,7 @@
     task,                   // the task database record
     logging,                // if the task handler should log
   }) {
-    
+
     const data = yield store.thing.list()
 
     // this step will never happen if the task was cancelled in the meantime
@@ -61,7 +67,7 @@
       ...
     })
   }
-  
+
 */
 
 const EventEmitter = require('events')
@@ -106,7 +112,7 @@ const TaskProcessor = ({
   }
 
   // get the current status of a task
-  const loadTaskStatus = (id) => 
+  const loadTaskStatus = (id) =>
     store.task.get({
       id,
     })
@@ -116,7 +122,7 @@ const TaskProcessor = ({
   const loadTasksWithStatus = (status) => store.task.list({
     status,
   })
-    
+
   const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
   const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
 
@@ -214,7 +220,7 @@ const TaskProcessor = ({
   // this means the task's database updates will get unwound on an error
   const runTask = async (task) => {
     await store.transaction(async trx => {
-      
+
       // check that we have a handler for the task
       const handler = handlers[task.action]
 
@@ -245,16 +251,16 @@ const TaskProcessor = ({
       taskProcessor.emit('task.start', task)
 
       await runner.run()
-      
+
       await completeTask(task, trx, runner.cancelled)
-      
+
       taskProcessor.emit('task.complete', task)
     })
       .catch(async err => {
         await errorTask(task, err)
         taskProcessor.emit('task.error', task, err)
       })
-    
+
     taskProcessor.emit('task.processed', task)
   }
 

@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const Promise = require('bluebird')
@@ -20,7 +26,7 @@ tape('task -> simple', async (t) => {
   }
 
   const task = Task({
-    generator: testTask, 
+    generator: testTask,
     params: {
       message: MESSAGE,
     },
@@ -58,7 +64,7 @@ tape('task -> with error thrown', async (t) => {
 
   t.ok(error, `there was an error`)
   t.equal(error.toString(), `Error: this is a test error`)
-  
+
   t.end()
 })
 
@@ -182,7 +188,7 @@ tape('task -> inner generators', async (t) => {
   }
 
   const task = Task({
-    generator: testTask, 
+    generator: testTask,
     params: {
       message: MESSAGE,
     },
@@ -216,7 +222,7 @@ tape('task -> cancel from inside an inner generator', async (t) => {
   }
 
   const task = Task({
-    generator: testTask, 
+    generator: testTask,
   })
 
   await Promise.all([
@@ -238,7 +244,7 @@ tape('task -> cancel from inside an inner generator', async (t) => {
 })
 
 tape('task -> test for long running Promise cancellation', async (t) => {
-  
+
   const steps = []
 
   function* testTask(params) {
@@ -249,7 +255,7 @@ tape('task -> test for long running Promise cancellation', async (t) => {
   }
 
   const task = Task({
-    generator: testTask, 
+    generator: testTask,
   })
 
   await Promise.all([
@@ -270,7 +276,7 @@ tape('task -> test for long running Promise cancellation', async (t) => {
 })
 
 tape('task -> self cancellation', async (t) => {
-  
+
   const steps = []
 
   function* testTask(params) {
@@ -282,7 +288,7 @@ tape('task -> self cancellation', async (t) => {
   }
 
   const task = Task({
-    generator: testTask, 
+    generator: testTask,
   })
 
   await task.run()

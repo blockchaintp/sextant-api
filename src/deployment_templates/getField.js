@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 // extract a value from the desired_state of a deployment
 // based on the paths - this means different deployment
 // templates can choose their own fields for name and namespace

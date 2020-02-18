@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const Promise = require('bluebird')
@@ -60,7 +66,7 @@ database.testSuiteWithDatabase(getConnection => {
       expectedResult: false,
     })
   })
-  
+
   asyncTest('rbac -> insert users', async (t) => {
     const users = await fixtures.insertTestUsers(getConnection())
     userMap = users
@@ -102,7 +108,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-    
+
   })
 
   const testWithUserTypes = (t, resource_type, method, expectedResults) => {
@@ -193,7 +199,7 @@ database.testSuiteWithDatabase(getConnection => {
       expectedResult: false,
     })
 
-    
+
   })
 
   asyncTest('rbac -> user.update allowed for own record', async (t) => {
@@ -209,7 +215,7 @@ database.testSuiteWithDatabase(getConnection => {
       expectedResult: true,
     })
 
-    
+
   })
 
   asyncTest('rbac -> user.update not allowed for other record', async (t) => {
@@ -239,7 +245,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: true,
     })
-    
+
   })
 
   asyncTest('rbac -> user.token not allowed for other record even when user is admin', async (t) => {
@@ -254,7 +260,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-    
+
   })
 
   asyncTest('rbac -> cluster.list', async (t) => {
@@ -265,7 +271,7 @@ database.testSuiteWithDatabase(getConnection => {
       admin: true,
       superuser: true,
     })
-    
+
   })
 
   asyncTest('rbac -> cluster.get allowed for superuser', async (t) => {
@@ -280,7 +286,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: true,
     })
-    
+
   })
 
   asyncTest('rbac -> deployment.list allowed for superuser', async (t) => {
@@ -296,7 +302,7 @@ database.testSuiteWithDatabase(getConnection => {
       expectedResult: true,
     })
 
-    
+
   })
 
   asyncTest('rbac -> deployment.list not allowed for no user', async (t) => {
@@ -312,7 +318,7 @@ database.testSuiteWithDatabase(getConnection => {
       expectedResult: false,
     })
 
-    
+
   })
 
   asyncTest('rbac -> deployment.list not allowed for read with no role', async (t) => {
@@ -327,7 +333,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: true,
     })
-    
+
   })
 
   asyncTest('rbac -> cluster.get not allowed for read with no role', async (t) => {
@@ -357,7 +363,7 @@ database.testSuiteWithDatabase(getConnection => {
         resource_type: RESOURCE_TYPES.cluster,
         resource_id: 1,
       }
-    })    
+    })
   })
 
   asyncTest('rbac -> cluster.get allowed for read with role', async (t) => {
@@ -372,7 +378,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: true,
     })
-    
+
   })
 
   asyncTest('rbac -> deployment.list allowed for read with role', async (t) => {
@@ -387,7 +393,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: true,
     })
-    
+
   })
 
   asyncTest('rbac -> cluster.create', async (t) => {
@@ -458,7 +464,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-  
+
   })
 
   asyncTest('rbac -> cluster.delete not allowed for read with role', async (t) => {
@@ -473,7 +479,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-  
+
   })
 
   asyncTest('rbac -> cluster.update not allowed for write with no role', async (t) => {
@@ -488,7 +494,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-  
+
   })
 
   asyncTest('rbac -> deployment.create not allowed for write with no role', async (t) => {
@@ -503,7 +509,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-  
+
   })
 
   asyncTest('rbac -> cluster.delete not allowed for write with no role', async (t) => {
@@ -518,7 +524,7 @@ database.testSuiteWithDatabase(getConnection => {
       },
       expectedResult: false,
     })
-  
+
   })
 
   // insert a write role for a cluster for the write user
@@ -533,7 +539,7 @@ database.testSuiteWithDatabase(getConnection => {
         resource_type: RESOURCE_TYPES.cluster,
         resource_id: 1,
       }
-    })   
+    })
   })
 
   asyncTest('rbac -> cluster.update allowed for write with role', async (t) => {
@@ -729,7 +735,7 @@ database.testSuiteWithDatabase(getConnection => {
         resource_type: RESOURCE_TYPES.deployment,
         resource_id: 1,
       }
-    })    
+    })
   })
 
   asyncTest('rbac -> deployment.get allowed for read with role', async (t) => {
@@ -774,7 +780,7 @@ database.testSuiteWithDatabase(getConnection => {
         resource_type: RESOURCE_TYPES.deployment,
         resource_id: 1,
       }
-    })    
+    })
   })
 
   asyncTest('rbac -> deployment.update allowed for write with role', async (t) => {

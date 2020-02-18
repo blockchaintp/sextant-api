@@ -1,15 +1,21 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const config = require('../config')
 
 const RoleStore = (knex) => {
 
   /*
-  
+
     list all roles for a given user
 
     params:
 
       * user
-  
+
   */
 
   const listForUser = ({
@@ -25,14 +31,14 @@ const RoleStore = (knex) => {
   }
 
   /*
-  
+
     list all roles for a given resource
 
     params:
 
       * resource_type
       * resource_id
-  
+
   */
 
   const listForResource = ({
@@ -51,7 +57,7 @@ const RoleStore = (knex) => {
   }
 
   /*
-  
+
     get a single role for a user on a certain resource
 
     params:
@@ -59,7 +65,7 @@ const RoleStore = (knex) => {
       * user
       * resource_type
       * resource_id
-  
+
   */
 
   const get = ({
@@ -82,7 +88,7 @@ const RoleStore = (knex) => {
   }
 
   /*
-  
+
     insert a new role
 
     params:
@@ -92,8 +98,8 @@ const RoleStore = (knex) => {
         * permission
         * resource_type
         * resource_id
-      
-  
+
+
   */
   const create = ({
     data: {
@@ -120,13 +126,13 @@ const RoleStore = (knex) => {
   }
 
   /*
-  
+
     delete a role
 
     params:
 
      * id
-  
+
   */
   const del = ({
     id,
@@ -142,13 +148,13 @@ const RoleStore = (knex) => {
   }
 
   /*
-  
+
     delete roles for a resource
 
     params:
 
      * id
-  
+
   */
   const deleteForResource = ({
     resource_type,

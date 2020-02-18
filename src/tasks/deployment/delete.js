@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const Promise = require('bluebird')
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
@@ -58,7 +64,7 @@ const DeploymentDelete = ({
     cluster,
     store,
   })
-   
+
   const templateDirectory = yield renderTemplates({
     deployment_type,
     deployment_version,
@@ -99,7 +105,7 @@ const DeploymentDelete = ({
 
   const deleteTheRest = async () => {
     try {
-      
+
       await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)
       // delete stacks if they are there
     } catch (err) {

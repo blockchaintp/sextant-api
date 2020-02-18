@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const ClusterCreate = require('./cluster/create')
 const ClusterUpdate = require('./cluster/update')
 const ClusterDelete = require('./cluster/delete')

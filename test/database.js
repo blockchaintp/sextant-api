@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -75,7 +81,7 @@ const testSuiteWithDatabase = (handler) => {
       if(!process.env.KEEP_DATABASE) {
         await destroyTestKnex(databaseName)
       }
-      
+
     } catch(err) {
       t.fail(`database teardown error: ${err.toString()}`)
     }

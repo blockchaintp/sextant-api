@@ -1,9 +1,15 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   given a cluster - return a kubectl client that will connect to it
 
   it will load the secrets from the store if needed
-  
+
 */
 
 const Kubectl = require('./kubectl')

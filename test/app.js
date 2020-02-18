@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 'use strict'
 
 const tape = require('tape')
@@ -42,10 +48,10 @@ const testSuiteWithApp = (handler, opts) => {
 
       server = app.listen(TEST_PORT, (err) => {
         t.notok(err, `there was no error`)
-        t.end()        
+        t.end()
       })
 
-      
+
     })
 
     handler({

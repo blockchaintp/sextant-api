@@ -1,4 +1,10 @@
 /*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
+/*
 
   factory function that returns a kubectl library that is bound to a cluster
 
@@ -173,7 +179,7 @@ const Kubectl = ({
   const localTeardown = async (setupDetails) => {
     if (setupDetails.kubeConfigPath) {
       fs.unlinkSync(setupDetails.kubeConfigPath)
-    }  
+    }
   }
 
   const getOptions = (options) => {

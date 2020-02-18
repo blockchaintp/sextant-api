@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const awsRegions = require('aws-regions')
 const exec = require('child_process').exec
 
@@ -15,13 +21,13 @@ const FILTER_AWS_ZONES = [
 
     * both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are defined
     * the ec2 instance has the sextant-instance IAM role associated with it
-  
+
   we always output data as JSON and process it before returning
 
   example:
 
   aws.command('route53 list-hosted-zones', (err, result) => {
-  
+
   })
 
 */
@@ -43,7 +49,7 @@ const command = (cmd, done) => {
 /*
 
   helper wrappers
-  
+
 */
 
 const listRoute53Domains = (done) => command(`route53 list-hosted-zones`, done)
@@ -51,7 +57,7 @@ const listRoute53Domains = (done) => command(`route53 list-hosted-zones`, done)
 /*
 
   get the aws regions and filter out any known problem zones
-  
+
 */
 const regions = () => {
   return awsRegions

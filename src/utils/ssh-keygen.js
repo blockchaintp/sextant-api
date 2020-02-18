@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2018 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const tmp = require('tmp')
 const fs = require('fs')
 const async = require('async')
@@ -22,7 +28,7 @@ const createKeypair = (done) => {
     // create a temporary directory to work in
     next => {
       tmp.dir({
-        mode: 0750, 
+        mode: 0750,
         prefix: 'sshkeygen_',
         unsafeCleanup: true,
       }, (err, path, cleanup) => {
