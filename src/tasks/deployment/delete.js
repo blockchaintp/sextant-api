@@ -1,3 +1,9 @@
+/*
+ * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
+ *
+ * License: Product
+ */
+
 const Promise = require('bluebird')
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
@@ -6,6 +12,10 @@ const getField = require('../../deployment_templates/getField')
 const {
   CLUSTER_STATUS,
 } = require('../../config')
+
+const pino = require('pino')({
+  name: 'deployment.delete',
+})
 
 const DeploymentDelete = ({
   testMode,
@@ -58,7 +68,7 @@ const DeploymentDelete = ({
     cluster,
     store,
   })
-   
+
   const templateDirectory = yield renderTemplates({
     deployment_type,
     deployment_version,
@@ -80,26 +90,9 @@ const DeploymentDelete = ({
     }
   }
 
-  const deleteStacks = async() => {
-    try {
-
-      // try to connect to a remote cluster and delete it
-      await clusterKubectl.command(`delete stacks --all -n ${namespace} || true`)
-    } catch (err) {
-      // read the error, if it's NOT a server error - then throw an error
-      // status will be set to error
-      // otherwise ignore the error and let the status be set to delete
-      const match = err.message.match(/Unable to connect to the server/g) || err.message.match(/Error from server \(NotFound\): namespaces/g)
-      if (match === null) {
-        throw err
-      }
-    }
-
-  }
-
   const deleteTheRest = async () => {
     try {
-      
+
       await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)
       // delete stacks if they are there
     } catch (err) {
@@ -124,24 +117,30 @@ const DeploymentDelete = ({
       const chartOut = await clusterKubectl.helmCommand(`list -n ${namespace} -q`)
       // re-format the return of list - it is probably a string with "\n' seperators
       const chartList=chartOut.replace( /\n/g, " ").split(" ")
-      console.log("ChartList output",chartList)
+      pino.info({
+        action:"deleteHelmCharts",
+        chartList
+      })
 
       chartList.forEach(async (chart) => {
         if (chart) {
-          console.log(`Removing chart ${chart} from ${namespace}`)
+          pino.info({action:"removing chart",
+            chart,
+            namespace
+          })
           await clusterKubectl.helmCommand(`uninstall -n ${namespace} ${chart}`)
         }
       })
-    } catch(err) {
-      console.log("------------\n-------------\n You probably don't have any helm charts to delete\n");
-      console.log(err);
-      console.log("------------\n-------------\n");
+    } catch (err) {
+      pino.info({action:"deleteHelmCharts",
+        message: "benign if there are no helm charts to delete",
+        err
+      })
     }
   }
 
-  yield deleteStacks()
-  yield deleteHelmCharts()
   yield deleteDirectory()
+  yield deleteHelmCharts()
   yield deleteTheRest()
 
 }
