@@ -25,7 +25,20 @@ repos:
   rev: v1.1.7
   hooks:
     - id: forbid-tabs
-      #  - id: insert-license
+    - id: insert-license
+      files: \.js$
+      args:
+      - --license-filepath
+      - COPYRIGHT
+      - --comment-style
+      - /*| *| */
+        #    - id: insert-license
+        # files: \.yaml$
+        #args:
+        #- --license-filepath
+        #- COPYRIGHT
+        #- --comment-style
+        #- #
       #- repo: https://github.com/doublify/pre-commit-clang-format
       #  rev: master
       #  hooks:
