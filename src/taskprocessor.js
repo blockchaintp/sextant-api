@@ -173,9 +173,9 @@ const TaskProcessor = ({
     })
 
     // update the corresponding resource to indicate the task failed
+    // the resource updater function from controller/error_handling determines how to update the resource
     const resourceTypeStore = resourceTypeStores[task.resource_type]
 
-    // run the error through the error handler functions
     await resourceUpdater(task, task.action, error, resourceTypeStore)
 
   }
