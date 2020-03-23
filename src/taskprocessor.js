@@ -73,6 +73,7 @@ const pino = require('pino')({
 
 const config = require('./config')
 const Task = require('./task')
+const resourceUpdater = require('./controller/error_handling/index')
 
 const {
   TASK_STATUS,
@@ -173,14 +174,16 @@ const TaskProcessor = ({
 
     // update the corresponding resource to indicate the task failed
     const resourceTypeStore = resourceTypeStores[task.resource_type]
-    const errorResourceStatus = TASK_RESOURCE_COMPLETE_STATUS[`${task.resource_type}.error`]
 
-    await resourceTypeStore.update({
-      id: task.resource_id,
-      data: {
-        status: task.resource_status.error,
-      },
-    })
+    // run the error through the error handler functions
+    await resourceUpdater(task, task.action, error, resourceTypeStore)
+
+    // await resourceTypeStore.update({
+    //   id: task.resource_id,
+    //   data: {
+    //     status: task.resource_status.error,
+    //   },
+    // })
   }
 
   // mark the task as complete and update the corresponding resource with
