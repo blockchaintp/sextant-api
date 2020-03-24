@@ -176,7 +176,7 @@ const TaskProcessor = ({
     // the resource updater function from controller/error_handling determines how to update the resource
     const resourceTypeStore = resourceTypeStores[task.resource_type]
 
-    await resourceUpdater(task, task.action, error, resourceTypeStore)
+    resourceUpdater(task, task.action, error, resourceTypeStore)
 
   }
 
