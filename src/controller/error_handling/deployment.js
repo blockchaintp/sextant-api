@@ -1,5 +1,5 @@
 
-const deploymentStuatusUpdater = async (task, error, store) => {
+const deploymentStatusUpdater = async (task, error, store) => {
   // create regular expression derived from known errors to match on the actual error 
   const example = new RegExp("I'm an example known error message")
 
@@ -17,4 +17,4 @@ const deploymentStuatusUpdater = async (task, error, store) => {
   }
 }
 
-module.exports = deploymentStuatusUpdater
+module.exports = deploymentStatusUpdater

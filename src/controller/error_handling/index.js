@@ -13,7 +13,7 @@ const resourceUpdater = async (task, action, error, store) => {
 
   // if the action is on a deployment use the deployment updater function
   if (deploymentRegex.test(action)) {
-    deploymentStuatusUpdater(task, error, store)
+    deploymentStatusUpdater(task, error, store)
   }
   // if the action is on a cluster, use the cluster updator function
   else if (clusterRegex.test(action)) {
