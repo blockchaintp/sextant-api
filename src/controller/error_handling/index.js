@@ -12,12 +12,12 @@ const resourceUpdater = async (task, action, error, store) => {
   const clusterRegex = new RegExp('cluster')
 
   // if the action is on a deployment use the deployment updater function
-  if (action.match(deploymentRegex)[0] === 'deployment') {
-    await deploymentStuatusUpdater(task, error, store)
+  if (deploymentRegex.test(action)) {
+    deploymentStuatusUpdater(task, error, store)
   }
   // if the action is on a cluster, use the cluster updator function
-  else if (action.match(clusterRegex)[0] === 'cluster') {
-    await clusterStatusUpdater(task, error, store)
+  else if (clusterRegex.test(action)) {
+    clusterStatusUpdater(task, error, store)
   } 
   // by default, update the resource status with the resource_status value
   else {

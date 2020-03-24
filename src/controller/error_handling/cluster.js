@@ -1,8 +1,9 @@
-const clusterStatusUpdater= async (task, error, store) => {
-  // create regular expression to match on the actual error derived from known errors
-  const test = new RegExp("I'm a test error message")
 
-  if (error.match(test)[0] === "I'm a test error message") {
+const clusterStatusUpdater= async (task, error, store) => {
+  // create regular expression derived from known errors to match on the actual error 
+  const example = new RegExp("I'm an example known error message")
+
+  if (example.test(error)) {
     // if the actual error matches with the known error
     // update or not in a unique way
   } else {
