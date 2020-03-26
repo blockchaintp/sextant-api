@@ -381,6 +381,19 @@ spec:
               name: sawtooth-etc
             - mountPath: "/var/lib/sawtooth"
               name: sawtooth-data
+          {{if .sawtooth.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                export EXIT_SIGNALS="{{.sawtooth.livenessProbe.exitSignals}}"
+                export LIVENESS_PROBE_ACTIVE="{{.sawtooth.livenessProbe.active}}"
+                /usr/local/bin/liveness_probe.sh
+            initialDelaySeconds: {{.sawtooth.livenessProbe.initialDelaySeconds}}
+            periodSeconds: {{.sawtooth.livenessProbe.periodSeconds}}
+          {{end}}
           env:
             - name: RUST_BACKTRACE
               value: "1"

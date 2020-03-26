@@ -17,6 +17,12 @@ imagePullSecrets:
   value:
     - name: regcred
 sawtooth:
+  livenessProbe:
+    enabled: false
+    initialDelaySeconds: 300
+    periodSeconds: 120
+    active: "false"
+    exitSignals: "block-info-tp"
   permissioned: false
   #This MUST be chosen by the user
   # Follows DNS naming rules
