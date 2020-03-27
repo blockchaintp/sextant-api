@@ -11,9 +11,9 @@ metadata:
 spec:
   sessionAffinity: ClientIP
   ports:
-  - port: 8008
+  - port: {{.sawtooth.ports.rest}}
     protocol: TCP 
-    targetPort: 8008
+    targetPort: {{.sawtooth.ports.rest}}
     name: rest-api
 {{ if .sawtooth.seth.enabled }}
   - port: 3030
@@ -36,9 +36,9 @@ spec:
   type: ClusterIP
   clusterIP: None
   ports:
-  - port: 8800
+  - port: {{.sawtooth.ports.sawnet}}
     protocol: TCP 
-    targetPort: 8800
+    targetPort: {{.sawtooth.ports.sawnet}}
     name: sawnet
   selector:
     app: {{.sawtooth.networkName}}-validator
