@@ -73,7 +73,7 @@ const pino = require('pino')({
 
 const config = require('./config')
 const Task = require('./task')
-const resourceUpdater = require('./controller/error_handling/index')
+const resourceUpdaters = require('./tasks/resource_updaters/index')
 
 const {
   TASK_STATUS,
@@ -172,11 +172,14 @@ const TaskProcessor = ({
       }
     })
 
-    // update the corresponding resource to indicate the task failed
-    // the resource updater function from controller/error_handling determines how to update the resource
+    // update the corresponding resource 
     const resourceTypeStore = resourceTypeStores[task.resource_type]
 
-    resourceUpdater(task, task.action, error, resourceTypeStore)
+    // import the correct resource updater based on the task.action
+    // resourceUpdaters are defined in tasks/resource_updaters
+    const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters['default']
+
+    await resourceUpdater(task, error, resourceTypeStore)
 
   }
 
