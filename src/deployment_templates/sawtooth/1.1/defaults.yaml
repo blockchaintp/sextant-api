@@ -13,7 +13,7 @@ affinity:
 # if true then there should exist a secret within the namespace
 #   of the given names, multiple values are acceptable
 imagePullSecrets:
-  enabled: true
+  enabled: false
   value:
     - name: regcred
 sawtooth:
