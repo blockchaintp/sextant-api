@@ -1,8 +1,8 @@
 FROM ubuntu:bionic
 MAINTAINER kai@blockchaintp.com
-ENV NODEJS_MAJOR_VERSION=10
-ENV KUBETPL_VERSION=0.7.1
-ENV HELM_VERSION=v3.0.0-beta.3
+ARG NODEJS_MAJOR_VERSION=10
+ARG KUBETPL_VERSION=0.9.0
+ARG HELM_VERSION=v3.1.2
 
 RUN apt-get update -y && \
     apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python-minimal mime-support gnupg && \
@@ -15,7 +15,7 @@ RUN apt-get update -y && \
 RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl  && \
     chmod +x /usr/local/bin/kubectl
 
-RUN curl -sSL https://github.com/shyiko/kubetpl/releases/download/0.9.0/kubetpl-${KUBETPL_VERSION}-linux-amd64 -o /usr/local/bin/kubetpl && \
+RUN curl -sSL https://github.com/shyiko/kubetpl/releases/download/${KUBETPL_VERSION}/kubetpl-${KUBETPL_VERSION}-linux-amd64 -o /usr/local/bin/kubetpl && \
     chmod +x /usr/local/bin/kubetpl
 
 RUN mkdir -p /app/api/tmp && \
