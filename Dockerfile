@@ -15,7 +15,7 @@ RUN apt-get update -y && \
 RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl  && \
     chmod +x /usr/local/bin/kubectl
 
-RUN curl -sSL https://github.com/shyiko/kubetpl/releases/download/0.7.1/kubetpl-${KUBETPL_VERSION}-linux-amd64 -o /usr/local/bin/kubetpl && \
+RUN curl -sSL https://github.com/shyiko/kubetpl/releases/download/0.9.0/kubetpl-${KUBETPL_VERSION}-linux-amd64 -o /usr/local/bin/kubetpl && \
     chmod +x /usr/local/bin/kubetpl
 
 RUN mkdir -p /app/api/tmp && \
