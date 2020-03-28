@@ -23,6 +23,10 @@ sawtooth:
   minReadySeconds: 120
   maxUnavailable: 1
   containers:
+    grafana:
+      env:
+    influxdb:
+      env:
     validator:
       env:
       imagePullPolicy: Always

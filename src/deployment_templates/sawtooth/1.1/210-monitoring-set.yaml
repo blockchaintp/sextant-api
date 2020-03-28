@@ -36,6 +36,13 @@ spec:
         ports:
           - containerPort: 8086
             name: influxdb
+        {{if .sawtooth.containers.influxdb.env}}
+        env:
+          {{ range .sawtooth.containers.influxdb.env }}
+          - name: {{.name }}
+            value: {{.value}}
+          {{end}}
+        {{end}}
         resources:
           limits:
             cpu: "100m"
@@ -46,6 +53,13 @@ spec:
         ports:
           - containerPort: 3000
             name: grafana
+        {{if .sawtooth.containers.grafana.env}}
+        env:
+          {{ range .sawtooth.containers.grafana.env }}
+          - name: {{.name }}
+            value: {{.value}}
+          {{end}}
+        {{end}}
         resources:
           limits:
             cpu: "100m"
