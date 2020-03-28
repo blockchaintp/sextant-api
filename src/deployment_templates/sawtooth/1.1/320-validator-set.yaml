@@ -10,6 +10,12 @@ spec:
   {{ if eq .sawtooth.consensus 100}}
   replicas: 1
   serviceName: {{.sawtooth.networkName}}-validator
+  {{ else }}
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{.sawtooth.maxUnavailable}}
+  minReadySeconds: {{.sawtooth.minReadySeconds}}
   {{ end }}
   selector:
     matchLabels:
@@ -313,7 +319,7 @@ spec:
               cpu: "50m"
         - name: monitor
           image: {{.images.shell}}
-          imagePullPolicy: Always
+          imagePullPolicy: {{.sawtooth.containers.monitor.imagePullPolicy}}
           command: [ "bash", "-xc"]
           args:
             - |
@@ -335,7 +341,7 @@ spec:
               cpu: "100m"
         - name: validator
           image: {{.images.validator}}
-          imagePullPolicy: Always
+          imagePullPolicy: {{.sawtooth.containers.validator.imagePullPolicy}}
           command: ["bash", "-xc" ]
           args:
             - |
@@ -409,6 +415,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            {{ range .sawtooth.containers.validator.env }}
+            - name: {{.name }}
+              value: {{.value}}
+            {{end}}
           ports:
             - containerPort: {{.sawtooth.ports.sawcomp}}
               name: sawcomp

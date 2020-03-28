@@ -17,6 +17,14 @@ imagePullSecrets:
   value:
     - name: regcred
 sawtooth:
+  minReadySeconds: 120
+  maxUnavailable: 1
+  containers:
+    validator:
+      env:
+      imagePullPolicy: Always
+    monitor:
+      imagePullPolicy: Always
   ports:
     sawnet: 8800
     consensus: 5050
