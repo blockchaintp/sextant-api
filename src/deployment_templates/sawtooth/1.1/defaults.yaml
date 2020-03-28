@@ -33,6 +33,7 @@ sawtooth:
     consensus: 5050
     sawcomp: 4004
     rest: 8008
+    damlrpc: 39000
   livenessProbe:
     enabled: false
     initialDelaySeconds: 300
@@ -40,7 +41,7 @@ sawtooth:
     active: "false"
     exitSignals: "block-info-tp"
   heartbeat:
-    interval: 300 
+    interval: 300
   permissioned: false
   #This MUST be chosen by the user
   # Follows DNS naming rules

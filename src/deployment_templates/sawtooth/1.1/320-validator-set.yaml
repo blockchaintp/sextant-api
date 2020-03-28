@@ -265,7 +265,7 @@ spec:
           args:
           - |
             sleep {{.sawtooth.client_wait}}
-            /opt/sawtooth-daml-rpc/entrypoint.sh --port 39000 \
+            /opt/sawtooth-daml-rpc/entrypoint.sh --port {{.sawtooth.ports.damlrpc}} \
               --connect tcp://localhost:{{.sawtooth.ports.sawcomp}} \
               $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
           resources:
@@ -274,8 +274,8 @@ spec:
             requests:
               cpu: "50m"
           ports:
-            - containerPort: 39000
-              hostPort: 39000
+            - containerPort: {{.sawtooth.ports.damlrpc}}
+              hostPort: {{.sawtooth.ports.damlrpc}}
               name: daml-ledger-api
             - containerPort: 5051
               name: tracer
