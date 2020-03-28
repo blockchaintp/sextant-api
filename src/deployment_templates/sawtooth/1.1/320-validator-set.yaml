@@ -307,8 +307,8 @@ spec:
             sleep {{.sawtooth.client_wait}}
             sawtooth-rest-api -v --bind 0.0.0.0:{{.sawtooth.ports.rest}} \
               --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}} \
-              --opentsdb-db metrics \
-              --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
+              --opentsdb-db {{.sawtooth.opentsdb.db}} \
+              --opentsdb-url {{if .sawtooth.opentsdb.url}}{{.sawtooth.opentsdb.url}}{{else}}http://influxdb.{{.sawtooth.namespace}}:8086{{end}}
           ports:
             - containerPort: {{.sawtooth.ports.rest}}
               name: sawrest
@@ -380,8 +380,8 @@ spec:
                 {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.hostname}}:{{.port}} {{end}} \
                 {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} \
                 --maximum-peer-connectivity 255 \
-                --opentsdb-db metrics \
-                --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
+                --opentsdb-db {{.sawtooth.opentsdb.db}} \
+                --opentsdb-url {{if .sawtooth.opentsdb.url}}{{.sawtooth.opentsdb.url}}{{else}}http://influxdb.{{.sawtooth.namespace}}:8086{{end}}
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc

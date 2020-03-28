@@ -17,6 +17,9 @@ imagePullSecrets:
   value:
     - name: regcred
 sawtooth:
+  opentsdb:
+    db: metrics
+    url:
   minReadySeconds: 120
   maxUnavailable: 1
   containers:
