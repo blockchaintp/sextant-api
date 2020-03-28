@@ -21,7 +21,7 @@ data:
       debug = false
       quiet = false
       logfile = ""
-      hostname = ""
+      hostname = "$NODE_NAME"
       omit_hostname = false
     [[outputs.influxdb]]
       urls = ["{{if .sawtooth.opentsdb.url}}{{.sawtooth.opentsdb.url}}{{else}}http://influxdb.{{.sawtooth.namespace}}:8086{{end}}"]
