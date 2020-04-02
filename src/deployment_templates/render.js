@@ -105,8 +105,10 @@ const getTemplateData = async ({
 
     const formatedCustomTPs = initialCustomTPs.map( (tp) => {
       return {
-        id: tp.id,
-        index: tp.index,
+        // remove the id and index reference added here - these are not always defined and don't seem
+        // to be relevant. However, if there is a case where these are relevant - We could use a terinary
+        // id: tp.id,
+        // index: tp.index,
         name: tp.name,
         image: tp.image,
         command: tp.command.split(' '),
