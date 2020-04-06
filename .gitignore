@@ -73,6 +73,9 @@ flycheck_*.el
 # directory configuration
 .dir-locals.el
 
+# VSCode
+.vscode
+
 #Eclipse
 ##
 .metadata
@@ -215,4 +218,3 @@ typings/
 
 # Serverless directories
 .serverless
-
