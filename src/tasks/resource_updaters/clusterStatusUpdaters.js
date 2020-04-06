@@ -1,11 +1,18 @@
 // when a task errors  - use these functions to update the corresponding resource status in the database
 // when a task completes - the corresponding resource updater is currently defined and executed in the taskprocessor
 
-const clusterCreateError = async (task, error, store) => {
-  // create regular expression derived from known errors to match on the actual error 
-  const example = new RegExp("I'm an example known error message")
+/* 
+create regular expression derived from known errors to match on the actual error 
+the following example could be used in place of the expression1 constant
+const example = new RegExp("I'm an example known error message")
+const expression1 = example.test(error)
+multiple expressions could be tested in the conditional statment below 
+*/
 
-  if (example.test(error)) {
+const clusterCreateError = async (task, error, store) => {
+  const expression1 = null // there are no expected error messages to match with
+
+  if (expression1) {
     // if the actual error matches with the known error
     // update or not in a unique way
   } else {
@@ -20,10 +27,9 @@ const clusterCreateError = async (task, error, store) => {
 }
 
 const clusterUpdateError = async (task, error, store) => {
-  // create regular expression derived from known errors to match on the actual error 
-  const example = new RegExp("I'm an example known error message")
+  const expression1 = null // there are no expected error messages to match with
 
-  if (example.test(error)) {
+  if (expression1) {
     // if the actual error matches with the known error
     // update or not in a unique way
   } else {
@@ -38,10 +44,9 @@ const clusterUpdateError = async (task, error, store) => {
 }
 
 const clusterDeleteError = async (task, error, store) => {
-  // create regular expression derived from known errors to match on the actual error 
-  const example = new RegExp("I'm an example known error message")
+  const expression1 = null // there are no expected error messages to match with
 
-  if (example.test(error)) {
+  if (expression1) {
     // if the actual error matches with the known error
     // update or not in a unique way
   } else {
