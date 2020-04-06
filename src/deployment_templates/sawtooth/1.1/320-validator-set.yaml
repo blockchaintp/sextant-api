@@ -10,6 +10,12 @@ spec:
   {{ if eq .sawtooth.consensus 100}}
   replicas: 1
   serviceName: {{.sawtooth.networkName}}-validator
+  {{ else }}
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{.sawtooth.maxUnavailable}}
+  minReadySeconds: {{.sawtooth.minReadySeconds}}
   {{ end }}
   selector:
     matchLabels:
@@ -52,12 +58,17 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /etc/telegraf
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
         {{ if eq .sawtooth.consensus 400 }}
         - name: pbft-engine
           image: {{.images.pbft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "pbft-engine -vv -C tcp://127.0.0.1:5050 --storage-location disk+/var/lib/sawtooth/pbft.log"
+          - "pbft-engine -vv -C tcp://127.0.0.1:{{.sawtooth.ports.consensus}} --storage-location disk+/var/lib/sawtooth/pbft.log"
           resources:
             limits:
               cpu: "250m"
@@ -71,7 +82,7 @@ spec:
           image: {{.images.raft_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "raft-engine -v -C tcp://127.0.0.1:5050"
+          - "raft-engine -v -C tcp://127.0.0.1:{{.sawtooth.ports.consensus}}"
           resources:
             limits:
               cpu: "250m"
@@ -87,7 +98,7 @@ spec:
           image: {{.images.poet_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "poet-engine -v --connect tcp://127.0.0.1:5050 --component tcp://127.0.0.1:4004 -v"
+          - "poet-engine -v --connect tcp://127.0.0.1:{{.sawtooth.ports.consensus}} --component tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}} -v"
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
@@ -102,7 +113,7 @@ spec:
           image: {{.images.poet_validator_registry_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "poet-validator-registry-tp -v -C tcp://127.0.0.1:4004"
+          - "poet-validator-registry-tp -v -C tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
@@ -118,7 +129,7 @@ spec:
           image: {{.images.devmode_engine}}
           command: [ "bash", "-xc"]
           args:
-          - "devmode-engine-rust -v -C tcp://127.0.0.1:5050"
+          - "devmode-engine-rust -v -C tcp://127.0.0.1:{{.sawtooth.ports.consensus}}"
           resources:
             limits:
               cpu: "250m"
@@ -129,7 +140,7 @@ spec:
           image: {{.images.settings_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "settings-tp -v --connect tcp://127.0.0.1:4004"
+          - "settings-tp -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -139,7 +150,7 @@ spec:
           image: {{.images.block_info_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "block-info-tp -v -C tcp://127.0.0.1:4004"
+          - "block-info-tp -v -C tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -149,7 +160,7 @@ spec:
           image: {{.images.intkey_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "intkey-tp-go -v --connect tcp://127.0.0.1:4004"
+          - "intkey-tp-go -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -160,7 +171,7 @@ spec:
           image: {{.images.identity_tp}}
           command: [ "bash", "-xc" ]
           args:
-          - "identity-tp -v -C tcp://127.0.0.1:4004"
+          - "identity-tp -v -C tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -172,7 +183,7 @@ spec:
           image: {{.images.seth_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "seth-tp -v --connect tcp://127.0.0.1:4004"
+          - "seth-tp -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -182,7 +193,7 @@ spec:
           image: {{.images.seth_rpc}}
           command: [ "bash", "-xc"]
           args:
-          - "sleep {{.sawtooth.client_wait}} && seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:4004 "
+          - "sleep {{.sawtooth.client_wait}} && seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}} "
           ports:
             - containerPort: 3030
               name: seth-rpc
@@ -197,7 +208,7 @@ spec:
           image: {{.images.smallbank_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "smallbank-tp-go -v --connect tcp://127.0.0.1:4004"
+          - "smallbank-tp-go -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -209,7 +220,7 @@ spec:
           image: {{.images.xo_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "xo-tp-go -v --connect tcp://127.0.0.1:4004"
+          - "xo-tp-go -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -217,70 +228,21 @@ spec:
               cpu: "50m"
         {{ end }}
         {{ if .sawtooth.daml.enabled }}
-        - name: tracer-ui
-          image: {{ .images.tracer_ui }}
-          ports:
-            - containerPort: 8080
-              name: tracer-ui
-          env:
-            - name: NODE_ENV
-              value: production
-        - name: router
-          image: {{ .images.noxy }}
-          ports:
-            - containerPort: 80
-              name: router
-          env:
-            - name: NOXY_DEFAULT_HOST
-              value: localhost
-            - name: NOXY_DEFAULT_PORT
-              value: "8080"
-            - name: NOXY_DEFAULT_WS
-              value: "1"
-            - name: NOXY_API_FRONT
-              value: /transactions
-            - name: NOXY_API_HOST
-              value: localhost
-            - name: NOXY_API_PORT
-              value: "5051"
         - name: daml-tp
           image: {{.images.daml_tp}}
           command: [ "bash", "-xc"]
           args:
-          - "/opt/sawtooth-daml-tp/entrypoint.sh tcp://localhost:4004"
+          - "/opt/sawtooth-daml-tp/entrypoint.sh tcp://localhost:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
             requests:
               cpu: "50m"
-        - name: daml-rpc
-          image: {{.images.daml_rpc}}
-          command: [ "bash", "-xc"]
-          args:
-          - |
-            sleep {{.sawtooth.client_wait}}
-            /opt/sawtooth-daml-rpc/entrypoint.sh --port 39000 \
-              --connect tcp://localhost:4004 \
-              $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-          ports:
-            - containerPort: 39000
-              hostPort: 39000
-              name: daml-ledger-api
-            - containerPort: 5051
-              name: tracer
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
         - name: timekeeper
           image: {{.images.timekeeper}}
           command: [ "bash", "-xc"]
           args:
-          - "/opt/timekeeper/entrypoint.sh tcp://localhost:4004"
+          - "/opt/timekeeper/entrypoint.sh tcp://localhost:{{.sawtooth.ports.sawcomp}}"
           resources:
             limits:
               cpu: "250m"
@@ -299,13 +261,18 @@ spec:
           args:
           - |
             sleep {{.sawtooth.client_wait}}
-            sawtooth-rest-api -v --bind 0.0.0.0:8008 \
-              --connect tcp://127.0.0.1:4004 \
-              --opentsdb-db metrics \
-              --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
+            sawtooth-rest-api -v --bind 0.0.0.0:{{.sawtooth.ports.rest}} \
+              --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}} \
+              --opentsdb-db {{.sawtooth.opentsdb.db}} \
+              --opentsdb-url {{if .sawtooth.opentsdb.url}}{{.sawtooth.opentsdb.url}}{{else}}http://influxdb.{{.sawtooth.namespace}}:8086{{end}}
           ports:
-            - containerPort: 8008
+            - containerPort: {{.sawtooth.ports.rest}}
               name: sawrest
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
           resources:
             limits:
               cpu: "250m"
@@ -313,13 +280,13 @@ spec:
               cpu: "50m"
         - name: monitor
           image: {{.images.shell}}
-          imagePullPolicy: Always
+          imagePullPolicy: {{.sawtooth.containers.monitor.imagePullPolicy}}
           command: [ "bash", "-xc"]
           args:
             - |
               sawtooth keygen && \
               sleep {{.sawtooth.client_wait}} && \
-              /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:8008 test-$RANDOM 300
+              /usr/local/bin/heartbeat_loop.sh http://127.0.0.1:{{.sawtooth.ports.rest}} test-$RANDOM {{.sawtooth.heartbeat.interval}}
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
@@ -335,7 +302,7 @@ spec:
               cpu: "100m"
         - name: validator
           image: {{.images.validator}}
-          imagePullPolicy: Always
+          imagePullPolicy: {{.sawtooth.containers.validator.imagePullPolicy}}
           command: ["bash", "-xc" ]
           args:
             - |
@@ -366,21 +333,34 @@ spec:
                 touch /etc/sawtooth/initialized;
               fi
               sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
-                --endpoint tcp://${NODE_NAME}:8800 \
-                --bind component:tcp://0.0.0.0:4004 \
-                --bind consensus:tcp://0.0.0.0:5050 \
-                --bind network:tcp://0.0.0.0:8800 \
+                --endpoint tcp://${NODE_NAME}:{{.sawtooth.ports.sawnet}} \
+                --bind component:tcp://0.0.0.0:{{.sawtooth.ports.sawcomp}} \
+                --bind consensus:tcp://0.0.0.0:{{.sawtooth.ports.consensus}} \
+                --bind network:tcp://0.0.0.0:{{.sawtooth.ports.sawnet}} \
                 --peering {{if ($peering)}}dynamic{{else}}static{{end}} \
                 {{ range .sawtooth.externalSeeds }}{{if ($peering) }}--seeds{{else}}--peers{{end}} tcp://{{.hostname}}:{{.port}} {{end}} \
                 {{if ($peering)}}${SEEDS}{{else}}${PEERS}{{end}} \
                 --maximum-peer-connectivity 255 \
-                --opentsdb-db metrics \
-                --opentsdb-url http://influxdb.{{.sawtooth.namespace}}:8086
+                --opentsdb-db {{.sawtooth.opentsdb.db}} \
+                --opentsdb-url {{if .sawtooth.opentsdb.url}}{{.sawtooth.opentsdb.url}}{{else}}http://influxdb.{{.sawtooth.namespace}}:8086{{end}}
           volumeMounts:
             - mountPath: "/etc/sawtooth"
               name: sawtooth-etc
             - mountPath: "/var/lib/sawtooth"
               name: sawtooth-data
+          {{if .sawtooth.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                export EXIT_SIGNALS="{{.sawtooth.livenessProbe.exitSignals}}"
+                export LIVENESS_PROBE_ACTIVE="{{.sawtooth.livenessProbe.active}}"
+                /usr/local/bin/liveness_probe.sh
+            initialDelaySeconds: {{.sawtooth.livenessProbe.initialDelaySeconds}}
+            periodSeconds: {{.sawtooth.livenessProbe.periodSeconds}}
+          {{end}}
           env:
             - name: RUST_BACKTRACE
               value: "1"
@@ -396,13 +376,17 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            {{ range .sawtooth.containers.validator.env }}
+            - name: {{.name }}
+              value: {{.value}}
+            {{end}}
           ports:
-            - containerPort: 4004
+            - containerPort: {{.sawtooth.ports.sawcomp}}
               name: sawcomp
-            - containerPort: 8800
-              hostPort: 8800
+            - containerPort: {{.sawtooth.ports.sawnet}}
+              hostPort: {{.sawtooth.ports.sawnet}}
               name: sawnet
-            - containerPort: 5050
+            - containerPort: {{.sawtooth.ports.consensus}}
               name: consensus
       initContainers:
         - name: setup

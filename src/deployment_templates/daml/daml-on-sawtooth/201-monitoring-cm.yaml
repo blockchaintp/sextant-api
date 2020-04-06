@@ -21,11 +21,11 @@ data:
       debug = false
       quiet = false
       logfile = ""
-      hostname = ""
+      hostname = "$NODE_NAME"
       omit_hostname = false
     [[outputs.influxdb]]
-      urls = ["http://influxdb.{{.sawtooth.namespace}}:8086"]
-      database = "metrics"
+      urls = ["{{if .sawtooth.opentsdb.url}}{{.sawtooth.opentsdb.url}}{{else}}http://influxdb.{{.sawtooth.namespace}}:8086{{end}}"]
+      database = "{{.sawtooth.opentsdb.db}}"
       precision = "s"
     [[inputs.cpu]]
       percpu = true
