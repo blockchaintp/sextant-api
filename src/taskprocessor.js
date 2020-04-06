@@ -73,6 +73,7 @@ const pino = require('pino')({
 
 const config = require('./config')
 const Task = require('./task')
+const resourceUpdaters = require('./tasks/resource_updaters/index')
 
 const {
   TASK_STATUS,
@@ -171,16 +172,15 @@ const TaskProcessor = ({
       }
     })
 
-    // update the corresponding resource to indicate the task failed
+    // update the corresponding resource 
     const resourceTypeStore = resourceTypeStores[task.resource_type]
-    const errorResourceStatus = TASK_RESOURCE_COMPLETE_STATUS[`${task.resource_type}.error`]
 
-    await resourceTypeStore.update({
-      id: task.resource_id,
-      data: {
-        status: task.resource_status.error,
-      },
-    })
+    // import the correct resource updater based on the task.action
+    // resourceUpdaters are defined in tasks/resource_updaters
+    const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters['default']
+
+    await resourceUpdater(task, error, resourceTypeStore)
+
   }
 
   // mark the task as complete and update the corresponding resource with
