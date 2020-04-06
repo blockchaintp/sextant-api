@@ -105,8 +105,7 @@ const getTemplateData = async ({
 
     const formatedCustomTPs = initialCustomTPs.map( (tp) => {
       return {
-        id: tp.id,
-        index: tp.index,
+        // id: tp.id and index: tp.index values removed,
         name: tp.name,
         image: tp.image,
         command: tp.command.split(' '),
