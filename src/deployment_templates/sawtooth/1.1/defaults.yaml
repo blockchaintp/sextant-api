@@ -86,6 +86,9 @@ sawtooth:
   daml:
     # default daml to false at the moment
     enabled: false
+    extra_args:
+      enabled: false
+      arg_str: some args
   volumes:
     # This MUST be set, and SHOULD be presented to the user as an option, as it is a likely area
     # of customization
@@ -104,6 +107,7 @@ sawtooth:
 # The below are mostly controlled by BTP, although an "advanced" option to customize them may be
 # presented
 images:
+  postgres: postgres:11
   daml_rpc: blockchaintp/sawtooth-daml-rpc:BTP2.0
   daml_tp: blockchaintp/sawtooth-daml-tp:BTP2.0
   tracer_ui: blockchaintp/tracer-ui:BTP2.0

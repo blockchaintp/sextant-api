@@ -17,6 +17,35 @@ imagePullSecrets:
   value:
     - name: regcred
 sawtooth:
+  opentsdb:
+    db: metrics
+    url:
+  minReadySeconds: 120
+  maxUnavailable: 1
+  containers:
+    grafana:
+      env:
+    influxdb:
+      env:
+    validator:
+      env:
+      imagePullPolicy: Always
+    monitor:
+      imagePullPolicy: Always
+  ports:
+    sawnet: 8800
+    consensus: 5050
+    sawcomp: 4004
+    rest: 8008
+    damlrpc: 39000
+  livenessProbe:
+    enabled: false
+    initialDelaySeconds: 300
+    periodSeconds: 120
+    active: "false"
+    exitSignals: "block-info-tp"
+  heartbeat:
+    interval: 300
   permissioned: false
   #This MUST be chosen by the user
   # Follows DNS naming rules

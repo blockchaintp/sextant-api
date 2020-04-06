@@ -228,32 +228,6 @@ spec:
               cpu: "50m"
         {{ end }}
         {{ if .sawtooth.daml.enabled }}
-        - name: tracer-ui
-          image: {{ .images.tracer_ui }}
-          ports:
-            - containerPort: 8080
-              name: tracer-ui
-          env:
-            - name: NODE_ENV
-              value: production
-        - name: router
-          image: {{ .images.noxy }}
-          ports:
-            - containerPort: 80
-              name: router
-          env:
-            - name: NOXY_DEFAULT_HOST
-              value: localhost
-            - name: NOXY_DEFAULT_PORT
-              value: "8080"
-            - name: NOXY_DEFAULT_WS
-              value: "1"
-            - name: NOXY_API_FRONT
-              value: /transactions
-            - name: NOXY_API_HOST
-              value: localhost
-            - name: NOXY_API_PORT
-              value: "5051"
         - name: daml-tp
           image: {{.images.daml_tp}}
           command: [ "bash", "-xc"]
@@ -264,29 +238,6 @@ spec:
               cpu: "250m"
             requests:
               cpu: "50m"
-        - name: daml-rpc
-          image: {{.images.daml_rpc}}
-          command: [ "bash", "-xc"]
-          args:
-          - |
-            sleep {{.sawtooth.client_wait}}
-            /opt/sawtooth-daml-rpc/entrypoint.sh --port {{.sawtooth.ports.damlrpc}} \
-              --connect tcp://localhost:{{.sawtooth.ports.sawcomp}} \
-              $(ls /opt/sawtooth-daml-rpc/dar/*.dar)
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-          ports:
-            - containerPort: {{.sawtooth.ports.damlrpc}}
-              hostPort: {{.sawtooth.ports.damlrpc}}
-              name: daml-ledger-api
-            - containerPort: 5051
-              name: tracer
-          volumeMounts:
-            - mountPath: "/etc/sawtooth"
-              name: sawtooth-etc
         - name: timekeeper
           image: {{.images.timekeeper}}
           command: [ "bash", "-xc"]
