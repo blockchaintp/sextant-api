@@ -2,6 +2,20 @@
 
 version: '3'
 services:
+  api-ecs-sfs-nometer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: aws_sfs_nometer.js
+    image: sextant-api-aws-sfs-nometer:${ISOLATION_ID}
+  api-ecs-sfd-nometer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: aws_sfd_nometer.js
+    image: sextant-api-aws-sfd-nometer:${ISOLATION_ID}
   api-ecs-sfs:
     build:
       context: .
