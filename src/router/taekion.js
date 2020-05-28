@@ -10,8 +10,15 @@ const TaekionRoutes = (controllers) => {
   }
 
   const createVolume = async (req, res, next) => {
+    const {
+      volumeName,
+      compression,
+      encryption,
+    } = req.body
     const data = await controllers.taekion.createVolume({
-      
+      volumeName,
+      compression,
+      encryption,
     })
     res
       .status(201)
@@ -19,17 +26,27 @@ const TaekionRoutes = (controllers) => {
   }
 
   const listSnapshots = async (req, res, next) => {
+    const {
+      volumeName,
+    } = req.params
     const data = await controllers.taekion.listSnapshots({
-      
+      volumeName,
     })
     res
       .status(200)
       .json(data)
   }
 
-  const createVolume = async (req, res, next) => {
-    const data = await controllers.taekion.createVolume({
-      
+  const createSnapshot = async (req, res, next) => {
+    const {
+      volumeName,
+    } = req.params
+    const {
+      snapshotName,
+    } = req.body
+    const data = await controllers.taekion.createSnapshot({
+      volumeName,
+      snapshotName,
     })
     res
       .status(201)
