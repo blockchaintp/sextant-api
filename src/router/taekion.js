@@ -1,3 +1,5 @@
+const httpUtils = require('../utils/http')
+
 const TaekionRoutes = (controllers) => {
 
   const listVolumes = async (req, res, next) => {
@@ -15,6 +17,11 @@ const TaekionRoutes = (controllers) => {
       compression,
       encryption,
     } = req.body
+
+    if(!volumeName) return httpUtils.badRequest(res, `volumeName required`)
+    if(!compression) return httpUtils.badRequest(res, `compression required`)
+    if(!encryption) return httpUtils.badRequest(res, `encryption required`)
+    
     const data = await controllers.taekion.createVolume({
       volumeName,
       compression,
