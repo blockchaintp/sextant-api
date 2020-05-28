@@ -51,6 +51,9 @@ const TaekionRoutes = (controllers) => {
     const {
       snapshotName,
     } = req.body
+
+    if(!snapshotName) return httpUtils.badRequest(res, `snapshotName required`)
+
     const data = await controllers.taekion.createSnapshot({
       volumeName,
       snapshotName,
