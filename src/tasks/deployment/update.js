@@ -9,6 +9,9 @@ const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
+const { writeValues } = require('../../deployment_templates/writeValues')
+const { getTemplateType, getChartInfo } = require('./utils/helmUtils')
+
 
 const pino = require('pino')({
   name: 'deployment.update',
@@ -79,63 +82,87 @@ const DeploymentUpdate = ({
     return
   }
 
+  const templateType = getTemplateType(deployment_type, deployment_version)
+
   const clusterKubectl = yield ClusterKubectl({
     cluster,
     store,
   })
 
-  const templateDirectory = yield renderTemplates({
-    deployment_type,
-    deployment_version,
-    desired_state,
-    custom_yaml,
-  })
 
+/*
+  If this is a sawtooth deployment, use the helm chart to update the deployment on the cluster
+  otherwise, use the template directory
+*/
 
-  // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
-  // for each file in ${templateDirectory}/charts/*.tgz
-  // yield clusterKubectl.helmCommand(`-n ${namespace} install <someName>-<theChartfile> -f <theChartFile>.tgz `)
+  if (templateType === 'helm') {
 
-  const charts = yield getCharts({
-    deployment_type,
-    deployment_version
-  })
+    const chartInfo = yield getChartInfo(deployment_type, deployment_version)
 
-  const makeSafeFileName = (chartFile) => {
-    const safeFileName = chartFile.match(/[a-z]([-a-z0-9]*[a-z])*/)[0]
-    return safeFileName
-  }
+    const chart = chartInfo.chart
+    const extension = chartInfo.extension
+    const installationName = `${networkName}-${extension}`
+    const valuesPath = yield writeValues({ desired_state, custom_yaml })
 
-  // if there is a charts directory, do a helm command for each chart
-  //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
-  if (charts) {
-    const chartsFolder = getChartsFolder({
+    // if the chart is installed, upgrade it. Otherwise, install it
+    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${chart} --install`)
+
+  } else {
+
+    const templateDirectory = yield renderTemplates({
       deployment_type,
       deployment_version,
+      desired_state,
+      custom_yaml,
     })
 
-    charts.forEach(
-      yield (chartFile) => {
-        let safeFileName = makeSafeFileName(chartFile)
-        pino.info({
-          action:"Applying chart",
-         chartFolder,
-         chartFile,
-         namespace,
-         networkName,
-         safeFileName
+
+    // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
+    // for each file in ${templateDirectory}/charts/*.tgz
+    // yield clusterKubectl.helmCommand(`-n ${namespace} install <someName>-<theChartfile> -f <theChartFile>.tgz `)
+
+    const charts = yield getCharts({
+      deployment_type,
+      deployment_version
+    })
+
+    const makeSafeFileName = (chartFile) => {
+      const safeFileName = chartFile.match(/[a-z]([-a-z0-9]*[a-z])*/)[0]
+      return safeFileName
+    }
+
+    // if there is a charts directory, do a helm command for each chart
+    //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
+    if (charts) {
+      const chartsFolder = getChartsFolder({
+        deployment_type,
+        deployment_version,
+      })
+
+      charts.forEach(
+        yield (chartFile) => {
+          let safeFileName = makeSafeFileName(chartFile)
+          pino.info({
+            action: "Applying chart",
+            chartFolder,
+            chartFile,
+            namespace,
+            networkName,
+            safeFileName
+          })
+          clusterKubectl.helmCommand(`-n ${appliedNamespace} install ${appliedNetworkName}-${safeFileName} ${chartsFolder}/${chartFile} || true`)
         })
-        clusterKubectl.helmCommand(`-n ${appliedNamespace} install ${appliedNetworkName}-${safeFileName} ${chartsFolder}/${chartFile} || true`)
+    }
+
+    yield clusterKubectl.command(`apply -f ${templateDirectory}`)
+
+    pino.info({
+      action: 'applyTemplates',
+      deployment: id,
+      templateDirectory,
     })
+
   }
-
-  yield clusterKubectl.command(`apply -f ${templateDirectory}`)
-
-  pino.info({
-    action: 'applyTemplates',
-    deployment: id,
-    templateDirectory,
-  })
 
   yield saveAppliedState({
     id,

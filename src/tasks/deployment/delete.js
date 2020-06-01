@@ -8,6 +8,8 @@ const Promise = require('bluebird')
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
+const { getTemplateType } = require('./utils/helmUtils')
+
 
 const {
   CLUSTER_STATUS,
@@ -63,32 +65,13 @@ const DeploymentDelete = ({
     data: useData,
     field: 'namespace',
   })
+  
+  const templateType = getTemplateType(deployment_type, deployment_version)
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
     store,
   })
-
-  const templateDirectory = yield renderTemplates({
-    deployment_type,
-    deployment_version,
-    desired_state: useData, // function expects arg named desired_state, but we will use applied_state if there is no error status because we are deleting not creating
-    custom_yaml,
-  })
-
-  const deleteDirectory = async () => {
-    try {
-      await clusterKubectl.command(`delete -f ${templateDirectory}`)
-    } catch (err) {
-      // read the error, if it's NOT a server error - then throw an error
-      // status will be set to error
-      // otherwise ignore the error and let the status be set to delete
-      const match = err.message.match(/Unable to connect to the server/g) || err.message.match(/Error from server \(NotFound\): namespaces/g)
-      if (match === null) {
-        throw err
-      }
-    }
-  }
 
   const deleteTheRest = async () => {
     try {
@@ -139,8 +122,37 @@ const DeploymentDelete = ({
     }
   }
 
-  yield deleteDirectory()
-  yield deleteHelmCharts()
+  if (templateType === "helm") {
+
+    yield deleteHelmCharts()
+
+  } else {
+
+    const templateDirectory = yield renderTemplates({
+      deployment_type,
+      deployment_version,
+      desired_state: useData, // function expects arg named desired_state, but we will use applied_state if there is no error status because we are deleting not creating
+      custom_yaml,
+    })
+
+    const deleteDirectory = async () => {
+      try {
+        await clusterKubectl.command(`delete -f ${templateDirectory}`)
+      } catch (err) {
+        // read the error, if it's NOT a server error - then throw an error
+        // status will be set to error
+        // otherwise ignore the error and let the status be set to delete
+        const match = err.message.match(/Unable to connect to the server/g) || err.message.match(/Error from server \(NotFound\): namespaces/g)
+        if (match === null) {
+          throw err
+        }
+      }
+    }
+
+    yield deleteDirectory()
+    yield deleteHelmCharts()
+  }
+
   yield deleteTheRest()
 
 }
