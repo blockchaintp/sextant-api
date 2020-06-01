@@ -2,7 +2,7 @@
 
 const edition = {
   deployment: {
-    types: ['daml', 'sawtooth']
+    types: ['taekion', 'daml', 'sawtooth']
   },
   metering: {
     type: 'dev'
