@@ -28,9 +28,15 @@ const createTestKnex = async (databaseName) => {
   const masterKnex = Knex(getConnectionSettings())
   await masterKnex.raw(`create database ${databaseName}`)
   const testKnex = Knex(getConnectionSettings(databaseName))
-  await testKnex.migrate.latest({
-    directory: path.join(__dirname, '..', 'migrations')
-  })
+  try {
+    await testKnex.migrate.latest({
+      directory: path.join(__dirname, '..', 'migrations')
+    })
+  } catch(e) {
+    await testKnex.destroy()
+    await masterKnex.destroy()
+    throw e
+  }
   await masterKnex.destroy()
   return testKnex
 }
@@ -55,10 +61,13 @@ const testSuiteWithDatabase = (handler) => {
   })
 
   const databaseName = `testdb${randomDatabaseName}`
+  let databaseSetupStatus = false
+
   tape('setup database', async (t) => {
 
     try {
       databaseConnection = await createTestKnex(databaseName)
+      databaseSetupStatus = true
     } catch(err) {
       t.fail(`database setup error: ${err.toString()}`)
     }
@@ -66,23 +75,26 @@ const testSuiteWithDatabase = (handler) => {
     t.end()
   })
 
-  handler(getDatabaseConnection, getConnectionSettings(databaseName))
+  // only attempt the actual test if the database was setup
+  if(databaseSetupStatus) {
+    handler(getDatabaseConnection, getConnectionSettings(databaseName))
 
-  tape('teardown database', async (t) => {
+    tape('teardown database', async (t) => {
 
-    try {
-      await databaseConnection.destroy()
-      if(!process.env.KEEP_DATABASE) {
-        await destroyTestKnex(databaseName)
+      try {
+        await databaseConnection.destroy()
+        if(!process.env.KEEP_DATABASE) {
+          await destroyTestKnex(databaseName)
+        }
+        
+      } catch(err) {
+        t.fail(`database teardown error: ${err.toString()}`)
       }
-      
-    } catch(err) {
-      t.fail(`database teardown error: ${err.toString()}`)
-    }
-
-    t.end()
-
-  })
+  
+      t.end()
+  
+    })
+  } 
 }
 
 module.exports = {
