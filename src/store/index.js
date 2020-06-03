@@ -19,7 +19,7 @@ const Store = (knex) => {
   const task = TaskStore(knex)
   const settings = SettingsStore(knex)
 
-  const transaction = knex.transaction
+  const transaction = handler => knex.transaction(handler)
 
   return {
     knex,
