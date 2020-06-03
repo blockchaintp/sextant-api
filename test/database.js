@@ -61,40 +61,36 @@ const testSuiteWithDatabase = (handler) => {
   })
 
   const databaseName = `testdb${randomDatabaseName}`
-  let databaseSetupStatus = false
 
   tape('setup database', async (t) => {
 
     try {
       databaseConnection = await createTestKnex(databaseName)
-      databaseSetupStatus = true
     } catch(err) {
-      t.fail(`database setup error: ${err.toString()}`)
+      console.error(`database setup error: ${err.toString()}`)
+      process.exit(1)
     }
 
     t.end()
   })
 
-  // only attempt the actual test if the database was setup
-  if(databaseSetupStatus) {
-    handler(getDatabaseConnection, getConnectionSettings(databaseName))
+  handler(getDatabaseConnection, getConnectionSettings(databaseName))
 
-    tape('teardown database', async (t) => {
+  tape('teardown database', async (t) => {
 
-      try {
-        await databaseConnection.destroy()
-        if(!process.env.KEEP_DATABASE) {
-          await destroyTestKnex(databaseName)
-        }
-        
-      } catch(err) {
-        t.fail(`database teardown error: ${err.toString()}`)
+    try {
+      await databaseConnection.destroy()
+      if(!process.env.KEEP_DATABASE) {
+        await destroyTestKnex(databaseName)
       }
-  
-      t.end()
-  
-    })
-  } 
+      
+    } catch(err) {
+      t.fail(`database teardown error: ${err.toString()}`)
+    }
+
+    t.end()
+
+  })
 }
 
 module.exports = {

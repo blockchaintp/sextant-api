@@ -50,14 +50,9 @@ database.testSuiteWithDatabase(getConnection => {
   let testClusters = {}
 
   asyncTest('cluster controller -> create users', async (t) => {
-    console.log('--------------------------------------------')
-    console.log('hello')
+    const users = await fixtures.insertTestUsers(getConnection())
+    userMap = users
   })
-
-  // asyncTest('cluster controller -> create users', async (t) => {
-  //   const users = await fixtures.insertTestUsers(getConnection())
-  //   userMap = users
-  // })
 
   // asyncTest('cluster controller -> create cluster with bad values', async (t) => {
   
