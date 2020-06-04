@@ -61,7 +61,7 @@ const UserStore = (knex) => {
         * meta
 
   */
-  const create = ({
+  const create = async ({
     data: {
       username,
       hashed_password,
@@ -75,7 +75,7 @@ const UserStore = (knex) => {
     if(!server_side_key) throw new Error(`data.server_side_key param must be given to store.user.create`)
     if(!permission) throw new Error(`data.permission param must be given to store.user.create`)
 
-    return (trx || knex)(config.TABLES.user)
+    const [result] = await (trx || knex)(config.TABLES.user)
       .insert({
         username,
         hashed_password,
@@ -84,7 +84,8 @@ const UserStore = (knex) => {
         meta,
       })
       .returning('*')
-      .get(0)
+
+    return result
   }
 
   /*
@@ -103,20 +104,20 @@ const UserStore = (knex) => {
     one of id or username must be given
   
   */
-  const update = ({
+  const update = async ({
     id,
     data,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.user.update`)
     if(!data) throw new Error(`data param must be given to store.user.update`)
 
-    return (trx || knex)(config.TABLES.user)
+    const [result] = await (trx || knex)(config.TABLES.user)
       .where({
         id,
       })
       .update(data)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -128,18 +129,18 @@ const UserStore = (knex) => {
       * id
     
   */
-  const del = ({
+  const del = async ({
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.user.delete`)
 
-    return (trx || knex)(config.TABLES.user)
+    const [result] = await (trx || knex)(config.TABLES.user)
       .where({
         id,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {

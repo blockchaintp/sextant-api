@@ -74,7 +74,7 @@ const DeploymentStore = (knex) => {
     status is set to 'created' for a new deployment
 
   */
-  const create = ({
+  const create = async ({
     data: {
       cluster,
       name,
@@ -90,7 +90,7 @@ const DeploymentStore = (knex) => {
     if(!deployment_version) throw new Error(`data.deployment_version param must be given to store.deployment.create`)
     if(!desired_state) throw new Error(`data.desired_state param must be given to store.deployment.create`)
 
-    return (trx || knex)(config.TABLES.deployment)
+    const [result] = await (trx || knex)(config.TABLES.deployment)
       .insert({
         cluster,
         name,
@@ -100,7 +100,7 @@ const DeploymentStore = (knex) => {
         custom_yaml,
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -118,19 +118,19 @@ const DeploymentStore = (knex) => {
         * maintenance_flag
   
   */
-  const update = ({
+  const update = async ({
     id,
     data,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.update`)
     if(!data) throw new Error(`data param must be given to store.cluster.update`)
-    return (trx || knex)(config.TABLES.deployment)
+    const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
         id,
       })
       .update(data)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -142,18 +142,18 @@ const DeploymentStore = (knex) => {
       * id
 
   */
-  const del = ({
+  const del = async ({
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.deployment.delete`)
 
-    return (trx || knex)(config.TABLES.deployment)
+    const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
         id,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {

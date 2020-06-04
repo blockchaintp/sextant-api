@@ -28,9 +28,15 @@ const createTestKnex = async (databaseName) => {
   const masterKnex = Knex(getConnectionSettings())
   await masterKnex.raw(`create database ${databaseName}`)
   const testKnex = Knex(getConnectionSettings(databaseName))
-  await testKnex.migrate.latest({
-    directory: path.join(__dirname, '..', 'migrations')
-  })
+  try {
+    await testKnex.migrate.latest({
+      directory: path.join(__dirname, '..', 'migrations')
+    })
+  } catch(e) {
+    await testKnex.destroy()
+    await masterKnex.destroy()
+    throw e
+  }
   await masterKnex.destroy()
   return testKnex
 }
@@ -55,12 +61,14 @@ const testSuiteWithDatabase = (handler) => {
   })
 
   const databaseName = `testdb${randomDatabaseName}`
+
   tape('setup database', async (t) => {
 
     try {
       databaseConnection = await createTestKnex(databaseName)
     } catch(err) {
-      t.fail(`database setup error: ${err.toString()}`)
+      console.error(`database setup error: ${err.toString()}`)
+      process.exit(1)
     }
 
     t.end()

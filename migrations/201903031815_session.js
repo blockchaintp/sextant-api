@@ -8,13 +8,13 @@ WITH (OIDS=FALSE);
 ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
 `
 
-const up = (knex, Promise) => {
+const up = (knex) => {
   return Promise.all([
     knex.raw(SESSION_SQL)
   ])
 }
 
-const down = (knex, Promise) => {
+const down = (knex) => {
   return Promise.all([
     knex.schema.dropTable('session')
   ])

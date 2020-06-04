@@ -26,7 +26,6 @@ const {
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
-
 // remove the ca and token from the desired state as these will be replaced by clustersecret ids
 // this is so we can compare two values (ignoring the ca and token)
 const cleanDesiredState = (state) => {

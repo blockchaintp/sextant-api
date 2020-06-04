@@ -1,7 +1,7 @@
 const config = require('../src/config')
 const enumerations = require('../src/enumerations')
 
-const up = (knex, Promise) => {
+const up = (knex) => {
   return Promise.all([
     knex.schema.createTable('deployment', (table) => {
       table.specificType('id', 'serial primary key not null')
@@ -22,7 +22,7 @@ const up = (knex, Promise) => {
   ])
 }
 
-const down = (knex, Promise) => {
+const down = (knex) => {
   return Promise.all([
     knex.schema.dropTable('deployment')
   ])

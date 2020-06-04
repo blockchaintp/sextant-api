@@ -31,7 +31,7 @@
     "js-yaml": "^3.13.1",
     "jsonist": "^2.1.0",
     "jsonwebtoken": "^8.5.0",
-    "knex": "^0.15.2",
+    "knex": "^0.21.1",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "node-cidr": "^1.0.0",

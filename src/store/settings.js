@@ -58,7 +58,7 @@ const SettingsStore = (knex) => {
         * value || base64Data
 
   */
-  const create = ({
+  const create = async ({
     data: {
       key,
       value
@@ -72,10 +72,10 @@ const SettingsStore = (knex) => {
       value,
     }
 
-    return (trx || knex)('settings')
+    const [result] = await (trx || knex)('settings')
       .insert(insertData)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -88,7 +88,7 @@ const SettingsStore = (knex) => {
       * key, value
 
   */
-  const update = ({
+  const update = async ({
     key,
     data: {
       value
@@ -104,13 +104,13 @@ const SettingsStore = (knex) => {
 
     if(key) queryParams.key = key
 
-    return (trx || knex)('settings')
+    const [result] = await (trx || knex)('settings')
       .where(queryParams)
       .update({
         value: value,
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -122,7 +122,7 @@ const SettingsStore = (knex) => {
       * id or key
 
   */
-  const del = ({
+  const del = async ({
     id,
     key,
   }, trx) => {
@@ -134,11 +134,11 @@ const SettingsStore = (knex) => {
     if(id) queryParams.id = id
     if(key) queryParams.key = key
 
-    return (trx || knex)('settings')
+    const [result] = await (trx || knex)('settings')
       .where(queryParams)
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {

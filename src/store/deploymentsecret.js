@@ -77,7 +77,7 @@ const DeploymentSecretStore = (knex) => {
         * rawData || base64Data
     
   */
-  const create = ({
+  const create = async ({
     data: {
       deployment,
       name,
@@ -95,10 +95,10 @@ const DeploymentSecretStore = (knex) => {
       base64data: base64Data || base64.encode(rawData),
     }
 
-    return (trx || knex)(config.TABLES.deploymentsecret)
+    const [result] = await (trx || knex)(config.TABLES.deploymentsecret)
       .insert(insertData)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -113,7 +113,7 @@ const DeploymentSecretStore = (knex) => {
         * rawData || base64Data
   
   */
-  const update = ({
+  const update = async ({
     deployment,
     id,
     name,
@@ -134,13 +134,13 @@ const DeploymentSecretStore = (knex) => {
     if(id) queryParams.id = id
     if(name) queryParams.name = name
 
-    return (trx || knex)(config.TABLES.deploymentsecret)
+    const [result] = await (trx || knex)(config.TABLES.deploymentsecret)
       .where(queryParams)
       .update({
         base64data: base64Data || base64.encode(rawData),
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -153,7 +153,7 @@ const DeploymentSecretStore = (knex) => {
       * id or name
 
   */
-  const del = ({
+  const del = async ({
     deployment,
     id,
     name,
@@ -168,11 +168,11 @@ const DeploymentSecretStore = (knex) => {
     if(id) queryParams.id = id
     if(name) queryParams.name = name
     
-    return (trx || knex)(config.TABLES.deploymentsecret)
+    const [result] = await (trx || knex)(config.TABLES.deploymentsecret)
       .where(queryParams)
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -222,17 +222,17 @@ const DeploymentSecretStore = (knex) => {
       * deployment
 
   */
-  const deleteForDeployment = ({
+  const deleteForDeployment = async ({
     deployment,
   }, trx) => {
     if(!deployment) throw new Error(`deployment must be given to store.deploymentsecret.deleteForDeployment`)
-    return (trx || knex)(config.TABLES.deploymentsecret)
+    const [result] = await (trx || knex)(config.TABLES.deploymentsecret)
       .where({
         deployment,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {
