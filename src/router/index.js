@@ -138,6 +138,9 @@ const Routes = ({
   app.post(basePath('/clusters/:cluster/deployments/:id/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generatePartyToken))
   app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.uploadArchive))
 
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/keys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/keys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createKey))
+
   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listVolumes))
   app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createVolume))
 
