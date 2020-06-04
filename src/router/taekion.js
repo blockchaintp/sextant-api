@@ -2,6 +2,37 @@ const httpUtils = require('../utils/http')
 
 const TaekionRoutes = (controllers) => {
 
+  const listKeys = async (req, res, next) => {
+    const {
+      id,
+    } = req.params
+    const data = await controllers.taekion.listKeys({
+      deployment: id,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const createKey = async (req, res, next) => {
+    const {
+      id,
+    } = req.params
+    const {
+      keyName,
+    } = req.body
+
+    if(!keyName) return httpUtils.badRequest(res, `keyName required`)
+    
+    const data = await controllers.taekion.createKey({
+      deployment: id,
+      keyName,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
   const listVolumes = async (req, res, next) => {
     const {
       id,
@@ -75,6 +106,8 @@ const TaekionRoutes = (controllers) => {
   }
 
   return {
+    listKeys,
+    createKey,
     listVolumes,
     createVolume,
     listSnapshots,

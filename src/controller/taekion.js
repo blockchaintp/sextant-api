@@ -1,5 +1,21 @@
 const TaekionController = ({ store, settings }) => {
 
+  const listKeys = async ({
+    deployment,
+  }) => {
+    return []
+  }
+
+  const createKey = async ({
+    deployment,
+    keyName
+  }) => {
+    return {
+      id: 10,
+      keyName,
+    }
+  }
+
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({
     deployment,
@@ -80,6 +96,8 @@ const TaekionController = ({ store, settings }) => {
   }
 
   return {
+    listKeys,
+    createKey,
     listVolumes,
     createVolume,
     listSnapshots,
