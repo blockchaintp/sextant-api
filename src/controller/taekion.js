@@ -2,7 +2,7 @@ const TaekionController = ({ store, settings }) => {
 
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({
-    
+    deployment,
   }) => {
     return {
       "action": "volume",
@@ -26,6 +26,7 @@ const TaekionController = ({ store, settings }) => {
 
   // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
   const createVolume = async ({
+    deployment,
     volumeName,
     compression = 'none',
     encryption,
@@ -46,6 +47,7 @@ const TaekionController = ({ store, settings }) => {
 
   // curl http://localhost:8000/snapshot?list&volume=apples
   const listSnapshots = async ({
+    deployment,
     volumeName,
   }) => {
     return {
@@ -63,6 +65,7 @@ const TaekionController = ({ store, settings }) => {
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
   const createSnapshot = async ({
+    deployment,
     snapshotName,
     volumeName,
   }) => {

@@ -3,8 +3,11 @@ const httpUtils = require('../utils/http')
 const TaekionRoutes = (controllers) => {
 
   const listVolumes = async (req, res, next) => {
+    const {
+      id,
+    } = req.params
     const data = await controllers.taekion.listVolumes({
-      
+      deployment: id,
     })
     res
       .status(200)
@@ -12,6 +15,9 @@ const TaekionRoutes = (controllers) => {
   }
 
   const createVolume = async (req, res, next) => {
+    const {
+      id,
+    } = req.params
     const {
       volumeName,
       compression,
@@ -23,6 +29,7 @@ const TaekionRoutes = (controllers) => {
     if(!encryption) return httpUtils.badRequest(res, `encryption required`)
     
     const data = await controllers.taekion.createVolume({
+      deployment: id,
       volumeName,
       compression,
       encryption,
@@ -34,9 +41,11 @@ const TaekionRoutes = (controllers) => {
 
   const listSnapshots = async (req, res, next) => {
     const {
+      id,
       volumeName,
     } = req.params
     const data = await controllers.taekion.listSnapshots({
+      deployment: id,
       volumeName,
     })
     res
@@ -46,6 +55,7 @@ const TaekionRoutes = (controllers) => {
 
   const createSnapshot = async (req, res, next) => {
     const {
+      id,
       volumeName,
     } = req.params
     const {
@@ -55,6 +65,7 @@ const TaekionRoutes = (controllers) => {
     if(!snapshotName) return httpUtils.badRequest(res, `snapshotName required`)
 
     const data = await controllers.taekion.createSnapshot({
+      deployment: id,
       volumeName,
       snapshotName,
     })
