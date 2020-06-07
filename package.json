@@ -7,7 +7,9 @@
   "scripts": {
     "preserve": "knex migrate:latest",
     "serve": "node src/index.js",
-    "test": "tape {src,test}/**/*.test.js | tap-spec"
+    "test": "tape {src,test}/**/*.test.js | tap-spec",
+    "download-helm-charts": "node scripts/download-helm-charts.js",
+    "start": "npm run download-helm-charts && npm run serve"
   },
   "dependencies": {
     "@digitalasset/daml-ledger": "0.8.3",
