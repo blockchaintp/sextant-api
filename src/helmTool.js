@@ -88,7 +88,13 @@ class HelmTool {
     // may use .then/catch for these promises
     const removeAndPull = async (repo, chart) => {
       await exec(`if [ -d /app/api/helmCharts/${chart} ]; then echo "removing /app/api/helmCharts/${chart}"; rm -rf /app/api/helmCharts/${chart}; fi`)
+      pino.info({
+        action: `removing /app/api/helmCharts/${chart} if found`
+      })
       await exec(`helm pull ${repo.name}/${chart} --untar -d /app/api/helmCharts`)
+      pino.info({
+        action: `untaring the chart into /app/api/helmCharts/${chart}`
+      })
     }
  
     for(repo of helmRepos) {
