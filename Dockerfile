@@ -39,4 +39,4 @@ ARG EDITION_MODULE=dev.js
 COPY ./editions/${EDITION_MODULE} /app/api/src/edition.js
 
 ENTRYPOINT ["npm"]
-CMD ["run", "serve"]
+CMD ["run", "start"]
