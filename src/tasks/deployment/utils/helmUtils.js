@@ -12,7 +12,7 @@ const getTemplateType = (deployment_type, deployment_version) => {
   const chartTable = edition.chartTable
   let templateType
 
-  if (chartTable && chartTable[deployment_type] && chartTable[deployment_version]) {
+  if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
     templateType = 'helm'
   } else {
     templateType = 'classic'
