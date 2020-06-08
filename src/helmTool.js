@@ -42,7 +42,7 @@ class HelmTool {
     }
     for (const repo of this.helmRepos) {
       try {
-        runHelmAdd(repo)
+        await runHelmAdd(repo)
       } catch(err) {
         pino.error({
           action: `add repository`,
@@ -51,22 +51,6 @@ class HelmTool {
         process.exit(1)
       }
     }
-    // try {
-    //   this.helmRepos
-    //     .forEach(async (repo) => {
-    //       const helmCommand = this.buildCommand(repo)
-    //       await exec(helmCommand)
-    //       pino.info({
-    //         action: `adding ${repo.name} repository`
-    //       })
-    //     })
-    // } catch (err) {
-    //   pino.error({
-    //     action: `add repository`,
-    //     error: err
-    //   })
-    //   process.exit(1)
-    // }
   }
 
   async update() {
@@ -99,7 +83,7 @@ class HelmTool {
     for(const repo of this.helmRepos) {
       for(const chart of repo.charts) {
         try {
-          removeAndPull(repo, chart)
+          await removeAndPull(repo, chart)
         } catch (err) {
           pino.error({
             action: 'remove directory then pull/untar chart',
@@ -108,38 +92,6 @@ class HelmTool {
         }
       }
     }
-
-    // this.helmRepos
-    //   .forEach(
-    //     (repo) => {
-    //       repo.charts
-    //         .forEach(
-    //           async (chart) => {
-    //             try {
-    //               await exec(`if [ -d /app/api/helmCharts/${chart} ]; then echo "removing /app/api/helmCharts/${chart}"; rm -rf /app/api/helmCharts/${chart}; fi`)
-    //             } catch (err) {
-    //               pino.error({
-    //                 action: 'removing output directory',
-    //                 error: err
-    //               })
-    //             }
-    //             try {
-    //               await exec(`helm pull ${repo.name}/${chart} --untar -d /app/api/helmCharts`)
-    //               pino.info({
-    //                 action: `pulling and untarring the chart`,
-    //                 chart: chart
-    //               })
-    //             } catch (err) {
-    //               pino.error({
-    //                 action: 'pulling and untarring the chart',
-    //                 error: err
-    //               })
-    //               process.exit(1)
-    //             }
-    //           }
-    //         )
-    //     }
-    //   )
   }
 
   async start() {
