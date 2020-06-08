@@ -1,5 +1,5 @@
-const version_1_1_form = require('./1.1/form')
-const version_1_1_summary = require('./1.1/summary')
+const version_1_1_form = require('../../../helmCharts/sawtooth/sextant/form')
+const version_1_1_summary = require('../../../helmCharts/sawtooth/sextant/summary')
 
 module.exports = {
   forms: {
