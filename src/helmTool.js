@@ -40,7 +40,7 @@ class HelmTool {
         action: `adding ${repo.name} repository`
       })
     }
-    for (repo of helmRepos) {
+    for (const repo of this.helmRepos) {
       try {
         runHelmAdd(repo)
       } catch(err) {
@@ -85,7 +85,6 @@ class HelmTool {
   }
 
   async storeChartsLocally() {
-    // may use .then/catch for these promises
     const removeAndPull = async (repo, chart) => {
       await exec(`if [ -d /app/api/helmCharts/${chart} ]; then echo "removing /app/api/helmCharts/${chart}"; rm -rf /app/api/helmCharts/${chart}; fi`)
       pino.info({
@@ -97,8 +96,8 @@ class HelmTool {
       })
     }
  
-    for(repo of helmRepos) {
-      for(chart of repo.charts) {
+    for(const repo of this.helmRepos) {
+      for(const chart of repo.charts) {
         try {
           removeAndPull(repo, chart)
         } catch (err) {
@@ -145,9 +144,9 @@ class HelmTool {
 
   async start() {
     await this.add()
-    await Promise.delay(5000)
+    //await Promise.delay(5000)
     await this.update()
-    await this.pull()
+    await this.storeChartsLocally()
   }
 }
 
