@@ -65,20 +65,23 @@ const TaekionRoutes = (controllers) => {
       id,
     } = req.params
     const {
-      volumeName,
+      name,
       compression,
       encryption,
+      fingerprint,
     } = req.body
 
-    if(!volumeName) return httpUtils.badRequest(res, `volumeName required`)
+    if(!name) return httpUtils.badRequest(res, `name required`)
     if(!compression) return httpUtils.badRequest(res, `compression required`)
     if(!encryption) return httpUtils.badRequest(res, `encryption required`)
+    if(!fingerprint) return httpUtils.badRequest(res, `fingerprint required`)
     
     const data = await controllers.taekion.createVolume({
       deployment: id,
-      volumeName,
+      name,
       compression,
       encryption,
+      fingerprint,
     })
     res
       .status(201)
