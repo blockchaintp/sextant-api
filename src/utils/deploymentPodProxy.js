@@ -91,8 +91,14 @@ const DeploymentPodProxy = async ({
     .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
     .then(data => data.items)
 
+  const getPod = async () => {
+    const pods = await getPods()
+    return pods && pods.length > 0 ? pods[0] : null
+  }
+
   return {
     getPods,
+    getPod,
     request: ({
       pod,
       port,
