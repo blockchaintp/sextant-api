@@ -69,7 +69,7 @@ const ClusterStore = (knex) => {
         * desired_state
 
   */
-  const create = ({
+  const create = async ({
     data: {
       name,
       provision_type,
@@ -82,7 +82,7 @@ const ClusterStore = (knex) => {
     if(!provision_type) throw new Error(`data.provision_type param must be given to store.cluster.create`)
     if(!desired_state) throw new Error(`data.desired_state param must be given to store.cluster.create`)
 
-    return (trx || knex)(config.TABLES.cluster)
+    const [result] = await (trx || knex)(config.TABLES.cluster)
       .insert({
         name,
         provision_type,
@@ -90,7 +90,8 @@ const ClusterStore = (knex) => {
         desired_state,
       })
       .returning('*')
-      .get(0)
+
+    return result
   }
 
   /*
@@ -109,7 +110,7 @@ const ClusterStore = (knex) => {
         * maintenance_flag
 
   */
-  const update = ({
+  const update = async ({
     id,
     data,
   }, trx) => {
@@ -117,13 +118,13 @@ const ClusterStore = (knex) => {
     if(!id) throw new Error(`id must be given to store.cluster.update`)
     if(!data) throw new Error(`data param must be given to store.cluster.update`)
 
-    return (trx || knex)(config.TABLES.cluster)
+    const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
         id,
       })
       .update(data)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -137,12 +138,12 @@ const ClusterStore = (knex) => {
       * id
 
   */
-  const del = ({
+  const del = async ({
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.delete`)
 
-    return (trx || knex)(config.TABLES.cluster)
+    const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
         id,
       })
@@ -150,21 +151,21 @@ const ClusterStore = (knex) => {
         status: config.CLUSTER_STATUS.deleted,
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
-  const deletePermenantly = ({
+  const deletePermenantly = async ({
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.cluster.deletePermenantly`)
 
-    return (trx || knex)(config.TABLES.cluster)
+    const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
         id,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {

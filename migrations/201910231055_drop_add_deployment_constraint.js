@@ -1,5 +1,5 @@
 
-const up = (knex, Promise) => {
+const up = (knex) => {
   return Promise.all([
     knex.schema.table('deployment', (table) => {
       table.dropUnique('name')
@@ -10,7 +10,7 @@ const up = (knex, Promise) => {
   ])
 }
 
-const down = (knex, Promise) => {
+const down = (knex) => {
   return Promise.all([
     knex.schema.dropTable('deployment')
   ])

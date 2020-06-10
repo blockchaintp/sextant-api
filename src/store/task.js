@@ -173,7 +173,7 @@ const TaskStore = (knex) => {
         * status
     
   */
-  const create = ({
+  const create = async ({
     data: {
       user,
       resource_type,
@@ -191,7 +191,7 @@ const TaskStore = (knex) => {
     if(typeof(restartable) !== 'boolean') throw new Error(`data.restartable param must be given to store.task.create`)
     if(!payload) throw new Error(`data.payload param must be given to store.task.create`)
 
-    return (trx || knex)(config.TABLES.task)
+    const [result] = await (trx || knex)(config.TABLES.task)
       .insert({
         user,
         resource_type,
@@ -202,7 +202,7 @@ const TaskStore = (knex) => {
         resource_status
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -219,7 +219,7 @@ const TaskStore = (knex) => {
         * ended_at
   
   */
-  const update = ({
+  const update = async ({
     id,
     data: {
       status,
@@ -241,13 +241,13 @@ const TaskStore = (knex) => {
     if(started_at) updateData.started_at = started_at
     if(ended_at) updateData.ended_at = ended_at
 
-    return (trx || knex)(config.TABLES.task)
+    const [result] = await (trx || knex)(config.TABLES.task)
       .where({
         id,
       })
       .update(updateData)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*

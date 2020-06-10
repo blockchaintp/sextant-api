@@ -71,7 +71,7 @@ const ClusterFileStore = (knex) => {
         * base64Data
     
   */
-  const create = ({
+  const create = async ({
     data: {
       cluster,
       name,
@@ -89,10 +89,10 @@ const ClusterFileStore = (knex) => {
       base64data: base64Data || base64.encode(rawData),
     }
 
-    return (trx || knex)(config.TABLES.clusterfile)
+    const [result] = await (trx || knex)(config.TABLES.clusterfile)
       .insert(insertData)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -107,7 +107,7 @@ const ClusterFileStore = (knex) => {
         * rawData
     
   */
-  const update = ({
+  const update = async ({
     cluster,
     id,
     name,
@@ -128,13 +128,13 @@ const ClusterFileStore = (knex) => {
     if(id) queryParams.id = id
     if(name) queryParams.name = name
 
-    return (trx || knex)(config.TABLES.clusterfile)
+    const [result] = await (trx || knex)(config.TABLES.clusterfile)
       .where(queryParams)
       .update({
         base64data: base64Data || base64.encode(rawData),
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -147,7 +147,7 @@ const ClusterFileStore = (knex) => {
       * id or name
 
   */
-  const del = ({
+  const del = async ({
     cluster,
     id,
     name,
@@ -162,11 +162,11 @@ const ClusterFileStore = (knex) => {
     if(id) queryParams.id = id
     if(name) queryParams.name = name
     
-    return (trx || knex)(config.TABLES.clusterfile)
+    const [result] = await (trx || knex)(config.TABLES.clusterfile)
       .where(queryParams)
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -178,17 +178,17 @@ const ClusterFileStore = (knex) => {
       * cluster
 
   */
-  const deleteForCluster = ({
+  const deleteForCluster = async ({
     cluster,
   }, trx) => {
     if(!cluster) throw new Error(`cluster must be given to store.clusterfile.del`)
-    return (trx || knex)(config.TABLES.clusterfile)
+    const [result] = await (trx || knex)(config.TABLES.clusterfile)
       .where({
         cluster,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {

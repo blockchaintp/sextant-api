@@ -95,7 +95,7 @@ const RoleStore = (knex) => {
       
   
   */
-  const create = ({
+  const create = async ({
     data: {
       user,
       permission,
@@ -108,7 +108,7 @@ const RoleStore = (knex) => {
     if(!resource_type) throw new Error(`data.resource_type param must be given to store.role.create`)
     if(!resource_id) throw new Error(`data.resource_id param must be given to store.role.create`)
 
-    return (trx || knex)(config.TABLES.role)
+    const [result] = await (trx || knex)(config.TABLES.role)
       .insert({
         user,
         permission,
@@ -116,7 +116,7 @@ const RoleStore = (knex) => {
         resource_id,
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -128,17 +128,17 @@ const RoleStore = (knex) => {
      * id
   
   */
-  const del = ({
+  const del = async ({
     id,
   }, trx) => {
     if(!id) throw new Error(`id must be given to store.role.delete`)
-    return (trx || knex)(config.TABLES.role)
+    const [result] = await (trx || knex)(config.TABLES.role)
       .where({
         id,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*

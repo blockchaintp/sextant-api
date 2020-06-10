@@ -77,7 +77,7 @@ const ClusterSecretStore = (knex) => {
         * rawData || base64Data
     
   */
-  const create = ({
+  const create = async ({
     data: {
       cluster,
       name,
@@ -95,10 +95,10 @@ const ClusterSecretStore = (knex) => {
       base64data: base64Data || base64.encode(rawData),
     }
 
-    return (trx || knex)(config.TABLES.clustersecret)
+    const [result] = await (trx || knex)(config.TABLES.clustersecret)
       .insert(insertData)
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -113,7 +113,7 @@ const ClusterSecretStore = (knex) => {
         * rawData || base64Data
   
   */
-  const update = ({
+  const update = async ({
     cluster,
     id,
     name,
@@ -134,13 +134,13 @@ const ClusterSecretStore = (knex) => {
     if(id) queryParams.id = id
     if(name) queryParams.name = name
 
-    return (trx || knex)(config.TABLES.clustersecret)
+    const [result] = await (trx || knex)(config.TABLES.clustersecret)
       .where(queryParams)
       .update({
         base64data: base64Data || base64.encode(rawData),
       })
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -153,7 +153,7 @@ const ClusterSecretStore = (knex) => {
       * id or name
 
   */
-  const del = ({
+  const del = async ({
     cluster,
     id,
     name,
@@ -168,11 +168,11 @@ const ClusterSecretStore = (knex) => {
     if(id) queryParams.id = id
     if(name) queryParams.name = name
     
-    return (trx || knex)(config.TABLES.clustersecret)
+    const [result] = await (trx || knex)(config.TABLES.clustersecret)
       .where(queryParams)
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   /*
@@ -222,17 +222,17 @@ const ClusterSecretStore = (knex) => {
       * cluster
 
   */
-  const deleteForCluster = ({
+  const deleteForCluster = async ({
     cluster,
   }, trx) => {
     if(!cluster) throw new Error(`cluster must be given to store.clustersecret.deleteForCluster`)
-    return (trx || knex)(config.TABLES.clustersecret)
+    const [result] = await (trx || knex)(config.TABLES.clustersecret)
       .where({
         cluster,
       })
       .del()
       .returning('*')
-      .get(0)
+    return result
   }
 
   return {
