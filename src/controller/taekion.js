@@ -54,19 +54,36 @@ const TaekionController = ({ store, settings }) => {
 
   const listKeys = async ({
     deployment,
-  }) => {
-    return []
-  }
-
+  }) => store.taekionkeys.list({
+    deployment,
+  })
+    
   const createKey = async ({
     deployment,
-    keyName
+    name,
   }) => {
+    const key = 'abc'
+    const fingerprint = '123'
+    const result = await store.taekionkeys.create({
+      deployment,
+      data: {
+        name,
+        fingerprint,
+      }
+    })
     return {
-      id: 10,
-      keyName,
+      key,
+      result,
     }
   }
+
+  const deleteKey = async ({
+    deployment,
+    id,
+  }) => store.taekionkeys.delete({
+    deployment,
+    id,
+  })
 
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({
@@ -111,6 +128,7 @@ const TaekionController = ({ store, settings }) => {
   return {
     listKeys,
     createKey,
+    deleteKey,
     listVolumes,
     createVolume,
     listSnapshots,
