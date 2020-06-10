@@ -18,7 +18,6 @@ const TaekionAPI = ({
     const proxy = await DeploymentPodProxy({
       store,
       id: deployment,
-      label: 'app=<name>-validator'
     })
 
     const pod = await proxy.getPod()
