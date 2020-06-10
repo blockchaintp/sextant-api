@@ -13,7 +13,7 @@ const TaekionAPI = ({
     deployment,
     method = 'get',
     url = '/',
-    data = null,
+    ...extra
   }) => {
     const proxy = await DeploymentPodProxy({
       store,
@@ -33,7 +33,7 @@ const TaekionAPI = ({
         const res = await axios({
           method,
           url: `http://localhost:${port}${url}`,
-          data,
+          ...extra
         })
         return res
       }
@@ -42,6 +42,7 @@ const TaekionAPI = ({
     return result
   }
 
+  // curl http://localhost:8000/volume?list
   const listVolumes = async ({
     deployment,
   }) => {
@@ -52,8 +53,30 @@ const TaekionAPI = ({
     return res.data
   }
 
+  // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
+  const createVolume = async ({
+    deployment,
+    name,
+    compression,
+    encryption,
+    fingerprint,
+  }) => {
+    const res = await apiRequest({
+      deployment,
+      url: '/volume',
+      params: {
+        create: name,
+        compression,
+        encryption,
+        fingerprint,
+      },
+    })
+    return res.data
+  }
+
   return {
     listVolumes,
+    createVolume,
   }
 
 }
