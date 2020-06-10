@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const utils = require('../utils/taekion')
+const API = require('../api/taekion')
 
 const FIXTURES = {
   listVolumes: {
@@ -53,6 +54,10 @@ const FIXTURES = {
 
 const TaekionController = ({ store, settings }) => {
 
+  const api = API({
+    store,
+  })
+
   const listKeys = async ({
     deployment,
   }) => store.taekionkeys.list({
@@ -91,8 +96,9 @@ const TaekionController = ({ store, settings }) => {
     deployment,
   }) => {
 
-    // todo: connect to api
-    const data = FIXTURES.listVolumes
+    const data = await api.listVolumes({
+      deployment,
+    })
 
     return utils.processVolumeResponse(data)
   }
