@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const utils = require('../utils/taekion')
 
 const FIXTURES = {
@@ -62,8 +63,8 @@ const TaekionController = ({ store, settings }) => {
     deployment,
     name,
   }) => {
-    const key = 'abc'
-    const fingerprint = '123'
+    const key = crypto.randomBytes(32)
+    const fingerprint = crypto.createHash('sha256').update(key).digest('hex')
     const result = await store.taekionkeys.create({
       deployment,
       data: {
@@ -72,7 +73,7 @@ const TaekionController = ({ store, settings }) => {
       }
     })
     return {
-      key,
+      key: key.toString('hex'),
       result,
     }
   }
