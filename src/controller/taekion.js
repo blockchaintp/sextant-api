@@ -1,3 +1,4 @@
+const Promise = require('bluebird')
 const crypto = require('crypto')
 const utils = require('../utils/taekion')
 const API = require('../api/taekion')
@@ -161,12 +162,32 @@ const TaekionController = ({ store, settings }) => {
     volumeName,
   }) => {
 
-    const data = await api.listSnapshots({
-      deployment,
-      volume: volumeName,
-    })
+    // loop over all volumes and concat the data together
+    if(volumeName == 'all') {
+      const volumes = await listVolumes({
+        deployment,
+      })
 
-    return utils.processSnapshotResponse(data)    
+      const snapshotCollections = await Promise.map(volumes, async volume => {
+        const snapshots = await listSnapshots({
+          deployment,
+          volumeName: volume.name,
+        })
+        return snapshots
+      })
+
+      return snapshotCollections.reduce((all, snapshotArray) => {
+        return all.concat(snapshotArray)
+      }, [])
+    }
+    else {
+      const data = await api.listSnapshots({
+        deployment,
+        volume: volumeName,
+      })
+
+      return utils.processSnapshotResponse(data)
+    }    
   }
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
