@@ -88,6 +88,21 @@ const TaekionRoutes = (controllers) => {
       .json(data)
   }
 
+  const deleteVolume = async (req, res, next) => {
+    const {
+      id,
+      name,
+    } = req.params
+    
+    const data = await controllers.taekion.deleteVolume({
+      deployment: id,
+      name,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
   const listSnapshots = async (req, res, next) => {
     const {
       id,
@@ -129,6 +144,7 @@ const TaekionRoutes = (controllers) => {
     deleteKey,
     listVolumes,
     createVolume,
+    deleteVolume,
     listSnapshots,
     createSnapshot,
   }

@@ -80,9 +80,17 @@ const TaekionAPI = ({
     return data
   }
 
+  const deleteVolume = async ({
+    deployment,
+    name,
+  }) => {
+    throw new Error(`endpoint tbc`)
+  }
+
   return {
     listVolumes,
     createVolume,
+    deleteVolume,
   }
 
 }

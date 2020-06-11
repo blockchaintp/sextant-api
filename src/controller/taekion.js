@@ -122,6 +122,19 @@ const TaekionController = ({ store, settings }) => {
     return data
   }
 
+  const deleteVolume = async ({
+    deployment,
+    name,
+  }) => {
+
+    const data = await api.deleteVolume({
+      deployment,
+      name,
+    })
+
+    return data
+  }
+
   // curl http://localhost:8000/snapshot?list&volume=apples
   const listSnapshots = async ({
     deployment,
@@ -145,6 +158,7 @@ const TaekionController = ({ store, settings }) => {
     deleteKey,
     listVolumes,
     createVolume,
+    deleteVolume,
     listSnapshots,
     createSnapshot,
   }
