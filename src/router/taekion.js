@@ -74,7 +74,7 @@ const TaekionRoutes = (controllers) => {
     if(!name) return httpUtils.badRequest(res, `name required`)
     if(!compression) return httpUtils.badRequest(res, `compression required`)
     if(!encryption) return httpUtils.badRequest(res, `encryption required`)
-    if(!fingerprint) return httpUtils.badRequest(res, `fingerprint required`)
+    if(encryption != 'none' && !fingerprint) return httpUtils.badRequest(res, `fingerprint required`)
     
     const data = await controllers.taekion.createVolume({
       deployment: id,
