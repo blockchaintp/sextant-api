@@ -7,8 +7,13 @@ const processVolumeResponse = (data) => {
   return Object
     .keys(volumes)
     .map(volumeName => {
-      return Object.assign({}, volumes[volumeName], {
+
+      const volume = volumes[volumeName]
+      return Object.assign({}, volume, {
         name: volumeName,
+        encryption: volume.encryption == 'AES-GCM' ?
+          'AES_GCM' :
+          volume.encryption,
       })
     })
 }
