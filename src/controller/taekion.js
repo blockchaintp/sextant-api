@@ -198,7 +198,14 @@ const TaekionController = ({ store, settings }) => {
     snapshotName,
     volumeName,
   }) => {
-    return FIXTURES.createSnapshot
+
+    const data = await api.createSnapshot({
+      deployment,
+      volume: volumeName,
+      name: snapshotName,
+    })
+
+    return data
   }
 
   return {

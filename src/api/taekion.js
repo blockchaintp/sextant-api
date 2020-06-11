@@ -111,6 +111,23 @@ const TaekionAPI = ({
     })
     return data
   }
+  
+  const createSnapshot = async ({
+    deployment,
+    volume,
+    name,
+  }) => {
+    const data = await apiRequest({
+      deployment,
+      method: 'post',
+      url: '/snapshot',
+      data: {
+        volume,
+        id: name,
+      }
+    })
+    return data
+  }
 
   return {
     listVolumes,
@@ -118,6 +135,7 @@ const TaekionAPI = ({
     updateVolume,
     deleteVolume,
     listSnapshots,
+    createSnapshot,
   }
 
 }
