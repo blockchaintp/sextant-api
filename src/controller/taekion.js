@@ -1,3 +1,4 @@
+const Promise = require('bluebird')
 const crypto = require('crypto')
 const utils = require('../utils/taekion')
 const API = require('../api/taekion')
@@ -111,6 +112,8 @@ const TaekionController = ({ store, settings }) => {
     fingerprint,
   }) => {
 
+    if(name == 'all') throw new Error(`the name "all" is reserved for the system`)
+
     const data = await api.createVolume({
       deployment,
       name,
@@ -160,7 +163,33 @@ const TaekionController = ({ store, settings }) => {
     deployment,
     volumeName,
   }) => {
-    return FIXTURES.listSnapshots
+
+    // loop over all volumes and concat the data together
+    if(volumeName == 'all') {
+      const volumes = await listVolumes({
+        deployment,
+      })
+
+      const snapshotCollections = await Promise.map(volumes, async volume => {
+        const snapshots = await listSnapshots({
+          deployment,
+          volumeName: volume.name,
+        })
+        return snapshots
+      })
+
+      return snapshotCollections.reduce((all, snapshotArray) => {
+        return all.concat(snapshotArray)
+      }, [])
+    }
+    else {
+      const data = await api.listSnapshots({
+        deployment,
+        volume: volumeName,
+      })
+
+      return utils.processSnapshotResponse(data)
+    }    
   }
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
