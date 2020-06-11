@@ -24,33 +24,38 @@ const TaekionAPI = ({
     
     if(!pod) throw new Error(`no pod found`)
 
-    const result = await proxy.request({
-      pod: pod.metadata.name,
-      port: 8000,
-      handler: async ({
-        port,
-      }) => {
-        const res = await axios({
+    try {
+      const res = await proxy.request({
+        pod: pod.metadata.name,
+        port: 8000,
+        handler: ({
+          port,
+        }) => axios({
           method,
           url: `http://localhost:${port}${url}`,
           ...extra
         })
-        return res
-      }
-    })
-
-    return result
+      })
+      return res.data
+    } catch(e) {
+      const errorMessage = e.response.data
+        .toString()
+        .replace(/^Error (\d+):/, (match, code) => code)
+      const finalError = new Error(errorMessage)
+      finalError._code = e.response.status
+      throw finalError
+    }
   }
 
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({
     deployment,
   }) => {
-    const res = await apiRequest({
+    const data = await apiRequest({
       deployment,
       url: '/volume?list',
     })
-    return res.data
+    return data
   }
 
   // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
@@ -61,17 +66,18 @@ const TaekionAPI = ({
     encryption,
     fingerprint,
   }) => {
-    const res = await apiRequest({
+    const data = await apiRequest({
       deployment,
+      method: 'post',
       url: '/volume',
-      params: {
-        create: name,
+      data: {
+        id: name,
         compression,
         encryption,
         fingerprint,
-      },
+      }
     })
-    return res.data
+    return data
   }
 
   return {
