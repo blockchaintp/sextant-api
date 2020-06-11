@@ -97,11 +97,27 @@ const TaekionAPI = ({
     throw new Error(`endpoint tbc`)
   }
 
+  const listSnapshots = async ({
+    deployment,
+    volume,
+  }) => {
+    const data = await apiRequest({
+      deployment,
+      method: 'get',
+      url: '/snapshot',
+      params: {
+        volume,
+      }
+    })
+    return data
+  }
+
   return {
     listVolumes,
     createVolume,
     updateVolume,
     deleteVolume,
+    listSnapshots,
   }
 
 }
