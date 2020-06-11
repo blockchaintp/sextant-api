@@ -129,6 +129,14 @@ const TaekionAPI = ({
     },
   });
 
+  const deleteSnapshot = async ({
+    deployment,
+    volume,
+    name,
+  }) => {
+    throw new Error(`endpoint tbc`)
+  }
+
   return {
     listVolumes,
     createVolume,
@@ -136,7 +144,14 @@ const TaekionAPI = ({
     deleteVolume,
     listSnapshots,
     createSnapshot,
+<<<<<<< HEAD
   };
 };
+=======
+    deleteSnapshot,
+  }
+
+}
+>>>>>>> 287a17f... SXT-377: delete snapshot api
 
 module.exports = TaekionAPI;

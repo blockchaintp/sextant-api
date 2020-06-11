@@ -208,6 +208,21 @@ const TaekionController = ({ store, settings }) => {
     return data
   }
 
+  const deleteSnapshot = async ({
+    deployment,
+    snapshotName,
+    volumeName,
+  }) => {
+
+    const data = await api.deleteSnapshot({
+      deployment,
+      volume: volumeName,
+      name: snapshotName,
+    })
+
+    return data
+  }
+
   return {
     listKeys,
     createKey,
@@ -218,6 +233,7 @@ const TaekionController = ({ store, settings }) => {
     deleteVolume,
     listSnapshots,
     createSnapshot,
+    deleteSnapshot,
   }
 }
 
