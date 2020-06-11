@@ -149,6 +149,7 @@ const Routes = ({
 
   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volumeName/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
   app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volumeName/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volumeName/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
 
 }
 
