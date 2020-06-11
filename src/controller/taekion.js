@@ -112,6 +112,8 @@ const TaekionController = ({ store, settings }) => {
     fingerprint,
   }) => {
 
+    if(name == 'all') throw new Error(`the name "all" is reserved for the system`)
+
     const data = await api.createVolume({
       deployment,
       name,
