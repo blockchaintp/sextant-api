@@ -63,13 +63,14 @@ const TaekionAPI = ({
   }) => {
     const res = await apiRequest({
       deployment,
+      method: 'post',
       url: '/volume',
-      params: {
-        create: name,
+      data: {
+        id: name,
         compression,
         encryption,
         fingerprint,
-      },
+      }
     })
     return res.data
   }
