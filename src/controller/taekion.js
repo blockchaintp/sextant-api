@@ -160,7 +160,13 @@ const TaekionController = ({ store, settings }) => {
     deployment,
     volumeName,
   }) => {
-    return FIXTURES.listSnapshots
+
+    const data = await api.listSnapshots({
+      deployment,
+      volume: volumeName,
+    })
+
+    return utils.processSnapshotResponse(data)    
   }
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
