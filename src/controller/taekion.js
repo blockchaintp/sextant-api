@@ -1,5 +1,6 @@
 const crypto = require('crypto')
 const utils = require('../utils/taekion')
+const API = require('../api/taekion')
 
 const FIXTURES = {
   listVolumes: {
@@ -53,6 +54,10 @@ const FIXTURES = {
 
 const TaekionController = ({ store, settings }) => {
 
+  const api = API({
+    store,
+  })
+
   const listKeys = async ({
     deployment,
   }) => store.taekionkeys.list({
@@ -86,27 +91,35 @@ const TaekionController = ({ store, settings }) => {
     id,
   })
 
-  // curl http://localhost:8000/volume?list
+  
   const listVolumes = async ({
     deployment,
   }) => {
 
-    // todo: connect to api
-    const data = FIXTURES.listVolumes
+    const data = await api.listVolumes({
+      deployment,
+    })
 
     return utils.processVolumeResponse(data)
   }
 
-  // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
   const createVolume = async ({
     deployment,
-    volumeName,
-    compression = 'none',
+    name,
+    compression,
     encryption,
+    fingerprint,
   }) => {
-    compression = compression || 'none'
-    encryption = encryption || 'none'
-    return FIXTURES.createVolume
+
+    const data = await api.createVolume({
+      deployment,
+      name,
+      compression,
+      encryption,
+      fingerprint,
+    })
+
+    return data
   }
 
   // curl http://localhost:8000/snapshot?list&volume=apples
