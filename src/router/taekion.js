@@ -88,6 +88,48 @@ const TaekionRoutes = (controllers) => {
       .json(data)
   }
 
+  const updateVolume = async (req, res, next) => {
+    const {
+      id,
+      name,
+    } = req.params
+    const {
+      compression,
+      encryption,
+      fingerprint,
+    } = req.body
+
+    if(!compression) return httpUtils.badRequest(res, `compression required`)
+    if(!encryption) return httpUtils.badRequest(res, `encryption required`)
+    if(encryption != 'none' && !fingerprint) return httpUtils.badRequest(res, `fingerprint required`)
+    
+    const data = await controllers.taekion.updateVolume({
+      deployment: id,
+      name,
+      compression,
+      encryption,
+      fingerprint,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const deleteVolume = async (req, res, next) => {
+    const {
+      id,
+      name,
+    } = req.params
+    
+    const data = await controllers.taekion.deleteVolume({
+      deployment: id,
+      name,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const listSnapshots = async (req, res, next) => {
     const {
       id,
@@ -129,6 +171,8 @@ const TaekionRoutes = (controllers) => {
     deleteKey,
     listVolumes,
     createVolume,
+    updateVolume,
+    deleteVolume,
     listSnapshots,
     createSnapshot,
   }
