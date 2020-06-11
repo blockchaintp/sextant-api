@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const utils = require('../utils/taekion')
 
 const FIXTURES = {
@@ -54,19 +55,36 @@ const TaekionController = ({ store, settings }) => {
 
   const listKeys = async ({
     deployment,
-  }) => {
-    return []
-  }
-
+  }) => store.taekionkeys.list({
+    deployment,
+  })
+    
   const createKey = async ({
     deployment,
-    keyName
+    name,
   }) => {
+    const key = crypto.randomBytes(32)
+    const fingerprint = crypto.createHash('sha256').update(key).digest('hex')
+    const result = await store.taekionkeys.create({
+      deployment,
+      data: {
+        name,
+        fingerprint,
+      }
+    })
     return {
-      id: 10,
-      keyName,
+      key: key.toString('hex'),
+      result,
     }
   }
+
+  const deleteKey = async ({
+    deployment,
+    id,
+  }) => store.taekionkeys.delete({
+    deployment,
+    id,
+  })
 
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({
@@ -111,6 +129,7 @@ const TaekionController = ({ store, settings }) => {
   return {
     listKeys,
     createKey,
+    deleteKey,
     listVolumes,
     createVolume,
     listSnapshots,

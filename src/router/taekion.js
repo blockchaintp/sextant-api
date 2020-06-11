@@ -19,14 +19,29 @@ const TaekionRoutes = (controllers) => {
       id,
     } = req.params
     const {
-      keyName,
+      name,
     } = req.body
 
-    if(!keyName) return httpUtils.badRequest(res, `keyName required`)
+    if(!name) return httpUtils.badRequest(res, `name required`)
     
     const data = await controllers.taekion.createKey({
       deployment: id,
-      keyName,
+      name,
+    })
+    res
+      .status(201)
+      .json(data)
+  }
+
+  const deleteKey = async (req, res, next) => {
+    const {
+      id,
+      keyId,
+    } = req.params
+    
+    const data = await controllers.taekion.deleteKey({
+      deployment: id,
+      id: keyId,
     })
     res
       .status(201)
@@ -108,6 +123,7 @@ const TaekionRoutes = (controllers) => {
   return {
     listKeys,
     createKey,
+    deleteKey,
     listVolumes,
     createVolume,
     listSnapshots,
