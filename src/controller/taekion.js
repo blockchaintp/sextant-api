@@ -122,6 +122,26 @@ const TaekionController = ({ store, settings }) => {
     return data
   }
 
+  const updateVolume = async ({
+    deployment,
+    name,
+    compression,
+    encryption,
+    fingerprint,
+  }) => {
+
+    const data = await api.updateVolume({
+      deployment,
+      name,
+      compression,
+      encryption,
+      fingerprint,
+    })
+
+    return data
+  }
+
+
   const deleteVolume = async ({
     deployment,
     name,
@@ -158,6 +178,7 @@ const TaekionController = ({ store, settings }) => {
     deleteKey,
     listVolumes,
     createVolume,
+    updateVolume,
     deleteVolume,
     listSnapshots,
     createSnapshot,
