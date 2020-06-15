@@ -5,10 +5,11 @@
   "description": "api server for the sextant cluster creation service",
   "main": "index.js",
   "scripts": {
-    "preserve": "knex migrate:latest",
+    "migrate": "knex migrate:latest",
+    "download-helm-charts": "node scripts/download-helm-charts.js",
+    "preserve": "npm run download-helm-charts && npm run migrate",
     "serve": "node src/index.js",
     "test": "tape {src,test}/**/*.test.js | tap-spec",
-    "download-helm-charts": "node scripts/download-helm-charts.js",
     "start": "npm run download-helm-charts && npm run serve"
   },
   "dependencies": {
