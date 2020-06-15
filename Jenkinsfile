@@ -55,7 +55,9 @@ pipeline {
 
     stage("Test") {
       steps {
-        sh "./test.sh"
+        withCredentials(){
+          sh "./test.sh"
+        }
       }
     }
 
