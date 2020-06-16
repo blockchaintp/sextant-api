@@ -42,22 +42,22 @@ const form = [
   ],
 
   [
-    {
-      id: 'sawtooth.dynamicPeering',
-      title: 'Peering Type',
-      helperText: 'Peering type for the validator',
-      component: 'radio',
-      default: true,
-      dataType: 'boolean',
-      row: true,
-      options: options.peering,
-      validate: {
-        type: 'string',
-        methods: [
-          ['required', 'Required']
-        ],
-      },
-    },
+    // {
+    //   id: 'sawtooth.dynamicPeering',
+    //   title: 'Peering Type',
+    //   helperText: 'Peering type for the validator',
+    //   component: 'radio',
+    //   default: true,
+    //   dataType: 'boolean',
+    //   row: true,
+    //   options: options.peering,
+    //   validate: {
+    //     type: 'string',
+    //     methods: [
+    //       ['required', 'Required']
+    //     ],
+    //   },
+    // },
     {
       id: 'sawtooth.genesis.enabled',
       title: 'Genesis Block',
@@ -256,73 +256,73 @@ const form = [
     }
   },
 
-  'Smart Contract Language Support',
+  // 'Smart Contract Language Support',
 
-  [{
-    id: 'sawtooth.sabre.enabled',
-    title: 'Should Sabre be supported on this network?',
-    helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: options.yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  },{
-    id: 'sawtooth.seth.enabled',
-    title: 'Should SETH be supported on this network?',
-    helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: options.yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }],
+  // [{
+  //   id: 'sawtooth.sabre.enabled',
+  //   title: 'Should Sabre be supported on this network?',
+  //   helperText: null,
+  //   component: 'radio',
+  //   default: false,
+  //   dataType: 'boolean',
+  //   row: true,
+  //   options: options.yesNo,
+  //   validate: {
+  //     type: 'string',
+  //     methods: [
+  //       ['required', 'Required']
+  //     ],
+  //   },
+  // },{
+  //   id: 'sawtooth.seth.enabled',
+  //   title: 'Should SETH be supported on this network?',
+  //   helperText: null,
+  //   component: 'radio',
+  //   default: false,
+  //   dataType: 'boolean',
+  //   row: true,
+  //   options: options.yesNo,
+  //   validate: {
+  //     type: 'string',
+  //     methods: [
+  //       ['required', 'Required']
+  //     ],
+  //   },
+  // }],
 
-  'Sample Applications',
+  // 'Sample Applications',
 
-  [{
-    id: 'sawtooth.xo.enabled',
-    title: 'Should the XO demo be deployed on this network?',
-    helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: options.yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }, {
-    id: 'sawtooth.smallbank.enabled',
-    title: 'Should the Smallbank demo be deployed on this network?',
-    helperText: null,
-    component: 'radio',
-    default: false,
-    dataType: 'boolean',
-    row: true,
-    options: options.yesNo,
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'Required']
-      ],
-    },
-  }],
+  // [{
+  //   id: 'sawtooth.xo.enabled',
+  //   title: 'Should the XO demo be deployed on this network?',
+  //   helperText: null,
+  //   component: 'radio',
+  //   default: false,
+  //   dataType: 'boolean',
+  //   row: true,
+  //   options: options.yesNo,
+  //   validate: {
+  //     type: 'string',
+  //     methods: [
+  //       ['required', 'Required']
+  //     ],
+  //   },
+  // }, {
+  //   id: 'sawtooth.smallbank.enabled',
+  //   title: 'Should the Smallbank demo be deployed on this network?',
+  //   helperText: null,
+  //   component: 'radio',
+  //   default: false,
+  //   dataType: 'boolean',
+  //   row: true,
+  //   options: options.yesNo,
+  //   validate: {
+  //     type: 'string',
+  //     methods: [
+  //       ['required', 'Required']
+  //     ],
+  //   },
+  // }],
 
   'Image Pull Secrets',
 
