@@ -59,7 +59,7 @@ sawtooth:
   # 100 - DevMode, 200 - PoET,300 - Raft, 400 - pbft
   # Engines can be enabled, but they aren't active unless they are selected
   # as the consensus algorithm.
-  consensus: 200
+  consensus: 400
   genesis:
     # If true, and the cluster is starting for the first time, then
     # a node will be selected to create and submit the genesis block

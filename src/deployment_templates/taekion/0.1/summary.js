@@ -18,9 +18,6 @@ const summary = (values) => {
     title: 'Namespace',
     value: sawtooth.namespace,
   }, {
-    title: 'Peering Type',
-    value: sawtooth.dynamicPeering ? 'Dynamic' : 'Static',
-  }, {
     title: 'Genesis Block',
     value: sawtooth.genesis.enabled ? 'Yes' : 'No',
   }, {
@@ -38,18 +35,6 @@ const summary = (values) => {
   }, {
     title: 'Custom Transaction Processors',
     value: sawtooth.customTPs.map(tp => `${tp.name} (${tp.image})`),
-  }, {
-    title: 'Sabre enabled?',
-    value: sawtooth.sabre.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'SETH enabled?',
-    value: sawtooth.seth.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'XO enabled?',
-    value: sawtooth.xo.enabled ? 'Yes' : 'No',
-  }, {
-    title: 'Smallbank enabled?',
-    value: sawtooth.smallbank.enabled ? 'Yes' : 'No',
   }]
 }
 
