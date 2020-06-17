@@ -42,22 +42,6 @@ const form = [
   ],
 
   [
-    // {
-    //   id: 'sawtooth.dynamicPeering',
-    //   title: 'Peering Type',
-    //   helperText: 'Peering type for the validator',
-    //   component: 'radio',
-    //   default: true,
-    //   dataType: 'boolean',
-    //   row: true,
-    //   options: options.peering,
-    //   validate: {
-    //     type: 'string',
-    //     methods: [
-    //       ['required', 'Required']
-    //     ],
-    //   },
-    // },
     {
       id: 'sawtooth.genesis.enabled',
       title: 'Genesis Block',
