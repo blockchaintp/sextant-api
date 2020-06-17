@@ -18,9 +18,8 @@ class HelmTool {
   buildCommand(repo) {
     // iterate over the repo config and build a helm command based on what's included in the config
     // add error handling that filters out username and password from error message
-    let command = 'helm repo add'
-    command += ` ${repo.name}`
-    command += ` ${repo.url}`
+    let command = `helm repo add ${ repo.name } ${ repo.url }`
+
     if (repo.username) {
       command += ` --username ${repo.username}`
     }
