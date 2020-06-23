@@ -34,6 +34,8 @@ class HelmTool {
     // iterate through the repos array adding each one
     const runHelmAdd = async (repo) => {
       const helmCommand = this.buildCommand(repo)
+      console.log('*********\nUSERNAME ---->', process.env.BTP_DEV_USR,'\n************\n');        
+
       await exec(helmCommand)
       pino.info({
         action: `adding ${repo.name} repository`
@@ -42,12 +44,14 @@ class HelmTool {
     for (const repo of this.helmRepos) {
       try {
         await runHelmAdd(repo)
-      } catch(err) {
+      } catch(err) {        
+        console.log(err);
+        
         pino.error({
           action: `add repository`,
           error: err
         })
-        process.exit(1)
+        //process.exit(1)
       }
     }
   }
@@ -63,7 +67,7 @@ class HelmTool {
         action: 'helm repository update',
         error: err
       })
-      process.exit(1)
+      //process.exit(1)
     }
   }
 
@@ -95,7 +99,6 @@ class HelmTool {
 
   async start() {
     await this.add()
-    //await Promise.delay(5000)
     await this.update()
     await this.storeChartsLocally()
   }

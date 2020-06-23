@@ -4,8 +4,8 @@ dotenv.config();
 
 const edition = {
   deployment: {
-    types: ['daml', 'sawtooth']
-  },
+    types: ['daml', 'sawtooth'] 
+   },
   metering: {
     type: 'dev'
   },
@@ -13,8 +13,8 @@ const edition = {
     {
       name: 'btp-dev',
       url: 'https://dev.catenasys.com/repository/catenasys-helm-dev/',
-      username: process.env.BTP_DEV_USERNAME,
-      password: process.env.BTP_DEV_PASSWORD,
+      username: process.env.BTP_DEV_USR,
+      password: process.env.BTP_DEV_PSW,
       charts: ['sawtooth', /* 'daml-on-sawtooth', 'daml-on-postgres', 'daml-on-qldb' */]
     }
   ],
