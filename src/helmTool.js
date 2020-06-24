@@ -35,8 +35,6 @@ class HelmTool {
     // iterate through the repos array adding each one
     const runHelmAdd = async (repo) => {
       const helmCommand = this.buildCommand(repo)
-      console.log('*********\nUSERNAME ---->', process.env.BTP_DEV_USR,'\n************\n');        
-
       await exec(helmCommand)
       pino.info({
         action: `adding ${repo.name} repository`
@@ -52,7 +50,7 @@ class HelmTool {
           action: `add repository`,
           error: err
         })
-        //process.exit(1)
+        process.exit(1)
       }
     }
   }
@@ -68,14 +66,12 @@ class HelmTool {
         action: 'helm repository update',
         error: err
       })
-      //process.exit(1)
+      process.exit(1)
     }
   }
 
   async storeChartsLocally() {
     const removeAndPull = async (repo, chart) => {
-      // await exec(`if [ -d /app/api/helmCharts/${chart} ]; then echo "removing /app/api/helmCharts/${chart}"; rm -rf /app/api/helmCharts/${chart}; fi`)
-      try {
         await fsExtra.remove(`/app/api/helmCharts/${chart}`)
         pino.info({
           action: `removing /app/api/helmCharts/${chart} if found`
@@ -83,13 +79,7 @@ class HelmTool {
         await exec(`helm pull ${repo.name}/${chart} --untar -d /app/api/helmCharts`)
         pino.info({
           action: `untaring the chart into /app/api/helmCharts/${chart}`
-        })
-      } catch (err) {
-        pino.error({
-          action: 'remove and pull',
-          error: err
-        })
-      }
+        })      
     }
  
     for(const repo of this.helmRepos) {
@@ -101,6 +91,7 @@ class HelmTool {
             action: 'remove directory then pull/untar chart',
             error: err
           })
+          process.exit(1)
         }
       }
     }
