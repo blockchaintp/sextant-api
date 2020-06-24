@@ -55,7 +55,7 @@ pipeline {
 
     stage("Test") {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'btp-dev', passwordVariable: 'BTP_DEV_PSW', usernameVariable: 'BTP_DEV_USR')]) {
+        withCredentials([usernamePassword(credentialsId: 'btp-build-nexus', passwordVariable: 'BTP_DEV_PSW', usernameVariable: 'BTP_DEV_USR')]) {
           sh "./test.sh"
         }  
       }
