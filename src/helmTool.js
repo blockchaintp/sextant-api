@@ -4,6 +4,7 @@ const childProcess = require('child_process')
 const Promise = require('bluebird')
 const exec = Promise.promisify(childProcess.exec)
 const fs = require('fs')
+const fsExtra = require('fs-extra')
 
 const pino = require('pino')({
   name: 'helm tool',
@@ -73,14 +74,22 @@ class HelmTool {
 
   async storeChartsLocally() {
     const removeAndPull = async (repo, chart) => {
-      await exec(`if [ -d /app/api/helmCharts/${chart} ]; then echo "removing /app/api/helmCharts/${chart}"; rm -rf /app/api/helmCharts/${chart}; fi`)
-      pino.info({
-        action: `removing /app/api/helmCharts/${chart} if found`
-      })
-      await exec(`helm pull ${repo.name}/${chart} --untar -d /app/api/helmCharts`)
-      pino.info({
-        action: `untaring the chart into /app/api/helmCharts/${chart}`
-      })
+      // await exec(`if [ -d /app/api/helmCharts/${chart} ]; then echo "removing /app/api/helmCharts/${chart}"; rm -rf /app/api/helmCharts/${chart}; fi`)
+      try {
+        await fsExtra.remove(`/app/api/helmCharts/${chart}`)
+        pino.info({
+          action: `removing /app/api/helmCharts/${chart} if found`
+        })
+        await exec(`helm pull ${repo.name}/${chart} --untar -d /app/api/helmCharts`)
+        pino.info({
+          action: `untaring the chart into /app/api/helmCharts/${chart}`
+        })
+      } catch (err) {
+        pino.error({
+          action: 'remove and pull',
+          error: err
+        })
+      }
     }
  
     for(const repo of this.helmRepos) {
