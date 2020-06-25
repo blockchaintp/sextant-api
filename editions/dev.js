@@ -4,7 +4,8 @@ dotenv.config();
 
 const edition = {
   deployment: {
-    types: ['daml', 'sawtooth'] 
+    classic: ['daml'],
+    helm:  ['sawtooth'] 
    },
   metering: {
     type: 'dev'
