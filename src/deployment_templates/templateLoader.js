@@ -70,10 +70,13 @@ const getHelmDeploymentDetails = () => {
   const charts = readdir(HELM_CHARTS_PATH)
 
   for (chart of charts) {
-    const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${chart}/sextant/details.yaml`)
-    const next = structureYamlContent(yamlContent)
+    const isDirectory = fs.lstatSync(`${HELM_CHARTS_PATH}/${chart}`).isDirectory()
+    if (isDirectory) {
+      const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${chart}/sextant/details.yaml`)
+      const next = structureYamlContent(yamlContent)
 
-    details = merge(details, next, { arrayMerge: overwriteMerge })
+      details = merge(details, next, { arrayMerge: overwriteMerge })
+    }
   }
 
   return details
