@@ -23,3 +23,5 @@ services:
       - POSTGRES_PASSWORD=postgres
       - SESSION_SECRET=sextant
       - TOKEN_SECRET=sextant
+      - BTP_DEV_USR
+      - BTP_DEV_PSW

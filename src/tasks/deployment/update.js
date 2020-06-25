@@ -82,7 +82,7 @@ const DeploymentUpdate = ({
     return
   }
 
-  const templateType = getTemplateType(deployment_type, deployment_version)
+  const templateType = getTemplateType(deployment_type, deployment_version)  
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -101,7 +101,7 @@ const DeploymentUpdate = ({
 
     const chart = chartInfo.chart
     const extension = chartInfo.extension
-    const installationName = `${networkName}-${extension}`
+    const installationName = `${appliedNetworkName}-${extension}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
 
     // if the chart is installed, upgrade it. Otherwise, install it
