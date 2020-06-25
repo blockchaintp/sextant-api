@@ -4,8 +4,6 @@ const path = require('path')
 const yaml = require('js-yaml')
 const merge = require('deepmerge')
 const Promise = require('bluebird')
-// const readdir = Promise.promisify(fs.readdir)
-// const readFile = Promise.promisify(fs.readFile)
 const readdir = fs.readdirSync
 const readFile = fs.readFileSync
 
