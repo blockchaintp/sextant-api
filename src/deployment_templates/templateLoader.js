@@ -40,22 +40,11 @@ const structureYamlContent = (yamlContent) => {
 
   // define a basic schema
   details[deploymentType] = {
-    forms: {
-      // deploymentVersion: 'filepath',
-    },
-    summary: {
-      // deploymentVersion: 'filepath',
-    },
-    paths: {
-      // deploymentVersion: {
-      //   name: '',
-      //   namespace: '',
-      // },
-    },
+    forms: {},
+    summary: {},
+    paths: {},
     button: {
-      versions: [
-
-      ],
+      versions: [],
     },
   }
 
@@ -106,41 +95,3 @@ const mergedDeploymentDetails = () => {
 module.exports = {
   mergedDeploymentDetails
 }
-
-
-// classic template loader - pulls index files from deploymentTemplates directory
-// class getClassicDeploymentDetails {
-//   constructor(deploymentTemplates) {
-//     this.deploymentTemplates = deploymentTemplates
-//   }
-
-//   load() {
-//     return this.deploymentTemplates
-//       .reduce((allTemplates, type) => {
-//         allTemplates[type] = require(`./${type}`)
-//         return allTemplates
-//       }, {}
-//       )
-//   }
-// }
-
-
-
-// class getClassicDeploymentDetails {
-//   constructor(deploymentTypes) {
-//     this.deploymentTypes = deploymentTypes
-//   }
-
-//   load() {
-//     return this.deploymentTypes
-//     .reduce((allTemplates, type) => {
-//       allTemplates[type] = require(`./${type}`)
-//       return allTemplates
-//       }, {}
-//     )
-//   }
-// }
-
-// module.exports = {
-//   getClassicDeploymentDetails
-// }
