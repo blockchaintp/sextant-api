@@ -8,7 +8,8 @@
 
 const edition = {
   deployment: {
-    types: ['daml']
+    classic: ['daml'],
+    helm: []
   },
   metering: {
     type: 'dev'

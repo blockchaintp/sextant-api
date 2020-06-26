@@ -2,7 +2,8 @@
 
 const edition = {
   deployment: {
-    types: ['sawtooth']
+    classic: ['sawtooth'],
+    helm: []
   },
   metering: {
     type: 'aws',

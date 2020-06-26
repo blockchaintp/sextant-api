@@ -2,7 +2,8 @@
 
 const edition = {
   deployment: {
-    types: ['daml', 'sawtooth']
+    classic: ['daml', 'sawtooth'],
+    helm: []
   },
   metering: {
     type: 'dev'

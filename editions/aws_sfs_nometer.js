@@ -8,7 +8,8 @@
 
 const edition = {
   deployment: {
-    types: ['sawtooth']
+    classic: ['sawtooth'],
+    helm: []
   },
   metering: {
     type: 'dev'
