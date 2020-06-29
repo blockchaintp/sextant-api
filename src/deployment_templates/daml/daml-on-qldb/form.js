@@ -8,7 +8,7 @@ const form = [
     {
       id: 'deployment.name',
       title: 'Network Name',
-      helperText: 'The name of the DAML on Aurora Deployment',
+      helperText: 'The name of the DAML on QLDB Deployment',
       component: 'text',
       editable: {
         new: true,
