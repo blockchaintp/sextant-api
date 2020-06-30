@@ -31,7 +31,7 @@ const getYaml = (filepath) => {
 
 // pulls values from details.yaml to build an object with the same structure as the index files
 const structureYamlContent = (yamlContent) => {
-  const sextant = yamlContent.sextant
+  const sextant = yamlContent
   const deploymentType = sextant.deploymentType || ''
   const deploymentVersion = sextant.deploymentVersion.toString() || ''
   let details = {}
@@ -54,9 +54,9 @@ const structureYamlContent = (yamlContent) => {
   entry.button.versions.push({
     title: sextant.title || '',
     icon: sextant.buttonIcon || '',
-    version: sextant.version || '',
+    version: sextant.sextantVersion || '',
     form: `${sextant.deploymentVersion}` || '',
-    description: yamlContent.description || '',
+    description: sextant.description || '',
     features: sextant.features || []
   })
 
