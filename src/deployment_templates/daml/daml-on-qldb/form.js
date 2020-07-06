@@ -54,7 +54,7 @@ const form = [
         type: 'string',
         methods: [
           ['required', 'Required'],
-          ['matches', [`^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])*$`], "a ledger id must consist of alphanumeric characters or '-', and must start and end with an alphanumeric character"]
+          ['matches', [`^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9]){0,31}$`], "a ledger id must consist of alphanumeric characters or '-', and must start and end with an alphanumeric character"]
         ],
       },
     },
