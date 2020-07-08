@@ -332,7 +332,7 @@ spec:
                 fi
                 touch /etc/sawtooth/initialized;
               fi
-              sawtooth-validator -v --scheduler {{.sawtooth.scheduler}} \
+              sawtooth-validator -vv --scheduler {{.sawtooth.scheduler}} \
                 --endpoint tcp://${NODE_NAME}:{{.sawtooth.ports.sawnet}} \
                 --bind component:tcp://0.0.0.0:{{.sawtooth.ports.sawcomp}} \
                 --bind consensus:tcp://0.0.0.0:{{.sawtooth.ports.consensus}} \
