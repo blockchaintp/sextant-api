@@ -1,7 +1,3 @@
-const { edition } = require('../edition')
-const { TemplateLoader } = require('./templateLoader')
+const { mergedDeploymentDetails} = require('./templateLoader')
 
-const deployment = edition.deployment
-const templateLoader = new TemplateLoader(deployment.types)
-
-module.exports = templateLoader.load()
+module.exports = mergedDeploymentDetails()
