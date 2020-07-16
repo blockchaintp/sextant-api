@@ -25,6 +25,16 @@ if (expression1) {
   }
 */
 
+const pino = require('pino')({
+  name: 'cluster status updator',
+})
+
+const errorTest = (error, knownError) => {
+  const example = new RegExp(knownError)
+  const testStatus = example.test(error)
+  return testStatus
+}
+
 const clusterCreateError = async (task, error, store) => {
   await store.update({
     id: task.resource_id,
@@ -44,12 +54,21 @@ const clusterUpdateError = async (task, error, store) => {
 }
 
 const clusterDeleteError = async (task, error, store) => {
-  await store.update({
-    id: task.resource_id,
-    data: {
-      status: task.resource_status.error,
-    },
-  })
+  if (errorTest(error, 'all deployments for this cluster must be in deleted state')) {
+    pino.info({
+      action: 'Update the cluster status',
+      info: 'Unable to delete the cluster while there are active deployments',
+      result: 'The cluster status was NOT updated in the database'
+    })    
+  }
+  else {
+    await store.update({
+      id: task.resource_id,
+      data: {
+        status: task.resource_status.error,
+      },
+    })
+  }
 }
 
 module.exports = {

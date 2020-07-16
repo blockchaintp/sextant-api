@@ -25,6 +25,16 @@ if (expression1) {
   }
 */
 
+const pino = require('pino')({
+  name: 'deployment status updator',
+})
+
+const errorTest = (error, knownError) => {
+  const example = new RegExp(knownError)
+  const testStatus = example.test(error)
+  return testStatus
+}
+
 const deploymentCreateError = async (task, error, store) => {
   await store.update({
     id: task.resource_id,
@@ -44,12 +54,28 @@ const deploymentUpdateError = async (task, error, store) => {
 }
 
 const deploymentDeleteError = async (task, error, store) => {
-  await store.update({
-    id: task.resource_id,
-    data: {
-      status: task.resource_status.error,
-    },
-  })
+  if (errorTest(error, 'unable to recognize')) {
+    await store.update({
+      id: task.resource_id,
+      data: {
+        status: task.resource_status.completed,
+      },
+    })
+    pino.info({
+      error: error,
+      action: 'Update the deployment status',
+      info: 'The remote cluster is likely dead and cannot be reached',
+      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+    })
+  }
+  else {
+    await store.update({
+      id: task.resource_id,
+      data: {
+        status: task.resource_status.error,
+      },
+    })
+  }
 }
 
 module.exports = {
