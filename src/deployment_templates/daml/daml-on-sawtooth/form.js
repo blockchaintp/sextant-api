@@ -209,7 +209,7 @@ const form = [
         validate: {
           type: 'string',
           methods: [
-            ['required', 'Required'],
+
           ],
         },
       },{
@@ -220,7 +220,7 @@ const form = [
         validate: {
           type: 'string',
           methods: [
-            ['required', 'Required'],
+
           ],
         },
       }],

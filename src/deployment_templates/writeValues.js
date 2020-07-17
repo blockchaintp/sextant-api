@@ -33,8 +33,8 @@ const formatData = async ({
         // id: tp.id and index: tp.index values removed,
         name: tp.name,
         image: tp.image,
-        command: tp.command.split(' '),
-        args: tp.args.split(' '),
+        command: tp.command ? tp.command.split(' ') : null,
+        args: tp.args ? tp.args.split(' ') : null,
       }
     })
 
