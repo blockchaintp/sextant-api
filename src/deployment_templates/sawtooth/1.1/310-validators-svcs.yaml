@@ -1,0 +1,73 @@
+# kubetpl:syntax:go-template
+---
+{{$peering:= .sawtooth.dynamicPeering}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-rest-api
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-validator
+spec:
+  sessionAffinity: ClientIP
+  ports:
+  - port: {{.sawtooth.ports.rest}}
+    protocol: TCP
+    targetPort: {{.sawtooth.ports.rest}}
+    name: rest-api
+{{ if .sawtooth.seth.enabled }}
+  - port: 3030
+    protocol: TCP
+    targetPort: 3030
+    name: seth-rpc
+{{ end }}
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-validator
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-validator
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: {{.sawtooth.ports.rest}}
+    protocol: TCP
+    targetPort: {{.sawtooth.ports.rest}}
+    name: rest-api
+  - port: {{.sawtooth.ports.sawnet}}
+    protocol: TCP
+    targetPort: {{.sawtooth.ports.sawnet}}
+    name: sawnet
+  - port: {{.sawtooth.ports.sawcomp}}
+    protocol: TCP
+    targetPort: {{.sawtooth.ports.sawcomp}}
+    name: sawncomp
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+
+{{ if .sawtooth.xo.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{.sawtooth.networkName}}-xo-demo
+  namespace: {{.sawtooth.namespace}}
+  labels:
+    app: {{.sawtooth.networkName}}-xo-demo
+spec:
+  sessionAffinity: ClientIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    name: xo-demo
+  selector:
+    app: {{.sawtooth.networkName}}-validator
+---
+{{ end }}
