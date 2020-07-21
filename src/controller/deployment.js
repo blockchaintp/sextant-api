@@ -20,6 +20,8 @@ const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
 const ledger = require('@digitalasset/daml-ledger')
 
+const {getDeploymentMethod} = require('../tasks/deployment/utils/helmUtils')
+
 const {
   CLUSTER_STATUS,
   DEPLOYMENT_STATUS,
@@ -224,6 +226,9 @@ const DeployentController = ({ store, settings }) => {
     const existingDeployment = deployments.find(deployment => deployment.name.toLowerCase() == name.toLowerCase())
     if(existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
 
+    // determine if there is a helm chart for this deployment type
+    const deploymentMethod = getDeploymentMethod(deployment_type, deployment_version)
+
     // create the deployment record
     const deployment = await store.deployment.create({
       data: {
@@ -233,6 +238,7 @@ const DeployentController = ({ store, settings }) => {
         deployment_version,
         desired_state,
         custom_yaml,
+        deployment_method: deploymentMethod
       },
     }, trx)
 
