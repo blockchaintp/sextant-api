@@ -8,7 +8,7 @@ const Promise = require('bluebird')
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
-const { getTemplateType } = require('./utils/helmUtils')
+const { getDeploymentMethod } = require('./utils/helmUtils')
 
 
 const {
@@ -66,7 +66,7 @@ const DeploymentDelete = ({
     field: 'namespace',
   })
   
-  const templateType = getTemplateType(deployment_type, deployment_version)
+  const templateType = getDeploymentMethod(deployment_type, deployment_version)
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,

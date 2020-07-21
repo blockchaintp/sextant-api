@@ -7,7 +7,7 @@ The template type will always default to 'classic'
 
 const { edition } = require('../../../edition')
 
-const getTemplateType = (deployment_type, deployment_version) => {
+const getDeploymentMethod = (deployment_type, deployment_version) => {
 
   const chartTable = edition.chartTable
   let templateType
@@ -29,4 +29,4 @@ const getChartInfo = (deployment_type, deployment_version) => {
   return chartInfo
 }
 
-module.exports = { getTemplateType, getChartInfo }
+module.exports = { getDeploymentMethod, getChartInfo }

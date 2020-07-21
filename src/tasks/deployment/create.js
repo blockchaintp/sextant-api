@@ -13,7 +13,7 @@ const { getCharts, getChartsFolder } = require('../../deployment_templates/helmR
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
-const { getTemplateType, getChartInfo } = require('./utils/helmUtils')
+const { getDeploymentMethod, getChartInfo } = require('./utils/helmUtils')
 const { writeValues } = require('../../deployment_templates/writeValues')
 
 
@@ -81,7 +81,7 @@ const DeploymentCreate = ({
     field: 'name',
   })
 
-  const templateType = getTemplateType(deployment_type, deployment_version)
+  const templateType = getDeploymentMethod(deployment_type, deployment_version)
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
