@@ -81,7 +81,7 @@ const DeploymentCreate = ({
     field: 'name',
   })
 
-  const templateType = getDeploymentMethod(deployment_type, deployment_version)
+  const deploymentMethod = getDeploymentMethod(deployment_type, deployment_version)
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -101,8 +101,8 @@ const DeploymentCreate = ({
 
   if(!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
-  // if the templateType is helm, use helm to create deployment, otherwise use the deployment templates directory
-  if (templateType === 'helm') {
+  // if the deploymentMethod is helm, use helm to create deployment, otherwise use the deployment templates directory
+  if (deploymentMethod === 'helm') {
 
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
 

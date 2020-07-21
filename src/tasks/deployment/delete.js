@@ -66,7 +66,7 @@ const DeploymentDelete = ({
     field: 'namespace',
   })
   
-  const templateType = getDeploymentMethod(deployment_type, deployment_version)
+  const deploymentMethod = getDeploymentMethod(deployment_type, deployment_version)
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -122,7 +122,7 @@ const DeploymentDelete = ({
     }
   }
 
-  if (templateType === "helm") {
+  if (deploymentMethod === "helm") {
 
     yield deleteHelmCharts()
 

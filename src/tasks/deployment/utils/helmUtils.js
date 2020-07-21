@@ -10,15 +10,15 @@ const { edition } = require('../../../edition')
 const getDeploymentMethod = (deployment_type, deployment_version) => {
 
   const chartTable = edition.chartTable
-  let templateType
+  let deploymentMethod
 
   if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
-    templateType = 'helm'
+    deploymentMethod = 'helm'
   } else {
-    templateType = 'classic'
+    deploymentMethod = 'classic'
   }
 
-  return templateType
+  return deploymentMethod
 }
 
 const getChartInfo = (deployment_type, deployment_version) => {

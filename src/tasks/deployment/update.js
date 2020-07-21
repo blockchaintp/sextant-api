@@ -82,7 +82,7 @@ const DeploymentUpdate = ({
     return
   }
 
-  const templateType = getDeploymentMethod(deployment_type, deployment_version)  
+  const deploymentMethod = getDeploymentMethod(deployment_type, deployment_version)  
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -95,7 +95,7 @@ const DeploymentUpdate = ({
   otherwise, use the template directory
 */
 
-  if (templateType === 'helm') {
+  if (deploymentMethod === 'helm') {
 
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
 
