@@ -13,7 +13,7 @@ const { getCharts, getChartsFolder } = require('../../deployment_templates/helmR
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
-const { getDeploymentMethod, getChartInfo } = require('./utils/helmUtils')
+const { getChartInfo } = require('./utils/helmUtils')
 const { writeValues } = require('../../deployment_templates/writeValues')
 
 
@@ -65,6 +65,7 @@ const DeploymentCreate = ({
     deployment_version,
     desired_state,
     custom_yaml,
+    deployment_method
   } = deployment
 
   const namespace = getField({
@@ -80,8 +81,6 @@ const DeploymentCreate = ({
     data: desired_state,
     field: 'name',
   })
-
-  const deploymentMethod = getDeploymentMethod(deployment_type, deployment_version)
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -102,7 +101,7 @@ const DeploymentCreate = ({
   if(!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
   // if the deploymentMethod is helm, use helm to create deployment, otherwise use the deployment templates directory
-  if (deploymentMethod === 'helm') {
+  if (deployment_method === 'helm') {
 
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
 
