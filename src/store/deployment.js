@@ -90,8 +90,6 @@ const DeploymentStore = (knex) => {
     if(!deployment_type) throw new Error(`data.deployment_type param must be given to store.deployment.create`)
     if(!deployment_version) throw new Error(`data.deployment_version param must be given to store.deployment.create`)
     if(!desired_state) throw new Error(`data.desired_state param must be given to store.deployment.create`)
-    if (!deployment_method) throw new Error(`data.deployment_method param must be given to store.deployment.create`)
-
 
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .insert({
