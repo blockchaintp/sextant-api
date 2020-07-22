@@ -19,8 +19,28 @@ const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
 const ledger = require('@digitalasset/daml-ledger')
+const { edition } = require('../../src/edition')
 
-const {getDeploymentMethod} = require('../tasks/deployment/utils/helmUtils')
+/*
+This function relies on the chartTable in the edition object 
+Using the deployment type and version, determine whether or not the template type is helm or classic
+The template type will always default to 'classic'
+*/
+
+
+const getDeploymentMethod = (deployment_type, deployment_version) => {
+
+  const chartTable = edition.chartTable
+  let deploymentMethod
+
+  if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
+    deploymentMethod = 'helm'
+  } else {
+    deploymentMethod = 'classic'
+  }
+
+  return deploymentMethod
+}
 
 const {
   CLUSTER_STATUS,
@@ -227,8 +247,8 @@ const DeployentController = ({ store, settings }) => {
     if(existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
 
     // determine if there is a helm chart for this deployment type
-    const deploymentMethod = getDeploymentMethod(deployment_type, deployment_version)
-
+    const deployment_method = getDeploymentMethod(deployment_type, deployment_version)
+    
     // create the deployment record
     const deployment = await store.deployment.create({
       data: {
@@ -238,7 +258,7 @@ const DeployentController = ({ store, settings }) => {
         deployment_version,
         desired_state,
         custom_yaml,
-        deployment_method: deploymentMethod
+        deployment_method
       },
     }, trx)
 
