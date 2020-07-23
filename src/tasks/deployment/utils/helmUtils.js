@@ -1,4 +1,4 @@
-const edition = require('../../../edition')
+const {edition} = require('../../../edition')
 
 const getChartInfo = (deployment_type, deployment_version) => {
   const chartTable = edition.chartTable
