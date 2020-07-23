@@ -136,4 +136,4 @@ images:
   seth_tp: blockchaintp/sawtooth-seth-tp:BTP2.0
   xo_demo: blockchaintp/xo-demo:BTP2.0
   taekion_tp: taekion/taekion-fs-tp:latest
-  taekion_rest_api: binocarlos/taekion-api-mock:v2
+  taekion_rest_api: taekion/taekion-fs-middleware:latest
