@@ -10,7 +10,7 @@ const { getCharts, getChartsFolder } = require('../../deployment_templates/helmR
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
-const { getTemplateType, getChartInfo } = require('./utils/helmUtils')
+const { getChartInfo } = require('./utils/helmUtils')
 
 
 const pino = require('pino')({
@@ -43,7 +43,8 @@ const DeploymentUpdate = ({
     applied_state,
     desired_state,
     custom_yaml,
-  } = deployment
+    deployment_method
+  } = deployment  
 
   const desiredNamespace = getField({
     deployment_type,
@@ -82,8 +83,6 @@ const DeploymentUpdate = ({
     return
   }
 
-  const templateType = getTemplateType(deployment_type, deployment_version)  
-
   const clusterKubectl = yield ClusterKubectl({
     cluster,
     store,
@@ -95,7 +94,7 @@ const DeploymentUpdate = ({
   otherwise, use the template directory
 */
 
-  if (templateType === 'helm') {
+  if (deployment_method === 'helm') {
 
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
 
