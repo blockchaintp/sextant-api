@@ -191,55 +191,6 @@ spec:
             requests:
               cpu: "50m"
         {{ end }}
-        {{ if .sawtooth.seth.enabled }}
-        - name: seth-tp
-          image: {{.images.seth_tp}}
-          command: [ "bash", "-xc"]
-          args:
-          - "seth-tp -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        - name: seth-rpc
-          image: {{.images.seth_rpc}}
-          command: [ "bash", "-xc"]
-          args:
-          - "sleep {{.sawtooth.client_wait}} && seth-rpc -v --bind 0.0.0.0:3030 --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}} "
-          ports:
-            - containerPort: 3030
-              name: seth-rpc
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        {{ end }}
-        {{ if .sawtooth.smallbank.enabled }}
-        - name: smallbank-tp
-          image: {{.images.smallbank_tp}}
-          command: [ "bash", "-xc"]
-          args:
-          - "smallbank-tp-go -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        {{ end }}
-        {{ if .sawtooth.xo.enabled }}
-        - name: xo-tp
-          image: {{.images.xo_tp}}
-          command: [ "bash", "-xc"]
-          args:
-          - "xo-tp-go -v --connect tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
-          resources:
-            limits:
-              cpu: "250m"
-            requests:
-              cpu: "50m"
-        {{ end }}
         {{range .sawtooth.customTPs}}
         - name: {{.name}}
           image: {{.image}}
