@@ -53,6 +53,9 @@
     "yup": "^0.27.0"
   },
   "devDependencies": {
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
     "tape": "^4.9.1"
   },
   "resolutions": {
