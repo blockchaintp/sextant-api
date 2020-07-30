@@ -3,56 +3,6 @@ const crypto = require('crypto')
 const utils = require('../utils/taekion')
 const API = require('../api/taekion')
 
-const FIXTURES = {
-  listVolumes: {
-    "action": "volume",
-    "object": "volume",
-    "payload": {
-      "volumes": {
-        "exampleVol0": {
-          "compression": "LZ4",
-          "encryption": "AES-GCM",
-          "fingerprint": "2a97516c354b68848cdbd8f54a226a0a55b21ed138e207ad6c5cbb9c00aa5aea"
-        },
-        "exampleVol1": {
-          "compression": "none",
-          "encryption": "none",
-          "fingerprint": "none"
-        }
-      }
-    }
-  },
-  createVolume: {
-    "action": "volume",
-    "object": "volume",
-    "payload": {
-      "compression": "none",
-      "encryption": "none",
-      "fingerprint": "",
-      "name": "apples"
-    }
-  },
-  listSnapshots: {
-    "action": "snapshot",
-    "object": "snapshot",
-    "payload": {
-      "Data": {
-        "demoSnapshot": "02 Jan 06 15:04 MST",
-        "testSnapshot": "2020-05-28 11:17:43.832029071 +0000 UTC m=+1226.288307827",
-        "volume": "apples"
-      }
-    }
-  },
-  createSnapshot: {
-    "action": "snapshot",
-    "object": "snapshot",
-    "payload": {
-      "name": "snapshot1",
-      "volume": "apples"
-    }
-  },
-}
-
 const TaekionController = ({ store, settings }) => {
 
   const api = API({
@@ -95,14 +45,10 @@ const TaekionController = ({ store, settings }) => {
   
   const listVolumes = async ({
     deployment,
-  }) => {
-
-    const data = await api.listVolumes({
-      deployment,
-    })
-
-    return utils.processVolumeResponse(data)
-  }
+  }) => api.listVolumes({
+    deployment,
+  })
+    
 
   const createVolume = async ({
     deployment,
@@ -125,47 +71,34 @@ const TaekionController = ({ store, settings }) => {
     return data
   }
 
-  const updateVolume = async ({
+  const updateVolume = ({
     deployment,
+    volume,
     name,
-    compression,
-    encryption,
-    fingerprint,
-  }) => {
-
-    const data = await api.updateVolume({
+  }) => 
+    api.updateVolume({
       deployment,
-      name,
-      compression,
-      encryption,
-      fingerprint,
-    })
-
-    return data
-  }
-
-
-  const deleteVolume = async ({
-    deployment,
-    name,
-  }) => {
-
-    const data = await api.deleteVolume({
-      deployment,
+      volume,
       name,
     })
 
-    return data
-  }
+  const deleteVolume = ({
+    deployment,
+    volume,
+  }) => 
+    api.deleteVolume({
+      deployment,
+      volume,
+    })
 
   // curl http://localhost:8000/snapshot?list&volume=apples
   const listSnapshots = async ({
     deployment,
-    volumeName,
+    volume,
   }) => {
 
     // loop over all volumes and concat the data together
-    if(volumeName == 'all') {
+    if(volume == 'all') {
       const volumes = await listVolumes({
         deployment,
       })
@@ -173,7 +106,7 @@ const TaekionController = ({ store, settings }) => {
       const snapshotCollections = await Promise.map(volumes, async volume => {
         const snapshots = await listSnapshots({
           deployment,
-          volumeName: volume.name,
+          volume: volume.uuid,
         })
         return snapshots
       })
@@ -185,43 +118,32 @@ const TaekionController = ({ store, settings }) => {
     else {
       const data = await api.listSnapshots({
         deployment,
-        volume: volumeName,
+        volume,
       })
-
-      return utils.processSnapshotResponse(data)
+      return data
     }    
   }
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
-  const createSnapshot = async ({
+  const createSnapshot = ({
     deployment,
-    snapshotName,
-    volumeName,
-  }) => {
-
-    const data = await api.createSnapshot({
+    volume,
+    name,
+  }) => 
+    api.createSnapshot({
       deployment,
-      volume: volumeName,
-      name: snapshotName,
+      volume,
+      name,
     })
 
-    return data
-  }
-
-  const deleteSnapshot = async ({
+  const deleteSnapshot = ({
     deployment,
-    snapshotName,
-    volumeName,
-  }) => {
-
-    const data = await api.deleteSnapshot({
+    id,
+  }) => 
+    api.deleteSnapshot({
       deployment,
-      volume: volumeName,
-      name: snapshotName,
+      id,
     })
-
-    return data
-  }
 
   return {
     listKeys,
