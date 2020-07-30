@@ -9,7 +9,13 @@ const processVolumeResponse = (data) => {
   }, [])
 }
 
-const processSnapshotResponse = (data) => data.payload
+const processSnapshotResponse = (data) => data.payload.map(entry => {
+  return {
+    volume: entry.VolumeUuid,
+    name: entry.Name,
+    block: entry.Block,
+  }
+})
 
 module.exports = {
   processVolumeResponse,
