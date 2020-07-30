@@ -43,18 +43,31 @@ const TaekionAPI = ({
         .toString()
         .replace(/^Error (\d+):/, (match, code) => code)
       const finalError = new Error(errorMessage)
+      finalError.response = e.response
       finalError._code = e.response.status
       throw finalError
     }
   }
 
   // curl http://localhost:8000/volume?list
-  const listVolumes = ({
+  const listVolumes = async ({
     deployment,
-  }) => apiRequest({
-    deployment,
-    url: '/volume',
-  }).then(data => utils.processVolumeResponse(data))
+  }) => {
+    try {
+      const data = await apiRequest({
+        deployment,
+        url: '/volume',
+      })
+      return utils.processVolumeResponse(data)
+    } catch(e) {
+      if(e.response && e.response.status == 404 && e.response.data.indexOf('no volumes present') >= 0) {
+        return []
+      }
+      else {
+        throw e
+      }      
+    } 
+  }
 
   // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
   const createVolume = ({
