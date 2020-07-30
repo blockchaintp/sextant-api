@@ -160,12 +160,14 @@ const TaekionRoutes = (controllers) => {
   const deleteSnapshot = async (req, res, next) => {
     const {
       id,
-      snapshotId,
+      volume,
+      snapshotName,
     } = req.params
     
     const data = await controllers.taekion.deleteSnapshot({
       deployment: id,
-      id: snapshotId,
+      volume,
+      snapshotName,
     })
     res
       .status(200)

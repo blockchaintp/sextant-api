@@ -109,18 +109,30 @@ const TaekionAPI = ({
     throw new Error(`endpoint tbc`)
   }
 
-  const listSnapshots = ({
+  const listSnapshots = async ({
     deployment,
     volume,
-  }) => apiRequest({
-    deployment,
-    method: 'get',
-    url: '/snapshot',
-    params: {
-      volume,
+  }) => {
+    try {
+      const data = await apiRequest({
+        deployment,
+        method: 'get',
+        url: '/snapshot',
+        params: {
+          volume,
+        }
+      })
+      return utils.processSnapshotResponse(data)
+    } catch(e) {
+      if(e.response && e.response.status == 404 && e.response.data.indexOf('no snapshots found') >= 0) {
+        return []
+      }
+      else {
+        throw e
+      }      
     }
-  }).then(data => utils.processSnapshotResponse(data))
-  
+  }
+
   const createSnapshot = ({
     deployment,
     volume,

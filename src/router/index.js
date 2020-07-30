@@ -144,12 +144,12 @@ const Routes = ({
 
   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listVolumes))
   app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createVolume))
-  app.put(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:name'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.updateVolume))
-  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:name'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteVolume))
+  app.put(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.updateVolume))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteVolume))
 
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volumeName/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
-  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volumeName/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
-  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volumeName/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
+  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
 
 }
 
