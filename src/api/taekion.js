@@ -1,5 +1,6 @@
 const axios = require('axios')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const utils = require('../utils/taekion')
 
 const TaekionAPI = ({
   store,
@@ -48,91 +49,82 @@ const TaekionAPI = ({
   }
 
   // curl http://localhost:8000/volume?list
-  const listVolumes = async ({
+  const listVolumes = ({
     deployment,
-  }) => {
-    const data = await apiRequest({
-      deployment,
-      url: '/volume?list',
-    })
-    return data
-  }
+  }) => apiRequest({
+    deployment,
+    url: '/volume',
+  }).then(data => utils.processVolumeResponse(data))
 
   // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
-  const createVolume = async ({
+  const createVolume = ({
     deployment,
     name,
     compression,
     encryption,
     fingerprint,
-  }) => {
-    const data = await apiRequest({
-      deployment,
-      method: 'post',
-      url: '/volume',
-      data: {
-        id: name,
-        compression,
-        encryption,
-        fingerprint,
-      }
-    })
-    return data
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'post',
+    url: '/volume',
+    data: {
+      id: name,
+      compression,
+      encryption,
+      fingerprint,
+    }
+  })
 
-  const updateVolume = async ({
+  const updateVolume = ({
     deployment,
+    volume,
     name,
-    compression,
-    encryption,
-    fingerprint,
-  }) => {
-    throw new Error(`endpoint tbc`)
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'put',
+    url: `/volume/${volume}`,
+    data: {
+      action: 'rename',
+      id: name,
+    }
+  })
 
   const deleteVolume = async ({
     deployment,
-    name,
+    volume,
   }) => {
     throw new Error(`endpoint tbc`)
   }
 
-  const listSnapshots = async ({
+  const listSnapshots = ({
     deployment,
     volume,
-  }) => {
-    const data = await apiRequest({
-      deployment,
-      method: 'get',
-      url: '/snapshot',
-      params: {
-        volume,
-      }
-    })
-    return data
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'get',
+    url: '/snapshot',
+    params: {
+      volume,
+    }
+  }).then(data => utils.processSnapshotResponse(data))
   
-  const createSnapshot = async ({
+  const createSnapshot = ({
     deployment,
     volume,
     name,
-  }) => {
-    const data = await apiRequest({
-      deployment,
-      method: 'post',
-      url: '/snapshot',
-      data: {
-        volume,
-        id: name,
-      }
-    })
-    return data
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'post',
+    url: '/snapshot',
+    data: {
+      volume,
+      id: name,
+    }
+  })
 
   const deleteSnapshot = async ({
     deployment,
-    volume,
-    name,
+    id,
   }) => {
     throw new Error(`endpoint tbc`)
   }

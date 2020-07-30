@@ -91,24 +91,16 @@ const TaekionRoutes = (controllers) => {
   const updateVolume = async (req, res, next) => {
     const {
       id,
-      name,
+      volume,
     } = req.params
     const {
-      compression,
-      encryption,
-      fingerprint,
+      name,
     } = req.body
 
-    if(!compression) return httpUtils.badRequest(res, `compression required`)
-    if(!encryption) return httpUtils.badRequest(res, `encryption required`)
-    if(encryption != 'none' && !fingerprint) return httpUtils.badRequest(res, `fingerprint required`)
-    
     const data = await controllers.taekion.updateVolume({
       deployment: id,
+      volume,
       name,
-      compression,
-      encryption,
-      fingerprint,
     })
     res
       .status(200)
@@ -118,12 +110,12 @@ const TaekionRoutes = (controllers) => {
   const deleteVolume = async (req, res, next) => {
     const {
       id,
-      name,
+      volume,
     } = req.params
     
     const data = await controllers.taekion.deleteVolume({
       deployment: id,
-      name,
+      volume,
     })
     res
       .status(200)
@@ -133,11 +125,11 @@ const TaekionRoutes = (controllers) => {
   const listSnapshots = async (req, res, next) => {
     const {
       id,
-      volumeName,
+      volume,
     } = req.params
     const data = await controllers.taekion.listSnapshots({
       deployment: id,
-      volumeName,
+      volume,
     })
     res
       .status(200)
@@ -147,18 +139,18 @@ const TaekionRoutes = (controllers) => {
   const createSnapshot = async (req, res, next) => {
     const {
       id,
-      volumeName,
+      volume,
     } = req.params
     const {
-      snapshotName,
+      name,
     } = req.body
 
     if(!snapshotName) return httpUtils.badRequest(res, `snapshotName required`)
 
     const data = await controllers.taekion.createSnapshot({
       deployment: id,
-      volumeName,
-      snapshotName,
+      volume,
+      name,
     })
     res
       .status(201)
@@ -168,14 +160,12 @@ const TaekionRoutes = (controllers) => {
   const deleteSnapshot = async (req, res, next) => {
     const {
       id,
-      volumeName,
-      snapshotName,
+      snapshotId,
     } = req.params
     
     const data = await controllers.taekion.deleteSnapshot({
       deployment: id,
-      volumeName,
-      snapshotName,
+      id: snapshotId,
     })
     res
       .status(200)
