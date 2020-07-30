@@ -145,7 +145,7 @@ const TaekionRoutes = (controllers) => {
       name,
     } = req.body
 
-    if(!snapshotName) return httpUtils.badRequest(res, `snapshotName required`)
+    if(!name) return httpUtils.badRequest(res, `name required`)
 
     const data = await controllers.taekion.createSnapshot({
       deployment: id,
