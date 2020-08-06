@@ -1,5 +1,6 @@
 const axios = require('axios')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const utils = require('../utils/taekion')
 
 const TaekionAPI = ({
   store,
@@ -42,6 +43,7 @@ const TaekionAPI = ({
         .toString()
         .replace(/^Error (\d+):/, (match, code) => code)
       const finalError = new Error(errorMessage)
+      finalError.response = e.response
       finalError._code = e.response.status
       throw finalError
     }
@@ -51,48 +53,58 @@ const TaekionAPI = ({
   const listVolumes = async ({
     deployment,
   }) => {
-    const data = await apiRequest({
-      deployment,
-      url: '/volume?list',
-    })
-    return data
+    try {
+      const data = await apiRequest({
+        deployment,
+        url: '/volume',
+      })
+      return utils.processVolumeResponse(data)
+    } catch(e) {
+      if(e.response && e.response.status == 404 && e.response.data.indexOf('no volumes present') >= 0) {
+        return []
+      }
+      else {
+        throw e
+      }      
+    } 
   }
 
   // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
-  const createVolume = async ({
+  const createVolume = ({
     deployment,
     name,
     compression,
     encryption,
     fingerprint,
-  }) => {
-    const data = await apiRequest({
-      deployment,
-      method: 'post',
-      url: '/volume',
-      data: {
-        id: name,
-        compression,
-        encryption,
-        fingerprint,
-      }
-    })
-    return data
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'post',
+    url: '/volume',
+    data: {
+      id: name,
+      compression,
+      encryption,
+      fingerprint,
+    }
+  })
 
-  const updateVolume = async ({
+  const updateVolume = ({
     deployment,
+    volume,
     name,
-    compression,
-    encryption,
-    fingerprint,
-  }) => {
-    throw new Error(`endpoint tbc`)
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'put',
+    url: `/volume/${volume}`,
+    data: {
+      action: 'rename',
+      id: name,
+    }
+  })
 
   const deleteVolume = async ({
     deployment,
-    name,
+    volume,
   }) => {
     throw new Error(`endpoint tbc`)
   }
@@ -101,38 +113,43 @@ const TaekionAPI = ({
     deployment,
     volume,
   }) => {
-    const data = await apiRequest({
-      deployment,
-      method: 'get',
-      url: '/snapshot',
-      params: {
-        volume,
+    try {
+      const data = await apiRequest({
+        deployment,
+        method: 'get',
+        url: '/snapshot',
+        params: {
+          volume,
+        }
+      })
+      return utils.processSnapshotResponse(data)
+    } catch(e) {
+      if(e.response && e.response.status == 404 && e.response.data.indexOf('no snapshots found') >= 0) {
+        return []
       }
-    })
-    return data
+      else {
+        throw e
+      }      
+    }
   }
-  
-  const createSnapshot = async ({
+
+  const createSnapshot = ({
     deployment,
     volume,
     name,
-  }) => {
-    const data = await apiRequest({
-      deployment,
-      method: 'post',
-      url: '/snapshot',
-      data: {
-        volume,
-        id: name,
-      }
-    })
-    return data
-  }
+  }) => apiRequest({
+    deployment,
+    method: 'post',
+    url: '/snapshot',
+    data: {
+      volume,
+      id: name,
+    }
+  })
 
   const deleteSnapshot = async ({
     deployment,
-    volume,
-    name,
+    id,
   }) => {
     throw new Error(`endpoint tbc`)
   }
