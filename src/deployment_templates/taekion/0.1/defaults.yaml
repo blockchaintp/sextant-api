@@ -32,6 +32,10 @@ sawtooth:
       imagePullPolicy: Always
     monitor:
       imagePullPolicy: Always
+    taekion_tp:
+      imagePullPolicy: IfNotPresent
+    taekion_rest_api:
+      imagePullPolicy: IfNotPresent
   ports:
     sawnet: 8800
     consensus: 5050
