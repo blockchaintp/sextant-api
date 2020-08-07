@@ -168,9 +168,7 @@ spec:
               cpu: "50m"
         - name: taekion-tp
           image: {{.images.taekion_tp}}
-          # TODO: remove this - it is to avoid having problems with ImagePullSecrets
-          # when running locally with kind
-          imagePullPolicy: Never
+          imagePullPolicy: {{.sawtooth.containers.taekion_tp.imagePullPolicy}}
           command: [ "bash", "-c"]
           args:
           - "taekion-fs-tp -vv -C tcp://127.0.0.1:{{.sawtooth.ports.sawcomp}}"
@@ -222,9 +220,7 @@ spec:
               cpu: "50m"
         - name: taekion-rest-api
           image: {{.images.taekion_rest_api}}
-          # TODO: remove this - it is to avoid having problems with ImagePullSecrets
-          # when running locally with kind
-          imagePullPolicy: Never
+          imagePullPolicy: {{.sawtooth.containers.taekion_rest_api.imagePullPolicy}}
           ports:
             - containerPort: {{.sawtooth.ports.taekion_rest}}
               name: taekionrest
