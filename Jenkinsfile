@@ -18,7 +18,7 @@
 
 pipeline {
   agent any
-  
+
   triggers {cron('H H * * *')}
 
 
@@ -57,7 +57,7 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: 'btp-build-nexus', passwordVariable: 'BTP_DEV_PSW', usernameVariable: 'BTP_DEV_USR')]) {
           sh "./test.sh"
-        }  
+        }
       }
     }
 
@@ -77,13 +77,6 @@ pipeline {
   }
 
   post {
-      always {
-        sh '''
-          for img in `docker images --filter reference="*:$ISOLATION_ID" --format "{{.Repository}}"`; do
-            docker rmi -f $img:$ISOLATION_ID
-          done
-        '''
-      }
       success {
           archiveArtifacts '*.tgz, *.zip'
       }
