@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser')
 const axios = require('axios')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const utils = require('../utils/taekion')
@@ -14,6 +15,7 @@ const TaekionAPI = ({
     deployment,
     method = 'get',
     url = '/',
+    podPort = 8000,
     ...extra
   }) => {
     const proxy = await DeploymentPodProxy({
@@ -28,7 +30,7 @@ const TaekionAPI = ({
     try {
       const res = await proxy.request({
         pod: pod.metadata.name,
-        port: 8000,
+        port: podPort,
         handler: ({
           port,
         }) => axios({
@@ -39,6 +41,9 @@ const TaekionAPI = ({
       })
       return res.data
     } catch(e) {
+      if(!e.response) {
+        throw e
+      }
       const errorMessage = e.response.data
         .toString()
         .replace(/^Error (\d+):/, (match, code) => code)
@@ -46,6 +51,67 @@ const TaekionAPI = ({
       finalError.response = e.response
       finalError._code = e.response.status
       throw finalError
+    }
+  }
+
+  const apiStreamRequest = async ({
+    deployment,
+    podPort = 8000,
+    req,
+    res,
+    ...extra
+  }) => {
+    const proxy = await DeploymentPodProxy({
+      store,
+      id: deployment,
+    })
+
+    const pod = await proxy.getPod()
+    
+    if(!pod) throw new Error(`no pod found`)
+
+    try {
+      await proxy.request({
+        pod: pod.metadata.name,
+        port: podPort,
+        handler: async ({
+          port,
+        }) => {
+          try {
+            console.log(`${req.method} ${req.url}`)
+            const upstreamRes = await axios({
+              method: req.method,
+              url: `http://localhost:${port}${req.url}`,
+              headers: req.headers,
+              responseType: 'stream',
+              data: req.method.toLowerCase() == 'post' || req.method.toLowerCase() == 'put' ? req : null,
+              ...extra
+            })
+            res.status(upstreamRes.status)
+            res.set(upstreamRes.headers)
+            upstreamRes.data.pipe(res)
+          } catch(e) {
+            const errorMessage = e.response.data
+              .toString()
+              .replace(/^Error (\d+):/, (match, code) => code)
+            res.status(e.response.status)
+            res.end(errorMessage)
+          }
+        }
+      })
+    } catch(e) {
+      if(!e.response) {
+        console.error(e.stack)
+        res.status(500)
+        res.end(e.toString())
+      }
+      else {
+        const errorMessage = e.response.data
+          .toString()
+          .replace(/^Error (\d+):/, (match, code) => code)
+        res.status(e.response.status)
+        res.end(errorMessage)
+      }
     }
   }
 
@@ -162,6 +228,8 @@ const TaekionAPI = ({
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
+    apiRequest,
+    apiStreamRequest,
   }
 
 }

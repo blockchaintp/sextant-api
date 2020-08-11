@@ -1,7 +1,4 @@
-'use strict'
-
 const express = require('express')
-const bodyParser = require('body-parser')
 const Knex = require('knex')
 
 const Passport = require('./passport')
@@ -37,7 +34,6 @@ const App = ({
 
   app.disable('etag')
 
-  app.use(bodyParser.json())
   app.use((req, res, next) => {
     res.set('Cache-Control', 'no-cache')
     next()
@@ -58,7 +54,6 @@ const App = ({
     controllers,
     settings,
   })
-
 
   const taskProcessor = TaskProcessor({
     store,

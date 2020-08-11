@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler')
+const bodyParser = require('body-parser')
 const pino = require('pino')({
   name: 'app',
 })
@@ -20,8 +21,6 @@ const ignoreBackgroundRequests = (req) => {
   }
   // if req.query.mode === 'background do nothing
 }
-
-
 
 const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
@@ -83,6 +82,12 @@ const Routes = ({
   const daml = DamlRoutes(controllers)
   const taekion = TaekionRoutes(controllers)
 
+  // this goes here because we don't want to enforce JSON body parsing
+  // (because it's a proxy)
+  app.use(basePath('/clusters/:cluster/deployments/:id/taekion/rest_api'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.restApiProxy))
+
+  app.use(bodyParser.json())
+  
   app.get(basePath('/config/values'), asyncHandler(config.values))
 
   app.get(basePath('/user/status'), asyncHandler(user.status))
@@ -150,8 +155,6 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
   app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
   app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
-
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/client_yaml'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.clientComposeYaml))
 
 }
 
