@@ -174,19 +174,11 @@ const TaekionRoutes = (controllers) => {
       .json(data)
   }
 
-  const clientComposeYaml = async (req, res, next) => {
-    const {
-      id,
-    } = req.params
-    
-    const yaml = await controllers.taekion.clientComposeYaml({
-      deployment: id,
-    })
-    res
-      .type('yaml')
-      .status(200)
-      .end(yaml)
-  }
+  const restApiProxy = (req, res, next) => controllers.taekion.restApiProxy({
+    deployment: req.params.id,
+    req,
+    res,
+  })
 
   return {
     listKeys,
@@ -199,7 +191,7 @@ const TaekionRoutes = (controllers) => {
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
-    clientComposeYaml,
+    restApiProxy,
   }
 }
 

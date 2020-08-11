@@ -164,14 +164,7 @@ const TaekionAPI = ({ store } = {}) => {
     throw new Error('endpoint tbc');
   };
 
-<<<<<<< HEAD
   const listSnapshots = async ({ deployment, volume }) => {
-=======
-  const listSnapshots = async ({
-    deployment,
-    volume,
-  }) => {
->>>>>>> 829254d... fix(taekion): intercept empty snapshot list 404
     try {
       const data = await apiRequest({
         deployment,
@@ -179,7 +172,6 @@ const TaekionAPI = ({ store } = {}) => {
         url: '/snapshot',
         params: {
           volume,
-<<<<<<< HEAD
         },
       });
       return utils.processSnapshotResponse(data);
@@ -196,26 +188,6 @@ const TaekionAPI = ({ store } = {}) => {
   };
 
   const createSnapshot = ({ deployment, volume, name }) => apiRequest({
-=======
-        }
-      })
-      return utils.processSnapshotResponse(data)
-    } catch(e) {
-      if(e.response && e.response.status == 404 && e.response.data.indexOf('no snapshots found') >= 0) {
-        return []
-      }
-      else {
-        throw e
-      }      
-    }
-  }
-
-  const createSnapshot = ({
-    deployment,
-    volume,
-    name,
-  }) => apiRequest({
->>>>>>> 829254d... fix(taekion): intercept empty snapshot list 404
     deployment,
     method: 'post',
     url: '/snapshot',

@@ -145,23 +145,17 @@ const TaekionController = ({ store, settings }) => {
       id,
     })
 
-  const clientComposeYaml = ({
+  const restApiProxy = ({
     deployment,
-  }) => {
-    return `
-version: "3.7"
-services:
-
-  taekion-fs-client:
-    image: taekion/taekion-fs-client
-    container_name: taekion-fs-client
-    init: true
-    privileged: true
-    devices:
-      - "/dev/fuse"
-    entrypoint: tail -f /dev/null
-`
-  }
+    req,
+    res,
+  }) => api.apiStreamRequest({
+    deployment,
+    // we are targeting the rest api not the taekion middleware
+    podPort: 8008,
+    req,
+    res,
+  })
 
   return {
     listKeys,
@@ -174,7 +168,7 @@ services:
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
-    clientComposeYaml,
+    restApiProxy,
   }
 }
 
