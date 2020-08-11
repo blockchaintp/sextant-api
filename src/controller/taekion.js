@@ -145,6 +145,24 @@ const TaekionController = ({ store, settings }) => {
       id,
     })
 
+  const clientComposeYaml = ({
+    deployment,
+  }) => {
+    return `
+version: "3.7"
+services:
+
+  taekion-fs-client:
+    image: taekion/taekion-fs-client
+    container_name: taekion-fs-client
+    init: true
+    privileged: true
+    devices:
+      - "/dev/fuse"
+    entrypoint: tail -f /dev/null
+`
+  }
+
   return {
     listKeys,
     createKey,
@@ -156,6 +174,7 @@ const TaekionController = ({ store, settings }) => {
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
+    clientComposeYaml,
   }
 }
 
