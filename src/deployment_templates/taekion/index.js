@@ -24,6 +24,7 @@ module.exports = {
         form: '0.1',
         description: "BTP's Taekion distribution based on Hyperledger Sawtooth 1.1",
         features: [
+          'taekion.cli',
           'taekion.keys',
           'taekion.volumes',
           'taekion.snapshots',
