@@ -15,6 +15,7 @@ func main() {
 	SEXTANT_API_KEY := os.Getenv("SEXTANT_API_KEY")
 	SEXTANT_API_URL := os.Getenv("SEXTANT_API_URL")
 	BINARY_NAME := os.Getenv("BINARY_NAME")
+	DEBUG := os.Getenv("DEBUG")
 
 	if BINARY_NAME == "" {
 		log.Fatalf("BINARY_NAME is required")
@@ -40,8 +41,10 @@ func main() {
 		req.URL.Host = remote.Host
 		req.URL.Path = fmt.Sprintf("%s%s", remote.Path, req.URL.Path)
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", SEXTANT_API_KEY))
-		log.Println(req.Method)
-		log.Println(req.URL)
+		if DEBUG != "" {
+			log.Println(req.Method)
+			log.Println(req.URL)
+		}
 	}
 
 	proxy := &httputil.ReverseProxy{Director: director}
