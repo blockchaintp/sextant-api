@@ -13,3 +13,4 @@ COPY ./tfs-fuse.sh /usr/local/bin/tfs-fuse
 RUN chmod a+x /usr/local/bin/tfs-cli
 RUN chmod a+x /usr/local/bin/tfs-fuse
 USER user
+ENTRYPOINT [ "bash" ]
