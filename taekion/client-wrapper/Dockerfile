@@ -12,5 +12,5 @@ COPY ./tfs-cli.sh /usr/local/bin/tfs-cli
 COPY ./tfs-fuse.sh /usr/local/bin/tfs-fuse
 RUN chmod a+x /usr/local/bin/tfs-cli
 RUN chmod a+x /usr/local/bin/tfs-fuse
-USER user
+# USER user (add if not running on mac)
 ENTRYPOINT [ "bash" ]
