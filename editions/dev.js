@@ -1,32 +1,32 @@
 // Edition object for dev mode
 const dotenv = require("dotenv");
+
 dotenv.config();
 
 const edition = {
   deployment: {
-    classic: ['daml'],
-    helm:  ['sawtooth'] 
-   },
+    classic: ["daml", "taekion"],
+    helm: ["sawtooth"],
+  },
   metering: {
-    type: 'dev'
+    type: "dev",
   },
   helmRepos: [
     {
-      name: 'btp-dev',
-      url: 'https://dev.catenasys.com/repository/catenasys-helm-dev/',
+      name: "btp-dev",
+      url: "https://dev.catenasys.com/repository/catenasys-helm-dev/",
       username: process.env.BTP_DEV_USR,
       password: process.env.BTP_DEV_PSW,
-      charts: ['sawtooth', ]
-    }
+      charts: ["sawtooth"],
+    },
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: 'btp-dev/sawtooth', extension: 'sawtooth' }
+      1.1: { chart: "btp-dev/sawtooth", extension: "sawtooth" },
     },
   },
-
-}
+};
 
 module.exports = {
-  edition
-}
+  edition,
+};

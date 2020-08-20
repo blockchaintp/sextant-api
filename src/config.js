@@ -17,6 +17,7 @@ const TABLES = {
   clusterfile: 'clusterfile',
   clustersecret: 'clustersecret',
   deploymentsecret: 'deploymentsecret',
+  taekion_keys: 'taekionkeys',
 }
 
 const LIST_ORDER_BY_FIELDS = {
@@ -79,7 +80,8 @@ const CLUSTER_STATUS_DEFAULT = CLUSTER_STATUS.created
 const DEPLOYMENT_TYPE = {
   sawtooth: 'sawtooth',
   ethereum: 'ethereum',
-  daml: 'daml'
+  daml: 'daml',
+  taekion: 'taekion',
 }
 
 const DEPLOYMENT_STATUS = {

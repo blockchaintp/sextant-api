@@ -44,3 +44,10 @@ services:
       args:
         EDITION_MODULE: dev.js
     image: sextant-api:${ISOLATION_ID}
+  api-sft:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: sft.js
+    image: sextant-api-sft:${ISOLATION_ID}

@@ -1,4 +1,5 @@
 const asyncHandler = require('express-async-handler')
+const bodyParser = require('body-parser')
 const pino = require('pino')({
   name: 'app',
 })
@@ -8,7 +9,8 @@ const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
 const DeploymentRoutes = require('./deployment')
-
+const DamlRoutes = require('./daml')
+const TaekionRoutes = require('./taekion')
 
 // middleware function looks for '?mode=<background or foreground>' on incoming requests
 const ignoreBackgroundRequests = (req) => {
@@ -19,8 +21,6 @@ const ignoreBackgroundRequests = (req) => {
   }
   // if req.query.mode === 'background do nothing
 }
-
-
 
 const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
@@ -79,7 +79,15 @@ const Routes = ({
   const user = UserRoutes(controllers)
   const cluster = ClusterRoutes(controllers)
   const deployment = DeploymentRoutes(controllers)
+  const daml = DamlRoutes(controllers)
+  const taekion = TaekionRoutes(controllers)
 
+  // this goes here because we don't want to enforce JSON body parsing
+  // (because it's a proxy)
+  app.use(basePath('/clusters/:cluster/deployments/:id/taekion/rest_api'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.restApiProxy))
+
+  app.use(bodyParser.json())
+  
   app.get(basePath('/config/values'), asyncHandler(config.values))
 
   app.get(basePath('/user/status'), asyncHandler(user.status))
@@ -120,20 +128,33 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
   app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))
 
-  app.get(basePath('/clusters/:cluster/deployments/:id/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getKeyManagerKeys))
-  app.get(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getEnrolledKeys))
-  app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addEnrolledKey))
+  app.get(basePath('/clusters/:cluster/deployments/:id/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getKeyManagerKeys))
+  app.get(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getEnrolledKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addEnrolledKey))
 
-  app.get(basePath('/clusters/:cluster/deployments/:id/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getParticipants))
-  app.get(basePath('/clusters/:cluster/deployments/:id/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getArchives))
-  app.get(basePath('/clusters/:cluster/deployments/:id/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.getTimeServiceInfo))
+  app.get(basePath('/clusters/:cluster/deployments/:id/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getParticipants))
+  app.get(basePath('/clusters/:cluster/deployments/:id/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getArchives))
+  app.get(basePath('/clusters/:cluster/deployments/:id/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getTimeServiceInfo))
 
-  app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.registerParticipant))
-  app.post(basePath('/clusters/:cluster/deployments/:id/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.rotateParticipantKey))
-  app.post(basePath('/clusters/:cluster/deployments/:id/addParty'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.addParty))
-  app.post(basePath('/clusters/:cluster/deployments/:id/removeParties'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.removeParties))
-  app.post(basePath('/clusters/:cluster/deployments/:id/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.generatePartyToken))
-  app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.uploadArchive))
+  app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.registerParticipant))
+  app.post(basePath('/clusters/:cluster/deployments/:id/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.rotateParticipantKey))
+  app.post(basePath('/clusters/:cluster/deployments/:id/addParty'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addParty))
+  app.post(basePath('/clusters/:cluster/deployments/:id/removeParties'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.removeParties))
+  app.post(basePath('/clusters/:cluster/deployments/:id/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generatePartyToken))
+  app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.uploadArchive))
+
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/keys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/keys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createKey))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/keys/:keyId'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteKey))
+
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listVolumes))
+  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createVolume))
+  app.put(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.updateVolume))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteVolume))
+
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
+  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
+  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
 
 }
 

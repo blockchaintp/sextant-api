@@ -1,7 +1,4 @@
-'use strict'
-
 const express = require('express')
-const bodyParser = require('body-parser')
 const Knex = require('knex')
 
 const Passport = require('./passport')
@@ -37,7 +34,6 @@ const App = ({
 
   app.disable('etag')
 
-  app.use(bodyParser.json())
   app.use((req, res, next) => {
     res.set('Cache-Control', 'no-cache')
     next()
@@ -58,7 +54,6 @@ const App = ({
     controllers,
     settings,
   })
-
 
   const taskProcessor = TaskProcessor({
     store,
@@ -97,14 +92,14 @@ const App = ({
         action: 'error',
         error: err.error ? err.error.toString() : err.toString(),
         stack: err.stack,
-        code: res._code || 500
+        code: err._code || res._code || 500
       })
     }
     // if the error was with the deserializer then logout to clear the cookie
     if(err.type == 'deserializeUser') {
       req.logout()
     }
-    res.status(res._code || 500)
+    res.status(err._code || res._code || 500)
     res.json({ error: err.toString() })
   })
 
