@@ -13,16 +13,14 @@ const edition = {
   },
   helmRepos: [
     {
-      name: "btp-dev",
-      url: "https://dev.catenasys.com/repository/catenasys-helm-dev/",
-      username: process.env.BTP_DEV_USR,
-      password: process.env.BTP_DEV_PSW,
+      name: "btp-unstable",
+      url: "https://btp-charts-unstable.s3.amazonaws.com/charts",
       charts: ["sawtooth"],
     },
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: "btp-dev/sawtooth", extension: "sawtooth" },
+      1.1: { chart: "btp-unstable/sawtooth", extension: "sawtooth" },
     },
   },
 };
