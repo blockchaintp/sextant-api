@@ -15,13 +15,16 @@ const edition = {
     {
       name: "btp-unstable",
       url: "https://btp-charts-unstable.s3.amazonaws.com/charts",
-      charts: ["sawtooth"],
+      charts: ["sawtooth","daml-on-besu"],
     },
   ],
   chartTable: {
     sawtooth: {
       1.1: { chart: "btp-unstable/sawtooth", extension: "sawtooth" },
     },
+    daml: {
+      "daml-on-besu": { chart: "btp-unstable/daml-on-besu", extension: "daml" },
+    }
   },
 };
 
