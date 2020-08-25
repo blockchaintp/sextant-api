@@ -1,9 +1,6 @@
 const Promise = require('bluebird');
-const async = require('async');
-const axios = require('axios');
 const config = require('../config');
 const userUtils = require('../utils/user');
-const clusterUtils = require('../utils/cluster');
 const ClusterKubectl = require('../utils/clusterKubectl');
 const RBAC = require('../rbac');
 
@@ -23,6 +20,7 @@ const getDeploymentMethod = (deployment_type, deployment_version) => {
   const { chartTable } = edition;
   let deploymentMethod;
 
+  // eslint-disable-next-line max-len
   if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
     deploymentMethod = 'helm';
   } else {
@@ -37,7 +35,50 @@ const {
   USER_TYPES,
 } = config;
 
-const DeployentController = ({ store, settings }) => {
+const DeployentController = ({ store }) => {
+  /*
+
+    load the most recent task for each cluster so the frontend can display
+    the task status of clusters in the table
+
+    also load the cluster and inject the name so a user without RBAC access
+    onto the cluster can at least see the cluster name
+
+    params:
+
+     * clusters
+
+  */
+  const loadAdditionalDeploymentData = ({
+    deployments,
+  }) => {
+    const clusterCache = {};
+
+    const loadClusterForDeployment = async ({
+      id,
+    }) => {
+      if (clusterCache[id]) return clusterCache[id];
+      const cluster = await store.cluster.get({
+        id,
+      });
+      clusterCache[id] = cluster;
+      return cluster;
+    };
+
+    return Promise.map(deployments, async (deployment) => {
+      const task = await store.task.mostRecentForResource({
+        deployment: deployment.id,
+      });
+
+      const cluster = await loadClusterForDeployment({
+        id: deployment.cluster,
+      });
+      const updatedDeployment = deployment
+      updatedDeployment.task = task;
+      updatedDeployment.clusterName = cluster.name;
+      return updatedDeployment;
+    });
+  };
   /*
 
     list deployments
@@ -121,50 +162,6 @@ const DeployentController = ({ store, settings }) => {
 
   /*
 
-    load the most recent task for each cluster so the frontend can display
-    the task status of clusters in the table
-
-    also load the cluster and inject the name so a user without RBAC access
-    onto the cluster can at least see the cluster name
-
-    params:
-
-     * clusters
-
-  */
-  const loadAdditionalDeploymentData = ({
-    deployments,
-  }) => {
-    const clusterCache = {};
-
-    const loadClusterForDeployment = async ({
-      id,
-    }) => {
-      if (clusterCache[id]) return clusterCache[id];
-      const cluster = await store.cluster.get({
-        id,
-      });
-      clusterCache[id] = cluster;
-      return cluster;
-    };
-
-    return Promise.map(deployments, async (deployment) => {
-      const task = await store.task.mostRecentForResource({
-        deployment: deployment.id,
-      });
-
-      const cluster = await loadClusterForDeployment({
-        id: deployment.cluster,
-      });
-
-      deployment.task = task;
-      deployment.clusterName = cluster.name;
-      return deployment;
-    });
-  };
-
-  /*
-
     create a new deployment
 
     params:
@@ -218,7 +215,9 @@ const DeployentController = ({ store, settings }) => {
 
     // Check ot make sure there isn't a deployment on the cluster yet
     if (deployments.length > 0) throw new Error('there is already a deployment provisioned for this cluster');
-    const existingDeployment = deployments.find((deployment) => deployment.name.toLowerCase() == name.toLowerCase());
+    const existingDeployment = deployments.find(
+      (deployment) => deployment.name.toLowerCase() === name.toLowerCase(),
+    );
     if (existingDeployment) throw new Error(`there is already a deployment with the name ${name}`);
 
     // determine if there is a helm chart for this deployment type
@@ -359,8 +358,9 @@ const DeployentController = ({ store, settings }) => {
       const user = await store.user.get({
         id: role.user,
       });
-      role.userRecord = userUtils.safe(user);
-      return role;
+      const updatedRole = role
+      updatedRole.userRecord = userUtils.safe(user);
+      return updatedRole;
     });
   };
 
@@ -394,14 +394,14 @@ const DeployentController = ({ store, settings }) => {
     const userRecord = await store.user.get(userQuery, trx);
 
     if (!userRecord) throw new Error('no user found');
-    if (userRecord.permission == USER_TYPES.superuser) throw new Error('cannot create role for superuser');
+    if (userRecord.permission === USER_TYPES.superuser) throw new Error('cannot create role for superuser');
 
     const existingRoles = await store.role.listForResource({
       resource_type: 'deployment',
       resource_id: id,
     }, trx);
 
-    const existingRole = existingRoles.find((role) => role.user == userRecord.id);
+    const existingRole = existingRoles.find((role) => role.user === userRecord.id);
 
     if (existingRole) throw new Error('this user already has a role for this deployment - delete it first');
 
@@ -437,7 +437,7 @@ const DeployentController = ({ store, settings }) => {
       resource_id: id,
     }, trx);
 
-    const role = roles.find((role) => role.user == user);
+    const role = roles.find((oneRole) => oneRole.user === user);
     if (!role) throw new Error(`no role for user ${user} found for deployment ${id}`);
 
     return store.role.delete({
@@ -536,7 +536,7 @@ const DeployentController = ({ store, settings }) => {
       id,
     }, trx);
 
-    if (deployment.status != DEPLOYMENT_STATUS.deleted) throw new Error('a deployment must be in deleted status to be deleted permenantly');
+    if (deployment.status !== DEPLOYMENT_STATUS.deleted) throw new Error('a deployment must be in deleted status to be deleted permenantly');
 
     // delete the cluster tasks, roles and then the cluster
     await store.task.deleteForResource({
