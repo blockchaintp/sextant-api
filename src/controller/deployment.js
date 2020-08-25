@@ -34,7 +34,6 @@ const getDeploymentMethod = (deployment_type, deployment_version) => {
 
 const {
   DEPLOYMENT_STATUS,
-  DEPLOYMENT_TYPE,
   USER_TYPES,
 } = config;
 
@@ -198,11 +197,13 @@ const DeployentController = ({ store, settings }) => {
     if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create');
     if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create');
 
-    if (!DEPLOYMENT_TYPE[deployment_type]) throw new Error(`unknown deployment_type: ${deployment_type}`);
+    const typeForm = deploymentForms[deployment_type];
 
-    const schema = deploymentForms[deployment_type].forms[deployment_version];
+    if (!typeForm) throw new Error(`unknown deployment_type: ${deployment_type}`);
 
-    if (!schema) throw new Error(`unknown deployment_version: ${deployment_type} version ${deployment_version}`);
+    const schema = typeForm.forms[deployment_version];
+
+    if (!schema) throw new Error(`unknown deployment_type: ${deployment_type} version ${deployment_version}`);
 
     // validate the incoming form data
     await validate({
