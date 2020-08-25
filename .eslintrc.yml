@@ -7,4 +7,6 @@ extends:
   - airbnb-base
 parserOptions:
   ecmaVersion: 11
-rules: { camelcase: 0 }
+rules:
+  camelcase: 0
+  semi: 0
