@@ -14,6 +14,16 @@ const formatAlterTableEnumSql = (
   ].join('\n');
 };
 
+const dropConstraintSql = (
+  tableName,
+  columnName
+) => {
+  const constraintName = `${tableName}_${columnName}_check`;
+  return [
+    `ALTER TABLE ${tableName} DROP CONSTRAINT IF EXISTS ${constraintName};`,
+  ].join('\n');
+};
+
 
 exports.up = async function up(knex) {
   await knex.raw(
@@ -22,5 +32,7 @@ exports.up = async function up(knex) {
 };
 
 exports.down = async function down(knex) {
-  
+  await knex.raw(
+    dropConstraintSql('deployment','deployment_type')
+  );
 };
