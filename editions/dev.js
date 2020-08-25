@@ -6,7 +6,7 @@ dotenv.config();
 const edition = {
   deployment: {
     classic: ["daml", "taekion"],
-    helm: ["sawtooth", "openebs", "fluentd"],
+    helm: ["sawtooth", "openebs", "fluentd","elasticsearch","kibana"],
   },
   metering: {
     type: "dev",
@@ -15,7 +15,7 @@ const edition = {
     {
       name: "btp-unstable",
       url: "https://btp-charts-unstable.s3.amazonaws.com/charts",
-      charts: ["sawtooth","daml-on-besu","openebs","fluentd"],
+      charts: ["sawtooth","daml-on-besu","openebs","fluentd","elasticsearch","kibana"],
     },
   ],
   chartTable: {
@@ -30,6 +30,12 @@ const edition = {
     },
     fluentd: {
       1.11: { chart: "btp-unstable/fluentd", extension: "fluentd"},
+    },
+    elasticsearch: {
+      7.9: { chart: "btp-unstable/elasticsearch", extension: "elasticsearch"},
+    },
+    kibana: {
+      7.8: { chart: "btp-unstable/kibana", extension: "kibana"},
     }
   },
 };
