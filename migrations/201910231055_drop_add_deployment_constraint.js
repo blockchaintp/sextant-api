@@ -12,7 +12,12 @@ const up = (knex) => {
 
 const down = (knex) => {
   return Promise.all([
-    knex.schema.dropTable('deployment')
+    knex.schema.table('deployment', (table) => {
+      table.dropUnique(['name','cluster'])
+    }),
+    knex.schema.alterTable('deployment', (table) => {
+      table.unique(['name'])
+    })
   ])
 }
 

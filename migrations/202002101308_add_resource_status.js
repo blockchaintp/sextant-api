@@ -9,7 +9,9 @@ const up = (knex) => {
 
 const down = (knex) => {
   return Promise.all([
-    knex.schema.dropTable('task')
+    knex.schema.table('task', (table) => {
+      table.dropColumn('resource_status')
+    }),
   ])
 }
 

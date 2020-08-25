@@ -9,8 +9,10 @@ const up = (knex) => {
 
 const down = (knex) => {
   return Promise.all([
-    knex.schema.dropTable('deployment')
-  ])
+    knex.schema.table('deployment', (table) => {
+      table.dropColumn('custom_yaml')
+    })
+  ]);
 }
 
 module.exports = {
