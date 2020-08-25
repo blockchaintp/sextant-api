@@ -6,7 +6,7 @@ dotenv.config();
 const edition = {
   deployment: {
     classic: ["daml", "taekion"],
-    helm: ["sawtooth"],
+    helm: ["sawtooth","openebs"],
   },
   metering: {
     type: "dev",
@@ -15,7 +15,7 @@ const edition = {
     {
       name: "btp-unstable",
       url: "https://btp-charts-unstable.s3.amazonaws.com/charts",
-      charts: ["sawtooth","daml-on-besu"],
+      charts: ["sawtooth","daml-on-besu","openebs"],
     },
   ],
   chartTable: {
@@ -24,6 +24,9 @@ const edition = {
     },
     daml: {
       "daml-on-besu": { chart: "btp-unstable/daml-on-besu", extension: "daml" },
+    },
+    openebs: {
+      2.0: { chart: "btp-unstable/openebs", extension: "openebs"},
     }
   },
 };
