@@ -15,7 +15,7 @@ const edition = {
     {
       name: "btp-unstable",
       url: "https://btp-charts-unstable.s3.amazonaws.com/charts",
-      charts: ["sawtooth","daml-on-besu","openebs","fluentd","elasticsearch","kibana","besu"],
+      charts: ["sawtooth","daml-on-besu","openebs","fluentd","elasticsearch","kibana","besu","daml-on-sawtooth"],
     },
   ],
   chartTable: {
@@ -24,6 +24,7 @@ const edition = {
     },
     daml: {
       "daml-on-besu": { chart: "btp-unstable/daml-on-besu", extension: "daml" },
+      "daml-on-sawtooth": { chart: "btp-unstable/daml-on-sawtooth", extension: "daml" },
     },
     openebs: {
       2.0: { chart: "btp-unstable/openebs", extension: "openebs"},
