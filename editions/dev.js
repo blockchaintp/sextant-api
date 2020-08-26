@@ -12,11 +12,15 @@ const edition = {
       'daml-on-postgres',
       'elasticsearch',
       'fluentd',
+      'grafana',
+      'influxdb',
       'kibana',
       'nginx-ingress',
       'openebs',
+      'postgresql-ha',
       'sawtooth',
       'sextant',
+      'vault',
     ],
   },
   metering: {
@@ -32,11 +36,15 @@ const edition = {
         'daml-on-postgres',
         'elasticsearch',
         'fluentd',
+        'grafana',
+        'influxdb',
         'kibana',
         'nginx-ingress',
         'openebs',
+        'postgresql-ha',
         'sawtooth',
         'sextant',
+        'vault',
       ],
     },
   ],
@@ -70,6 +78,18 @@ const edition = {
     },
     'nginx-ingress': {
       1.8: { chart: 'btp-unstable/nginx-ingress', extension: 'ingress' },
+    },
+    grafana: {
+      7.1: { chart: 'btp-unstable/grafana', extension: 'grafana' },
+    },
+    vault: {
+      1.5: { chart: 'btp-unstable/vault', extension: 'vault' },
+    },
+    influxdb: {
+      1.8: { chart: 'btp-unstable/influxdb', extension: 'influxdb' },
+    },
+    'postgresql-ha': {
+      11.9: { chart: 'btp-unstable/postgresql-ha', extension: 'pgsql' },
     },
   },
 };
