@@ -13,6 +13,7 @@ const edition = {
       'elasticsearch',
       'fluentd',
       'kibana',
+      'nginx-ingress',
       'openebs',
       'sawtooth',
       'sextant',
