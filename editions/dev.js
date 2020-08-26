@@ -10,6 +10,7 @@ const edition = {
       'besu',
       'daml-on-besu',
       'daml-on-postgres',
+      'daml-on-sawtooth',
       'elasticsearch',
       'fluentd',
       'grafana',
@@ -34,6 +35,7 @@ const edition = {
         'besu',
         'daml-on-besu',
         'daml-on-postgres',
+        'daml-on-sawtooth',
         'elasticsearch',
         'fluentd',
         'grafana',
@@ -57,6 +59,9 @@ const edition = {
     },
     'daml-on-postgres': {
       1.3: { chart: 'btp-unstable/daml-on-postgres', extension: 'daml' },
+    },
+    'daml-on-sawtooth': {
+      1.3: { chart: 'btp-unstable/daml-on-sawtooth', extension: 'daml' },
     },
     openebs: {
       2.0: { chart: 'btp-unstable/openebs', extension: 'openebs' },
