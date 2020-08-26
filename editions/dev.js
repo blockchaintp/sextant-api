@@ -32,6 +32,7 @@ const edition = {
         'elasticsearch',
         'fluentd',
         'kibana',
+        'nginx-ingress',
         'openebs',
         'sawtooth',
         'sextant',
@@ -64,7 +65,10 @@ const edition = {
       1.4: { chart: 'btp-unstable/besu', extension: 'besu' },
     },
     sextant: {
-      2.1: { chart: 'btp-unstable/sextant', extension: 'sextant'},
+      2.1: { chart: 'btp-unstable/sextant', extension: 'sextant' },
+    },
+    'nginx-ingres': {
+      1.8: { chart: 'btp-unstable/nginx-ingress', extension: 'ingress' },
     },
   },
 };
