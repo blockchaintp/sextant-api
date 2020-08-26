@@ -68,7 +68,7 @@ const edition = {
     sextant: {
       2.1: { chart: 'btp-unstable/sextant', extension: 'sextant' },
     },
-    'nginx-ingres': {
+    'nginx-ingress': {
       1.8: { chart: 'btp-unstable/nginx-ingress', extension: 'ingress' },
     },
   },
