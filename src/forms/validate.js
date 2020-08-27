@@ -6,6 +6,7 @@ const {
   object,
   string,
   number,
+  boolean,
   ref,
 } = yup
 
@@ -14,6 +15,7 @@ const validators = {
   object,
   string,
   number,
+  boolean,
 }
 
 // turn JSON values for validation functions into the actual type
