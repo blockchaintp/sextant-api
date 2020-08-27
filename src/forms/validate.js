@@ -1,6 +1,5 @@
 const yup = require('yup')
 const dotty = require('dotty')
-const bluebird = require('bluebird')
 
 const {
   array,
@@ -21,48 +20,43 @@ const validators = {
 // for example, turn string.match -> regular expression string into RegExp object
 const validateArgsMappers = {
   string: (method, args) => {
-    if(method == 'matches') {
+    if (method === 'matches') {
       return args.map((arg, i) => {
-        if(i == 0) {
+        if (i === 0) {
           // if given '^\w+\d' assume a regexp with no flags
           // if given ['^\w+\d', 'i'] then we have some flags
-          if(typeof(arg) === 'string') {
+          if (typeof (arg) === 'string') {
             return new RegExp(arg)
           }
-          else {
-            return new RegExp(arg[0], arg[1])
-          }
+
+          return new RegExp(arg[0], arg[1])
         }
-        else {
-          return arg
-        }
+
+        return arg
       })
     }
-    else {
-      return args
-    }
-  },
-  number: (method, args) => {
+
     return args
   },
+  number: (method, args) => args,
 }
 
 const validateHandlers = {
   string: {
     sameAs: (validateObject, args) => {
-      const [ matchField, message ] = args
+      const [matchField, message] = args
       return validateObject.oneOf([ref(matchField), null], message || `Must be equal to ${matchField}`)
     },
-  }
+  },
 }
 
 /*
-    
+
   loop over each of the method args and apply them in a chain
 
   return a flat object with dot notation fields
 
-  e.g. 
+  e.g.
 
   {
     type: 'string',
@@ -91,45 +85,46 @@ const validateHandlers = {
   function to call methods on the existing validate object
 
 */
-const reduceValidateMethods = (validateType, baseType, validateMethods) => {
-  return (validateMethods || []).reduce((validateObject, validateArgs) => {
-    const methodName = validateArgs[0]
-    const methodArgs = validateArgs.slice(1)
-    const argsMapper = validateArgsMappers[validateType]
-    const applyMethodArgs = argsMapper ? argsMapper(methodName, methodArgs) : methodArgs
+const reduceValidateMethods = (validateType,
+  baseType,
+  validateMethods) => (validateMethods || []).reduce((validateObject, validateArgs) => {
+  const methodName = validateArgs[0]
+  const methodArgs = validateArgs.slice(1)
+  const argsMapper = validateArgsMappers[validateType]
+  const applyMethodArgs = argsMapper ? argsMapper(methodName, methodArgs) : methodArgs
 
-    const validateHandler = (validateHandlers[validateType] || {})[methodName]
+  const validateHandler = (validateHandlers[validateType] || {})[methodName]
 
-    if(validateHandler) {
-      return validateHandler(validateObject, applyMethodArgs)
-    }
-    else {
-      return validateObject[methodName].apply(validateObject, applyMethodArgs)
-    }
-  }, baseType)
-}
+  if (validateHandler) {
+    return validateHandler(validateObject, applyMethodArgs)
+  }
 
+  // eslint-disable-next-line prefer-spread
+  return validateObject[methodName].apply(validateObject, applyMethodArgs)
+}, baseType)
 
+const getFlatValidationSchema = (schema) => schema.reduce((all, item) => {
+  const retVal = all
+  if (!item.validate) return retVal
 
-const getFlatValidationSchema = (schema) => {
-  return schema.reduce((all, item) => {
-    if(!item.validate) return all
-
-    if(item.list) {
-      const subSchema = getValidationSchema(item.list)
-      const baseType = array().of(subSchema)
-      const validateMethods = item.validate && item.validate.methods
-      all[item.id] = reduceValidateMethods('array', baseType, validateMethods)
-      return all
-    }
-
-    const validateType = item.validate.type
-    const validateTypeFunction = validators[validateType]
-    if(!validateTypeFunction) throw new Error(`unknown validate type for field: ${item.id}: ${validateType}`)
-    all[item.id] = reduceValidateMethods(validateType, validateTypeFunction(), item.validate.methods)
+  if (item.list) {
+    // TODO: This isn't great. Should be more of a single tail optimized function
+    // rather than two functions mutually defined calling each other
+    // eslint-disable-next-line no-use-before-define
+    const subSchema = getValidationSchema(item.list)
+    const baseType = array().of(subSchema)
+    const validateMethods = item.validate && item.validate.methods
+    retVal[item.id] = reduceValidateMethods('array', baseType, validateMethods)
     return all
-  }, {})
-}
+  }
+
+  const validateType = item.validate.type
+  const validateTypeFunction = validators[validateType]
+  if (!validateTypeFunction) throw new Error(`unknown validate type for field: ${item.id}: ${validateType}`)
+  retVal[item.id] = reduceValidateMethods(validateType,
+    validateTypeFunction(), item.validate.methods)
+  return retVal
+}, {})
 
 /*
 
@@ -137,21 +132,18 @@ const getFlatValidationSchema = (schema) => {
 
 */
 const processValidationObject = (obj) => {
-  if(obj.constructor !== Object) return obj
+  if (obj.constructor !== Object) return obj
   const processedObj = Object.keys(obj).reduce((all, key) => {
-    all[key] = processValidationObject(obj[key])
-    return all
+    const retVal = all
+    retVal[key] = processValidationObject(obj[key])
+    return retVal
   }, {})
   return object(processedObj)
 }
 
-const flattenSchema = (schema) => {
-  return schema.reduce((all, row) => {
-    return row.constructor === Array ?
-      all.concat(row) :
-      all.concat([row])
-  }, [])
-}
+const flattenSchema = (schema) => schema.reduce((all, row) => (row.constructor === Array
+  ? all.concat(row)
+  : all.concat([row])), [])
 
 /*
 
@@ -169,8 +161,9 @@ const getValidationSchema = (schema) => {
   }, {})
 
   const finalSchema = Object.keys(nestedSchema).reduce((all, key) => {
-    all[key] = processValidationObject(nestedSchema[key])
-    return all
+    const retVal = all
+    retVal[key] = processValidationObject(nestedSchema[key])
+    return retVal
   }, {})
 
   return object(finalSchema)
@@ -183,11 +176,10 @@ const validate = ({
   const validateSchema = getValidationSchema(schema)
   return validateSchema
     .validate(data)
-    .catch(err => {
-      const errorString = 
-        `${err.path} ${err.toString()}`
-          .toLowerCase()
-          .replace('validationerror', 'validation error')
+    .catch((err) => {
+      const errorString = `${err.path} ${err.toString()}`
+        .toLowerCase()
+        .replace('validationerror', 'validation error')
       throw new Error(errorString)
     })
 }
