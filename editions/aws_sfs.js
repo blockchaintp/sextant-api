@@ -3,7 +3,11 @@
 const edition = {
   deployment: {
     classic: [],
-    helm: ['sawtooth']
+    helm: [
+      'sawtooth',
+      'nginx-ingress',
+      'openebs',
+    ],
   },
   metering: {
     type: 'aws',
@@ -14,16 +18,26 @@ const edition = {
     {
       name: 'btp-stable',
       url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
-      charts: ['sawtooth',]
-    }
+      charts: [
+        'sawtooth',
+        'nginx-ingress',
+        'openebs',
+      ],
+    },
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: 'btp-stable/sawtooth', extension: 'sawtooth' }
+      1.1: { chart: 'btp-stable/sawtooth', extension: 'sawtooth' },
+    },
+    openebs: {
+      2.0: { chart: 'btp-unstable/openebs', extension: 'openebs' },
+    },
+    'nginx-ingress': {
+      1.8: { chart: 'btp-unstable/nginx-ingress', extension: 'ingress' },
     },
   },
 }
 
 module.exports = {
-  edition
+  edition,
 }

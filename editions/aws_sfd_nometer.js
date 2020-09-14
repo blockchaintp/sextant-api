@@ -8,11 +8,12 @@
 
 const edition = {
   deployment: {
-    classic: ['daml'],
+    classic: [],
     helm: [
       'daml-on-besu',
       'daml-on-postgres',
       'daml-on-sawtooth',
+      'daml-on-qldb',
       'nginx-ingress',
       'openebs',
       'postgresql-ha',
@@ -29,6 +30,7 @@ const edition = {
         'daml-on-besu',
         'daml-on-postgres',
         'daml-on-sawtooth',
+        'daml-on-qldb',
         'nginx-ingress',
         'openebs',
         'postgresql-ha',
@@ -44,6 +46,9 @@ const edition = {
     },
     'daml-on-sawtooth': {
       1.3: { chart: 'btp-unstable/daml-on-sawtooth', extension: 'daml' },
+    },
+    'daml-on-qldb': {
+      1.3: { chart: 'btp-unstable/daml-on-qldb', extension: 'daml' },
     },
     openebs: {
       2.0: { chart: 'btp-unstable/openebs', extension: 'openebs' },
