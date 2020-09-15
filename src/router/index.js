@@ -88,7 +88,7 @@ const Routes = ({
 
   app.use(bodyParser.json())
 
-  app.get(basePath('/config/values'), asyncHandler(config.values))
+  app.get(basePath('/config/values'), requireUser, asyncHandler(config.values))
   app.get(basePath('/administration/startTime'), rbacMiddleware(store, 'administration', 'startTime'), asyncHandler(administration.startTime))
   app.post(basePath('/administration/restart'), rbacMiddleware(store, 'administration', 'restart'), asyncHandler(administration.restart))
 

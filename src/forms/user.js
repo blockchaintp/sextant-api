@@ -1,8 +1,5 @@
 // base user form that operates in the following modes:
 
-//  * initialUser
-//    * the accessLevel is fixed to 'superuser' and not editable
-//    * passwords are required
 //  * userAdd
 //    * used by superadmin to add users  
 //    * passwords are required
@@ -150,12 +147,6 @@ const getUserForm = ({
 
 const forms = {
   browser: {
-    initialUser: getUserForm({
-      usernameDisabled: false,
-      permissionDisabled: true,
-      schema: schema.browser,
-      required: required.browser.add,
-    }),
     userAdd: getUserForm({
       usernameDisabled: false,
       permissionDisabled: false,
@@ -173,16 +164,6 @@ const forms = {
       permissionDisabled: true,
       schema: schema.browser,
       required: required.browser.edit,
-    }),
-    login: getUserForm({
-      schema: [
-        'username',
-        'password',
-      ],
-      required: [
-        'username',
-        'password',
-      ],
     }),
   },
   server: {
