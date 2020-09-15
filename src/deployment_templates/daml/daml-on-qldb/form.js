@@ -84,6 +84,9 @@ const form = [
     helperText: null,
     default: null,
     list: {
+      // this means we want an array of the `name` fields
+      // NOT an array of objects each with a name field
+      extractField: 'name',
       mainField: 'name',
       schema: [{
         id: 'name',
