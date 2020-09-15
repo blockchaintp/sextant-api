@@ -17,7 +17,7 @@ const edition = {
   helmRepos: [
     {
       name: 'btp-stable',
-      url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
+      url: 'https://btp-charts-unstable.s3.amazonaws.com/charts',
       charts: [
         'sawtooth',
         'nginx-ingress',
