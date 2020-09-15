@@ -30,13 +30,6 @@ const edition = {
   },
   helmRepos: [
     {
-      name: 'btp-dev',
-      url: 'https://dev.catenasys.com/repository/catenasys-helm-dev/',
-      username: process.env.BTP_DEV_USR,
-      password: process.env.BTP_DEV_PSW,
-      charts: [],
-    },
-    {
       name: 'btp-unstable',
       url: 'https://btp-charts-unstable.s3.amazonaws.com/charts',
       charts: [
