@@ -4,12 +4,12 @@ const ClusterController = require('./cluster')
 const DeploymentController = require('./deployment')
 const DamlController = require('./daml')
 const TaekionController = require('./taekion')
+const AdministrationController = require('./administration')
 
-const Controllers = ({ 
+const Controllers = ({
   store,
   settings,
 }) => {
-
   const config = ConfigController({
     store,
     settings,
@@ -39,7 +39,11 @@ const Controllers = ({
     store,
     settings,
   })
-  
+
+  const administration = AdministrationController({
+
+  })
+
   return {
     config,
     user,
@@ -47,6 +51,7 @@ const Controllers = ({
     deployment,
     daml,
     taekion,
+    administration,
   }
 }
 

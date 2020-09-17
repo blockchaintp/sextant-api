@@ -11,10 +11,11 @@ const ClusterRoutes = require('./cluster')
 const DeploymentRoutes = require('./deployment')
 const DamlRoutes = require('./daml')
 const TaekionRoutes = require('./taekion')
+const AdministrationRoutes = require('./administration')
 
 // middleware function looks for '?mode=<background or foreground>' on incoming requests
 const ignoreBackgroundRequests = (req) => {
-  if(req.query.mode !== 'background'){
+  if (req.query.mode !== 'background') {
     // update session expiration by maxAge
     req.session._garbage = Date()
     req.session.touch()
@@ -28,23 +29,23 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
       resource_type,
       resource_id: req.params.id,
       method,
-      cluster_id: parseInt(req.params.cluster, 10)
+      cluster_id: parseInt(req.params.cluster, 10),
     })
 
-    if(canAccess) {
+    if (canAccess) {
       ignoreBackgroundRequests(req)
       next()
-    }
-    else {
+    } else {
       res.status(403)
       res.json({
         error: 'Error: access denied',
-        // Is there an active session for the user associated with this request? If not, the user should be logged out in the UI
-        reset: req.user ? false : true
+        // Is there an active session for the user associated with this request?
+        // If not, the user should be logged out in the UI
+        reset: !req.user,
       })
     }
-  } catch(err) {
-    if(settings.logging) {
+  } catch (err) {
+    if (settings.logging) {
       pino.error({
         action: 'error',
         error: err.error ? err.error.toString() : err.toString(),
@@ -55,12 +56,11 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
   }
 }
 
-
-
+// eslint-disable-next-line consistent-return
 const requireUser = (req, res, next) => {
-  if(!req.user) {
+  if (!req.user) {
     res._code = 403
-    return next(`not logged in`)
+    return next('not logged in')
   }
   next()
 }
@@ -71,7 +71,6 @@ const Routes = ({
   settings,
   store,
 }) => {
-
   const rbacMiddleware = RbacMiddleware(settings)
   const basePath = (path) => `${settings.baseUrl}${path}`
 
@@ -81,14 +80,17 @@ const Routes = ({
   const deployment = DeploymentRoutes(controllers)
   const daml = DamlRoutes(controllers)
   const taekion = TaekionRoutes(controllers)
+  const administration = AdministrationRoutes(controllers)
 
   // this goes here because we don't want to enforce JSON body parsing
   // (because it's a proxy)
   app.use(basePath('/clusters/:cluster/deployments/:id/taekion/rest_api'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.restApiProxy))
 
   app.use(bodyParser.json())
-  
+
   app.get(basePath('/config/values'), asyncHandler(config.values))
+  app.get(basePath('/administration/startTime'), rbacMiddleware(store, 'administration', 'startTime'), asyncHandler(administration.startTime))
+  app.post(basePath('/administration/restart'), rbacMiddleware(store, 'administration', 'restart'), asyncHandler(administration.restart))
 
   app.get(basePath('/user/status'), asyncHandler(user.status))
   app.get(basePath('/user/hasInitialUser'), asyncHandler(user.hasInitialUser))
@@ -155,7 +157,6 @@ const Routes = ({
   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
   app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
   app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
-
 }
 
 module.exports = Routes
