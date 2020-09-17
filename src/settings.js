@@ -1,4 +1,5 @@
 const config = require('./config')
+
 const required_env = [
   'POSTGRES_SERVICE_HOST',
   'POSTGRES_USER',
@@ -6,12 +7,12 @@ const required_env = [
   'POSTGRES_PASSWORD',
 ]
 
-const missing_env = required_env.filter(name => process.env[name] ? false : true)
+const missing_env = required_env.filter((name) => (!process.env[name]))
 
-if(missing_env.length>0) {
+if (missing_env.length > 0) {
   console.error(`The following environment variables are required:
 
-${missing_env.join("\n")}
+${missing_env.join('\n')}
 `)
 
   process.exit(1)
@@ -22,12 +23,13 @@ ${missing_env.join("\n")}
   the settings passed in via the command line or environment
 
 */
+// eslint-disable-next-line import/order
 const args = require('minimist')(process.argv, {
   alias: {
     'initial-user': 'initialUser',
     'initial-password': 'initialPassword',
   },
-  default:{
+  default: {
     port: process.env.PORT || 80,
     baseUrl: process.env.BASE_URL || config.baseUrl,
 
@@ -52,7 +54,8 @@ const args = require('minimist')(process.argv, {
     // the passworod of the initial user to create if it doesn't exist
     initialPassword: process.env.INITIAL_PASSWORD,
 
-  }
+    startTime: Date.now(),
+  },
 })
 
 args.postgres = {
@@ -63,12 +66,13 @@ args.postgres = {
     user: args.postgresuser,
     password: args.postgrespassword,
     database: args.postgresdatabase,
-    ssl: args.postgrestls ? true : false
+    // eslint-disable-next-line no-unneeded-ternary
+    ssl: args.postgrestls ? true : false,
   },
   pool: {
     min: 2,
-    max: 10
-  }
+    max: 10,
+  },
 }
 
 module.exports = args
