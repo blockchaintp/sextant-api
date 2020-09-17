@@ -17,7 +17,7 @@ const edition = {
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: 'btp-stable/sawtooth', extension: 'sawtooth' },
+      1.1: { chart: 'btp-stable/sawtooth', order: 1, extension: 'sawtooth' },
     },
   },
 };

@@ -39,25 +39,25 @@ const edition = {
   ],
   chartTable: {
     'daml-on-besu': {
-      1.3: { chart: 'btp-unstable/daml-on-besu', extension: 'daml' },
+      1.3: { chart: 'btp-unstable/daml-on-besu', order: 1, extension: 'daml' },
     },
     'daml-on-postgres': {
-      1.3: { chart: 'btp-unstable/daml-on-postgres', extension: 'daml' },
+      1.3: { chart: 'btp-unstable/daml-on-postgres', order: 2, extension: 'daml' },
     },
     'daml-on-sawtooth': {
-      1.3: { chart: 'btp-unstable/daml-on-sawtooth', extension: 'daml' },
+      1.3: { chart: 'btp-unstable/daml-on-sawtooth', order: 3, extension: 'daml' },
     },
     'daml-on-qldb': {
-      1.3: { chart: 'btp-unstable/daml-on-qldb', extension: 'daml' },
+      1.3: { chart: 'btp-unstable/daml-on-qldb', order: 4, extension: 'daml' },
     },
     openebs: {
-      2.0: { chart: 'btp-unstable/openebs', extension: 'openebs' },
+      2.0: { chart: 'btp-unstable/openebs', order: 5, extension: 'openebs' },
     },
     'nginx-ingress': {
-      1.8: { chart: 'btp-unstable/nginx-ingress', extension: 'ingress' },
+      1.8: { chart: 'btp-unstable/nginx-ingress', order: 6, extension: 'ingress' },
     },
     'postgresql-ha': {
-      11.9: { chart: 'btp-unstable/postgresql-ha', extension: 'pgsql' },
+      11.9: { chart: 'btp-unstable/postgresql-ha', order: 7, extension: 'pgsql' },
     },
   },
 }
