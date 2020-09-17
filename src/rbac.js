@@ -82,7 +82,8 @@ const HELPERS = {
     if (user && userUtils.isAdminuser(user) && opts.allowAdmin) return true
 
     // if the user is getting it's own data - allow
-    if (action.resource_type === RESOURCE_TYPES.user && action.resource_id === user.id) return true
+    // eslint-disable-next-line eqeqeq
+    if (action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
     return false
   },
 
