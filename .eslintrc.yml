@@ -10,3 +10,4 @@ parserOptions:
 rules:
   camelcase: 0
   semi: 0
+  no-underscore-dangle: 1
