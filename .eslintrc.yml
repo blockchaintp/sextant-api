@@ -11,3 +11,5 @@ rules:
   camelcase: 0
   semi: 0
   no-underscore-dangle: 1
+  no-param-reassign: 1
+  global-require: 1
