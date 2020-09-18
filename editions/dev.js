@@ -5,7 +5,7 @@ dotenv.config();
 
 const edition = {
   deployment: {
-    classic: ['taekion'],
+    classic: [],
     helm: [
       'besu',
       'daml-on-besu',
@@ -23,6 +23,7 @@ const edition = {
       'sawtooth',
       'sextant',
       'vault',
+      'tfs-on-sawtooth',
     ],
   },
   metering: {
@@ -49,6 +50,7 @@ const edition = {
         'sawtooth',
         'sextant',
         'vault',
+        'tfs-on-sawtooth',
       ],
     },
   ],
@@ -100,6 +102,9 @@ const edition = {
     },
     'postgresql-ha': {
       11.9: { chart: 'btp-unstable/postgresql-ha', order: 16, extension: 'pgsql' },
+    },
+    'tfs-on-sawtooth': {
+      0.1: { chart: 'btp-unstable/tfs-on-sawtooth', order: 17, extension: 'tfs' },
     },
   },
 };
