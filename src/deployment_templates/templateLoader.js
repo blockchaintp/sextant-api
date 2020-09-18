@@ -1,27 +1,27 @@
-
+/* eslint-disable no-undef */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable import/no-dynamic-require */
 const fs = require('fs');
 const path = require('path')
 const yaml = require('js-yaml')
 const merge = require('deepmerge')
-const Promise = require('bluebird')
+
 const readdir = fs.readdirSync
 const readFile = fs.readFileSync
 
-const { edition } = require('../../src/edition')
+const { edition } = require('../edition')
 
-const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
+const { chartTable } = edition
+
+const overwriteMerge = (destinationArray, sourceArray) => sourceArray
 
 const HELM_CHARTS_PATH = path.resolve(__dirname, './../../helmCharts')
 
-
-const getClassicDeploymentDetails = (deploymentTemplates) => {
-  return deploymentTemplates
-    .reduce((allTemplates, type) => {
-      allTemplates[type] = require(`./${type}`)
-      return allTemplates
-    }, {}
-    )
-}
+const getClassicDeploymentDetails = (deploymentTemplates) => deploymentTemplates
+  .reduce((allTemplates, type) => {
+    allTemplates[type] = require(`./${type}`)
+    return allTemplates
+  }, {})
 
 // reads and loads yaml from a file
 const getYaml = (filepath) => {
@@ -34,7 +34,8 @@ const structureYamlContent = (yamlContent) => {
   const sextant = yamlContent
   const deploymentType = sextant.deploymentType || ''
   const deploymentVersion = sextant.deploymentVersion.toString() || ''
-  let details = {}
+  const chartInfo = chartTable[deploymentType][deploymentVersion]
+  const details = {}
 
   // define a basic schema
   details[deploymentType] = {
@@ -46,7 +47,7 @@ const structureYamlContent = (yamlContent) => {
     },
   }
 
-  let entry = details[deploymentType]
+  const entry = details[deploymentType]
 
   entry.forms[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, sextant.form))
   entry.summary[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, sextant.summary))
@@ -57,14 +58,15 @@ const structureYamlContent = (yamlContent) => {
     version: sextant.sextantVersion || '',
     form: `${sextant.deploymentVersion}` || '',
     description: sextant.description || '',
-    features: sextant.features || []
+    features: sextant.features || [],
   })
+  entry.order = chartInfo.order
 
   return details
-
 }
 
-// iterates over all of the charts in the helmCharts directory, re-structures and merges the deployment details together
+// iterates over all of the charts in the helmCharts directory,
+// re-structures and merges the deployment details together
 const getHelmDeploymentDetails = () => {
   let details = {}
   const charts = readdir(HELM_CHARTS_PATH)
@@ -85,14 +87,12 @@ const getHelmDeploymentDetails = () => {
 // merges the classic deployment details with the helm chart details
 const mergedDeploymentDetails = () => {
   const classicDeployments = getClassicDeploymentDetails(edition.deployment.classic)
-  
   const helmDeployments = getHelmDeploymentDetails()
 
   const merged = merge(classicDeployments, helmDeployments, { arrayMerge: overwriteMerge })
-
   return merged
 }
 
 module.exports = {
-  mergedDeploymentDetails
+  mergedDeploymentDetails,
 }

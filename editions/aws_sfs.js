@@ -29,16 +29,16 @@ const edition = {
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: 'btp-stable/sawtooth', extension: 'sawtooth' },
+      1.1: { chart: 'btp-stable/sawtooth', order: 1, extension: 'sawtooth' },
     },
     openebs: {
-      2.0: { chart: 'btp-unstable/openebs', extension: 'openebs' },
+      2.0: { chart: 'btp-unstable/openebs', order: 2, extension: 'openebs' },
     },
     'nginx-ingress': {
-      1.8: { chart: 'btp-unstable/nginx-ingress', extension: 'ingress' },
+      1.8: { chart: 'btp-unstable/nginx-ingress', order: 3, extension: 'ingress' },
     },
     besu: {
-      1.4: { chart: 'btp-unstable/besu', extension: 'besu' },
+      1.4: { chart: 'btp-unstable/besu', order: 4, extension: 'besu' },
     },
   },
 }
