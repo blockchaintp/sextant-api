@@ -13,7 +13,7 @@ const edition = {
   },
   helmRepos: [
     {
-      name: 'btp-stable',
+      name: 'btp-unstable',
       url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
       charts: [
         'sawtooth',
@@ -23,10 +23,10 @@ const edition = {
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: 'btp-stable/sawtooth', order: 1, extension: 'sawtooth' },
+      1.1: { chart: 'btp-unstable/sawtooth', order: 2, extension: 'sawtooth' },
     },
     'tfs-on-sawtooth': {
-      0.1: { chart: 'btp-unstable/tfs-on-sawtooth', order: 2, extension: 'tfs' },
+      0.1: { chart: 'btp-unstable/tfs-on-sawtooth', order: 1, extension: 'tfs' },
     },
   },
 };
