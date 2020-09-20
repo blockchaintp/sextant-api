@@ -2,7 +2,7 @@
 
 const edition = {
   deployment: {
-    classic: ['taekion'],
+    classic: [],
     helm: [
       'besu',
       'daml-on-besu',
