@@ -335,6 +335,9 @@ const form = [
       visibilityParameter: 'true' // for what value of linkedId, will this component be visible
     },
     list: {
+      // this means we want an array of the `name` fields
+      // NOT an array of objects each with a name field
+      extractField: 'name',
       mainField: 'name',
       schema: [{
         id: 'name',

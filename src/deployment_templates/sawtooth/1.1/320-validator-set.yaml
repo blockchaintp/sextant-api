@@ -43,7 +43,7 @@ spec:
       {{ if .imagePullSecrets.enabled }}
       imagePullSecrets:
       {{range .imagePullSecrets.value }}
-        - name: {{ .name }}
+        - name: {{ . }}
       {{ end }}
       {{ end }}
       hostAliases:
