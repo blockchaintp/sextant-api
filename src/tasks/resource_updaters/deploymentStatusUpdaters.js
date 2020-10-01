@@ -1,5 +1,9 @@
-// when a task errors  - use these functions to update the corresponding resource status in the database
-// when a task completes - the corresponding resource updater is currently defined and executed in the taskprocessor
+/*
+when a task errors -
+use these functions to update the corresponding resource status in the database.
+When a task completes -
+the corresponding resource updater is currently defined and executed in the taskprocessor
+*/
 
 /*
 **** HOW TO ADD ERROR MATCHING ****
@@ -62,13 +66,26 @@ const deploymentDeleteError = async (task, error, store) => {
       },
     })
     pino.info({
-      error: error,
+      error,
       action: 'Update the deployment status',
       info: 'The remote cluster is likely dead and cannot be reached',
       result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
   }
-  else {
+  if (errorTest(error, 'unknown deployment version')) {
+    await store.update({
+      id: task.resource_id,
+      data: {
+        status: task.resource_status.completed,
+      },
+    })
+    pino.info({
+      error,
+      action: 'Update the deployment status',
+      info: 'The name of the chart has likely been changed',
+      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+    })
+  } else {
     await store.update({
       id: task.resource_id,
       data: {
@@ -81,5 +98,5 @@ const deploymentDeleteError = async (task, error, store) => {
 module.exports = {
   deploymentCreateError,
   deploymentDeleteError,
-  deploymentUpdateError
+  deploymentUpdateError,
 }

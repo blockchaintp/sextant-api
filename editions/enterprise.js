@@ -66,7 +66,7 @@ const edition = {
       1.3: { chart: 'btp-stable/daml-on-qldb', order: 5, extension: 'daml' },
     },
     openebs: {
-      2.0: { chart: 'btp-stable/openebs', order: 6, extension: 'openebs' },
+      '2.0': { chart: 'btp-stable/openebs', order: 6, extension: 'openebs' },
     },
     fluentd: {
       1.11: { chart: 'btp-stable/fluentd', order: 7, extension: 'fluentd' },
