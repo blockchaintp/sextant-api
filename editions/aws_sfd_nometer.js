@@ -51,7 +51,7 @@ const edition = {
       1.3: { chart: 'btp-stable/daml-on-qldb', order: 4, extension: 'daml' },
     },
     openebs: {
-      2.0: { chart: 'btp-stable/openebs', order: 7, extension: 'openebs' },
+      '2.0': { chart: 'btp-stable/openebs', order: 7, extension: 'openebs' },
     },
     'nginx-ingress': {
       1.8: { chart: 'btp-stable/nginx-ingress', order: 6, extension: 'ingress' },
