@@ -14,7 +14,7 @@ const edition = {
   helmRepos: [
     {
       name: 'btp-unstable',
-      url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
+      url: 'https://btp-charts-unstable.s3.amazonaws.com/charts',
       charts: [
         'sawtooth',
         'tfs-on-sawtooth',
