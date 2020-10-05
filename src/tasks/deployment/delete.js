@@ -2,6 +2,7 @@
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
+const { getChartInfo } = require('./utils/helmUtils')
 
 const {
   CLUSTER_STATUS,
@@ -56,6 +57,13 @@ const DeploymentDelete = ({
     deployment_version,
     data: useData,
     field: 'namespace',
+  })
+
+  const networkName = getField({
+    deployment_type,
+    deployment_version,
+    data: useData,
+    field: 'name',
   })
 
   const clusterKubectl = yield ClusterKubectl({
@@ -113,8 +121,15 @@ const DeploymentDelete = ({
     }
   }
 
+  const deleteHelmChart = async (chartInfo, name, namespaceName) => {
+    const { extension } = chartInfo
+    const installationName = `${name}-${extension}`
+    await clusterKubectl.helmCommand(`uninstall -n ${namespaceName} ${installationName}`)
+  }
+
   if (deployment_method === 'helm') {
-    yield deleteHelmChartsInNamespace()
+    const chartInfo = yield getChartInfo(deployment_type, deployment_version)
+    yield deleteHelmChart(chartInfo, networkName, namespace)
   } else {
     // function expects arg named desired_state,
     // but we will use applied_state if there is no error status
