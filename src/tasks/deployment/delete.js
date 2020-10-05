@@ -1,13 +1,8 @@
-/*
- * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
- *
- * License: Product
- */
-
-const Promise = require('bluebird')
+/* eslint-disable import/order */
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const getField = require('../../deployment_templates/getField')
+const { getChartInfo } = require('./utils/helmUtils')
 
 const {
   CLUSTER_STATUS,
@@ -20,7 +15,6 @@ const pino = require('pino')({
 const DeploymentDelete = ({
   testMode,
 }) => function* deploymentCreateTask(params) {
-
   const {
     store,
     task,
@@ -37,7 +31,7 @@ const DeploymentDelete = ({
     id: deployment.cluster,
   }, trx)
 
-  if(testMode) {
+  if (testMode) {
     return
   }
 
@@ -54,9 +48,9 @@ const DeploymentDelete = ({
   // if the deployment is in error state - use the
   // desired state to pick the namespace as it might
   // not have any applied_state having errored
-  const useData = status == CLUSTER_STATUS.error ?
-    desired_state :
-    applied_state
+  const useData = status === CLUSTER_STATUS.error
+    ? desired_state
+    : applied_state
 
   const namespace = getField({
     deployment_type,
@@ -64,7 +58,14 @@ const DeploymentDelete = ({
     data: useData,
     field: 'namespace',
   })
-  
+
+  const networkName = getField({
+    deployment_type,
+    deployment_version,
+    data: useData,
+    field: 'name',
+  })
+
   const clusterKubectl = yield ClusterKubectl({
     cluster,
     store,
@@ -72,7 +73,6 @@ const DeploymentDelete = ({
 
   const deleteTheRest = async () => {
     try {
-
       await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)
       // delete stacks if they are there
     } catch (err) {
@@ -92,43 +92,52 @@ const DeploymentDelete = ({
   // uninstall the charts listed
   // helm uninstall -n <namespace>
 
-  const deleteHelmCharts = async () => {
+  const deleteHelmChartsInNamespace = async () => {
     try {
       const chartOut = await clusterKubectl.helmCommand(`list -n ${namespace} -q`)
       // re-format the return of list - it is probably a string with "\n' seperators
-      const chartList=chartOut.replace( /\n/g, " ").split(" ")
+      const chartList = chartOut.replace(/\n/g, ' ').split(' ')
       pino.info({
-        action:"deleteHelmCharts",
-        chartList
+        action: 'deleteHelmChartsInNamespace',
+        chartList,
       })
 
       chartList.forEach(async (chart) => {
         if (chart) {
-          pino.info({action:"removing chart",
+          pino.info({
+            action: 'removing chart',
             chart,
-            namespace
+            namespace,
           })
           await clusterKubectl.helmCommand(`uninstall -n ${namespace} ${chart}`)
         }
       })
     } catch (err) {
-      pino.info({action:"deleteHelmCharts",
-        message: "benign if there are no helm charts to delete",
-        err
+      pino.info({
+        action: 'deleteHelmChartsInNamespace',
+        message: 'benign if there are no helm charts to delete',
+        err,
       })
     }
   }
 
-  if (deployment_method === "helm") {
+  const deleteHelmChart = async (chartInfo, name, namespaceName) => {
+    const { extension } = chartInfo
+    const installationName = `${name}-${extension}`
+    await clusterKubectl.helmCommand(`uninstall -n ${namespaceName} ${installationName}`)
+  }
 
-    yield deleteHelmCharts()
-
+  if (deployment_method === 'helm') {
+    const chartInfo = yield getChartInfo(deployment_type, deployment_version)
+    yield deleteHelmChart(chartInfo, networkName, namespace)
   } else {
-
+    // function expects arg named desired_state,
+    // but we will use applied_state if there is no error status
+    // because we are deleting not creating
     const templateDirectory = yield renderTemplates({
       deployment_type,
       deployment_version,
-      desired_state: useData, // function expects arg named desired_state, but we will use applied_state if there is no error status because we are deleting not creating
+      desired_state: useData,
       custom_yaml,
     })
 
@@ -147,11 +156,10 @@ const DeploymentDelete = ({
     }
 
     yield deleteDirectory()
-    yield deleteHelmCharts()
+    yield deleteHelmChartsInNamespace()
   }
 
   yield deleteTheRest()
-
 }
 
 module.exports = DeploymentDelete
