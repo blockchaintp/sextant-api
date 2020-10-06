@@ -26,14 +26,14 @@ const getClassicDeploymentDetails = (deploymentTemplates) => deploymentTemplates
 // reads and loads yaml from a file
 const getYaml = (filepath) => {
   const yamlContent = readFile(filepath, 'utf8')
-  return yaml.safeLoad(yamlContent)
+  return yaml.safeLoad(yamlContent, { schema: yaml.FAILSAFE_SCHEMA })
 }
 
 // pulls values from details.yaml to build an object with the same structure as the index files
 const structureYamlContent = (yamlContent) => {
   const sextant = yamlContent
   const deploymentType = sextant.deploymentType || ''
-  const deploymentVersion = sextant.deploymentVersion.toString() || ''
+  const deploymentVersion = sextant.deploymentVersion || ''
   const chartInfo = chartTable[deploymentType][deploymentVersion]
   const details = {}
 
