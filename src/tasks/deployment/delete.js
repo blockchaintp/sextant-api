@@ -124,6 +124,10 @@ const DeploymentDelete = ({
   const deleteHelmChart = async (chartInfo, name, namespaceName) => {
     const { extension } = chartInfo
     const installationName = `${name}-${extension}`
+    pino.info({
+      action: 'deleteHelmChart',
+      message: `deleting chart ${installationName} in namespace ${namespaceName}`
+    })
     await clusterKubectl.helmCommand(`uninstall -n ${namespaceName} ${installationName}`)
   }
 
