@@ -111,6 +111,84 @@ const TaekionAPI = ({ store } = {}) => {
     }
   };
 
+  const listKeys = async ({ deployment }) => {
+    try {
+      const data = await apiRequest({
+        deployment,
+        url: '/keystore',
+      });
+      return data.payload
+    } catch (e) {
+      if (
+        e.response
+        && e.response.status == 404
+        && e.response.data.indexOf('no keys present') >= 0
+      ) {
+        return [];
+      }
+      throw e;
+    }
+  };
+
+  const getKey = async ({
+    deployment,
+    fingerprint,
+  }) => {
+    try {
+      const data = await apiRequest({
+        deployment,
+        url: `/keystore/${fingerprint}`,
+      });
+      return data.payload
+    } catch (e) {
+      if (
+        e.response
+        && e.response.status == 404
+        && e.response.data.indexOf('no keys present') >= 0
+      ) {
+        return [];
+      }
+      throw e;
+    }
+  };
+
+  const createKey = async ({
+    deployment,
+    name,
+  }) => {
+    try {
+      const data = await apiRequest({
+        deployment,
+        method: 'post',
+        url: '/keystore',
+        data: {
+          id: name,
+          encryption: 'aes_gcm',
+        }
+      });
+
+      const result = data.payload
+      const keyData = await getKey({
+        deployment,
+        fingerprint: data.payload.fingerprint,
+      })
+
+      return {
+        key: Buffer.from(keyData, 'utf8').toString('hex'),
+        result,
+      }
+    } catch (e) {
+      if (
+        e.response
+        && e.response.status == 404
+        && e.response.data.indexOf('no keys present') >= 0
+      ) {
+        return [];
+      }
+      throw e;
+    }
+  };
+
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({ deployment }) => {
     try {
@@ -202,6 +280,9 @@ const TaekionAPI = ({ store } = {}) => {
   };
 
   return {
+    listKeys,
+    getKey,
+    createKey,
     listVolumes,
     createVolume,
     updateVolume,
