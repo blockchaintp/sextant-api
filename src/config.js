@@ -17,7 +17,6 @@ const TABLES = {
   clusterfile: 'clusterfile',
   clustersecret: 'clustersecret',
   deploymentsecret: 'deploymentsecret',
-  taekion_keys: 'taekionkeys',
 }
 
 const LIST_ORDER_BY_FIELDS = {

@@ -7,7 +7,6 @@ const DeploymentStore = require('./deployment')
 const DeploymentSecretStore = require('./deploymentsecret')
 const TaskStore = require('./task')
 const SettingsStore = require('./settings')
-const TaekionKeysStore = require('./taekionkeys')
 
 const Store = (knex) => {
   const user = UserStore(knex)
@@ -19,7 +18,6 @@ const Store = (knex) => {
   const deploymentsecret = DeploymentSecretStore(knex)
   const task = TaskStore(knex)
   const settings = SettingsStore(knex)
-  const taekionkeys = TaekionKeysStore(knex)
 
   const transaction = handler => knex.transaction(handler)
 
@@ -35,7 +33,6 @@ const Store = (knex) => {
     task,
     transaction,
     settings,
-    taekionkeys,
   }
 }
 

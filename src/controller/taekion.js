@@ -11,38 +11,18 @@ const TaekionController = ({ store, settings }) => {
 
   const listKeys = async ({
     deployment,
-  }) => store.taekionkeys.list({
+  }) => api.listKeys({
     deployment,
   })
-    
+
   const createKey = async ({
     deployment,
     name,
-  }) => {
-    const key = crypto.randomBytes(32)
-    const fingerprint = crypto.createHash('sha256').update(key).digest('hex')
-    const result = await store.taekionkeys.create({
-      deployment,
-      data: {
-        name,
-        fingerprint,
-      }
-    })
-    return {
-      key: key.toString('hex'),
-      result,
-    }
-  }
-
-  const deleteKey = async ({
+  }) => api.createKey({
     deployment,
-    id,
-  }) => store.taekionkeys.delete({
-    deployment,
-    id,
+    name,
   })
 
-  
   const listVolumes = async ({
     deployment,
   }) => api.listVolumes({
@@ -160,7 +140,6 @@ const TaekionController = ({ store, settings }) => {
   return {
     listKeys,
     createKey,
-    deleteKey,
     listVolumes,
     createVolume,
     updateVolume,
