@@ -44,13 +44,13 @@ const edition = {
       1.3: { chart: 'btp-stable/daml-on-besu', order: 1, extension: 'daml' },
     },
     'daml-on-postgres': {
-      1.3: { chart: 'btp-stable/daml-on-postgres', order: 2, extension: 'daml' },
+      1.3: { chart: 'btp-stable/daml-on-postgres', order: 4, extension: 'daml' },
     },
     'daml-on-sawtooth': {
-      1.3: { chart: 'btp-stable/daml-on-sawtooth', order: 3, extension: 'daml' },
+      1.3: { chart: 'btp-stable/daml-on-sawtooth', order: 2, extension: 'daml' },
     },
     'daml-on-qldb': {
-      1.3: { chart: 'btp-stable/daml-on-qldb', order: 4, extension: 'daml' },
+      1.3: { chart: 'btp-stable/daml-on-qldb', order: 3, extension: 'daml' },
     },
     openebs: {
       '2.0': { chart: 'btp-stable/openebs', order: 7, extension: 'openebs' },
