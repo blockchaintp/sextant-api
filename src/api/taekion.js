@@ -1,4 +1,3 @@
-const bodyParser = require('body-parser');
 const axios = require('axios');
 const DeploymentPodProxy = require('../utils/deploymentPodProxy');
 const utils = require('../utils/taekion');
@@ -78,8 +77,8 @@ const TaekionAPI = ({ store } = {}) => {
               headers: req.headers,
               responseType: 'stream',
               data:
-                req.method.toLowerCase() == 'post'
-                || req.method.toLowerCase() == 'put'
+                req.method.toLowerCase() === 'post'
+                || req.method.toLowerCase() === 'put'
                   ? req
                   : null,
               ...extra,
@@ -121,7 +120,7 @@ const TaekionAPI = ({ store } = {}) => {
     } catch (e) {
       if (
         e.response
-        && e.response.status == 404
+        && e.response.status === 404
         && e.response.data.indexOf('no keys present') >= 0
       ) {
         return [];
@@ -143,7 +142,7 @@ const TaekionAPI = ({ store } = {}) => {
     } catch (e) {
       if (
         e.response
-        && e.response.status == 404
+        && e.response.status === 404
         && e.response.data.indexOf('no keys present') >= 0
       ) {
         return [];
@@ -164,7 +163,7 @@ const TaekionAPI = ({ store } = {}) => {
         data: {
           id: name,
           encryption: 'aes_gcm',
-        }
+        },
       });
 
       const result = data.payload
@@ -180,7 +179,7 @@ const TaekionAPI = ({ store } = {}) => {
     } catch (e) {
       if (
         e.response
-        && e.response.status == 404
+        && e.response.status === 404
         && e.response.data.indexOf('no keys present') >= 0
       ) {
         return [];
@@ -196,11 +195,11 @@ const TaekionAPI = ({ store } = {}) => {
         deployment,
         url: '/volume',
       });
-      return utils.processVolumeResponse(data);
+      return data.payload
     } catch (e) {
       if (
         e.response
-        && e.response.status == 404
+        && e.response.status === 404
         && e.response.data.indexOf('no volumes present') >= 0
       ) {
         return [];
@@ -238,7 +237,7 @@ const TaekionAPI = ({ store } = {}) => {
     },
   });
 
-  const deleteVolume = async ({ deployment, volume }) => {
+  const deleteVolume = async () => {
     throw new Error('endpoint tbc');
   };
 
@@ -256,7 +255,7 @@ const TaekionAPI = ({ store } = {}) => {
     } catch (e) {
       if (
         e.response
-        && e.response.status == 404
+        && e.response.status === 404
         && e.response.data.indexOf('no snapshots found') >= 0
       ) {
         return [];
@@ -275,7 +274,7 @@ const TaekionAPI = ({ store } = {}) => {
     },
   });
 
-  const deleteSnapshot = async ({ deployment, id }) => {
+  const deleteSnapshot = async () => {
     throw new Error('endpoint tbc');
   };
 
