@@ -1,10 +1,8 @@
+/* eslint-disable no-shadow */
 const Promise = require('bluebird')
-const crypto = require('crypto')
-const utils = require('../utils/taekion')
 const API = require('../api/taekion')
 
-const TaekionController = ({ store, settings }) => {
-
+const TaekionController = ({ store }) => {
   const api = API({
     store,
   })
@@ -28,7 +26,6 @@ const TaekionController = ({ store, settings }) => {
   }) => api.listVolumes({
     deployment,
   })
-    
 
   const createVolume = async ({
     deployment,
@@ -37,8 +34,7 @@ const TaekionController = ({ store, settings }) => {
     encryption,
     fingerprint,
   }) => {
-
-    if(name == 'all') throw new Error(`the name "all" is reserved for the system`)
+    if (name === 'all') throw new Error('the name "all" is reserved for the system')
 
     const data = await api.createVolume({
       deployment,
@@ -55,35 +51,32 @@ const TaekionController = ({ store, settings }) => {
     deployment,
     volume,
     name,
-  }) => 
-    api.updateVolume({
-      deployment,
-      volume,
-      name,
-    })
+  }) => api.updateVolume({
+    deployment,
+    volume,
+    name,
+  })
 
   const deleteVolume = ({
     deployment,
     volume,
-  }) => 
-    api.deleteVolume({
-      deployment,
-      volume,
-    })
+  }) => api.deleteVolume({
+    deployment,
+    volume,
+  })
 
   // curl http://localhost:8000/snapshot?list&volume=apples
   const listSnapshots = async ({
     deployment,
     volume,
   }) => {
-
     // loop over all volumes and concat the data together
-    if(volume == 'all') {
+    if (volume === 'all') {
       const volumes = await listVolumes({
         deployment,
       })
 
-      const snapshotCollections = await Promise.map(volumes, async volume => {
+      const snapshotCollections = await Promise.map(volumes, async (volume) => {
         const snapshots = await listSnapshots({
           deployment,
           volume: volume.uuid,
@@ -91,17 +84,13 @@ const TaekionController = ({ store, settings }) => {
         return snapshots
       })
 
-      return snapshotCollections.reduce((all, snapshotArray) => {
-        return all.concat(snapshotArray)
-      }, [])
+      return snapshotCollections.reduce((all, snapshotArray) => all.concat(snapshotArray), [])
     }
-    else {
-      const data = await api.listSnapshots({
-        deployment,
-        volume,
-      })
-      return data
-    }    
+    const data = await api.listSnapshots({
+      deployment,
+      volume,
+    })
+    return data
   }
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
@@ -109,21 +98,19 @@ const TaekionController = ({ store, settings }) => {
     deployment,
     volume,
     name,
-  }) => 
-    api.createSnapshot({
-      deployment,
-      volume,
-      name,
-    })
+  }) => api.createSnapshot({
+    deployment,
+    volume,
+    name,
+  })
 
   const deleteSnapshot = ({
     deployment,
     id,
-  }) => 
-    api.deleteSnapshot({
-      deployment,
-      id,
-    })
+  }) => api.deleteSnapshot({
+    deployment,
+    id,
+  })
 
   const restApiProxy = ({
     deployment,
