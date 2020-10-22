@@ -1,6 +1,5 @@
 const axios = require('axios');
 const DeploymentPodProxy = require('../utils/deploymentPodProxy');
-const utils = require('../utils/taekion');
 
 const TaekionAPI = ({ store } = {}) => {
   if (!store) {
@@ -251,7 +250,7 @@ const TaekionAPI = ({ store } = {}) => {
           volume,
         },
       });
-      return utils.processSnapshotResponse(data);
+      return data.payload;
     } catch (e) {
       if (
         e.response
