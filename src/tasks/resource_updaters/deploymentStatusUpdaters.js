@@ -1,3 +1,4 @@
+/* eslint-disable brace-style */
 /*
 when a task errors -
 use these functions to update the corresponding resource status in the database.
@@ -36,6 +37,7 @@ const pino = require('pino')({
 const errorTest = (error, knownError) => {
   const example = new RegExp(knownError)
   const testStatus = example.test(error)
+
   return testStatus
 }
 
@@ -58,7 +60,7 @@ const deploymentUpdateError = async (task, error, store) => {
 }
 
 const deploymentDeleteError = async (task, error, store) => {
-  if (errorTest(error, 'unable to recognize')) {
+  if (errorTest(error, 'Unable to connect to the server')) {
     await store.update({
       id: task.resource_id,
       data: {
@@ -72,7 +74,35 @@ const deploymentDeleteError = async (task, error, store) => {
       result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
   }
-  if (errorTest(error, 'unknown deployment version')) {
+  else if (errorTest(error, 'Kubernetes cluster unreachable')) {
+    await store.update({
+      id: task.resource_id,
+      data: {
+        status: task.resource_status.completed,
+      },
+    })
+    pino.info({
+      error,
+      action: 'Update the deployment status',
+      info: 'The remote cluster is likely dead and cannot be reached',
+      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+    })
+  }
+  else if (errorTest(error, 'unable to recognize')) {
+    await store.update({
+      id: task.resource_id,
+      data: {
+        status: task.resource_status.completed,
+      },
+    })
+    pino.info({
+      error,
+      action: 'Update the deployment status',
+      info: 'The remote cluster is likely dead and cannot be reached',
+      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+    })
+  }
+  else if (errorTest(error, 'unknown deployment version')) {
     await store.update({
       id: task.resource_id,
       data: {
@@ -85,7 +115,8 @@ const deploymentDeleteError = async (task, error, store) => {
       info: 'The name of the chart has likely been changed',
       result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
-  } else {
+  }
+  else {
     await store.update({
       id: task.resource_id,
       data: {
