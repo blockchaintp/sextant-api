@@ -1,16 +1,15 @@
-const database = require('./database')
 const ledger = require('@digitalasset/daml-ledger')
-const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const Promise = require('bluebird')
+const database = require('./database')
+const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 
-const damRPCHost = "localhost"
+const damRPCHost = 'localhost'
 
 const KeyManager = ({
   store,
 }) => {
-
   if (!store) {
-    throw new Error("Daml rpc requires a store")
+    throw new Error('Daml rpc requires a store')
   }
 
   /*
@@ -24,46 +23,43 @@ const KeyManager = ({
     id,
     sextantPublicKey,
   } = {}) => {
-
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: "daml=<name>-daml-rpc"
+      label: 'daml=<name>-daml-rpc',
     })
 
     const pods = await proxy.getPods()
-    const participantDetails = await Promise.map(pods, async pod => {
+    const participantDetails = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
         pod: pod.metadata.name,
         port: 39000,
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+          const client = await ledger.DamlLedgerClient.connect({ host: damRPCHost, port })
           const participantId = await client.partyManagementClient.getParticipantId();
           return {
             validator: pod.metadata.name,
-            participantId: participantId.participantId
+            participantId: participantId.participantId,
           }
-        }
+        },
       })
       return result
     })
 
-    const results = participantDetails.map( item => {
+    const results = participantDetails.map((item) => {
       const result = [{
         publicKey: database.getKey(),
-        name: `${item.validator}`
-      },{
+        name: `${item.validator}`,
+      }, {
         publicKey: database.getKey(),
-        name: `${item.participantId}`
+        name: `${item.participantId}`,
       }];
       return result
     })
 
-    var combinedResult = results.reduce((accumulator,currentItem) => {
-      return accumulator.concat(currentItem)
-    })
+    const combinedResult = results.reduce((accumulator, currentItem) => accumulator.concat(currentItem))
 
     database.keyManagerKeys = [{
       publicKey: sextantPublicKey,
@@ -86,9 +82,9 @@ const KeyManager = ({
   const rotateRPCKey = async ({
     publicKey,
   }) => {
-    if(!publicKey) throw new Error(`publicKey must be given to api.keyManager.rotateDamlRPCKey`)
-    const rpc = database.keyManagerKeys.find(rpc => rpc.publicKey == publicKey)
-    if(!rpc) throw new Error(`no daml RPC server with that public key found: ${publicKey}`)
+    if (!publicKey) throw new Error('publicKey must be given to api.keyManager.rotateDamlRPCKey')
+    const rpc = database.keyManagerKeys.find((oneRpc) => oneRpc.publicKey === publicKey)
+    if (!rpc) throw new Error(`no daml RPC server with that public key found: ${publicKey}`)
     rpc.publicKey = database.getKey()
     return rpc.publicKey
   }
@@ -97,7 +93,6 @@ const KeyManager = ({
     getKeys,
     rotateRPCKey,
   }
-
 }
 
 module.exports = KeyManager
