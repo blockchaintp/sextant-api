@@ -6,6 +6,7 @@ const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
 
 const damlRPCHost = 'localhost'
+const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
 
 const DamlController = ({ store }) => {
   const keyManager = KeyManager({
@@ -65,8 +66,7 @@ const DamlController = ({ store }) => {
       handler: async ({
         port, // the local host port given to you
       }) => {
-        const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
-        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
         const data = await client.partyManagementClient.getParticipantId();
         return data.participantId;
       },
