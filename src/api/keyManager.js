@@ -37,7 +37,8 @@ const KeyManager = ({
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
+          const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
           const participantId = await client.partyManagementClient.getParticipantId();
           return {
             validator: pod.metadata.name,

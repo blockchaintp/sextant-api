@@ -44,7 +44,8 @@ const DamlRPC = ({
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
+          const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
           const participantId = await client.partyManagementClient.getParticipantId()
           const parties = await client.partyManagementClient.listKnownParties()
           const partyNames = parties.partyDetails.map((item) => ({
@@ -131,7 +132,8 @@ const DamlRPC = ({
           console.log(`value -> ${counter}`)
           if (counter === 1) {
             console.log(`Allocating party to ${pod.metadata.name}`)
-            const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
+            const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+            const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
             const response = await client.partyManagementClient.allocateParty({
               partyIdHint: partyName,
               displayName: partyName,
@@ -215,7 +217,8 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
+        const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
         const packages = await client.packageClient.listPackages()
         const mods = await Promise.map(packages.packageIds, async (packageId) => {
           const onePackage = await client.packageClient.getPackage(packageId);
@@ -269,7 +272,8 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
+        const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
         await client.packageManagementClient.uploadDarFile({
           darFile: contentBase64,
         })
