@@ -5,63 +5,60 @@
  */
 
 const jwt = require('jsonwebtoken')
-const settings = require('../settings')
-const database = require('./database')
 const ledger = require('@digitalasset/daml-ledger')
-const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const Promise = require('bluebird')
 const fs = require('fs')
 
 const pino = require('pino')({
   name: 'damlRPC',
 })
+const settings = require('../settings')
+const database = require('./database')
+const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 
-const damRPCHost = "localhost"
+const damlRPCHost = 'localhost'
 
 const DamlRPC = ({
   store,
 } = {}) => {
-
   if (!store) {
-    throw new Error("Daml rpc requires a store")
+    throw new Error('Daml rpc requires a store')
   }
 
-  const getParticipants = async ({id}) => {
-
+  const getParticipants = async ({ id }) => {
     pino.info({
-      action: "getParticipants",
-      id
+      action: 'getParticipants',
+      id,
     })
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc'
+      label: 'daml=<name>-daml-rpc',
     })
 
     const pods = await proxy.getPods()
-    const participantDetails = await Promise.map(pods, async pod => {
+    const participantDetails = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
         pod: pod.metadata.name,
         port: 39000,
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+          const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
           const participantId = await client.partyManagementClient.getParticipantId()
           const parties = await client.partyManagementClient.listKnownParties()
-          const partyNames = parties.partyDetails.map(item => {
-            return {
-              name: item.displayName
-            }
-          })
+          const partyNames = parties.partyDetails.map((item) => ({
+            name: item.displayName,
+          }))
 
           const participantDetail = {
             participantId: participantId.participantId,
-            damlId: `${client.ledgerId}-${pod.metadata.name}` ,
+            damlId: `${client.ledgerId}-${pod.metadata.name}`,
             parties: partyNames,
           };
           return participantDetail
-        }
+        },
       })
       return result
     })
@@ -75,11 +72,11 @@ const DamlRPC = ({
     publicKey,
   }) => {
     pino.info({
-      action:"registerParticipant",
+      action: 'registerParticipant',
       participantId,
-      publicKey
+      publicKey,
     })
-    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.registerParticipant`)
+    if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.registerParticipant')
 
     database.damlParticipants.push({
       damlId: database.getKey(),
@@ -95,10 +92,10 @@ const DamlRPC = ({
     oldPublicKey,
     newPublicKey,
   }) => {
-    if(!oldPublicKey) throw new Error(`oldPublicKey must be given to api.damlRPC.updateKey`)
-    if(!newPublicKey) throw new Error(`newPublicKey must be given to api.damlRPC.updateKey`)
-    const participant = database.damlParticipants.find(participant => participant.publicKey == oldPublicKey)
-    if(!participant) throw new Error(`no participant found with publicKey ${oldPublicKey}`)
+    if (!oldPublicKey) throw new Error('oldPublicKey must be given to api.damlRPC.updateKey')
+    if (!newPublicKey) throw new Error('newPublicKey must be given to api.damlRPC.updateKey')
+    const participant = database.damlParticipants.find((oneParticipant) => oneParticipant.publicKey === oldPublicKey)
+    if (!participant) throw new Error(`no participant found with publicKey ${oldPublicKey}`)
     participant.publicKey = newPublicKey
     return true
   }
@@ -109,49 +106,49 @@ const DamlRPC = ({
     partyName,
   }) => {
     pino.info({
-      action: "addParty",
+      action: 'addParty',
       id,
       publicKey,
-      partyName
+      partyName,
     })
 
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: "daml=<name>-daml-rpc"
+      label: 'daml=<name>-daml-rpc',
     })
 
-    var counter = 0
+    let counter = 0
     const pods = await proxy.getPods()
-    const results = await Promise.map(pods, async pod => {
+    const results = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
         pod: pod.metadata.name,
         port: 39000,
         handler: async ({
           port,
+        // eslint-disable-next-line consistent-return
         }) => {
-          counter++
+          counter += 1
           console.log(`value -> ${counter}`)
-          if (counter == 1) {
+          if (counter === 1) {
             console.log(`Allocating party to ${pod.metadata.name}`)
-            const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+            const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+            const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
             const response = await client.partyManagementClient.allocateParty({
-                partyIdHint: partyName,
-                displayName: partyName
+              partyIdHint: partyName,
+              displayName: partyName,
             })
             return response.partyDetails
           }
-        }
+        },
       })
       return result
     })
 
     if (results.length > 0) {
       return true
-    } else {
-      return false
     }
-
+    return false
   }
 
   // Removal of parties not allowed
@@ -160,11 +157,11 @@ const DamlRPC = ({
     publicKey,
     partyNames,
   }) => {
-    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.removeParties`)
-    if(!partyNames) throw new Error(`partyNames must be given to api.damlRPC.removeParties`)
-    const participant = database.damlParticipants.find(participant => participant.publicKey == publicKey)
-    if(!participant) throw new Error(`participant with publicKey not found: ${publicKey}`)
-    participant.parties = participant.parties.filter(party => partyNames.indexOf(party.name) == -1)
+    if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.removeParties')
+    if (!partyNames) throw new Error('partyNames must be given to api.damlRPC.removeParties')
+    const participant = database.damlParticipants.find((oneParticipant) => oneParticipant.publicKey === publicKey)
+    if (!participant) throw new Error(`participant with publicKey not found: ${publicKey}`)
+    participant.parties = participant.parties.filter((party) => partyNames.indexOf(party.name) === -1)
     return true
   }
 
@@ -172,44 +169,42 @@ const DamlRPC = ({
     publicKey,
     partyNames,
   }) => {
-    if(!publicKey) throw new Error(`publicKey must be given to api.damlRPC.generatePartyTokens`)
-    if(!partyNames) throw new Error(`partyNames must be given to api.damlRPC.generatePartyTokens`)
+    if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.generatePartyTokens')
+    if (!partyNames) throw new Error('partyNames must be given to api.damlRPC.generatePartyTokens')
 
     return new Promise((resolve, reject) => {
       jwt.sign({
         publicKey,
         partyNames,
+      // eslint-disable-next-line consistent-return
       }, settings.tokenSecret, (err, result) => {
-        if(err) return reject(err)
+        if (err) return reject(err)
         resolve(result)
       })
     })
   }
 
   const getArchives = async ({
-    id
+    id,
   } = {}) => {
-
     pino.info({
-      action: "getArchives",
-      id
+      action: 'getArchives',
+      id,
     })
 
     // This is responsible for port forwarding
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: "daml=<name>-daml-rpc"
+      label: 'daml=<name>-daml-rpc',
     })
 
     // We need to get all pods here
     const pods = await proxy.getPods()
 
     const extractModuleNames = (payload) => {
-      let mods = payload.getDamlLf1().getModulesList().filter(a => a.getName())
-        .map(a =>
-          a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`)
-      );
+      const mods = payload.getDamlLf1().getModulesList().filter((a) => a.getName())
+        .map((a) => a.getName().getSegmentsList().reduce((prev, curr) => `${prev}.${curr}`));
       return mods
     }
 
@@ -222,30 +217,27 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-        const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+        const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
         const packages = await client.packageClient.listPackages()
-        const mods = await Promise.map(packages.packageIds, async packageId => {
-          const package = await client.packageClient.getPackage(packageId);
-          const payload = await ledger.lf.ArchivePayload.deserializeBinary(package.archivePayload);
-          const numberOfModules = payload.getDamlLf1().getModulesList().length
+        const mods = await Promise.map(packages.packageIds, async (packageId) => {
+          const onePackage = await client.packageClient.getPackage(packageId);
+          const payload = await ledger.lf.ArchivePayload.deserializeBinary(onePackage.archivePayload)
           const moduleNames = extractModuleNames(payload)
           console.log(`packageId: ${packageId} || moduleNames: ${moduleNames}`)
           return {
-            packageId: packageId,
-            modules: moduleNames
+            packageId,
+            modules: moduleNames,
           }
         })
         return mods
-      }
+      },
     })
     return result
   }
 
-  const getTimeServiceInfo = ({
-
-  } = {}) => {
-    return database.damlTimeService
-  }
+  // eslint-disable-next-line no-empty-pattern
+  const getTimeServiceInfo = ({} = {}) => database.damlTimeService
 
   const uploadArchive = async ({
     id,
@@ -253,13 +245,12 @@ const DamlRPC = ({
     size,
     localFilepath,
   } = {}) => {
-
     pino.info({
-      action:"uploadArchive",
+      action: 'uploadArchive',
       id,
       name,
       size,
-      localFilepath
+      localFilepath,
     })
 
     const content = fs.readFileSync(localFilepath);
@@ -269,7 +260,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: "daml=<name>-daml-rpc"
+      label: 'daml=<name>-daml-rpc',
     })
 
     // We need to get all pods here
@@ -281,13 +272,14 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-        const client = await ledger.DamlLedgerClient.connect({host: damRPCHost, port: port})
+        const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
         await client.packageManagementClient.uploadDarFile({
-          darFile: contentBase64
+          darFile: contentBase64,
         })
         const packages = await client.packageManagementClient.listKnownPackages()
         return packages
-      }
+      },
     })
     return result
   }
@@ -303,7 +295,6 @@ const DamlRPC = ({
     getTimeServiceInfo,
     uploadArchive,
   }
-
 }
 
 module.exports = DamlRPC

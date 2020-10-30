@@ -13,3 +13,6 @@ rules:
   no-underscore-dangle: 1
   no-param-reassign: 1
   global-require: 1
+  max-len:
+    - 2
+    - code: 120
