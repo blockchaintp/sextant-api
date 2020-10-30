@@ -16,7 +16,7 @@ const settings = require('../settings')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 
-const damRPCHost = 'localhost'
+const damlRPCHost = 'localhost'
 
 const DamlRPC = ({
   store,
@@ -44,7 +44,7 @@ const DamlRPC = ({
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({ host: damRPCHost, port })
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
           const participantId = await client.partyManagementClient.getParticipantId()
           const parties = await client.partyManagementClient.listKnownParties()
           const partyNames = parties.partyDetails.map((item) => ({
@@ -131,7 +131,7 @@ const DamlRPC = ({
           console.log(`value -> ${counter}`)
           if (counter === 1) {
             console.log(`Allocating party to ${pod.metadata.name}`)
-            const client = await ledger.DamlLedgerClient.connect({ host: damRPCHost, port })
+            const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
             const response = await client.partyManagementClient.allocateParty({
               partyIdHint: partyName,
               displayName: partyName,
@@ -215,7 +215,7 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-        const client = await ledger.DamlLedgerClient.connect({ host: damRPCHost, port })
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
         const packages = await client.packageClient.listPackages()
         const mods = await Promise.map(packages.packageIds, async (packageId) => {
           const onePackage = await client.packageClient.getPackage(packageId);
@@ -269,7 +269,7 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-        const client = await ledger.DamlLedgerClient.connect({ host: damRPCHost, port })
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
         await client.packageManagementClient.uploadDarFile({
           darFile: contentBase64,
         })

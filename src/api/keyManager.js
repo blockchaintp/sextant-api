@@ -3,7 +3,7 @@ const Promise = require('bluebird')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 
-const damRPCHost = 'localhost'
+const damlRPCHost = 'localhost'
 
 const KeyManager = ({
   store,
@@ -37,7 +37,7 @@ const KeyManager = ({
         handler: async ({
           port,
         }) => {
-          const client = await ledger.DamlLedgerClient.connect({ host: damRPCHost, port })
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port })
           const participantId = await client.partyManagementClient.getParticipantId();
           return {
             validator: pod.metadata.name,
