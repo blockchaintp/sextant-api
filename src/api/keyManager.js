@@ -4,6 +4,7 @@ const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 
 const damlRPCHost = 'localhost'
+const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
 
 const KeyManager = ({
   store,
@@ -37,8 +38,7 @@ const KeyManager = ({
         handler: async ({
           port,
         }) => {
-          const options = { 'grpc.max_receive_message_length': 100 * 1024 * 1024 }
-          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions: options })
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
           const participantId = await client.partyManagementClient.getParticipantId();
           return {
             validator: pod.metadata.name,
