@@ -8,7 +8,7 @@
     "migrate": "knex migrate:latest",
     "download-helm-charts": "node scripts/download-helm-charts.js",
     "preserve": "npm run download-helm-charts && npm run migrate",
-    "serve": "node --max-old-space-size=8192 src/index.js",
+    "serve": "node src/index.js",
     "pretest": "npm run download-helm-charts",
     "test": "tape {src,test}/**/*.test.js | tap-spec",
     "start": "npm run download-helm-charts && npm run serve"
