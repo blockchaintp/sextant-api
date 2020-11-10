@@ -8,13 +8,13 @@
     "migrate": "knex migrate:latest",
     "download-helm-charts": "node scripts/download-helm-charts.js",
     "preserve": "npm run download-helm-charts && npm run migrate",
-    "serve": "node src/index.js",
+    "serve": "node --max-old-space-size=8192 src/index.js",
     "pretest": "npm run download-helm-charts",
     "test": "tape {src,test}/**/*.test.js | tap-spec",
     "start": "npm run download-helm-charts && npm run serve"
   },
   "dependencies": {
-    "@digitalasset/daml-ledger": "0.9.1",
+    "@digitalasset/daml-ledger": "0.11.0",
     "async": "^2.6.0",
     "aws-regions": "^1.4.1",
     "aws-sdk": "2.548.0",
