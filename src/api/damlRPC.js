@@ -201,14 +201,6 @@ const DamlRPC = ({
     // We need to get all pods here
     const pods = await proxy.getPods()
 
-    const extractModuleNames = (payload) => {
-      const moduleList = payload.getDamlLf1().getModulesList()
-      const namedModules = moduleList.filter((a) => a.getNameDname())
-      const names = namedModules.map((a) => a.getNameDname())
-      const moduleNames = names.map((item) => item.getSegmentsList().join('.'))
-      return moduleNames
-    }
-
     // Extract archive information from one pod only
     // This is regardless of all validator pods
     // reaching consensus
@@ -222,22 +214,12 @@ const DamlRPC = ({
 
         const packages = await client.packageClient.listPackages()
 
-        const mods = await Promise.map(packages.packageIds, async (packageId) => {
-          const onePackage = await client.packageClient.getPackage(packageId);
-          if (onePackage.archivePayload.length > 1000000) {
-            // some of the binaries are massive and there is not enough memory to deserialize them
-            return {
-              packageId,
-              modules: ['<< too large to parse >>'],
-            }
-          }
-          const payload = ledger.lf.ArchivePayload.deserializeBinary(onePackage.archivePayload)
-          return {
-            packageId,
-            modules: extractModuleNames(payload),
-          }
-        })
-        return mods
+        const sortedPackageIds = packages.packageIds.sort()
+
+        const data = sortedPackageIds.map((packageId) => ({
+          packageId,
+        }))
+        return data
       },
     })
     return result
