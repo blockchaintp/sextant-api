@@ -31,43 +31,46 @@ const KeyManager = ({
     })
 
     const pods = await proxy.getPods()
-    const participantDetails = await Promise.map(pods, async (pod) => {
-      const result = await proxy.request({
-        pod: pod.metadata.name,
-        port: 39000,
-        handler: async ({
-          port,
-        }) => {
-          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
-          const participantId = await client.partyManagementClient.getParticipantId();
-          return {
-            validator: pod.metadata.name,
-            participantId: participantId.participantId,
-          }
-        },
+    if (pods.length > 0) {
+      const participantDetails = await Promise.map(pods, async (pod) => {
+        const result = await proxy.request({
+          pod: pod.metadata.name,
+          port: 39000,
+          handler: async ({
+            port,
+          }) => {
+            const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
+            const participantId = await client.partyManagementClient.getParticipantId();
+            return {
+              validator: pod.metadata.name,
+              participantId: participantId.participantId,
+            }
+          },
+        })
+        return result
       })
-      return result
-    })
 
-    const results = participantDetails.map((item) => {
-      const result = [{
-        publicKey: database.getKey(),
-        name: `${item.validator}`,
-      }, {
-        publicKey: database.getKey(),
-        name: `${item.participantId}`,
-      }];
-      return result
-    })
+      const results = participantDetails.map((item) => {
+        const result = [{
+          publicKey: database.getKey(),
+          name: `${item.validator}`,
+        }, {
+          publicKey: database.getKey(),
+          name: `${item.participantId}`,
+        }];
+        return result
+      })
 
-    const combinedResult = results.reduce((accumulator, currentItem) => accumulator.concat(currentItem))
+      const combinedResult = results.reduce((accumulator, currentItem) => accumulator.concat(currentItem))
 
-    database.keyManagerKeys = [{
-      publicKey: sextantPublicKey,
-      name: 'sextant',
-    }].concat(combinedResult)
+      database.keyManagerKeys = [{
+        publicKey: sextantPublicKey,
+        name: 'sextant',
+      }].concat(combinedResult)
 
-    return database.keyManagerKeys
+      return database.keyManagerKeys
+    }
+    throw new Error('There is not a pod so there are no keys.')
   }
 
   /*
