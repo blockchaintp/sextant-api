@@ -41,8 +41,11 @@ const ProxyRequest = async ({
       action: 'stopping proxy',
       port: portForward.port,
     })
+
     await portForward.stop()
-    throw err
+    if (!pod) {
+      throw new Error('There is a no running pod.')
+    } else { throw err }
   }
 }
 
@@ -88,7 +91,23 @@ const DeploymentPodProxy = async ({
 
   const getPods = () => clusterKubectl
     .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
-    .then((data) => data.items)
+    .then((data) => {
+      const allPods = data.items
+      const runningPods = allPods.filter((pod) => {
+        let running = true
+        const { containerStatuses } = pod.status
+        containerStatuses.forEach((container) => {
+          if (container.state.running) {
+            pino.info({
+              action: 'filtering container statuses',
+              status: `Container ${container.image} is running`,
+            })
+          } else { running = false }
+        })
+        return running
+      })
+      return runningPods
+    })
 
   const getPod = async () => {
     const pods = await getPods()
