@@ -4,11 +4,11 @@
  * License: Product
  */
 
-const getField = require('../deployment_templates/getField')
-const ClusterKubectl = require('./clusterKubectl')
 const pino = require('pino')({
   name: 'deploymentPodProxy',
 })
+const getField = require('../deployment_templates/getField')
+const ClusterKubectl = require('./clusterKubectl')
 
 const ProxyRequest = async ({
   kubectl,
@@ -24,22 +24,22 @@ const ProxyRequest = async ({
   })
   try {
     pino.info({
-      action:"executing handler",
-      port: portForward.port
+      action: 'executing handler',
+      port: portForward.port,
     })
     const result = await handler({
       port: portForward.port,
     })
     pino.info({
-      action:"stopping proxy",
-      port: portForward.port
+      action: 'stopping proxy',
+      port: portForward.port,
     })
     await portForward.stop()
     return result
-  } catch(err) {
+  } catch (err) {
     pino.info({
-      action:"stopping proxy",
-      port: portForward.port
+      action: 'stopping proxy',
+      port: portForward.port,
     })
     await portForward.stop()
     throw err
@@ -51,7 +51,6 @@ const DeploymentPodProxy = async ({
   id,
   label = 'app=<name>-validator',
 }) => {
-
   const deployment = await store.deployment.get({
     id,
   })
@@ -89,7 +88,7 @@ const DeploymentPodProxy = async ({
 
   const getPods = () => clusterKubectl
     .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
-    .then(data => data.items)
+    .then((data) => data.items)
 
   const getPod = async () => {
     const pods = await getPods()
@@ -109,7 +108,7 @@ const DeploymentPodProxy = async ({
       pod,
       port,
       handler,
-    })
+    }),
   }
 }
 
