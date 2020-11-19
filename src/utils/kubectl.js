@@ -189,6 +189,7 @@ const Kubectl = ({
     pod,
     port,
   }) => {
+    if (!pod) throw new Error('A running pod is required for port forwarding')
     const setupDetails = await localSetup()
     const useOptions = getOptions({})
     const localPort = await getPort()
