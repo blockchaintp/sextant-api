@@ -1,3 +1,4 @@
+/* eslint-disable no-unneeded-ternary */
 /*
 
   factory function that returns a kubectl library that is bound to a cluster
@@ -13,23 +14,21 @@
    * token
    * ca
 
-
-
 */
 
 const Promise = require('bluebird')
 const tmp = require('tmp')
 const split = require('split')
-const async = require('async')
 const getPort = require('get-port')
 const fs = require('fs')
 const childProcess = require('child_process')
 const yaml = require('js-yaml')
-const base64 = require('./base64')
 
 const pino = require('pino')({
   name: 'kubectl',
 })
+
+const base64 = require('./base64')
 
 const exec = Promise.promisify(childProcess.exec)
 
@@ -61,22 +60,19 @@ const LOCAL_API_SERVER = 'https://kubernetes.default.svc'
 
   'localCredentials' object means we are running on the cluster we should connect to
 
-
-
 */
 const Kubectl = ({
   mode,
   remoteCredentials,
 } = {}) => {
-
-  if (!mode) throw new Error(`mode required for Kubectl`)
+  if (!mode) throw new Error('mode required for Kubectl')
   if (MODES.indexOf(mode) < 0) throw new Error(`unknown mode for Kubectl: ${mode}`)
 
-  if (mode == 'remote') {
-    if (!remoteCredentials) throw new Error(`remoteCredentials required for Kubectl remote mode`)
-    if (!remoteCredentials.ca) throw new Error(`ca required for remote credentials`)
-    if (!remoteCredentials.token) throw new Error(`token required for remote credentials`)
-    if (!remoteCredentials.apiServer) throw new Error(`apiServer required for remote credentials`)
+  if (mode === 'remote') {
+    if (!remoteCredentials) throw new Error('remoteCredentials required for Kubectl remote mode')
+    if (!remoteCredentials.ca) throw new Error('ca required for remote credentials')
+    if (!remoteCredentials.token) throw new Error('token required for remote credentials')
+    if (!remoteCredentials.apiServer) throw new Error('apiServer required for remote credentials')
   }
 
   /*
@@ -88,10 +84,9 @@ const Kubectl = ({
     const yamlText = yaml.safeDump(data)
     const tmpPath = await tempName({ postfix: '.yaml' })
     await writeFile(tmpPath, yamlText, 'utf8')
-    pino.debug({ message: `Wrote - ${tmpPath}`})
+    pino.debug({ message: `Wrote - ${tmpPath}` })
     return tmpPath
   }
-
 
   /*
 
@@ -99,10 +94,10 @@ const Kubectl = ({
 
   */
 
-  // creates/writes kubeconfig to tmp file for remote modes and returns connection arguments and kubeconfig path (setupDetails) to be used by following functions
+  // creates/writes kubeconfig to tmp file for remote modes and
+  // returns connection arguments and kubeconfig path (setupDetails) to be used by following functions
   const localSetup = async () => {
-    if (mode == 'remote') {
-
+    if (mode === 'remote') {
       const kubeconfigData = {
         kind: 'Config',
         preferences: {},
@@ -110,9 +105,9 @@ const Kubectl = ({
           {
             name: 'sextant',
             user: {
-              token: base64.decode(remoteCredentials.token).toString()
-            }
-          }
+              token: base64.decode(remoteCredentials.token).toString(),
+            },
+          },
         ],
         contexts: [
           {
@@ -120,34 +115,33 @@ const Kubectl = ({
               cluster: 'target',
               user: 'sextant',
             },
-            name: 'target-context'
-          }
+            name: 'target-context',
+          },
         ],
-        "current-context": 'target-context',
+        'current-context': 'target-context',
         clusters: [
           {
             cluster: {
               'certificate-authority-data': remoteCredentials.ca,
               server: remoteCredentials.apiServer,
             },
-            name: 'target'
+            name: 'target',
 
-          }
-        ]
+          },
+        ],
       }
       const kubeConfigPath = await writeTempYaml(kubeconfigData)
 
       const connectionArguments = [
-        '--kubeconfig', kubeConfigPath
+        '--kubeconfig', kubeConfigPath,
       ]
 
       return {
         kubeConfigPath,
-        connectionArguments
+        connectionArguments,
       }
-
-    } else if (mode == 'local') {
-
+    }
+    if (mode === 'local') {
       const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
 
       const connectionArguments = [
@@ -159,30 +153,32 @@ const Kubectl = ({
         LOCAL_API_SERVER,
       ]
 
-      return {connectionArguments}
-    } else if (mode == 'test') {
-
+      return { connectionArguments }
+    }
+    if (mode === 'test') {
       return {
         kubeConfigPath: '/dev/null',
-        connectionArguments: []
+        connectionArguments: [],
       }
     }
+    throw new Error('mode required for Kubectl')
   }
 
   // trashes the tmp file if there is a kubeconfigPath in the setupDetails
   const localTeardown = async (setupDetails) => {
     if (setupDetails.kubeConfigPath) {
       fs.unlinkSync(setupDetails.kubeConfigPath)
-    }  
+    }
   }
 
   const getOptions = (options) => {
-    const useOptions = Object.assign({}, options, {
+    const useOptions = {
+      ...options,
       // allow 5MB back on stdout
-      //(which should not happen but some logs might be longer than 200kb which is the default)
+      // (which should not happen but some logs might be longer than 200kb which is the default)
       maxBuffer: 1024 * 1024 * 5,
-    })
-    useOptions.env = Object.assign({}, process.env, options.env)
+    }
+    useOptions.env = { ...process.env, ...options.env }
     return useOptions
   }
 
@@ -201,11 +197,10 @@ const Kubectl = ({
       '-n', namespace,
       'port-forward',
       `pod/${pod}`,
-      `${localPort}:${port}`
+      `${localPort}:${port}`,
     ])
 
     const forwardingProcess = await new Promise((resolve, reject) => {
-
       let complete = false
       let stderr = ''
 
@@ -219,8 +214,7 @@ const Kubectl = ({
         .pipe(split())
         .on('data', (line) => {
           // this is the key line kubectl port-forward prints once the proxy is setup
-          if (line == `Forwarding from 127.0.0.1:${localPort} -> ${port}`)
-            complete = true
+          if (line === `Forwarding from 127.0.0.1:${localPort} -> ${port}`) { complete = true }
           resolve(spawnedProcess)
         })
 
@@ -228,7 +222,7 @@ const Kubectl = ({
       spawnedProcess.stderr
         .pipe(split())
         .on('data', (line) => {
-          stderr += line + "\n"
+          stderr += `${line}\n`
         })
 
       spawnedProcess.on('exit', (code) => {
@@ -244,7 +238,7 @@ const Kubectl = ({
       port: localPort,
       stop: async () => {
         forwardingProcess.kill()
-      }
+      },
     }
   }
 
@@ -255,16 +249,16 @@ const Kubectl = ({
     const runCommand = `kubectl ${setupDetails.connectionArguments.join(' ')} ${cmd}`
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
-      .catch(err => {
-        const errorParts = err.toString().split("\n")
+      .catch((err) => {
+        const errorParts = err.toString().split('\n')
         const okErrorParts = errorParts
-          .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
-          .filter(line => line)
-          .map(line => line.replace(/error: /, ''))
-        err.message = okErrorParts.join("\n")
+          .filter((line) => (line.toLowerCase().indexOf('command failed:') >= 0 ? false : true))
+          .filter((line) => line)
+          .map((line) => line.replace(/error: /, ''))
+        err.message = okErrorParts.join('\n')
         throw err
       })
-      await localTeardown(setupDetails)
+    await localTeardown(setupDetails)
     return result
   }
 
@@ -277,16 +271,16 @@ const Kubectl = ({
     const runCommand = `helm ${setupDetails.connectionArguments.join(' ')} ${cmd}`
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
-      .catch(err => {
-        const errorParts = err.toString().split("\n")
+      .catch((err) => {
+        const errorParts = err.toString().split('\n')
         const okErrorParts = errorParts
-          .filter(line => line.toLowerCase().indexOf('command failed:') >= 0 ? false : true)
-          .filter(line => line)
-          .map(line => line.replace(/error: /, ''))
-        err.message = okErrorParts.join("\n")
+          .filter((line) => (line.toLowerCase().indexOf('command failed:') >= 0 ? false : true))
+          .filter((line) => line)
+          .map((line) => line.replace(/error: /, ''))
+        err.message = okErrorParts.join('\n')
         throw err
       })
-      await localTeardown(setupDetails)
+    await localTeardown(setupDetails)
     return result
   }
 
