@@ -17,6 +17,7 @@ const ProxyRequest = async ({
   port,
   handler,
 }) => {
+  if (!pod) throw new Error('A running pod is required for a proxy request.')
   const portForward = await kubectl.portForward({
     namespace,
     pod,
@@ -41,11 +42,8 @@ const ProxyRequest = async ({
       action: 'stopping proxy',
       port: portForward.port,
     })
-
     await portForward.stop()
-    if (!pod) {
-      throw new Error('There is a no running pod.')
-    } else { throw err }
+    throw err
   }
 }
 
