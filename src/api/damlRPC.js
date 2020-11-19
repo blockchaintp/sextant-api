@@ -38,36 +38,36 @@ const DamlRPC = ({
     })
 
     const pods = await proxy.getPods()
-    if (pods.length > 0) {
-      const participantDetails = await Promise.map(pods, async (pod) => {
-        const result = await proxy.request({
-          pod: pod ? pod.metadata.name : null,
-          port: 39000,
-          handler: async ({
-            port,
-          }) => {
-            const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
-            const participantId = await client.partyManagementClient.getParticipantId()
-            const parties = await client.partyManagementClient.listKnownParties()
-            const partyNames = parties.partyDetails.map((item) => ({
-              name: item.displayName,
-            }))
 
-            const participantDetail = {
-              participantId: participantId.participantId,
-              damlId: `${client.ledgerId}-${pod.metadata.name}`,
-              parties: partyNames,
-            };
-            return participantDetail
-          },
-        })
-        return result
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
+    const participantDetails = await Promise.map(pods, async (pod) => {
+      const result = await proxy.request({
+        pod: pod ? pod.metadata.name : null,
+        port: 39000,
+        handler: async ({
+          port,
+        }) => {
+          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
+          const participantId = await client.partyManagementClient.getParticipantId()
+          const parties = await client.partyManagementClient.listKnownParties()
+          const partyNames = parties.partyDetails.map((item) => ({
+            name: item.displayName,
+          }))
+
+          const participantDetail = {
+            participantId: participantId.participantId,
+            damlId: `${client.ledgerId}-${pod.metadata.name}`,
+            parties: partyNames,
+          };
+          return participantDetail
+        },
       })
+      return result
+    })
 
-      participantDetails[0].publicKey = database.getKey()
-      return participantDetails
-    }
-    throw new Error('There is not a pod so there are no participants.')
+    participantDetails[0].publicKey = database.getKey()
+    return participantDetails
   }
 
   const registerParticipant = ({
@@ -123,6 +123,9 @@ const DamlRPC = ({
 
     let counter = 0
     const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     const results = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
         pod: pod ? pod.metadata.name : null,
@@ -204,10 +207,14 @@ const DamlRPC = ({
     // We need to get all pods here
     const pods = await proxy.getPods()
 
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     // Extract archive information from one pod only
     // This is regardless of all validator pods
     // reaching consensus
+
     const result = await proxy.request({
+
       pod: pods[0] ? pods[0].metadata.name : null,
       port: 39000,
       handler: async ({
@@ -257,6 +264,8 @@ const DamlRPC = ({
 
     // We need to get all pods here
     const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
 
     const result = await proxy.request({
       pod: pods[0] ? pods[0].metadata.name : null,
