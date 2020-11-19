@@ -38,9 +38,12 @@ const DamlRPC = ({
     })
 
     const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     const participantDetails = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
-        pod: pod.metadata.name,
+        pod: pod ? pod.metadata.name : null,
         port: 39000,
         handler: async ({
           port,
@@ -120,9 +123,12 @@ const DamlRPC = ({
 
     let counter = 0
     const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     const results = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
-        pod: pod.metadata.name,
+        pod: pod ? pod.metadata.name : null,
         port: 39000,
         handler: async ({
           port,
@@ -201,11 +207,15 @@ const DamlRPC = ({
     // We need to get all pods here
     const pods = await proxy.getPods()
 
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     // Extract archive information from one pod only
     // This is regardless of all validator pods
     // reaching consensus
+
     const result = await proxy.request({
-      pod: pods[0].metadata.name,
+
+      pod: pods[0] ? pods[0].metadata.name : null,
       port: 39000,
       handler: async ({
         port,
@@ -255,8 +265,10 @@ const DamlRPC = ({
     // We need to get all pods here
     const pods = await proxy.getPods()
 
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     const result = await proxy.request({
-      pod: pods[0].metadata.name,
+      pod: pods[0] ? pods[0].metadata.name : null,
       port: 39000,
       handler: async ({
         port,

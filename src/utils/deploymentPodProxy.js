@@ -4,11 +4,11 @@
  * License: Product
  */
 
-const getField = require('../deployment_templates/getField')
-const ClusterKubectl = require('./clusterKubectl')
 const pino = require('pino')({
   name: 'deploymentPodProxy',
 })
+const getField = require('../deployment_templates/getField')
+const ClusterKubectl = require('./clusterKubectl')
 
 const ProxyRequest = async ({
   kubectl,
@@ -17,6 +17,7 @@ const ProxyRequest = async ({
   port,
   handler,
 }) => {
+  if (!pod) throw new Error('A running pod is required for a proxy request.')
   const portForward = await kubectl.portForward({
     namespace,
     pod,
@@ -24,22 +25,22 @@ const ProxyRequest = async ({
   })
   try {
     pino.info({
-      action:"executing handler",
-      port: portForward.port
+      action: 'executing handler',
+      port: portForward.port,
     })
     const result = await handler({
       port: portForward.port,
     })
     pino.info({
-      action:"stopping proxy",
-      port: portForward.port
+      action: 'stopping proxy',
+      port: portForward.port,
     })
     await portForward.stop()
     return result
-  } catch(err) {
+  } catch (err) {
     pino.info({
-      action:"stopping proxy",
-      port: portForward.port
+      action: 'stopping proxy',
+      port: portForward.port,
     })
     await portForward.stop()
     throw err
@@ -51,7 +52,6 @@ const DeploymentPodProxy = async ({
   id,
   label = 'app=<name>-validator',
 }) => {
-
   const deployment = await store.deployment.get({
     id,
   })
@@ -89,7 +89,23 @@ const DeploymentPodProxy = async ({
 
   const getPods = () => clusterKubectl
     .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
-    .then(data => data.items)
+    .then((data) => {
+      const allPods = data.items
+      const runningPods = allPods.filter((pod) => {
+        let running = true
+        const { containerStatuses } = pod.status
+        containerStatuses.forEach((container) => {
+          if (container.state.running) {
+            pino.info({
+              action: 'filtering container statuses',
+              status: `Container ${container.image} is running`,
+            })
+          } else { running = false }
+        })
+        return running
+      })
+      return runningPods
+    })
 
   const getPod = async () => {
     const pods = await getPods()
@@ -109,7 +125,7 @@ const DeploymentPodProxy = async ({
       pod,
       port,
       handler,
-    })
+    }),
   }
 }
 

@@ -31,6 +31,9 @@ const KeyManager = ({
     })
 
     const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
     const participantDetails = await Promise.map(pods, async (pod) => {
       const result = await proxy.request({
         pod: pod.metadata.name,
