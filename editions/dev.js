@@ -79,32 +79,32 @@ const edition = {
     sextant: {
       2.1: { chart: 'btp-unstable/sextant', order: 8, extension: 'sextant' },
     },
-    openebs: {
-      '2.0': { chart: 'btp-unstable/openebs', order: 9, extension: 'openebs' },
+    elasticsearch: {
+      7.9: { chart: 'btp-unstable/elasticsearch', order: 9, extension: 'elasticsearch' },
     },
     fluentd: {
       1.11: { chart: 'btp-unstable/fluentd', order: 10, extension: 'fluentd' },
     },
-    elasticsearch: {
-      7.9: { chart: 'btp-unstable/elasticsearch', order: 11, extension: 'elasticsearch' },
-    },
     kibana: {
-      7.8: { chart: 'btp-unstable/kibana', order: 12, extension: 'kibana' },
-    },
-    'nginx-ingress': {
-      1.8: { chart: 'btp-unstable/nginx-ingress', order: 13, extension: 'ingress' },
-    },
-    grafana: {
-      7.1: { chart: 'btp-unstable/grafana', order: 14, extension: 'grafana' },
-    },
-    vault: {
-      1.5: { chart: 'btp-unstable/vault', order: 15, extension: 'vault' },
+      7.8: { chart: 'btp-unstable/kibana', order: 11, extension: 'kibana' },
     },
     influxdb: {
-      1.8: { chart: 'btp-unstable/influxdb', order: 16, extension: 'influxdb' },
+      1.8: { chart: 'btp-unstable/influxdb', order: 12, extension: 'influxdb' },
+    },
+    grafana: {
+      7.1: { chart: 'btp-unstable/grafana', order: 13, extension: 'grafana' },
     },
     'postgresql-ha': {
-      11.9: { chart: 'btp-unstable/postgresql-ha', order: 17, extension: 'pgsql' },
+      11.9: { chart: 'btp-unstable/postgresql-ha', order: 14, extension: 'pgsql' },
+    },
+    'nginx-ingress': {
+      1.8: { chart: 'btp-unstable/nginx-ingress', order: 15, extension: 'ingress' },
+    },
+    openebs: {
+      '2.0': { chart: 'btp-unstable/openebs', order: 16, extension: 'openebs' },
+    },
+    vault: {
+      1.5: { chart: 'btp-unstable/vault', order: 17, extension: 'vault' },
     },
   },
 };

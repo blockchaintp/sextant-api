@@ -68,38 +68,35 @@ const edition = {
     'daml-on-postgres': {
       1.3: { chart: 'btp-stable/daml-on-postgres', order: 6, extension: 'daml' },
     },
-    'tfs-on-sawtooth': {
-      0.1: { chart: 'btp-unstable/tfs-on-sawtooth', order: 7, extension: 'tfs' },
-    },
     sextant: {
-      2.1: { chart: 'btp-stable/sextant', order: 8, extension: 'sextant' },
-    },
-    openebs: {
-      '2.0': { chart: 'btp-stable/openebs', order: 9, extension: 'openebs' },
-    },
-    fluentd: {
-      1.11: { chart: 'btp-stable/fluentd', order: 10, extension: 'fluentd' },
+      2.1: { chart: 'btp-stable/sextant', order: 7, extension: 'sextant' },
     },
     elasticsearch: {
-      7.9: { chart: 'btp-stable/elasticsearch', order: 11, extension: 'elasticsearch' },
+      7.9: { chart: 'btp-stable/elasticsearch', order: 8, extension: 'elasticsearch' },
+    },
+    fluentd: {
+      1.11: { chart: 'btp-stable/fluentd', order: 9, extension: 'fluentd' },
     },
     kibana: {
-      7.8: { chart: 'btp-stable/kibana', order: 12, extension: 'kibana' },
-    },
-    'nginx-ingress': {
-      1.8: { chart: 'btp-stable/nginx-ingress', order: 13, extension: 'ingress' },
-    },
-    grafana: {
-      7.1: { chart: 'btp-stable/grafana', order: 14, extension: 'grafana' },
-    },
-    vault: {
-      1.5: { chart: 'btp-stable/vault', order: 15, extension: 'vault' },
+      7.8: { chart: 'btp-stable/kibana', order: 10, extension: 'kibana' },
     },
     influxdb: {
-      1.8: { chart: 'btp-stable/influxdb', order: 16, extension: 'influxdb' },
+      1.8: { chart: 'btp-stable/influxdb', order: 11, extension: 'influxdb' },
+    },
+    grafana: {
+      7.1: { chart: 'btp-stable/grafana', order: 12, extension: 'grafana' },
     },
     'postgresql-ha': {
-      11.9: { chart: 'btp-stable/postgresql-ha', order: 17, extension: 'pgsql' },
+      11.9: { chart: 'btp-stable/postgresql-ha', order: 13, extension: 'pgsql' },
+    },
+    'nginx-ingress': {
+      1.8: { chart: 'btp-stable/nginx-ingress', order: 14, extension: 'ingress' },
+    },
+    openebs: {
+      '2.0': { chart: 'btp-stable/openebs', order: 15, extension: 'openebs' },
+    },
+    vault: {
+      1.5: { chart: 'btp-stable/vault', order: 16, extension: 'vault' },
     },
 
   },
