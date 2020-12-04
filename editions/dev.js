@@ -88,23 +88,23 @@ const edition = {
     kibana: {
       7.8: { chart: 'btp-unstable/kibana', order: 11, extension: 'kibana' },
     },
+    influxdb: {
+      1.8: { chart: 'btp-unstable/influxdb', order: 12, extension: 'influxdb' },
+    },
     grafana: {
-      7.1: { chart: 'btp-unstable/grafana', order: 12, extension: 'grafana' },
+      7.1: { chart: 'btp-unstable/grafana', order: 13, extension: 'grafana' },
     },
     'postgresql-ha': {
-      11.9: { chart: 'btp-unstable/postgresql-ha', order: 13, extension: 'pgsql' },
-    },
-    openebs: {
-      '2.0': { chart: 'btp-unstable/openebs', order: 14, extension: 'openebs' },
-    },
-    influxdb: {
-      1.8: { chart: 'btp-unstable/influxdb', order: 15, extension: 'influxdb' },
-    },
-    vault: {
-      1.5: { chart: 'btp-unstable/vault', order: 16, extension: 'vault' },
+      11.9: { chart: 'btp-unstable/postgresql-ha', order: 14, extension: 'pgsql' },
     },
     'nginx-ingress': {
-      1.8: { chart: 'btp-unstable/nginx-ingress', order: 17, extension: 'ingress' },
+      1.8: { chart: 'btp-unstable/nginx-ingress', order: 15, extension: 'ingress' },
+    },
+    openebs: {
+      '2.0': { chart: 'btp-unstable/openebs', order: 16, extension: 'openebs' },
+    },
+    vault: {
+      1.5: { chart: 'btp-unstable/vault', order: 17, extension: 'vault' },
     },
   },
 };

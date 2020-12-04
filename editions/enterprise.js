@@ -69,16 +69,19 @@ const edition = {
       1.3: { chart: 'btp-stable/daml-on-postgres', order: 6, extension: 'daml' },
     },
     sextant: {
-      2.1: { chart: 'btp-stable/sextant', order: 8, extension: 'sextant' },
+      2.1: { chart: 'btp-stable/sextant', order: 7, extension: 'sextant' },
     },
     elasticsearch: {
-      7.9: { chart: 'btp-stable/elasticsearch', order: 9, extension: 'elasticsearch' },
+      7.9: { chart: 'btp-stable/elasticsearch', order: 8, extension: 'elasticsearch' },
     },
     fluentd: {
-      1.11: { chart: 'btp-stable/fluentd', order: 10, extension: 'fluentd' },
+      1.11: { chart: 'btp-stable/fluentd', order: 9, extension: 'fluentd' },
     },
     kibana: {
-      7.8: { chart: 'btp-stable/kibana', order: 11, extension: 'kibana' },
+      7.8: { chart: 'btp-stable/kibana', order: 10, extension: 'kibana' },
+    },
+    influxdb: {
+      1.8: { chart: 'btp-stable/influxdb', order: 11, extension: 'influxdb' },
     },
     grafana: {
       7.1: { chart: 'btp-stable/grafana', order: 12, extension: 'grafana' },
@@ -86,17 +89,14 @@ const edition = {
     'postgresql-ha': {
       11.9: { chart: 'btp-stable/postgresql-ha', order: 13, extension: 'pgsql' },
     },
-    openebs: {
-      '2.0': { chart: 'btp-stable/openebs', order: 14, extension: 'openebs' },
+    'nginx-ingress': {
+      1.8: { chart: 'btp-stable/nginx-ingress', order: 14, extension: 'ingress' },
     },
-    influxdb: {
-      1.8: { chart: 'btp-stable/influxdb', order: 15, extension: 'influxdb' },
+    openebs: {
+      '2.0': { chart: 'btp-stable/openebs', order: 15, extension: 'openebs' },
     },
     vault: {
       1.5: { chart: 'btp-stable/vault', order: 16, extension: 'vault' },
-    },
-    'nginx-ingress': {
-      1.8: { chart: 'btp-stable/nginx-ingress', order: 17, extension: 'ingress' },
     },
 
   },
