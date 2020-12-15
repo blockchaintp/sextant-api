@@ -1,0 +1,42 @@
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name:  Authorization
+    in: header
+    bearerFormat: JWT
+parameters:
+  clusterParam:
+    name: cluster
+    in: path
+    required: true
+    description: id of the cluster
+    schema:
+      type: string
+  deploymentParam:
+    name: deployment
+    in: path
+    required: true
+    description: id of the deployment
+    schema:
+      type: string
+  volumeParam:
+    name: volume
+    in: path
+    required: true
+    description: id of the volume
+    schema:
+      type: string
+  snapshotParam:
+    name: snapshot
+    in: path
+    required: true
+    description: id of the snapshot
+    schema:
+      type: string
+  userParam:
+    name: user
+    in: path
+    required: true
+    description: id of the user
+    schema:
+      type: string
