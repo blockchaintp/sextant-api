@@ -142,7 +142,7 @@ const DamlController = ({ store }) => {
     if (!partyNames) throw new Error('partyNames must be given to controller.deployment.generatePartyToken')
 
     const token = await damlRPC.generatePartyToken({
-      publicKey,
+      id,
       partyNames,
     })
 

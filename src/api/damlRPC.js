@@ -15,6 +15,7 @@ const pino = require('pino')({
 const settings = require('../settings')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const SecretLoader = require('../utils/secretLoader')
 
 const damlRPCHost = 'localhost'
 const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
@@ -170,19 +171,40 @@ const DamlRPC = ({
     return true
   }
 
-  const generatePartyToken = ({
-    publicKey,
+  const generatePartyToken = async ({
+    id,
     partyNames,
   }) => {
-    if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.generatePartyTokens')
     if (!partyNames) throw new Error('partyNames must be given to api.damlRPC.generatePartyTokens')
+
+    const secretLoader = await SecretLoader({
+      store,
+      id,
+    })
+
+    const secretName = process.env.DAML_JWT_SECRET_NAME || 'jwt-secret'
+    const secretField = process.env.DAML_JWT_SECRET_FIELD || 'key'
+
+    const secret = await secretLoader.getSecret(secretName)
+    if(!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
+    const keyBase64 = secret.data[secretField]
+    if(!keyBase64) throw new Error(`no value found to sign token ${secretName} -> ${secretField}`)
+
+    const privateKey = Buffer.from(keyBase64, 'base64').toString('utf8')
 
     return new Promise((resolve, reject) => {
       jwt.sign({
-        publicKey,
-        partyNames,
+        "https://daml.com/ledger-api": {
+          // TODO: how to know what these values are
+          ledgerId: "apples",
+          applicationId: "apples",
+          readAs: partyNames,
+          actAs: partyNames,
+        },
       // eslint-disable-next-line consistent-return
-      }, settings.tokenSecret, (err, result) => {
+      }, privateKey, {
+        algorithm: 'HS256',
+      }, (err, result) => {
         if (err) return reject(err)
         resolve(result)
       })
