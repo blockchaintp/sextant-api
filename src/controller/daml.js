@@ -134,16 +134,20 @@ const DamlController = ({ store }) => {
 
   const generatePartyToken = async ({
     id,
-    publicKey,
-    partyNames,
+    applicationId,
+    readAs,
+    actAs,
   }) => {
     if (!id) throw new Error('id must be given to controller.deployment.generatePartyToken')
-    if (!publicKey) throw new Error('publicKey must be given to controller.deployment.generatePartyToken')
-    if (!partyNames) throw new Error('partyNames must be given to controller.deployment.generatePartyToken')
+    if (!applicationId) throw new Error('applicationId must be given to controller.deployment.generatePartyToken')
+    if (!readAs) throw new Error('readAs must be given to controller.deployment.generatePartyToken')
+    if (!actAs) throw new Error('actAs must be given to controller.deployment.generatePartyToken')
 
     const token = await damlRPC.generatePartyToken({
       id,
-      partyNames,
+      applicationId,
+      readAs,
+      actAs,
     })
 
     return {

@@ -174,9 +174,13 @@ const DamlRPC = ({
 
   const generatePartyToken = async ({
     id,
-    partyNames,
+    applicationId,
+    readAs,
+    actAs,
   }) => {
-    if (!partyNames) throw new Error('partyNames must be given to api.damlRPC.generatePartyTokens')
+    if (!applicationId) throw new Error('applicationId must be given to api.damlRPC.generatePartyTokens')
+    if (!readAs) throw new Error('readAs must be given to api.damlRPC.generatePartyTokens')
+    if (!actAs) throw new Error('actAs must be given to api.damlRPC.generatePartyTokens')
 
     const proxy = await DeploymentPodProxy({
       store,
@@ -233,9 +237,9 @@ const DamlRPC = ({
       jwt.sign({
         "https://daml.com/ledger-api": {
           ledgerId,
-          applicationId: "apples",
-          readAs: partyNames,
-          actAs: partyNames,
+          applicationId,
+          readAs,
+          actAs,
         },
       // eslint-disable-next-line consistent-return
       }, privateKey, {
