@@ -16,6 +16,7 @@ const settings = require('../settings')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const SecretLoader = require('../utils/secretLoader')
+const getField = require('../deployment_templates/getField')
 
 const damlRPCHost = 'localhost'
 const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
@@ -177,17 +178,53 @@ const DamlRPC = ({
   }) => {
     if (!partyNames) throw new Error('partyNames must be given to api.damlRPC.generatePartyTokens')
 
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+      label: 'daml=<name>-daml-rpc',
+    })
+
+    const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
+    const ledgerId = await proxy.request({
+      pod: pods[0].metadata.name,
+      port: 39000,
+      handler: async ({
+        port,
+      }) => {
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
+        return client.ledgerId
+      },
+    })
+
+    const deployment = await store.deployment.get({
+      id,
+    })
+
+    const {
+      deployment_type,
+      deployment_version,
+      applied_state,
+    } = deployment
+
+    const networkName = getField({
+      deployment_type,
+      deployment_version,
+      data: applied_state,
+      field: 'name',
+    })
+
     const secretLoader = await SecretLoader({
       store,
       id,
     })
 
-    const secretName = process.env.DAML_JWT_SECRET_NAME || 'jwt-secret'
-    const secretField = process.env.DAML_JWT_SECRET_FIELD || 'key'
-
+    const secretName = `${networkName}-jwt-cert`
     const secret = await secretLoader.getSecret(secretName)
     if(!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
-    const keyBase64 = secret.data[secretField]
+    const keyBase64 = secret.data['jwt.key']
     if(!keyBase64) throw new Error(`no value found to sign token ${secretName} -> ${secretField}`)
 
     const privateKey = Buffer.from(keyBase64, 'base64').toString('utf8')
@@ -195,8 +232,7 @@ const DamlRPC = ({
     return new Promise((resolve, reject) => {
       jwt.sign({
         "https://daml.com/ledger-api": {
-          // TODO: how to know what these values are
-          ledgerId: "apples",
+          ledgerId,
           applicationId: "apples",
           readAs: partyNames,
           actAs: partyNames,
