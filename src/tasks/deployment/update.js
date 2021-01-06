@@ -103,8 +103,10 @@ const DeploymentUpdate = ({
     const installationName = `${appliedNetworkName}-${extension}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
 
+    const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
+
     // if the chart is installed, upgrade it. Otherwise, install it
-    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${chart} --install`)
+    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install`)
 
   } else {
 
