@@ -88,8 +88,9 @@ const DamlRoutes = (controllers) => {
   const generatePartyToken = async (req, res, next) => {
     const data = await controllers.daml.generatePartyToken({
       id: req.params.id,
-      publicKey: req.body.publicKey,
-      partyNames: req.body.partyNames,
+      applicationId: req.body.applicationId,
+      readAs: req.body.readAs,
+      actAs: req.body.actAs,
     })
     res
       .status(200)

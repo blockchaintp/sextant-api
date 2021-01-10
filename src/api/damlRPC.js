@@ -15,6 +15,8 @@ const pino = require('pino')({
 const settings = require('../settings')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
+const SecretLoader = require('../utils/secretLoader')
+const getField = require('../deployment_templates/getField')
 
 const damlRPCHost = 'localhost'
 const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
@@ -170,19 +172,79 @@ const DamlRPC = ({
     return true
   }
 
-  const generatePartyToken = ({
-    publicKey,
-    partyNames,
+  const generatePartyToken = async ({
+    id,
+    applicationId,
+    readAs,
+    actAs,
   }) => {
-    if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.generatePartyTokens')
-    if (!partyNames) throw new Error('partyNames must be given to api.damlRPC.generatePartyTokens')
+    if (!applicationId) throw new Error('applicationId must be given to api.damlRPC.generatePartyTokens')
+    if (!readAs) throw new Error('readAs must be given to api.damlRPC.generatePartyTokens')
+    if (!actAs) throw new Error('actAs must be given to api.damlRPC.generatePartyTokens')
+
+    const proxy = await DeploymentPodProxy({
+      store,
+      id,
+      label: 'daml=<name>-daml-rpc',
+    })
+
+    const pods = await proxy.getPods()
+
+    if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+
+    const ledgerId = await proxy.request({
+      pod: pods[0].metadata.name,
+      port: 39000,
+      handler: async ({
+        port,
+      }) => {
+        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
+        return client.ledgerId
+      },
+    })
+
+    const deployment = await store.deployment.get({
+      id,
+    })
+
+    const {
+      deployment_type,
+      deployment_version,
+      applied_state,
+    } = deployment
+
+    const networkName = getField({
+      deployment_type,
+      deployment_version,
+      data: applied_state,
+      field: 'name',
+    })
+
+    const secretLoader = await SecretLoader({
+      store,
+      id,
+    })
+
+    const secretName = `${networkName}-jwt-cert`
+    const secret = await secretLoader.getSecret(secretName)
+    if(!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
+    const keyBase64 = secret.data['jwt.key']
+    if(!keyBase64) throw new Error(`no value found to sign token ${secretName} -> ${secretField}`)
+
+    const privateKey = Buffer.from(keyBase64, 'base64').toString('utf8')
 
     return new Promise((resolve, reject) => {
       jwt.sign({
-        publicKey,
-        partyNames,
+        "https://daml.com/ledger-api": {
+          ledgerId,
+          applicationId,
+          readAs,
+          actAs,
+        },
       // eslint-disable-next-line consistent-return
-      }, settings.tokenSecret, (err, result) => {
+      }, privateKey, {
+        algorithm: 'HS256',
+      }, (err, result) => {
         if (err) return reject(err)
         resolve(result)
       })
