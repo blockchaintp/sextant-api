@@ -224,7 +224,7 @@ const DamlRPC = ({
       id,
     })
 
-    const secretName = `${networkName}-jwt-cert`
+    const secretName = `${networkName}-cert`
     const secret = await secretLoader.getSecret(secretName)
     if (!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
     const keyBase64 = secret.data['jwt.key']
@@ -242,7 +242,7 @@ const DamlRPC = ({
         },
       // eslint-disable-next-line consistent-return
       }, privateKey, {
-        algorithm: 'HS256',
+        algorithm: 'RS256',
       }, (err, result) => {
         if (err) return reject(err)
         return resolve(result)
