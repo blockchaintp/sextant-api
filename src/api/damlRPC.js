@@ -12,7 +12,6 @@ const fs = require('fs')
 const pino = require('pino')({
   name: 'damlRPC',
 })
-const settings = require('../settings')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const SecretLoader = require('../utils/secretLoader')
@@ -137,9 +136,9 @@ const DamlRPC = ({
         // eslint-disable-next-line consistent-return
         }) => {
           counter += 1
-          console.log(`value -> ${counter}`)
+          pino.debug(`value -> ${counter}`)
           if (counter === 1) {
-            console.log(`Allocating party to ${pod.metadata.name}`)
+            pino.debug(`Allocating party to ${pod.metadata.name}`)
             const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
             const response = await client.partyManagementClient.allocateParty({
               partyIdHint: partyName,
@@ -225,17 +224,17 @@ const DamlRPC = ({
       id,
     })
 
-    const secretName = `${networkName}-jwt-cert`
+    const secretName = `${networkName}-cert`
     const secret = await secretLoader.getSecret(secretName)
-    if(!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
+    if (!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
     const keyBase64 = secret.data['jwt.key']
-    if(!keyBase64) throw new Error(`no value found to sign token ${secretName} -> ${secretField}`)
+    if (!keyBase64) throw new Error(`no value found to sign token ${secretName} -> jwt.key`)
 
     const privateKey = Buffer.from(keyBase64, 'base64').toString('utf8')
 
     return new Promise((resolve, reject) => {
       jwt.sign({
-        "https://daml.com/ledger-api": {
+        'https://daml.com/ledger-api': {
           ledgerId,
           applicationId,
           readAs,
@@ -243,10 +242,10 @@ const DamlRPC = ({
         },
       // eslint-disable-next-line consistent-return
       }, privateKey, {
-        algorithm: 'HS256',
+        algorithm: 'RS256',
       }, (err, result) => {
         if (err) return reject(err)
-        resolve(result)
+        return resolve(result)
       })
     })
   }
