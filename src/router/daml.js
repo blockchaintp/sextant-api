@@ -74,23 +74,22 @@ const DamlRoutes = (controllers) => {
       .json(data)
   }
 
-  const removeParties = async (req, res, next) => {
-    const data = await controllers.daml.removeParties({
-      id: req.params.id,
-      publicKey: req.body.publicKey,
-      partyNames: req.body.partyNames,
-    })
-    res
-      .status(200)
-      .json(data)
-  }
-
   const generatePartyToken = async (req, res, next) => {
     const data = await controllers.daml.generatePartyToken({
       id: req.params.id,
       applicationId: req.body.applicationId,
       readAs: req.body.readAs,
       actAs: req.body.actAs,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
+  const generateAdminToken = async (req, res, next) => {
+    const data = await controllers.daml.generateAdminToken({
+      id: req.params.id,
+      applicationId: req.body.applicationId,
     })
     res
       .status(200)
@@ -167,8 +166,8 @@ const DamlRoutes = (controllers) => {
     rotateParticipantKey,
 
     addParty,
-    removeParties,
     generatePartyToken,
+    generateAdminToken,
 
     getArchives,
     uploadArchive,

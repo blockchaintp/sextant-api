@@ -1,10 +1,6 @@
-const ledger = require('@digitalasset/daml-ledger')
-const Promise = require('bluebird')
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
-
-const damlRPCHost = 'localhost'
-const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
+const DamlRPC = require('./damlRPC')
 
 const KeyManager = ({
   store,
@@ -12,6 +8,10 @@ const KeyManager = ({
   if (!store) {
     throw new Error('Daml rpc requires a store')
   }
+
+  const damlRPC = DamlRPC({
+    store,
+  })
 
   /*
 
@@ -34,24 +34,10 @@ const KeyManager = ({
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
 
-    const participantDetails = await Promise.map(pods, async (pod) => {
-      const result = await proxy.request({
-        pod: pod.metadata.name,
-        port: 39000,
-        handler: async ({
-          port,
-        }) => {
-          const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
-          const participantId = await client.partyManagementClient.getParticipantId();
-          return {
-            validator: pod.metadata.name,
-            participantId: participantId.participantId,
-          }
-        },
-      })
-      return result
+    const participantDetails = await damlRPC.getParticipantDetails({
+      id,
     })
-
+    
     const results = participantDetails.map((item) => {
       const result = [{
         publicKey: database.getKey(),

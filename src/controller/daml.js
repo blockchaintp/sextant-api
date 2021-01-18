@@ -1,12 +1,7 @@
-const ledger = require('@digitalasset/daml-ledger')
-const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const KeyPair = require('../utils/sextantKeyPair')
 const KeyManager = require('../api/keyManager')
 const DamlRPC = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
-
-const damlRPCHost = 'localhost'
-const grpcOptions = { 'grpc.max_receive_message_length': -1, 'grpc.max_send_message_length': -1 }
 
 const DamlController = ({ store }) => {
   const keyManager = KeyManager({
@@ -52,28 +47,8 @@ const DamlController = ({ store }) => {
     if (!id) throw new Error('id must be given to controller.deployment.registerParticipant')
     if (!publicKey) throw new Error('publicKey must be given to controller.deployment.registerParticipant')
 
-    // Connection to DAML sawtooth rpc via GRPC.
-    const proxy = await DeploymentPodProxy({
-      store,
-      id,
-      label: 'daml=<name>-daml-rpc',
-    })
-
-    const pods = await proxy.getPods()
-    const participantId = await proxy.request({
-      pod: pods[0].metadata.name,
-      port: 39000,
-      handler: async ({
-        port, // the local host port given to you
-      }) => {
-        const client = await ledger.DamlLedgerClient.connect({ host: damlRPCHost, port, grpcOptions })
-        const data = await client.partyManagementClient.getParticipantId();
-        return data.participantId;
-      },
-    })
-
     return damlRPC.registerParticipant({
-      participantId,
+      id,
       publicKey,
     })
   }
@@ -99,34 +74,14 @@ const DamlController = ({ store }) => {
 
   const addParty = async ({
     id,
-    publicKey,
     partyName,
   }) => {
     if (!id) throw new Error('id must be given to controller.deployment.addParty')
-    if (!publicKey) throw new Error('publicKey must be given to controller.deployment.addParty')
     if (!partyName) throw new Error('partyName must be given to controller.deployment.addParty')
 
     await damlRPC.addParty({
       id,
-      publicKey,
       partyName,
-    })
-
-    return true
-  }
-
-  const removeParties = async ({
-    id,
-    publicKey,
-    partyNames,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.removeParties')
-    if (!publicKey) throw new Error('publicKey must be given to controller.deployment.removeParties')
-    if (!partyNames) throw new Error('partyNames must be given to controller.deployment.removeParties')
-
-    await damlRPC.removeParties({
-      publicKey,
-      partyNames,
     })
 
     return true
@@ -154,6 +109,24 @@ const DamlController = ({ store }) => {
       token,
     }
   }
+
+  const generateAdminToken = async ({
+    id,
+    applicationId,
+  }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.generatePartyToken')
+    if (!applicationId) throw new Error('applicationId must be given to controller.deployment.generatePartyToken')
+
+    const token = await damlRPC.generateAdminToken({
+      id,
+      applicationId,
+    })
+
+    return {
+      token,
+    }
+  }
+
 
   const getArchives = async ({
     id,
@@ -194,8 +167,8 @@ const DamlController = ({ store }) => {
     rotateParticipantKey,
 
     addParty,
-    removeParties,
     generatePartyToken,
+    generateAdminToken,
 
     getArchives,
     uploadArchive,

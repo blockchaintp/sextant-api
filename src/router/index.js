@@ -754,22 +754,6 @@ const Routes = ({
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/removeParties:
-   *    description:
-   *    parameters:
-   *      - $ref: '#/parameters/clusterParam'
-   *      - $ref: '#/parameters/deploymentParam'
-   *    post:
-   *      security:
-   *        - bearerAuth: []
-   *      responses:
-   *        default:
-   *          description:
-   */
-  app.post(basePath('/clusters/:cluster/deployments/:id/removeParties'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.removeParties))
-
-  /**
-   * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/generatePartyToken:
    *    description:
    *    parameters:
@@ -783,6 +767,22 @@ const Routes = ({
    *          description:
    */
   app.post(basePath('/clusters/:cluster/deployments/:id/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generatePartyToken))
+
+  /**
+   * @swagger
+   *  /clusters/{cluster}/deployments/{deployment}/generateAdminToken:
+   *    description:
+   *    parameters:
+   *      - $ref: '#/parameters/clusterParam'
+   *      - $ref: '#/parameters/deploymentParam'
+   *    post:
+   *      security:
+   *        - bearerAuth: []
+   *      responses:
+   *        default:
+   *          description:
+   */
+  app.post(basePath('/clusters/:cluster/deployments/:id/generateAdminToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generateAdminToken))
 
   /**
    * @swagger
