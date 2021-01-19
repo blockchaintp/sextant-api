@@ -1,11 +1,12 @@
+/* eslint-disable max-len */
 const asyncHandler = require('express-async-handler')
 const bodyParser = require('body-parser')
 const pino = require('pino')({
   name: 'app',
 })
-const rbac = require('../rbac')
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const rbac = require('../rbac')
 
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
@@ -92,7 +93,7 @@ const Routes = ({
         version: '2.1.0',
         description: 'Sextant API',
       },
-      basePath: '/api/v1'
+      basePath: '/api/v1',
     },
     // List of files to be processes. You can also set globs './routes/*.js'
     apis: ['/app/api/src/router/index.js', '/app/api/src/router/definitions.yaml'],
@@ -110,9 +111,9 @@ const Routes = ({
   /**
    * @swagger
    *  /config/values:
-   *    description:
+   *    description: Get the ui configuration data.
    *    get:
-   *      description: return the ui configuration data
+   *      description: Get the ui configuration data.
    *      security:
    *        - bearerAuth: []
    *      parameters: []
@@ -124,20 +125,25 @@ const Routes = ({
 
   /**
    * @swagger
-   *  /administrative/startTime:
-   *    description:
+   *  /administration/startTime:
+   *    description: Get the application start-up time.
    *    get:
+   *      description: Get the application start-up time.
    *      responses:
    *        default:
-   *          description:
+   *          description: the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
+   *          schema:
+   *            type: integer
+   *            example: 1234567890
    */
   app.get(basePath('/administration/startTime'), rbacMiddleware(store, 'administration', 'startTime'), asyncHandler(administration.startTime))
 
   /**
    * @swagger
    *  /administration/restart:
-   *    description:
+   *    description: Exit current process and restart application.
    *    post:
+   *      description: Exit current process and restart application.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -149,53 +155,78 @@ const Routes = ({
   /**
    * @swagger
    *  /user/status:
-   *    description:
+   *    description: Get information about the current user.
    *    get:
+   *      description: Get information about the current user.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
-   *          description:
+   *          description: a complete user definition
+   *          schema:
+   *            $ref: '#/responses/basicUser'
    */
   app.get(basePath('/user/status'), asyncHandler(user.status))
 
   /**
    * @swagger
    *  /user/hasInitialUser:
-   *    description:
+   *    description: Get the list of all users and check the length of it.
    *    get:
+   *      description: Get the list of users and check the length of it.
    *      responses:
    *        default:
-   *          description:
+   *          description: returns true if the length of the user list is greater than 1
+   *          schema:
+   *            type: boolean
    */
   app.get(basePath('/user/hasInitialUser'), asyncHandler(user.hasInitialUser))
+  /**
+  * @swagger
+  *  /user/login:
+  *    description: Login a currently logged out user.
+  *    parameters:
+  *      - $ref: '#/parameters/loginParam'
+  *    post:
+  *      description: Login a currently logged out user.
+  *      responses:
+  *        200:
+  *          description: ok
+  */
   app.post(basePath('/user/login'), asyncHandler(user.login))
 
   /**
    * @swagger
    *  /user/logout:
-   *    description: logs out the currently logged out user
+   *    description: Logout the current user.
    *    get:
+   *      description: Logout the current user.
    *      responses:
-   *        default:
-   *          description:
+   *        200:
+  *          description: ok
    */
   app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout))
 
   /**
    * @swagger
    *  /user:
-   *    description:
+   *    description: Get or create users.
    *    get:
+   *      description: Get the list of all users.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    post:
+   *      description: Create and save a new user.
+   *      parameters:
+   *        - $ref: '#/parameters/userBodyParam'
    *      responses:
    *        default:
-   *          description:
+   *          description: a complete user definition
+   *          schema:
+   *            $ref: '#/responses/userRes'
    */
   app.get(basePath('/user'), rbacMiddleware(store, 'user', 'list'), asyncHandler(user.list))
   app.post(basePath('/user'), rbacMiddleware(store, 'user', 'create'), asyncHandler(user.create))
@@ -203,35 +234,49 @@ const Routes = ({
   /**
    * @swagger
    *  /user/search:
-   *    description:
+   *    description: Get a list users with their id and permission.
+   *    parameters:
+   *      - $ref: '#/parameters/searchParam'
    *    get:
+   *      description: Get a list of all users with their id and permission.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
+   *          schema:
+   *            type: array
+   *            items:
+   *              $ref: '#/responses/filteredUserRes'
    */
   app.get(basePath('/user/search'), requireUser, asyncHandler(user.search))
 
   /**
    * @swagger
    *  /user/{user}:
-   *    description:
+   *    description: Get, update, or delete a specific user
    *    parameters:
    *      - $ref: '#/parameters/userParam'
    *    get:
+   *      description: Get information for a specific user.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    put:
+   *      description: Update information for a specific user.
    *      security:
    *        - bearerAuth: []
+   *      parameters:
+   *        - $ref: '#/parameters/userBodyParam'
    *      responses:
    *        default:
-   *          description:
+   *          description: a user definition
+   *          schema:
+   *            $ref: '#/responses/userRes'
    *    delete:
+   *      description: Delete information for a specific user.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -245,16 +290,18 @@ const Routes = ({
   /**
    * @swagger
    *  /user/{id}/token:
-   *    description:
+   *    description: Get and update bearer token for a specific user.
    *    parameters:
    *      - $ref: '#/parameters/userParam'
    *    get:
+   *      description: Get the token for a specific user.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    put:
+   *      description: Update the bearer token for a specific user.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -267,14 +314,20 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters:
-   *    description:
+   *    description: Get and create clsuters.
+   *    parameters:
+   *      - $ref: '#/parameters/userParam'
    *    get:
+   *      description: Get a list of all active and inactive clusters.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    post:
+   *      description: Create and activate a cluster.
+   *      parameters:
+   *        - $ref: '#/parameters/clusterBodyParam'
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -287,22 +340,25 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}:
-   *    description:
+   *    description: Get, update, deactivate, or delete a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *    get:
+   *      description: Get a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    put:
+   *      description: Update a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    delete:
+   *      description: Deactivate a specific cluster or delete the cluster definition from the database.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -316,16 +372,18 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/roles:
-   *    description:
+   *    description: Get and create user roles for a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *    get:
+   *      description: Get all user roles for a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    post:
+   *      description: Create a new user role for a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -338,11 +396,12 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/roles/{user}:
-   *    description:
+   *    description: Delete a role for a specific user on a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/userParam'
    *    delete:
+   *      description: Delete a role for a specific user on a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -354,10 +413,11 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/tasks:
-   *    description:
+   *    description: Get a list of all tasks for a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *    get:
+   *      description: Get a list of all tasks for a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -369,10 +429,11 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/resources:
-   *    description:
+   *    description: Get a list of nodes on a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *    get:
+   *      description: Get a list of nodes on a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -384,10 +445,11 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/summary:
-   *    description:
+   *    description: Get the summary information for a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *    get:
+   *      description: Get the summary information for a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -399,16 +461,30 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments:
-   *    description:
+   *    description: Get, create, and deploy deployments for a specific cluster.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
+   *      - $ref: '#/parameters/userParam'
    *    get:
+   *      description: Get a list of all deployed and undeployed deployments for a specific cluster.
    *      security:
    *        - bearerAuth: []
+   *      parameters:
+   *      - $ref: '#/parameters/showDeletedParam'
+   *      - $ref: '#/parameters/withTasksParam'
    *      responses:
    *        default:
    *          description:
    *    post:
+   *      description: Create and deploy a new deployment on a specific cluster.
+   *      parameters:
+   *        - name: deployment body
+   *          in: body
+   *          description: deployment definition
+   *          content:
+   *            deployment/sawtooth:
+   *              schema:
+   *                $ref: '#/parameters/deployment'
    *      responses:
    *        default:
    *          description:
@@ -419,23 +495,26 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}:
-   *    description:
+   *    description: Get, update, redeploy, undeploy, and delete a specifc deployment.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *    get:
+   *      description: Get a specific deployment on a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    put:
+   *      description: Update a specific deployment on a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    delete:
+   *      description: Delete or un-deploy a specific deployment on a specific cluster.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -449,17 +528,19 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/roles:
-   *    description:
+   *    description: Get and create roles for a specific deployment.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *    get:
+   *      description: Get all the user roles for a specific deployment.
    *      security:
    *        - bearerAuth: []
    *      responses:
    *        default:
    *          description:
    *    post:
+   *      description: Create a new role for a specific user on a specific deployment.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -472,12 +553,13 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/roles/{user}:
-   *    description:
+   *    description: Delete a role for a specific user on a specific deployment.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *      - $ref: '#/parameters/userParam'
    *    delete:
+   *      description: Delete a role for a specific user on a specific deployment.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -489,11 +571,12 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/tasks:
-   *    description:
+   *    description: Get a list of all tasks for a specific deployment.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *    get:
+   *      description: Get a list of all tasks for a specific deployment.
    *      responses:
    *        default:
    *          description:
@@ -503,11 +586,12 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/resources:
-   *    description:
+   *    description: Get the kubernetes resources for a specific deployment.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *    get:
+   *      description: Get the kubernetes resources for a specific deployment.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -519,11 +603,12 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/summary:
-   *    description:
+   *    description: Get the summary information for a specific deployment.
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *    get:
+   *      description: Get the summary information for a specific deployment.
    *      security:
    *        - bearerAuth: []
    *      responses:
@@ -535,7 +620,7 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/keyManagerKeys:
-   *    description:
+   *    description: Get the list of keys from the key manager
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'

@@ -5,6 +5,19 @@ securityDefinitions:
     in: header
     bearerFormat: JWT
 parameters:
+  loginParam:
+    name: login
+    in: body
+    description: login information
+    schema:
+      type: object
+      properties:
+        username:
+          type: string
+          example: 'mikaela'
+        password:
+          type: string
+          example: 'password'
   clusterParam:
     name: cluster
     in: path
@@ -40,3 +53,140 @@ parameters:
     description: id of the user
     schema:
       type: string
+  searchParam:
+    name: search
+    in: query
+    type: string
+    description: search query
+  showDeletedParam:
+    name: showDeleted
+    in: query
+    type: string
+    description: y or n
+  withTasksParam:
+    name: withTasks
+    in: query
+    type: string
+    description: y or n
+  userBodyParam:
+    name: user body
+    in: body
+    description: user information
+    schema:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        permission:
+          type: string
+  clusterBodyParam:
+    name: cluster body
+    in: body
+    description: cluster information
+    schema:
+      type: object
+      properties:
+        name:
+          type: string
+        provision_type:
+          type: string
+        desired_state:
+          type: object
+          properties:
+            apiServer:
+              type: string
+            token:
+              type: string
+            ca:
+              type: string
+  deployment:
+    type: object
+    properties:
+      name:
+        type: string
+      deployment_type:
+        type: string
+      deployment_version:
+        type: string
+      desired_state:
+        type: object
+        properties:
+  cluster:
+    type: object
+    properties:
+      name:
+        type: string
+      provision_type:
+        type: string
+      desired_state:
+        type: object
+        properties:
+          apiServer:
+            type: string
+          token:
+            type: string
+          ca:
+            type: string
+responses:
+  userRes:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      created_at:
+        type: string
+        example: '2020-11-18T18:40:00.856Z'
+      permission:
+        type: string
+        example: 'superuser'
+      username:
+        type: string
+        example: 'mikaela'
+      meta:
+        schema:
+          type: object
+          description: additional info
+          example: {}
+          properties:
+  basicUser:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      created_at:
+        type: string
+        example: '2020-11-18T18:40:00.856Z'
+      permission:
+        type: string
+        example: 'superuser'
+      username:
+        type: string
+        example: 'mikaela'
+      meta:
+        schema:
+          type: object
+          description: additional info
+          example: {}
+          properties:
+      roles:
+        schema:
+          type: array
+          exmaple: []
+          description: user roles
+          items:
+  filteredUserRes:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1
+      permission:
+        type: string
+        example: 'superuser'
+      username:
+        type: string
+        example: 'mikaela'
