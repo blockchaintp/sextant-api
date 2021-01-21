@@ -15,6 +15,9 @@ const deleteFile = Promise.promisify(fs.unlink)
 
 // we are relying on the pod proxy
 const DEFAULT_HOSTNAME = 'localhost'
+// 200MB in bytes
+// we apply this to grpcurl so we are not limited with our upload message size
+const MAX_MESSAGE_SIZE = 200000000
 
 const getOptions = (options) => {
   const useOptions = {
@@ -69,7 +72,8 @@ const Grpcurl = ({
       const dataFlag = data ? `-d @` : ''
 
       // the grpcurl command
-      const runCommand = `${dataSource} grpcurl -plaintext -H 'Authorization: $GRPC_TOKEN' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
+      // in the patched grpcurl -max-msg-sz applies to both request + response
+      const runCommand = `${dataSource} grpcurl -plaintext -max-msg-sz ${MAX_MESSAGE_SIZE} -H 'Authorization: $GRPC_TOKEN' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
 
       // run it
       const result = await exec(runCommand, commandOptions)
