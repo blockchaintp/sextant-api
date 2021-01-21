@@ -1,12 +1,7 @@
-/*
- * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
- *
- * License: Product
- */
-
-const Promise = require('bluebird')
-const fs = require('fs')
-
+/* eslint-disable max-len */
+const pino = require('pino')({
+  name: 'deployment.create',
+})
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')
@@ -16,18 +11,9 @@ const KeyPair = require('../../utils/sextantKeyPair')
 const { getChartInfo } = require('./utils/helmUtils')
 const { writeValues } = require('../../deployment_templates/writeValues')
 
-
-
-const readdir = Promise.promisify(fs.readdir)
-
-const pino = require('pino')({
-  name: 'deployment.create',
-})
-
 const DeploymentCreate = ({
   testMode,
 }) => function* deploymentCreateTask(params) {
-
   const {
     store,
     task,
@@ -50,7 +36,7 @@ const DeploymentCreate = ({
   }, trx)
 
   // TODO: mock the kubectl handler for tests
-  if(testMode) {
+  if (testMode) {
     yield saveAppliedState({
       id,
       store,
@@ -65,7 +51,7 @@ const DeploymentCreate = ({
     deployment_version,
     desired_state,
     custom_yaml,
-    deployment_method
+    deployment_method,
   } = deployment
 
   const namespace = getField({
@@ -90,32 +76,29 @@ const DeploymentCreate = ({
   // test we can connect to the remote cluster with the details provided
   // If the namespace exists, continue. If not, create it.
   const namespaces = yield clusterKubectl.jsonCommand('get ns')
-  const existingNamespace = namespaces.items.find(namespaceItem => namespaceItem.metadata.name == namespace)
+  const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
 
-  if(!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
+  if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
 
   // If the secret exists, continue. If not, create it.
   const secretsArray = yield clusterKubectl.jsonCommand(`get secret -n ${namespace}`)
-  const existingSecret = secretsArray.items.find(item => item.metadata.name == "sextant-public-key")
+  const existingSecret = secretsArray.items.find((item) => item.metadata.name === 'sextant-public-key')
 
-  if(!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
+  if (!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
   // if the deploymentMethod is helm, use helm to create deployment, otherwise use the deployment templates directory
   if (deployment_method === 'helm') {
-
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
 
-    const chart = chartInfo.chart 
-    const extension = chartInfo.extension
+    const { chart } = chartInfo
+    const { extension } = chartInfo
     const installationName = `${networkName}-${extension}`
-    const valuesPath = yield writeValues({ desired_state, custom_yaml})
+    const valuesPath = yield writeValues({ desired_state, custom_yaml })
 
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
     yield clusterKubectl.helmCommand(`-n ${namespace} install ${installationName} -f ${valuesPath} ${useChart}`)
-
   } else {
-
     const templateDirectory = yield renderTemplates({
       deployment_type,
       deployment_version,
@@ -129,7 +112,7 @@ const DeploymentCreate = ({
 
     const charts = yield getCharts({
       deployment_type,
-      deployment_version
+      deployment_version,
     })
 
     const makeSafeFileName = (chartFile) => {
@@ -140,8 +123,8 @@ const DeploymentCreate = ({
     // if there is a charts directory, do a helm command for each chart
     //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
     pino.info({
-      action: "charts",
-      charts
+      action: 'charts',
+      charts,
     })
 
     if (charts) {
@@ -152,17 +135,17 @@ const DeploymentCreate = ({
 
       charts.forEach(
         yield (chartFile) => {
-          let safeFileName = makeSafeFileName(chartFile)
+          const safeFileName = makeSafeFileName(chartFile)
           pino.info({
-            action: "Applying chart",
-            chartFolder,
+            action: 'Applying chart',
             chartFile,
             namespace,
             networkName,
-            safeFileName
+            safeFileName,
           })
           clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${safeFileName} ${chartsFolder}/${chartFile}`)
-        })
+        },
+      )
     }
 
     yield clusterKubectl.command(`apply -f ${templateDirectory}`)
@@ -172,18 +155,13 @@ const DeploymentCreate = ({
       deployment: id,
       templateDirectory,
     })
-
   }
-
-
 
   yield saveAppliedState({
     id,
     store,
     trx,
   })
-
-
 }
 
 module.exports = DeploymentCreate

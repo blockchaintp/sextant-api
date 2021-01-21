@@ -1,10 +1,10 @@
-const {edition} = require('../../../edition')
+const { edition } = require('../../../edition')
 
 const getChartInfo = (deployment_type, deployment_version) => {
-  const chartTable = edition.chartTable
-  
+  const { chartTable } = edition
+
   const chartInfo = chartTable[deployment_type][deployment_version]
-  
+
   return chartInfo
 }
 
