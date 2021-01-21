@@ -27,13 +27,17 @@ RUN mkdir -p /app/api/tmp && \
     rm -rf /app/api/tmp && \
     chmod +x /usr/local/bin/helm
 
-RUN mkdir -p /app/api/tmp && \
-  curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v${GRPCURL_VERSION}/grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz -o /app/api/tmp/grpcurl.tar.gz && \
-    cd /app/api/tmp && \
-    tar zxvf grpcurl.tar.gz && \
-    cp grpcurl /usr/local/bin && \
-    rm -rf /app/api/tmp && \
-    chmod +x /usr/local/bin/grpcurl
+# this is waiting for the upstream PR to be merged from 
+# https://github.com/blockchaintp/grpcurl -> https://github.com/fullstorydev/grpcurl
+# RUN mkdir -p /app/api/tmp && \
+#   curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v${GRPCURL_VERSION}/grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz -o /app/api/tmp/grpcurl.tar.gz && \
+#     cd /app/api/tmp && \
+#     tar zxvf grpcurl.tar.gz && \
+#     cp grpcurl /usr/local/bin && \
+#     rm -rf /app/api/tmp && \
+#     chmod +x /usr/local/bin/grpcurl
+RUN curl https://storage.googleapis.com/btp-artifacts/grpcurl > /usr/local/bin/grpcurl && \
+    chmod +x /usr/local/bin/grpcurl                       
 
 # install api server
 WORKDIR /app/api
