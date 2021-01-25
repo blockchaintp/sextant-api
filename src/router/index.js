@@ -619,7 +619,7 @@ const Routes = ({
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/keyManagerKeys:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/keyManagerKeys:
    *    description: Get the list of keys from the key manager
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -631,11 +631,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getKeyManagerKeys))
+  app.get(basePath('/clusters/:cluster/deployments/:id/daml/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getKeyManagerKeys))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/enrolledKeys:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/enrolledKeys:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -653,12 +653,12 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getEnrolledKeys))
-  app.post(basePath('/clusters/:cluster/deployments/:id/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addEnrolledKey))
+  app.get(basePath('/clusters/:cluster/deployments/:id/daml/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getEnrolledKeys))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addEnrolledKey))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/keyManagerKeys:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/participants:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -670,11 +670,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getParticipants))
+  app.get(basePath('/clusters/:cluster/deployments/:id/daml/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getParticipants))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/keyManagerKeys:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/archives:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -686,11 +686,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getArchives))
+  app.get(basePath('/clusters/:cluster/deployments/:id/daml/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getArchives))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/timeServiceInfo:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/timeServiceInfo:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -702,11 +702,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getTimeServiceInfo))
+  app.get(basePath('/clusters/:cluster/deployments/:id/daml/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getTimeServiceInfo))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/registerParticipant:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/registerParticipant:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -718,11 +718,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.registerParticipant))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.registerParticipant))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/rotateKeys:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/rotateKeys:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -734,11 +734,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.rotateParticipantKey))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.rotateParticipantKey))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/addParty:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/addParty:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -750,11 +750,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/addParty'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addParty))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/addParty'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addParty))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/generatePartyToken:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/generatePartyToken:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -766,11 +766,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generatePartyToken))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generatePartyToken))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/generateAdminToken:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/generateAdminToken:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -782,11 +782,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/generateAdminToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generateAdminToken))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/generateAdminToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generateAdminToken))
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/uploadArchive:
+   *  /clusters/{cluster}/deployments/{deployment}/daml/uploadArchive:
    *    description:
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
@@ -798,7 +798,7 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.uploadArchive))
+  app.post(basePath('/clusters/:cluster/deployments/:id/daml/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.uploadArchive))
 
   /**
    * @swagger
