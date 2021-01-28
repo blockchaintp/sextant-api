@@ -16,7 +16,7 @@ const runHelmToolStart = async () => {
       action: 'downloading helm charts',
     })
     console.log(edition.helmRepos.map((repo) => ` * ${repo.name}`).join('\n'))
-    const helmTool = new HelmTool(edition.helmRepos)
+    const helmTool = new HelmTool(edition)
     await helmTool.start()
   }
 }
