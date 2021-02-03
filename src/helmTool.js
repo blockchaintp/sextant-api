@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable class-methods-use-this */
@@ -13,9 +14,11 @@ const pino = require('pino')({
 })
 
 class HelmTool {
-  constructor(helmRepos) {
-    if (!helmRepos) throw new Error('no helmRepos found')
-    this.helmRepos = helmRepos
+  constructor(edition) {
+    if (!edition) throw new Error('no edition found')
+    if (!edition.helmRepos) throw new Error('no helmRepos found')
+    this.helmRepos = edition.helmRepos
+    this.chartTable = edition.chartTable
   }
 
   buildCommand(repo) {
@@ -73,21 +76,51 @@ class HelmTool {
   }
 
   async storeChartsLocally() {
-    const removeAndPull = async (repo, chart) => {
-      await fsExtra.remove(`/app/api/helmCharts/${chart}`)
-      pino.info({
-        action: `removing /app/api/helmCharts/${chart} if found`,
-      })
-      await exec(`helm pull ${repo.name}/${chart} --untar -d /app/api/helmCharts`)
-      pino.info({
-        action: `untaring the chart into /app/api/helmCharts/${chart}`,
-      })
+    const getExactChartVersion = async (chart, chartVersion) => {
+      const searchValue = await exec(`helm search repo ${chart} --version ${chartVersion} -o json`)
+
+      return JSON.parse(searchValue)[0].version
     }
 
-    for (const repo of this.helmRepos) {
-      for (const chart of repo.charts) {
+    const removeAndPull = async (deploymentType, deploymentVersion, deploymentVersionData) => {
+      const { chart, chartVersion } = deploymentVersionData
+      const exactChartVersion = await getExactChartVersion(chart, chartVersion)
+
+      try {
+        await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
+        pino.info({
+          action: `removing /app/api/helmCharts/${deploymentType} if found`,
+        })
+      } catch (e) {
+        pino.error({
+          action: 'fsExtra.remove()',
+          error: e,
+        })
+      }
+
+      try {
+        await exec(`helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`)
+        pino.info({
+          action: `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`,
+        })
+      } catch (e) {
+        pino.error({
+          action: 'helm pull command',
+          error: e,
+        })
+      }
+    }
+
+    const deploymentTypes = Object.keys(this.chartTable)
+
+    for (const deploymentType of deploymentTypes) {
+      const deploymentTypeData = this.chartTable[deploymentType]
+
+      const deploymentVersions = Object.keys(deploymentTypeData)
+      for (const deploymentVersion of deploymentVersions) {
         try {
-          await removeAndPull(repo, chart)
+          const deploymentVersionData = deploymentTypeData[deploymentVersion]
+          await removeAndPull(deploymentType, deploymentVersion, deploymentVersionData)
         } catch (err) {
           pino.error({
             action: 'remove directory then pull/untar chart',
