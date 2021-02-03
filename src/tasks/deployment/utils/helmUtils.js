@@ -6,7 +6,7 @@ const readFile = fs.readFileSync
 
 const { edition } = require('../../../edition')
 
-const HELM_CHARTS_PATH = path.resolve(__dirname, './../../helmCharts')
+const HELM_CHARTS_PATH = path.resolve(__dirname, '../../../helmCharts')
 
 const getChartInfo = (deployment_type, deployment_version) => {
   const { chartTable } = edition
@@ -21,11 +21,18 @@ const getYaml = (filepath) => {
   return yaml.safeLoad(yamlContent, { schema: yaml.FAILSAFE_SCHEMA })
 }
 
-const getChartVersion = (deploymentType, deploymentVersion) => {
-  const Chart = getYaml(`${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/Chart.yaml`)
-  const { version } = Chart
+const getChartName = (chartInfo) => {
+  const { chart } = chartInfo
+  const name = chart.split('/')[1]
+  return name
+}
 
+const getChartVersion = (deploymentType, deploymentVersion) => {
+  const chartInfo = getChartInfo(deploymentType, deploymentVersion)
+  const chartName = getChartName(chartInfo)
+  const Chart = getYaml(`${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/${chartName}/Chart.yaml`)
+  const { version } = Chart
   return version
 }
 
-module.exports = { getChartInfo, getChartVersion }
+module.exports = { getChartInfo, getChartVersion, getChartName }
