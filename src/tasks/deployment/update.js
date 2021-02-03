@@ -14,7 +14,7 @@ const { getCharts, getChartsFolder } = require('../../deployment_templates/helmR
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
-const { getChartInfo } = require('./utils/helmUtils')
+const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
 
 const DeploymentUpdate = ({
   testMode,
@@ -93,6 +93,7 @@ const DeploymentUpdate = ({
 
   if (deployment_method === 'helm') {
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
+    const chartversion = yield getChartVersion(deployment_type, deployment_version)
 
     const { chart, extension } = chartInfo
     const installationName = `${appliedNetworkName}-${extension}`
@@ -101,7 +102,7 @@ const DeploymentUpdate = ({
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
     // if the chart is installed, upgrade it. Otherwise, install it
-    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install`)
+    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
   } else {
     const templateDirectory = yield renderTemplates({
       deployment_type,

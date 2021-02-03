@@ -8,7 +8,7 @@ const { getCharts, getChartsFolder } = require('../../deployment_templates/helmR
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
-const { getChartInfo } = require('./utils/helmUtils')
+const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
 const { writeValues } = require('../../deployment_templates/writeValues')
 
 const DeploymentCreate = ({
@@ -89,7 +89,7 @@ const DeploymentCreate = ({
   // if the deploymentMethod is helm, use helm to create deployment, otherwise use the deployment templates directory
   if (deployment_method === 'helm') {
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
-
+    const chartversion = yield getChartVersion(deployment_type, deployment_version)
     const { chart } = chartInfo
     const { extension } = chartInfo
     const installationName = `${networkName}-${extension}`
@@ -97,7 +97,7 @@ const DeploymentCreate = ({
 
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
-    yield clusterKubectl.helmCommand(`-n ${namespace} install ${installationName} -f ${valuesPath} ${useChart}`)
+    yield clusterKubectl.helmCommand(`-n ${namespace} install ${installationName} -f ${valuesPath} ${useChart} --version ${chartversion}`)
   } else {
     const templateDirectory = yield renderTemplates({
       deployment_type,
