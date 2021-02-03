@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable import/no-dynamic-require */
@@ -6,7 +7,6 @@ const path = require('path')
 const yaml = require('js-yaml')
 const merge = require('deepmerge')
 
-const readdir = fs.readdirSync
 const readFile = fs.readFileSync
 
 const { edition } = require('../edition')
@@ -49,8 +49,8 @@ const structureYamlContent = (yamlContent) => {
 
   const entry = details[deploymentType]
 
-  entry.forms[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, sextant.form))
-  entry.summary[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, sextant.summary))
+  entry.forms[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, sextant.form))
+  entry.summary[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, sextant.summary))
   entry.paths[deploymentVersion] = { name: sextant.namePath, namespace: sextant.namespacePath }
   entry.button.versions.push({
     title: sextant.title || '',
@@ -69,12 +69,15 @@ const structureYamlContent = (yamlContent) => {
 // re-structures and merges the deployment details together
 const getHelmDeploymentDetails = () => {
   let details = {}
-  const charts = readdir(HELM_CHARTS_PATH)
+  const deploymentTypes = Object.keys(chartTable)
 
-  for (chart of charts) {
-    const isDirectory = fs.lstatSync(`${HELM_CHARTS_PATH}/${chart}`).isDirectory()
-    if (isDirectory) {
-      const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${chart}/sextant/details.yaml`)
+  for (const deploymentType of deploymentTypes) {
+    const deploymentTypeData = chartTable[deploymentType]
+    const deploymentVersions = Object.keys(deploymentTypeData)
+    for (const deploymentVersion of deploymentVersions) {
+      const { chart } = chartTable[deploymentType][deploymentVersion]
+      const chartName = chart.split('/')[1]
+      const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/${chartName}/sextant/details.yaml`)
       const next = structureYamlContent(yamlContent)
 
       details = merge(details, next, { arrayMerge: overwriteMerge })
