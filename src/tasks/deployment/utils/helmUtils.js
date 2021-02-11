@@ -6,7 +6,7 @@ const readFile = fs.readFileSync
 
 const { edition } = require('../../../edition')
 
-const HELM_CHARTS_PATH = path.resolve(__dirname, '../../../helmCharts')
+const HELM_CHARTS_PATH = path.resolve(__dirname, '../../../../helmCharts')
 
 const getChartInfo = (deployment_type, deployment_version) => {
   const { chartTable } = edition
