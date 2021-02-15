@@ -15,7 +15,6 @@ const runHelmToolStart = async () => {
     pino.info({
       action: 'downloading helm charts',
     })
-    console.log(edition.helmRepos.map((repo) => ` * ${repo.name}`).join('\n'))
     const helmTool = new HelmTool(edition)
     await helmTool.start()
   }

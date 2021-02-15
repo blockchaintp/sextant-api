@@ -49,8 +49,6 @@ class HelmTool {
       try {
         await runHelmAdd(repo)
       } catch (err) {
-        console.log(err);
-
         pino.error({
           action: 'add repository',
           error: err,
