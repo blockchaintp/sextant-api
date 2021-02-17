@@ -20,7 +20,7 @@ const edition = {
     besu: {
       1.4: {
         chart: 'btp-unstable/besu',
-        chartVersion: '~0.0.7',
+        chartVersion: '~0.0.8',
         order: 1,
         extension: 'besu',
       },
@@ -28,7 +28,7 @@ const edition = {
     sawtooth: {
       1.1: {
         chart: 'btp-unstable/sawtooth',
-        chartVersion: '~0.1.24',
+        chartVersion: '~0.1.27',
         order: 2,
         extension: 'sawtooth',
       },
@@ -36,7 +36,7 @@ const edition = {
     'daml-on-besu': {
       1.3: {
         chart: 'btp-unstable/daml-on-besu',
-        chartVersion: '~0.0.31',
+        chartVersion: '~0.0.32',
         order: 3,
         extension: 'daml',
       },
@@ -44,7 +44,7 @@ const edition = {
     'daml-on-sawtooth': {
       1.3: {
         chart: 'btp-unstable/daml-on-sawtooth',
-        chartVersion: '~0.1.44',
+        chartVersion: '~0.1.56',
         order: 4,
         extension: 'daml',
       },
@@ -52,7 +52,7 @@ const edition = {
     'daml-on-qldb': {
       1.3: {
         chart: 'btp-unstable/daml-on-qldb',
-        chartVersion: '~0.0.8',
+        chartVersion: '~0.0.9',
         order: 5,
         extension: 'daml',
       },
@@ -60,7 +60,7 @@ const edition = {
     'daml-on-postgres': {
       1.3: {
         chart: 'btp-unstable/daml-on-postgres',
-        chartVersion: '~0.0.1',
+        chartVersion: '~0.1.1',
         order: 6,
         extension: 'daml',
       },
@@ -68,7 +68,7 @@ const edition = {
     'tfs-on-sawtooth': {
       0.1: {
         chart: 'btp-unstable/tfs-on-sawtooth',
-        chartVersion: '~0.5.1',
+        chartVersion: '~0.5.2',
         order: 7,
         extension: 'tfs',
       },
