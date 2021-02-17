@@ -1,26 +1,24 @@
+/* eslint-disable max-len */
 /*
  * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
  *
  * License: Product
  */
 
+const pino = require('pino')({
+  name: 'deployment.update',
+})
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')
 const getField = require('../../deployment_templates/getField')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
-const { getChartInfo } = require('./utils/helmUtils')
-
-
-const pino = require('pino')({
-  name: 'deployment.update',
-})
+const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
 
 const DeploymentUpdate = ({
   testMode,
 }) => function* deploymentUpdateTask(params) {
-
   const {
     store,
     task,
@@ -43,8 +41,8 @@ const DeploymentUpdate = ({
     applied_state,
     desired_state,
     custom_yaml,
-    deployment_method
-  } = deployment  
+    deployment_method,
+  } = deployment
 
   const desiredNamespace = getField({
     deployment_type,
@@ -68,12 +66,12 @@ const DeploymentUpdate = ({
   })
 
   // check that the user is not trying to change the k8s namespace
-  if(appliedNamespace && desiredNamespace != appliedNamespace) {
-    throw new Error(`you cannot change the namespace of a deployment`)
+  if (appliedNamespace && desiredNamespace !== appliedNamespace) {
+    throw new Error('you cannot change the namespace of a deployment')
   }
 
   // TODO: mock the kubectl handler for tests
-  if(testMode) {
+  if (testMode) {
     yield saveAppliedState({
       id,
       store,
@@ -88,28 +86,24 @@ const DeploymentUpdate = ({
     store,
   })
 
-
-/*
+  /*
   If this is a sawtooth deployment, use the helm chart to update the deployment on the cluster
   otherwise, use the template directory
-*/
+  */
 
   if (deployment_method === 'helm') {
-
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
+    const chartversion = yield getChartVersion(deployment_type, deployment_version)
 
-    const chart = chartInfo.chart
-    const extension = chartInfo.extension
+    const { chart, extension } = chartInfo
     const installationName = `${appliedNetworkName}-${extension}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
 
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
     // if the chart is installed, upgrade it. Otherwise, install it
-    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install`)
-
+    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
   } else {
-
     const templateDirectory = yield renderTemplates({
       deployment_type,
       deployment_version,
@@ -117,14 +111,13 @@ const DeploymentUpdate = ({
       custom_yaml,
     })
 
-
     // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
     // for each file in ${templateDirectory}/charts/*.tgz
     // yield clusterKubectl.helmCommand(`-n ${namespace} install <someName>-<theChartfile> -f <theChartFile>.tgz `)
 
     const charts = yield getCharts({
       deployment_type,
-      deployment_version
+      deployment_version,
     })
 
     const makeSafeFileName = (chartFile) => {
@@ -142,17 +135,15 @@ const DeploymentUpdate = ({
 
       charts.forEach(
         yield (chartFile) => {
-          let safeFileName = makeSafeFileName(chartFile)
+          const safeFileName = makeSafeFileName(chartFile)
           pino.info({
-            action: "Applying chart",
-            chartFolder,
+            action: 'Applying chart',
             chartFile,
-            namespace,
-            networkName,
-            safeFileName
+            safeFileName,
           })
           clusterKubectl.helmCommand(`-n ${appliedNamespace} install ${appliedNetworkName}-${safeFileName} ${chartsFolder}/${chartFile} || true`)
-        })
+        },
+      )
     }
 
     yield clusterKubectl.command(`apply -f ${templateDirectory}`)
@@ -162,13 +153,12 @@ const DeploymentUpdate = ({
       deployment: id,
       templateDirectory,
     })
-
   }
 
   yield saveAppliedState({
     id,
     store,
-    trx
+    trx,
   })
 }
 
