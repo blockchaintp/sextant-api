@@ -23,6 +23,7 @@ const edition = {
     sawtooth: {
       1.1: {
         chart: 'btp-stable/sawtooth',
+        chartVersion: '~0.1.27',
         order: 1,
         extension: 'sawtooth',
       },
@@ -30,6 +31,7 @@ const edition = {
     openebs: {
       '2.0': {
         chart: 'btp-stable/openebs',
+        chartVersion: '~2.0.2',
         order: 4,
         extension: 'openebs',
       },
@@ -37,6 +39,7 @@ const edition = {
     'nginx-ingress': {
       1.8: {
         chart: 'btp-stable/nginx-ingress',
+        chartVersion: '~0.0.1',
         order: 3,
         extension: 'ingress',
       },
@@ -44,6 +47,7 @@ const edition = {
     besu: {
       1.4: {
         chart: 'btp-stable/besu',
+        chartVersion: '~0.0.8',
         order: 2,
         extension: 'besu',
       },

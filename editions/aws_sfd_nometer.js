@@ -23,6 +23,7 @@ const edition = {
     'daml-on-besu': {
       1.3: {
         chart: 'btp-stable/daml-on-besu',
+        chartVersion: '~0.0.32',
         order: 1,
         extension: 'daml',
       },
@@ -30,6 +31,7 @@ const edition = {
     'daml-on-postgres': {
       1.3: {
         chart: 'btp-stable/daml-on-postgres',
+        chartVersion: '~0.1.1',
         order: 4,
         extension: 'daml',
       },
@@ -37,6 +39,7 @@ const edition = {
     'daml-on-sawtooth': {
       1.3: {
         chart: 'btp-stable/daml-on-sawtooth',
+        chartVersion: '~0.1.56',
         order: 2,
         extension: 'daml',
       },
@@ -44,6 +47,7 @@ const edition = {
     'daml-on-qldb': {
       1.3: {
         chart: 'btp-stable/daml-on-qldb',
+        chartVersion: '~0.0.9',
         order: 3,
         extension: 'daml',
       },
@@ -51,6 +55,7 @@ const edition = {
     openebs: {
       '2.0': {
         chart: 'btp-stable/openebs',
+        chartVersion: '~2.0.2',
         order: 7,
         extension: 'openebs',
       },
@@ -58,6 +63,7 @@ const edition = {
     'nginx-ingress': {
       1.8: {
         chart: 'btp-stable/nginx-ingress',
+        chartVersion: '~0.0.1',
         order: 6,
         extension: 'ingress',
       },
@@ -65,6 +71,7 @@ const edition = {
     'postgresql-ha': {
       11.9: {
         chart: 'btp-stable/postgresql-ha',
+        chartVersion: '~0.0.1',
         order: 5,
         extension: 'pgsql',
       },
