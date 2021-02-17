@@ -9,15 +9,6 @@
 const edition = {
   deployment: {
     classic: [],
-    helm: [
-      'daml-on-besu',
-      'daml-on-postgres',
-      'daml-on-sawtooth',
-      'daml-on-qldb',
-      'nginx-ingress',
-      'openebs',
-      'postgresql-ha',
-    ],
   },
   metering: {
     type: 'dev',
@@ -26,15 +17,6 @@ const edition = {
     {
       name: 'btp-stable',
       url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
-      charts: [
-        'daml-on-besu',
-        'daml-on-postgres',
-        'daml-on-sawtooth',
-        'daml-on-qldb',
-        'nginx-ingress',
-        'openebs',
-        'postgresql-ha',
-      ],
     },
   ],
   chartTable: {

@@ -9,12 +9,6 @@
 const edition = {
   deployment: {
     classic: [],
-    helm: [
-      'besu',
-      'sawtooth',
-      'nginx-ingress',
-      'openebs',
-    ],
   },
   metering: {
     type: 'dev',
@@ -23,12 +17,6 @@ const edition = {
     {
       name: 'btp-stable',
       url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
-      charts: [
-        'besu',
-        'sawtooth',
-        'nginx-ingress',
-        'openebs',
-      ],
     },
   ],
   chartTable: {
