@@ -1,7 +1,6 @@
 const config = require('../config')
 
 const ClusterStore = (knex) => {
-
   /*
 
     list all clusters
@@ -12,20 +11,18 @@ const ClusterStore = (knex) => {
   const list = ({
     deleted,
   }, trx) => {
-
-    const orderBy = config.LIST_ORDER_BY_FIELDS.cluster
-
     const sqlQuery = (trx || knex)(config.TABLES.cluster)
       .select(`${config.TABLES.cluster}.*`)
       .count(`${config.TABLES.deployment}.id as active_deployments`)
-      .leftOuterJoin(config.TABLES.deployment, function () { 
-        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
+      .leftOuterJoin(config.TABLES.deployment, function () {
+        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`)
+          .onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
       })
       .groupBy(`${config.TABLES.cluster}.id`)
 
-    if(!deleted) {
+    if (!deleted) {
       sqlQuery.whereNot(
-        `${config.TABLES.cluster}.status`, config.CLUSTER_STATUS.deleted
+        `${config.TABLES.cluster}.status`, config.CLUSTER_STATUS.deleted,
       )
     }
 
@@ -44,13 +41,14 @@ const ClusterStore = (knex) => {
   const get = ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.cluster.get`)
+    if (!id) throw new Error('id must be given to store.cluster.get')
     return (trx || knex)(config.TABLES.cluster).where(
-      `${config.TABLES.cluster}.id`, id
+      `${config.TABLES.cluster}.id`, id,
     ).select(`${config.TABLES.cluster}.*`)
       .count(`${config.TABLES.deployment}.id as active_deployments`)
       .leftOuterJoin(config.TABLES.deployment, function () {
-        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
+        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`)
+          .onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
       })
       .groupBy(`${config.TABLES.cluster}.id`)
       .first()
@@ -75,12 +73,11 @@ const ClusterStore = (knex) => {
       provision_type,
       capabilities,
       desired_state,
-    }
+    },
   }, trx) => {
-
-    if(!name) throw new Error(`data.name param must be given to store.cluster.create`)
-    if(!provision_type) throw new Error(`data.provision_type param must be given to store.cluster.create`)
-    if(!desired_state) throw new Error(`data.desired_state param must be given to store.cluster.create`)
+    if (!name) throw new Error('data.name param must be given to store.cluster.create')
+    if (!provision_type) throw new Error('data.provision_type param must be given to store.cluster.create')
+    if (!desired_state) throw new Error('data.desired_state param must be given to store.cluster.create')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
       .insert({
@@ -114,9 +111,8 @@ const ClusterStore = (knex) => {
     id,
     data,
   }, trx) => {
-
-    if(!id) throw new Error(`id must be given to store.cluster.update`)
-    if(!data) throw new Error(`data param must be given to store.cluster.update`)
+    if (!id) throw new Error('id must be given to store.cluster.update')
+    if (!data) throw new Error('data param must be given to store.cluster.update')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
@@ -141,7 +137,7 @@ const ClusterStore = (knex) => {
   const del = async ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.cluster.delete`)
+    if (!id) throw new Error('id must be given to store.cluster.delete')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
@@ -157,7 +153,7 @@ const ClusterStore = (knex) => {
   const deletePermenantly = async ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.cluster.deletePermenantly`)
+    if (!id) throw new Error('id must be given to store.cluster.deletePermenantly')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
