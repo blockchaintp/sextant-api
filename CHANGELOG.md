@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+* fix(helm-code): remove console logs [view commit](https://github.com/catenasys/sextant-api/commit/9a769cd1b01a3b5d3c09677e1ad46d2860601ab1)
+* fix(helm-utils): correct the helm charts path variable [view commit](https://github.com/catenasys/sextant-api/commit/cda75f4197d1c4bba0548555f6aee4d43ea9fbaf)
+* fix(helm-utils): add chart name to path for Chart yaml [view commit](https://github.com/catenasys/sextant-api/commit/3360bc5164913bc56bb2465ad8df546515fb9467)
+* feat(tasks): add chart version to create and update deployment tasks [view commit](https://github.com/catenasys/sextant-api/commit/e49df2f6ccc2fceaf4c9e5de88ee3907856e863d)
+* feat(helm-util): add utility function for determining version of untarred chart [view commit](https://github.com/catenasys/sextant-api/commit/8b8866d401363ccc05c22bc0f9cc84145dd9855b)
+* style(template-loader): refactor template loader to match new local endpoints [view commit](https://github.com/catenasys/sextant-api/commit/05e36c2364c5b8b1908587d84bf244404b064080)
+* feat(helmtool): integrate chart version into helmtool methods [view commit](https://github.com/catenasys/sextant-api/commit/e97d6a2ea7a9b4737f576e186fe5d491c43b2e22)
+* feat(dev-edition): edit edition file to be compatible with chart version feature [view commit](https://github.com/catenasys/sextant-api/commit/b1fa55a776cdb37ddfc8da16f55e410474d29c95)
+* feat(helm-tool): use edition as the argument for the class [view commit](https://github.com/catenasys/sextant-api/commit/81b9432c56c2f9cd18ff9bc93c533751bfc6f8ac)
+* style(helmtool): linting [view commit](https://github.com/catenasys/sextant-api/commit/bf9bc70bcd36decd10673ed3864949025f4cdf2d)
 
 ## v2.2.0
 
