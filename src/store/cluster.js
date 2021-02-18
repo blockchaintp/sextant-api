@@ -26,8 +26,6 @@ const ClusterStore = (knex) => {
       )
     }
 
-    sqlQuery.orderBy('status', 'desc').orderBy('name', 'asc')
-
     return sqlQuery
   }
 
