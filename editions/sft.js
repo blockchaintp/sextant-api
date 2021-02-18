@@ -3,10 +3,6 @@
 const edition = {
   deployment: {
     classic: [],
-    helm: [
-      'sawtooth',
-      'tfs-on-sawtooth',
-    ],
   },
   metering: {
     type: 'dev',
@@ -15,18 +11,24 @@ const edition = {
     {
       name: 'btp-unstable',
       url: 'https://btp-charts-unstable.s3.amazonaws.com/charts',
-      charts: [
-        'sawtooth',
-        'tfs-on-sawtooth',
-      ],
     },
   ],
   chartTable: {
     sawtooth: {
-      1.1: { chart: 'btp-unstable/sawtooth', order: 2, extension: 'sawtooth' },
+      1.1: {
+        chart: 'btp-unstable/sawtooth',
+        chartVersion: '~0.1.27',
+        order: 2,
+        extension: 'sawtooth',
+      },
     },
     'tfs-on-sawtooth': {
-      0.1: { chart: 'btp-unstable/tfs-on-sawtooth', order: 1, extension: 'tfs' },
+      0.1: {
+        chart: 'btp-unstable/tfs-on-sawtooth',
+        chartVersion: '~0.5.2',
+        order: 1,
+        extension: 'tfs',
+      },
     },
   },
 };

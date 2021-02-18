@@ -3,24 +3,6 @@
 const edition = {
   deployment: {
     classic: [],
-    helm: [
-      'besu',
-      'daml-on-besu',
-      'daml-on-postgres',
-      'daml-on-sawtooth',
-      'daml-on-qldb',
-      'elasticsearch',
-      'fluentd',
-      'grafana',
-      'influxdb',
-      'kibana',
-      'nginx-ingress',
-      'openebs',
-      'postgresql-ha',
-      'sawtooth',
-      'sextant',
-      'vault',
-    ],
   },
   metering: {
     type: 'dev',
@@ -29,74 +11,136 @@ const edition = {
     {
       name: 'btp-stable',
       url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
-      charts: [
-        'besu',
-        'daml-on-besu',
-        'daml-on-postgres',
-        'daml-on-sawtooth',
-        'daml-on-qldb',
-        'elasticsearch',
-        'fluentd',
-        'grafana',
-        'influxdb',
-        'kibana',
-        'nginx-ingress',
-        'openebs',
-        'postgresql-ha',
-        'sawtooth',
-        'sextant',
-        'vault',
-      ],
     },
   ],
   chartTable: {
     besu: {
-      1.4: { chart: 'btp-stable/besu', order: 1, extension: 'besu' },
+      1.4: {
+        chart: 'btp-stable/besu',
+        chartVersion: '~0.0.8',
+        order: 1,
+        extension: 'besu',
+      },
     },
     sawtooth: {
-      1.1: { chart: 'btp-stable/sawtooth', order: 2, extension: 'sawtooth' },
+      1.1: {
+        chart: 'btp-stable/sawtooth',
+        chartVersion: '~0.1.27',
+        order: 2,
+        extension: 'sawtooth',
+      },
     },
     'daml-on-besu': {
-      1.3: { chart: 'btp-stable/daml-on-besu', order: 3, extension: 'daml' },
+      1.3: {
+        chart: 'btp-stable/daml-on-besu',
+        chartVersion: '~0.0.32',
+        order: 3,
+        extension: 'daml',
+      },
     },
     'daml-on-sawtooth': {
-      1.3: { chart: 'btp-stable/daml-on-sawtooth', order: 4, extension: 'daml' },
+      1.3: {
+        chart: 'btp-stable/daml-on-sawtooth',
+        chartVersion: '~0.1.56',
+        order: 4,
+        extension: 'daml',
+      },
     },
     'daml-on-qldb': {
-      1.3: { chart: 'btp-stable/daml-on-qldb', order: 5, extension: 'daml' },
+      1.3: {
+        chart: 'btp-stable/daml-on-qldb',
+        chartVersion: '~0.0.9',
+        order: 5,
+        extension: 'daml',
+      },
     },
     'daml-on-postgres': {
-      1.3: { chart: 'btp-stable/daml-on-postgres', order: 6, extension: 'daml' },
+      1.3: {
+        chart: 'btp-stable/daml-on-postgres',
+        chartVersion: '~0.1.1',
+        order: 6,
+        extension: 'daml',
+      },
     },
     sextant: {
-      2.1: { chart: 'btp-stable/sextant', order: 7, extension: 'sextant' },
+      2.1: {
+        chart: 'btp-stable/sextant',
+        chartVersion: '~2.1.8',
+        order: 7,
+        extension: 'sextant',
+      },
     },
     elasticsearch: {
-      7.9: { chart: 'btp-stable/elasticsearch', order: 8, extension: 'elasticsearch' },
+      7.9: {
+        chart: 'btp-stable/elasticsearch',
+        chartVersion: '~12.6.3',
+        order: 8,
+        extension: 'elasticsearch',
+      },
     },
     fluentd: {
-      1.11: { chart: 'btp-stable/fluentd', order: 9, extension: 'fluentd' },
+      1.11: {
+        chart: 'btp-stable/fluentd',
+        chartVersion: '~1.3.1',
+        order: 9,
+        extension: 'fluentd',
+      },
     },
     kibana: {
-      7.8: { chart: 'btp-stable/kibana', order: 10, extension: 'kibana' },
+      7.8: {
+        chart: 'btp-stable/kibana',
+        chartVersion: '~5.3.9',
+        order: 10,
+        extension: 'kibana',
+      },
     },
     influxdb: {
-      1.8: { chart: 'btp-stable/influxdb', order: 11, extension: 'influxdb' },
+      1.8: {
+        chart: 'btp-stable/influxdb',
+        chartVersion: '~0.0.2',
+        order: 11,
+        extension: 'influxdb',
+      },
     },
     grafana: {
-      7.1: { chart: 'btp-stable/grafana', order: 12, extension: 'grafana' },
+      7.1: {
+        chart: 'btp-stable/grafana',
+        chartVersion: '~0.0.2',
+        order: 12,
+        extension: 'grafana',
+      },
     },
     'postgresql-ha': {
-      11.9: { chart: 'btp-stable/postgresql-ha', order: 13, extension: 'pgsql' },
+      11.9: {
+        chart: 'btp-stable/postgresql-ha',
+        chartVersion: '~0.0.1',
+        order: 13,
+        extension: 'pgsql',
+      },
     },
     'nginx-ingress': {
-      1.8: { chart: 'btp-stable/nginx-ingress', order: 14, extension: 'ingress' },
+      1.8: {
+        chart: 'btp-stable/nginx-ingress',
+        chartVersion: '~0.0.1',
+        order: 14,
+        extension: 'ingress',
+      },
     },
     openebs: {
-      '2.0': { chart: 'btp-stable/openebs', order: 15, extension: 'openebs' },
+      '2.0': {
+        chart: 'btp-stable/openebs',
+        chartVersion: '~2.0.2',
+        order: 15,
+        extension: 'openebs',
+      },
     },
     vault: {
-      1.5: { chart: 'btp-stable/vault', order: 16, extension: 'vault' },
+      1.5: {
+        chart: 'btp-stable/vault',
+        chartVersion: '~0.0.2',
+        order: 16,
+        extension: 'vault',
+      },
     },
 
   },
