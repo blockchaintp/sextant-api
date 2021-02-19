@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* feat(editions): add helm chart versions to chart table [view commit](https://github.com/catenasys/sextant-api/commit/1c0b806413527c23b3b049821f2429524fe44b77)
+* refactor(dev-edition): update to most recent helm chart versions [view commit](https://github.com/catenasys/sextant-api/commit/7a5958f732607255510f388575548c056514c78f)
+* style(editions): refactor chart table [view commit](https://github.com/catenasys/sextant-api/commit/7fda59d6677373630c047e92407425c2081841a7)
+* style(editions): remove non essential chart lists from edition objects [view commit](https://github.com/catenasys/sextant-api/commit/b729af89de61b80260abf89b862594f0d7020363)
 * fix(helm-code): remove console logs [view commit](https://github.com/catenasys/sextant-api/commit/9a769cd1b01a3b5d3c09677e1ad46d2860601ab1)
 * fix(helm-utils): correct the helm charts path variable [view commit](https://github.com/catenasys/sextant-api/commit/cda75f4197d1c4bba0548555f6aee4d43ea9fbaf)
 * fix(helm-utils): add chart name to path for Chart yaml [view commit](https://github.com/catenasys/sextant-api/commit/3360bc5164913bc56bb2465ad8df546515fb9467)
