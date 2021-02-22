@@ -1,9 +1,8 @@
 const config = require('../config')
 
 const DeploymentStore = (knex) => {
-
   /*
-  
+
     list all deployments for a cluster
 
     params:
@@ -15,20 +14,22 @@ const DeploymentStore = (knex) => {
     cluster,
     deleted,
   }, trx) => {
-    if(!cluster) throw new Error(`cluster must be given to store.deployment.list`)
-    
+    const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
+
+    if (!cluster) throw new Error('cluster must be given to store.deployment.list')
+
     const sqlQuery = (trx || knex).select('*')
       .from(config.TABLES.deployment)
 
-    if(cluster != 'all') {
+    if (cluster !== 'all') {
       sqlQuery.where({
         cluster,
       })
     }
-     
-    sqlQuery.orderBy('status', 'desc').orderBy('cluster', 'asc').orderBy('name', 'asc')
 
-    if(!deleted) {
+    sqlQuery.orderBy(orderBy.field, orderBy.direction)
+
+    if (!deleted) {
       sqlQuery.andWhereNot({
         status: config.CLUSTER_STATUS.deleted,
       })
@@ -38,7 +39,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     get a single deployment
 
     params:
@@ -49,7 +50,7 @@ const DeploymentStore = (knex) => {
   const get = ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.deployment.get`)
+    if (!id) throw new Error('id must be given to store.deployment.get')
 
     return (trx || knex).select('*')
       .from(config.TABLES.deployment)
@@ -60,7 +61,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     insert a new deployment
 
     params:
@@ -70,7 +71,7 @@ const DeploymentStore = (knex) => {
         * deployment_type
         * name
         * desired_state
-    
+
     status is set to 'created' for a new deployment
 
   */
@@ -82,14 +83,14 @@ const DeploymentStore = (knex) => {
       deployment_version,
       desired_state,
       custom_yaml,
-      deployment_method
-    }
+      deployment_method,
+    },
   }, trx) => {
-    if(!cluster) throw new Error(`data.cluster param must be given to store.deployment.create`)
-    if(!name) throw new Error(`data.name param must be given to store.deployment.create`)
-    if(!deployment_type) throw new Error(`data.deployment_type param must be given to store.deployment.create`)
-    if(!deployment_version) throw new Error(`data.deployment_version param must be given to store.deployment.create`)
-    if(!desired_state) throw new Error(`data.desired_state param must be given to store.deployment.create`)
+    if (!cluster) throw new Error('data.cluster param must be given to store.deployment.create')
+    if (!name) throw new Error('data.name param must be given to store.deployment.create')
+    if (!deployment_type) throw new Error('data.deployment_type param must be given to store.deployment.create')
+    if (!deployment_version) throw new Error('data.deployment_version param must be given to store.deployment.create')
+    if (!desired_state) throw new Error('data.desired_state param must be given to store.deployment.create')
 
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .insert({
@@ -99,14 +100,14 @@ const DeploymentStore = (knex) => {
         deployment_version,
         desired_state,
         custom_yaml,
-        deployment_method
+        deployment_method,
       })
       .returning('*')
     return result
   }
 
   /*
-  
+
     update a deployment
 
     params:
@@ -118,14 +119,14 @@ const DeploymentStore = (knex) => {
         * desired_state
         * applied_state
         * maintenance_flag
-  
+
   */
   const update = async ({
     id,
     data,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.cluster.update`)
-    if(!data) throw new Error(`data param must be given to store.cluster.update`)
+    if (!id) throw new Error('id must be given to store.cluster.update')
+    if (!data) throw new Error('data param must be given to store.cluster.update')
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
         id,
@@ -136,7 +137,7 @@ const DeploymentStore = (knex) => {
   }
 
   /*
-  
+
     delete a single deployment
 
     params:
@@ -147,7 +148,7 @@ const DeploymentStore = (knex) => {
   const del = async ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.deployment.delete`)
+    if (!id) throw new Error('id must be given to store.deployment.delete')
 
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
