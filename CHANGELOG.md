@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* fix(deployment-store): return deployment list orderby to previous state [view commit](https://github.com/catenasys/sextant-api/commit/661ad4b9d2bbca0bb211cc7ec94b2c08ff23d277)
+* fix(cluster-and-deployment-store): remove orderby on sql query [view commit](https://github.com/catenasys/sextant-api/commit/92c119b6ebda5e66c38c16f893a404beb489d239)
+* style(cluster-and-deployment-store): general linting [view commit](https://github.com/catenasys/sextant-api/commit/4ef0a7752ec615b10393135dfcf7e3124f372431)
 * feat(editions): add helm chart versions to chart table [view commit](https://github.com/catenasys/sextant-api/commit/1c0b806413527c23b3b049821f2429524fe44b77)
 * refactor(dev-edition): update to most recent helm chart versions [view commit](https://github.com/catenasys/sextant-api/commit/7a5958f732607255510f388575548c056514c78f)
 * style(editions): refactor chart table [view commit](https://github.com/catenasys/sextant-api/commit/7fda59d6677373630c047e92407425c2081841a7)
