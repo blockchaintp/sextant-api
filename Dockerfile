@@ -1,12 +1,12 @@
-FROM ubuntu:bionic
+FROM ubuntu:20.04
 MAINTAINER kai@blockchaintp.com
-ARG NODEJS_MAJOR_VERSION=10
+ARG NODEJS_MAJOR_VERSION=12
 ARG KUBETPL_VERSION=0.9.0
 ARG HELM_VERSION=v3.1.2
 ARG GRPCURL_VERSION=1.8.0
 
 RUN apt-get update -y && \
-    apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python-minimal mime-support gnupg && \
+    apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python2-minimal mime-support gnupg && \
     curl --silent --location https://deb.nodesource.com/setup_${NODEJS_MAJOR_VERSION}.x | bash -  && \
     update-ca-certificates && \
     apt-get update -y && apt-get upgrade -y  && \
@@ -27,7 +27,7 @@ RUN mkdir -p /app/api/tmp && \
     rm -rf /app/api/tmp && \
     chmod +x /usr/local/bin/helm
 
-# this is waiting for the upstream PR to be merged from 
+# this is waiting for the upstream PR to be merged from
 # https://github.com/blockchaintp/grpcurl -> https://github.com/fullstorydev/grpcurl
 # RUN mkdir -p /app/api/tmp && \
 #   curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v${GRPCURL_VERSION}/grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz -o /app/api/tmp/grpcurl.tar.gz && \
@@ -37,7 +37,7 @@ RUN mkdir -p /app/api/tmp && \
 #     rm -rf /app/api/tmp && \
 #     chmod +x /usr/local/bin/grpcurl
 RUN curl https://storage.googleapis.com/btp-artifacts/grpcurl > /usr/local/bin/grpcurl && \
-    chmod +x /usr/local/bin/grpcurl                       
+    chmod +x /usr/local/bin/grpcurl
 
 # install api server
 WORKDIR /app/api
