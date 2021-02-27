@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v2.2.1
 
 * fix(deployment-store): return deployment list orderby to previous state [view commit](https://github.com/catenasys/sextant-api/commit/661ad4b9d2bbca0bb211cc7ec94b2c08ff23d277)
 * fix(cluster-and-deployment-store): remove orderby on sql query [view commit](https://github.com/catenasys/sextant-api/commit/92c119b6ebda5e66c38c16f893a404beb489d239)
