@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## Unreleased
+
+
 ## v2.2.1
 
 * fix(deployment-store): return deployment list orderby to previous state [view commit](https://github.com/catenasys/sextant-api/commit/661ad4b9d2bbca0bb211cc7ec94b2c08ff23d277)
