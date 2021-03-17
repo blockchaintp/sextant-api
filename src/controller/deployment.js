@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const Promise = require('bluebird');
 const config = require('../config');
 const userUtils = require('../utils/user');
@@ -435,7 +436,8 @@ const DeployentController = ({ store }) => {
       resource_id: id,
     }, trx);
 
-    const role = roles.find((oneRole) => oneRole.user === user);
+    // eslint-disable-next-line eqeqeq
+    const role = roles.find((oneRole) => oneRole.user == user);
     if (!role) throw new Error(`no role for user ${user} found for deployment ${id}`);
 
     return store.role.delete({
