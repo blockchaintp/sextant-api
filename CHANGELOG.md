@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* fix(deployment-controller): use double equal to compare userid instead of triple [view commit](https://github.com/catenasys/sextant-api/commit/b7749395131490bccc913b1c57556778461c7dc2)
 * fix(dockerfile): bump node version to twelve [view commit](https://github.com/catenasys/sextant-api/commit/ca7b7b492e942e0e5ca2e66916687c4d91cd7dad)
 
 ## v2.2.1
