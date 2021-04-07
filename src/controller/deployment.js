@@ -1,4 +1,7 @@
 /* eslint-disable max-len */
+const pino = require('pino')({
+  name: 'deployment controller',
+})
 const Promise = require('bluebird');
 const config = require('../config');
 const userUtils = require('../utils/user');
@@ -618,6 +621,58 @@ const DeployentController = ({ store }) => {
 
   /*
 
+  delete a pod on a given kubernetes cluster
+
+  params:
+
+   * id - the deployment id
+   * pod - the pod name
+
+*/
+  const deletePod = async ({
+    id,
+    pod,
+  }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.deletePod');
+    if (!pod) throw new Error('pod must be given to controller.deployment.deletePod')
+
+    const deployment = await store.deployment.get({
+      id,
+    });
+
+    const cluster = await store.cluster.get({
+      id: deployment.cluster,
+    });
+
+    const kubectl = await ClusterKubectl({
+      cluster,
+      store,
+    });
+
+    const {
+      deployment_type,
+      deployment_version,
+      applied_state,
+    } = deployment;
+
+    const namespace = getField({
+      deployment_type,
+      deployment_version,
+      data: applied_state,
+      field: 'namespace',
+    });
+
+    await kubectl
+      .command(`delete pod ${pod} -n ${namespace} `)
+
+    pino.info({
+      action: 'delete a pod',
+      message: `${pod} was deleted`,
+    })
+  };
+
+  /*
+
     get a summary of the deployment state
 
     params:
@@ -651,6 +706,7 @@ const DeployentController = ({ store }) => {
     delete: del,
     deletePermenantly,
     resources,
+    deletePod,
     summary,
     getRoles,
     createRole,

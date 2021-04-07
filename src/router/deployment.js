@@ -103,6 +103,16 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const deletePod = async (req, res, next) => {
+    const data = await controllers.deployment.deletePod({
+      id: req.params.id,
+      pod: req.params.pod,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const summary = async (req, res, next) => {
     const data = await controllers.deployment.summary({
       id: req.params.id,
@@ -147,6 +157,7 @@ const DeploymentRoutes = (controllers) => {
     deleteRole,
     listTasks,
     resources,
+    deletePod,
     summary,
     delete: del,
 
