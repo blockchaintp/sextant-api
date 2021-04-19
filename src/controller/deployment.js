@@ -1,4 +1,7 @@
 /* eslint-disable max-len */
+const pino = require('pino')({
+  name: 'deployment controller',
+})
 const Promise = require('bluebird');
 const config = require('../config');
 const userUtils = require('../utils/user');
@@ -658,7 +661,7 @@ const DeployentController = ({ store }) => {
       data: applied_state,
       field: 'namespace',
     });
-
+    pino.info({ action: `Delete pod ${pod} in ${namespace} using kubectl` })
     await kubectl
       .command(`delete pod ${pod} -n ${namespace} `)
   };
