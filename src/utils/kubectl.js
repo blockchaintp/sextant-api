@@ -248,7 +248,7 @@ const Kubectl = ({
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
     const runCommand = `kubectl ${setupDetails.connectionArguments.join(' ')} ${cmd}`
-    pino.debug({ action: 'running a standard kubectl command' })
+    pino.debug({ action: 'running a standard kubectl command', command: `${command}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch((err) => {
@@ -272,7 +272,7 @@ const Kubectl = ({
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
     const runCommand = `helm ${setupDetails.connectionArguments.join(' ')} ${cmd}`
-    pino.debug({ action: 'running a standard helm command' })
+    pino.debug({ action: 'running a standard helm command', command: `${command}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch((err) => {
@@ -292,7 +292,7 @@ const Kubectl = ({
   // run a kubectl command and process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
     const runCommand = `${cmd} --output json`
-    pino.debug({ action: 'running a kubectl command with json output' })
+    pino.debug({ action: 'running a kubectl command with json output', command: `${command}` })
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
     pino.info({ message: 'kubectl command --output json sucess', processedOutput: `${processedOutput}` })
