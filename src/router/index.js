@@ -602,6 +602,12 @@ const Routes = ({
 
   /**
    * @swagger
+   *  /clusters/{cluster}/deployments/{deployment}/resources:
+   */
+  app.delete(basePath('/clusters/:cluster/deployments/:id/pod/:pod'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.deletePod))
+
+  /**
+   * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/summary:
    *    description: Get the summary information for a specific deployment.
    *    parameters:

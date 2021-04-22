@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const config = require('../config')
 
 const {
@@ -5,7 +6,6 @@ const {
 } = config
 
 const DeploymentRoutes = (controllers) => {
-
   const list = async (req, res, next) => {
     const data = await controllers.deployment.list({
       user: req.user,
@@ -21,14 +21,13 @@ const DeploymentRoutes = (controllers) => {
       id: req.params.id,
       withTask: req.query.withTasks,
     })
-    if(!data) {
+    if (!data) {
       res
         .status(404)
         .json({
           error: `no deployment found with id: ${req.params.id}`,
         })
-    }
-    else {
+    } else {
       res.json(data)
     }
   }
@@ -104,6 +103,16 @@ const DeploymentRoutes = (controllers) => {
       .json(data)
   }
 
+  const deletePod = async (req, res, next) => {
+    const data = await controllers.deployment.deletePod({
+      id: req.params.id,
+      pod: req.params.pod,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const summary = async (req, res, next) => {
     const data = await controllers.deployment.summary({
       id: req.params.id,
@@ -114,26 +123,25 @@ const DeploymentRoutes = (controllers) => {
   }
 
   const del = async (req, res, next) => {
-
     const deployment = await controllers.deployment.get({
       id: req.params.id,
     })
 
     let data = null
 
-    if(deployment.status == DEPLOYMENT_STATUS.deleted) {
+    // eslint-disable-next-line eqeqeq
+    if (deployment.status == DEPLOYMENT_STATUS.deleted) {
       data = await controllers.deployment.deletePermenantly({
         id: req.params.id,
         user: req.user,
       })
-    }
-    else {
+    } else {
       data = await controllers.deployment.delete({
         id: req.params.id,
         user: req.user,
       })
     }
-    
+
     res
       .status(200)
       .json(data)
@@ -149,9 +157,10 @@ const DeploymentRoutes = (controllers) => {
     deleteRole,
     listTasks,
     resources,
+    deletePod,
     summary,
     delete: del,
-    
+
   }
 }
 
