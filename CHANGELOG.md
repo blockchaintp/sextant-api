@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* fix(kubectl): add actual kubectl command to logging [view commit](https://github.com/catenasys/sextant-api/commit/b4c39ef15427b2b17f25070b470d4c425024c205)
+* fix(deployment-controller): add logging to delete pod action [view commit](https://github.com/catenasys/sextant-api/commit/b7c1754f6ffcac79d15bcbb23965875434192e47)
+* feat(kubectl): add logging to kubectl commands [view commit](https://github.com/catenasys/sextant-api/commit/899d8964979cebd913780d2def35b3e4c3305dd0)
+* fix(deployment-controller): remove pino logging from delete pod action [view commit](https://github.com/catenasys/sextant-api/commit/ab209db244dbf075a89c60c336dd9f07eb7d07dd)
+* feat(deployment): add delete deployment pod to router and controller [view commit](https://github.com/catenasys/sextant-api/commit/72a8394a20934bb242bb60ef66625ad2457caf71)
+* style(deployment-router): linting [view commit](https://github.com/catenasys/sextant-api/commit/1e7b559b31d2f3d703097fe092db2db44a5491e0)
 * fix(deployment-controller): use double equal to compare userid instead of triple [view commit](https://github.com/catenasys/sextant-api/commit/b7749395131490bccc913b1c57556778461c7dc2)
 * fix(dockerfile): bump node version to twelve [view commit](https://github.com/catenasys/sextant-api/commit/ca7b7b492e942e0e5ca2e66916687c4d91cd7dad)
 
