@@ -68,6 +68,7 @@ const DamlRoutes = (controllers) => {
       id: req.params.id,
       publicKey: req.body.publicKey,
       partyName: req.body.partyName,
+      partyIdHint: req.body.partyIdHint,
     })
     res
       .status(201)
