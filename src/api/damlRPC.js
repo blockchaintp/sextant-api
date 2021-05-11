@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /*
  * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
  *
@@ -5,13 +6,14 @@
  */
 
 const jwt = require('jsonwebtoken')
-const database = require('./database')
 const Promise = require('bluebird')
 const fs = require('fs')
 
 const pino = require('pino')({
   name: 'damlRPC',
 })
+const database = require('./database')
+
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const SecretLoader = require('../utils/secretLoader')
 const Grpcurl = require('../utils/grpcurl')
@@ -89,11 +91,12 @@ const DamlRPC = ({
       payload: {
         admin: true,
         public: true,
-      }
+      },
     })
     return token
   }
 
+  // eslint-disable-next-line max-len
   // grpcurl -plaintext -H 'Authorization: Bearer 123' localhost:39000 com.daml.ledger.api.v1.LedgerIdentityService.GetLedgerIdentity
   const getLedgerId = async ({
     id,
@@ -201,7 +204,6 @@ const DamlRPC = ({
         handler: async ({
           port,
         }) => {
-
           const grpccurl = Grpcurl({
             token,
             port,
@@ -247,7 +249,6 @@ const DamlRPC = ({
   const getParticipantDetails = async ({
     id,
   }) => {
-
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -295,15 +296,15 @@ const DamlRPC = ({
     id,
     publicKey,
   }) => {
-    pino.info({
-      action: 'registerParticipant',
-      participantId,
-      publicKey,
-    })
     if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.registerParticipant')
 
     const participantId = await getParticipantId({
       id,
+    })
+    pino.info({
+      action: 'registerParticipant',
+      participantId,
+      publicKey,
     })
 
     database.damlParticipants.push({
@@ -384,6 +385,7 @@ const DamlRPC = ({
         return partyDetails
       },
     })
+    // eslint-disable-next-line no-unneeded-ternary
     return result ? true : false
   }
 
@@ -409,7 +411,7 @@ const DamlRPC = ({
         applicationId,
         readAs,
         actAs,
-      }
+      },
     })
     return token
   }
@@ -431,7 +433,7 @@ const DamlRPC = ({
         admin: true,
         ledgerId,
         applicationId,
-      }
+      },
     })
     return token
   }
@@ -468,7 +470,6 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-
         const token = await getAdminJWTToken({
           id,
         })
@@ -485,7 +486,7 @@ const DamlRPC = ({
           service: 'admin.PackageManagementService',
           method: 'ListKnownPackages',
         })
-        
+
         const sortedPackageIds = packageIds.sort()
 
         const data = sortedPackageIds.map((packageId) => ({
@@ -501,6 +502,7 @@ const DamlRPC = ({
   // eslint-disable-next-line no-empty-pattern
   const getTimeServiceInfo = ({} = {}) => database.damlTimeService
 
+  // eslint-disable-next-line max-len
   // grpcurl -plaintext -H 'Authorization: Bearer 123' -d '{"dar_file": "ABC"}' localhost:39000 com.daml.ledger.api.v1.admin.PackageManagementService.UploadDarFile
   const uploadArchive = async ({
     id,
@@ -539,7 +541,6 @@ const DamlRPC = ({
       handler: async ({
         port,
       }) => {
-
         const token = await getAdminJWTToken({
           id,
         })
@@ -560,15 +561,14 @@ const DamlRPC = ({
             method: 'UploadDarFile',
             data,
           })
-        } catch(e) {
-          if(e.toString().indexOf('Invalid DAR') >= 0) {
-            throw new Error(`that file doesn't look like a DAR file`)
-          }
-          else {
+        } catch (e) {
+          if (e.toString().indexOf('Invalid DAR') >= 0) {
+            throw new Error('that file doesn\'t look like a DAR file')
+          } else {
             throw e
           }
         }
-        
+
         const packages = await grpccurl({
           service: 'admin.PackageManagementService',
           method: 'ListKnownPackages',
