@@ -61,6 +61,7 @@ pipeline {
           sh '''
             make test
           '''
+          step([$class: "TapPublisher", testResults: "build/sextant-api.tape.txt"])
         }
       }
     }
