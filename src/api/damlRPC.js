@@ -332,11 +332,13 @@ const DamlRPC = ({
   const addParty = async ({
     id,
     partyName,
+    partyIdHint,
   }) => {
     pino.info({
       action: 'addParty',
       id,
       partyName,
+      partyIdHint,
     })
 
     const proxy = await DeploymentPodProxy({
@@ -360,7 +362,7 @@ const DamlRPC = ({
       }) => {
         pino.debug(`Allocating party to ${pod.metadata.name}`)
         const data = {
-          partyIdHint: partyName,
+          partyIdHint: partyIdHint || partyName,
           displayName: partyName,
         }
 

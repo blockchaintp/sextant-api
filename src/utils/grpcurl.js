@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable no-trailing-spaces */
 /* eslint-disable no-unneeded-ternary */
 const Promise = require('bluebird')
 const tmp = require('tmp')
@@ -36,28 +38,28 @@ const Grpcurl = ({
   prefix = '',
   hostname = DEFAULT_HOSTNAME,
 } = {}) => {
-  if(!token) throw new Error(`token required for grpcurl`)
-  if(!port) throw new Error(`port required for grpcurl`)
+  if (!token) throw new Error('token required for grpcurl')
+  if (!port) throw new Error('port required for grpcurl')
   return async ({
     service,
     method,
     data,
     options = {},
   } = {}) => {
-    if(!service) throw new Error(`service required for grpcurl`)
-    if(!method) throw new Error(`method required for grpcurl`)
+    if (!service) throw new Error('service required for grpcurl')
+    if (!method) throw new Error('method required for grpcurl')
 
-    let tokenPath = await tempName({ postfix: '.txt' })
-    let dataPath = await tempName({ postfix: '.json' })
+    const tokenPath = await tempName({ postfix: '.txt' })
+    const dataPath = await tempName({ postfix: '.json' })
     await writeFile(tokenPath, token, 'utf8')
-    if(data) {
+    if (data) {
       await writeFile(dataPath, JSON.stringify(data), 'utf8')
     }
 
     // cleanup token and data files in both error and success cases
     const cleanup = async () => {
       await deleteFile(tokenPath)
-      if(data) {
+      if (data) {
         await deleteFile(dataPath)
       }
     }
@@ -69,7 +71,7 @@ const Grpcurl = ({
 
       // if we have data - we pipe it from a tempfile
       const dataSource = data ? `cat ${dataPath} |` : ''
-      const dataFlag = data ? `-d @` : ''
+      const dataFlag = data ? '-d @' : ''
 
       // the grpcurl command
       // in the patched grpcurl -max-msg-sz applies to both request + response
@@ -87,7 +89,7 @@ const Grpcurl = ({
       })
       await cleanup()
       return parsedResult
-    } catch(e) {
+    } catch (e) {
       await cleanup()
       throw e
     }
