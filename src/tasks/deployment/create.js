@@ -94,9 +94,7 @@ const DeploymentCreate = ({
     const { extension } = chartInfo
     const installationName = `${networkName}-${extension}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
-
-    const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
-
+    const useChart = process.env.USE_LOCAL_CHART ? process.env.USE_LOCAL_CHART : chart
     yield clusterKubectl.helmCommand(`-n ${namespace} install ${installationName} -f ${valuesPath} ${useChart} --version ${chartversion}`)
   } else {
     const templateDirectory = yield renderTemplates({

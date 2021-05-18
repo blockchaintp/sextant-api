@@ -332,6 +332,7 @@ const Kubectl = ({
     applyInline,
     delete: del,
     deleteInline,
+    remoteCredentials,
   }
 }
 

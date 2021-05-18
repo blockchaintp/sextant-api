@@ -116,10 +116,12 @@ const TaekionController = ({ store }) => {
     deployment,
     req,
     res,
-  }) => api.apiStreamRequest({
+  }) => api.apiRequestProxy({
     deployment,
-    // we are targeting the rest api not the taekion middleware
-    podPort: 8008,
+    // this will have the network name prepended
+    // so will become "tfs-rest-api"
+    serviceName: 'rest-api',
+    portName: 'rest-api',
     req,
     res,
   })

@@ -1,5 +1,4 @@
-const axios = require('axios');
-const DeploymentPodProxy = require('../utils/deploymentPodProxy');
+const ServiceProxy = require('../utils/serviceProxy');
 
 const TaekionAPI = ({ store } = {}) => {
   if (!store) {
@@ -8,38 +7,34 @@ const TaekionAPI = ({ store } = {}) => {
 
   const apiRequest = async ({
     deployment,
-    method = 'get',
-    url = '/',
-    podPort = 8000,
+    serviceName = 'middleware',
+    portName = 'taekionrest',
+    method = 'GET',
+    path,
     ...extra
   }) => {
-    const proxy = await DeploymentPodProxy({
+
+    const connection = await ServiceProxy({
       store,
       id: deployment,
-    });
+    })
 
-    const pod = await proxy.getPod();
-
-    if (!pod) throw new Error('no pod found');
+    const networkName = connection.applied_state.sawtooth.networkName
+    const fullServiceName = [networkName, serviceName].join('-')
 
     try {
-      const res = await proxy.request({
-        pod: pod.metadata.name,
-        port: podPort,
-        handler: ({ port }) => axios({
-          method,
-          url: `http://localhost:${port}${url}`,
-          ...extra,
-        }),
-      });
-      return res.data;
+      const url = `${connection.baseUrl}/${fullServiceName}:${portName}/proxy${path}`
+      const res = await connection.client({
+        method,
+        url,
+        ...extra
+      })
+      return res.data
     } catch (e) {
       if (!e.response) {
         throw e;
       }
-      const errorMessage = e.response.data
-        .toString()
-        .replace(/^Error (\d+):/, (match, code) => code);
+      const errorMessage = JSON.stringify(e.response.data, null, 4)
       const finalError = new Error(errorMessage);
       finalError.response = e.response;
       finalError._code = e.response.status;
@@ -47,54 +42,50 @@ const TaekionAPI = ({ store } = {}) => {
     }
   };
 
-  const apiStreamRequest = async ({
+  const apiRequestProxy = async ({
     deployment,
-    podPort = 8000,
+    serviceName = 'middleware',
+    portName = 'taekionrest',
     req,
     res,
     ...extra
   }) => {
-    const proxy = await DeploymentPodProxy({
+
+    const connection = await ServiceProxy({
       store,
       id: deployment,
-    });
+    })
 
-    const pod = await proxy.getPod();
+    const networkName = connection.applied_state.sawtooth.networkName
+    const fullServiceName = [networkName, serviceName].join('-')
 
-    if (!pod) throw new Error('no pod found');
+    const url = `${connection.baseUrl}/${fullServiceName}:${portName}/proxy${req.url}`
+    const useHeaders = Object.assign({}, req.headers)
+
+    delete(useHeaders.host)
+    delete(useHeaders.authorization)
 
     try {
-      await proxy.request({
-        pod: pod.metadata.name,
-        port: podPort,
-        handler: async ({ port }) => {
-          try {
-            console.log(`${req.method} ${req.url}`);
-            const upstreamRes = await axios({
-              method: req.method,
-              url: `http://localhost:${port}${req.url}`,
-              headers: req.headers,
-              responseType: 'stream',
-              data:
-                req.method.toLowerCase() === 'post'
-                || req.method.toLowerCase() === 'put'
-                  ? req
-                  : null,
-              ...extra,
-            });
-            res.status(upstreamRes.status);
-            res.set(upstreamRes.headers);
-            upstreamRes.data.pipe(res);
-          } catch (e) {
-            const errorMessage = e.response.data
-              .toString()
-              .replace(/^Error (\d+):/, (match, code) => code);
-            res.status(e.response.status);
-            res.end(errorMessage);
-          }
-        },
-      });
+
+      const upstreamRes = await connection.client({
+        method: req.method,
+        url,
+        headers: useHeaders,
+        responseType: 'stream',
+        data:
+          req.method.toLowerCase() === 'post'
+          || req.method.toLowerCase() === 'put'
+            ? req
+            : null,
+        ...extra,
+      })
+
+      res.status(upstreamRes.status)
+      res.set(upstreamRes.headers)
+      upstreamRes.data.pipe(res)
+
     } catch (e) {
+
       if (!e.response) {
         console.error(e.stack);
         res.status(500);
@@ -113,7 +104,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        url: '/keystore',
+        path: '/keystore',
       });
       return data.payload
     } catch (e) {
@@ -135,7 +126,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        url: `/keystore/${fingerprint}`,
+        path: `/keystore/${fingerprint}`,
       });
       return data.payload
     } catch (e) {
@@ -157,8 +148,8 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        method: 'post',
-        url: '/keystore',
+        method: 'POST',
+        path: '/keystore',
         data: {
           id: name,
           encryption: 'aes_gcm',
@@ -192,7 +183,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        url: '/volume',
+        path: '/volume',
       });
       return data.payload
     } catch (e) {
@@ -217,7 +208,7 @@ const TaekionAPI = ({ store } = {}) => {
   }) => apiRequest({
     deployment,
     method: 'post',
-    url: '/volume',
+    path: '/volume',
     data: {
       id: name,
       compression,
@@ -244,8 +235,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        method: 'get',
-        url: '/snapshot',
+        path: '/snapshot',
         params: {
           volume,
         },
@@ -266,7 +256,7 @@ const TaekionAPI = ({ store } = {}) => {
   const createSnapshot = ({ deployment, volume, name }) => apiRequest({
     deployment,
     method: 'post',
-    url: '/snapshot',
+    path: '/snapshot',
     data: {
       volume,
       id: name,
@@ -289,7 +279,7 @@ const TaekionAPI = ({ store } = {}) => {
     createSnapshot,
     deleteSnapshot,
     apiRequest,
-    apiStreamRequest,
+    apiRequestProxy,
   };
 };
 
