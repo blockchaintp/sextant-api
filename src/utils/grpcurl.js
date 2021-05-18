@@ -84,7 +84,6 @@ const Grpcurl = ({
         service,
         method,
         data,
-        result,
         parsedResult,
       })
       await cleanup()

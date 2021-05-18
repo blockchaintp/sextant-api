@@ -261,7 +261,7 @@ const Kubectl = ({
         throw err
       })
     await localTeardown(setupDetails)
-    pino.info({ message: 'kubectl command sucess', result: `${result}` })
+    pino.info({ message: 'kubectl command sucess' })
     return result
   }
 
@@ -285,7 +285,7 @@ const Kubectl = ({
         throw err
       })
     await localTeardown(setupDetails)
-    pino.info({ message: 'helm command sucess', result: `${result}` })
+    pino.info({ message: 'helm command sucess' })
     return result
   }
 
@@ -295,7 +295,7 @@ const Kubectl = ({
     pino.debug({ action: 'running a kubectl command with json output', command: `${command}` })
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
-    pino.info({ message: 'kubectl command --output json sucess', processedOutput: `${processedOutput}` })
+    pino.info({ message: 'kubectl command --output json sucess' })
     return processedOutput
   }
 
