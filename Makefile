@@ -27,10 +27,10 @@ test_npm:
 test_pmd:
 	mkdir -p build/pmd
 	docker run -v $$(pwd)/src:/src rawdee/pmd pmd \
-		-R rulesets/ecmascript/basic.xml -d ./ -f xml -min 1 \
+		-R rulesets/ecmascript/basic.xml -d /src -f xml -min 1 \
 		--failOnViolation false \
-		-l ecmascript > build/pmd.xml
-	docker run -v $(pwd)/src:/src rawdee/pmd cpd --minimum-tokens 200 \
+		-l ecmascript | sed -e 's@name=\"/src@name=\"src@'> build/pmd.xml
+	docker run -v $(pwd)/src:/src rawdee/pmd cpd --minimum-tokens 100 \
 		--exclude /src/deployment_templates \
 		--failOnViolation false \
 		--files /src --language ecmascript --format xml > build/cpd.xml
