@@ -221,3 +221,6 @@ typings/
 
 # don't commit local version of golang binary
 taekion/client-wrapper/client-wrapper
+
+# temporary directory used in Makefile/Jenkins build
+build/
