@@ -63,7 +63,7 @@ const Grpcurl = ({
         await deleteFile(dataPath)
       }
     }
-    
+
     try {
       // inject the token as a variable so it is not listed in "ps -ef"
       const commandOptions = getOptions(options)
