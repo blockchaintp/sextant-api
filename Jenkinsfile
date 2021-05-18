@@ -49,14 +49,18 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh "docker-compose -f docker-compose.yml build"
+        sh '''
+          make clean build
+        '''
       }
     }
 
     stage("Test") {
       steps {
         withCredentials([usernamePassword(credentialsId: 'btp-build-nexus', passwordVariable: 'BTP_DEV_PSW', usernameVariable: 'BTP_DEV_USR')]) {
-          sh "./test.sh"
+          sh '''
+            make test
+          '''
         }
       }
     }
@@ -66,10 +70,7 @@ pipeline {
     stage('Create Archives') {
       steps {
         sh '''
-            REPO=$(git remote show -n origin | grep Fetch | awk -F'[/.]' '{print $6}')
-            VERSION=`git describe --dirty`
-            git archive HEAD --format=zip -9 --output=$REPO-$VERSION.zip
-            git archive HEAD --format=tgz -9 --output=$REPO-$VERSION.tgz
+          make archive
         '''
       }
     }
@@ -77,6 +78,13 @@ pipeline {
   }
 
   post {
+      always {
+          // recordIssues enabledForFailure: true, tools: [mavenConsole(), java(), javaDoc()]
+          // recordIssues enabledForFailure: true, tool: checkStyle()
+          // recordIssues enabledForFailure: true, tool: spotBugs()
+          recordIssues enabledForFailure: true, tool: cpd(pattern: '**/build/cpd.xml')
+          recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/build/pmd.xml')
+      }
       success {
           archiveArtifacts '*.tgz, *.zip'
       }
