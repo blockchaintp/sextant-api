@@ -86,7 +86,7 @@ pipeline {
           recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/build/pmd.xml')
       }
       success {
-          archiveArtifacts '*.tgz, *.zip'
+          archiveArtifacts '**/*.tgz, **/*.zip'
       }
       aborted {
           error "Aborted, exiting now"
