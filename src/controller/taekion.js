@@ -112,6 +112,16 @@ const TaekionController = ({ store }) => {
     id,
   })
 
+  const explorerListDirectory = ({
+    deployment,
+    volume,
+    inode,
+  }) => api.explorerListDirectory({
+    deployment,
+    volume,
+    inode,
+  })
+
   const restApiProxy = ({
     deployment,
     req,
@@ -136,6 +146,7 @@ const TaekionController = ({ store }) => {
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
+    explorerListDirectory,
     restApiProxy,
   }
 }

@@ -220,7 +220,7 @@ const TaekionAPI = ({ store } = {}) => {
   const updateVolume = ({ deployment, volume, name }) => apiRequest({
     deployment,
     method: 'put',
-    url: `/volume/${volume}`,
+    path: `/volume/${volume}`,
     data: {
       action: 'rename',
       id: name,
@@ -267,6 +267,12 @@ const TaekionAPI = ({ store } = {}) => {
     throw new Error('endpoint tbc');
   };
 
+  const explorerListDirectory = async ({ deployment, volume, inode }) => apiRequest({
+    deployment,
+    method: 'get',
+    path: `/volume/${volume}/explorer/dir/${inode}`,
+  });
+
   return {
     listKeys,
     getKey,
@@ -280,6 +286,7 @@ const TaekionAPI = ({ store } = {}) => {
     deleteSnapshot,
     apiRequest,
     apiRequestProxy,
+    explorerListDirectory,
   };
 };
 

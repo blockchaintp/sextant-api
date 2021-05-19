@@ -174,6 +174,23 @@ const TaekionRoutes = (controllers) => {
       .json(data)
   }
 
+  const explorerListDirectory = async (req, res, next) => {
+    const {
+      id,
+      volume,
+      inode,
+    } = req.params
+    
+    const data = await controllers.taekion.explorerListDirectory({
+      deployment: id,
+      volume,
+      inode,
+    })
+    res
+      .status(200)
+      .json(data)
+  }
+
   const restApiProxy = (req, res, next) => controllers.taekion.restApiProxy({
     deployment: req.params.id,
     req,
@@ -191,6 +208,7 @@ const TaekionRoutes = (controllers) => {
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
+    explorerListDirectory,
     restApiProxy,
   }
 }
