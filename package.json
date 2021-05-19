@@ -10,7 +10,7 @@
     "preserve": "npm run download-helm-charts && npm run migrate",
     "serve": "node src/index.js",
     "pretest": "npm run download-helm-charts",
-    "test": "tape {src,test}/**/*.test.js | tap-spec",
+    "test": "tape {src,test}/**/*.test.js | tee /tmp/test.out | tap-spec",
     "start": "npm run download-helm-charts && npm run serve"
   },
   "dependencies": {

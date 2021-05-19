@@ -13,6 +13,7 @@ services:
       args:
         EDITION_MODULE: dev.js
     entrypoint: bash -c 'tail -f /dev/null'
+    container_name: api_test
     depends_on:
       - postgres
     environment:
