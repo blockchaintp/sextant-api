@@ -1,8 +1,17 @@
 export ISOLATION_ID ?= local
 PWD = $(shell pwd)
 
-ORGANIZATION ?= $(shell git remote show -n origin | grep Fetch | awk -F'[/.]' '{print $$2}'|awk -F: '{print $$NF}' )
-REPO ?= $(shell git remote show -n origin | grep Fetch | awk -F'[/.]' '{print $$3}' )
+ORGANIZATION ?= $(shell git remote show -n origin | grep Fetch | \
+												awk '{print $$NF}' | \
+												sed -e 's/git@github.com://' | \
+												sed -e 's@https://github.com/@@' | \
+												awk -F'[/.]' '{print $$1}' )
+REPO ?= $(shell git remote show -n origin | grep Fetch | \
+												awk '{print $$NF}' | \
+												sed -e 's/git@github.com://' | \
+												sed -e 's@https://github.com/@@' | \
+												awk -F'[/.]' '{print $$2}' )
+
 BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD )
 SAFE_BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD|sed -e 's@refs/heads/@@'|sed -e 's@/@_@g' )
 VERSION ?= $(shell git describe --dirty)
@@ -18,6 +27,9 @@ PMD_IMAGE = blockchaintp/pmd:latest
 
 all: clean build test archive
 
+what:
+	echo $(ORGANIZATION)
+	echo $(REPO)
 dirs:
 	mkdir -p build
 
