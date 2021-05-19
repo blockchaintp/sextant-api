@@ -66,7 +66,18 @@ pipeline {
       }
     }
 
-    // Publish
+    stage("Analyze") {
+      when {
+        expression { env.BRANCH_NAME == "master" }
+      } 
+      steps {
+        withSonarQubeEnv('sonarqube') {
+          sh '''
+            make analyze
+          '''
+        }
+      }
+    }
 
     stage('Create Archives') {
       steps {

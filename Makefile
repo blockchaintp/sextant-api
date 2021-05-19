@@ -1,16 +1,20 @@
 export ISOLATION_ID ?= local
 PWD = $(shell pwd)
 
+ORGANIZATION ?= $(shell git remote show -n origin | grep Fetch | awk -F'[/.]' '{print $$2}'|awk -F: '{print $$NF}' )
 REPO ?= $(shell git remote show -n origin | grep Fetch | awk -F'[/.]' '{print $$3}' )
 BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD )
+SAFE_BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD|sed -e 's@refs/heads/@@'|sed -e 's@/@_@g' )
 VERSION ?= $(shell git describe --dirty)
 
 UID := $(shell id -u)
 GID := $(shell id -g)
 
+SONAR_HOST_URL ?= https://sonarqube.dev.catenasys.com
+SONAR_AUTH_TOKEN ?= $(SONAR_AUTH_TOKEN)
 PMD_IMAGE = blockchaintp/pmd:latest
 
-.PHONY: all clean build test test_npm test_pmd archive dirs
+.PHONY: all clean build test test_npm test_pmd archive dirs analyze analyze_sonar
 
 all: clean build test archive
 
@@ -40,6 +44,20 @@ test_pmd: dirs
 		--exclude /src/deployment_templates \
 		--failOnViolation false \
 		--files /src --language ecmascript --format xml > build/cpd.xml
+
+analyze: analyze_sonar
+
+analyze_sonar:
+	[ -z "$(SONAR_AUTH_TOKEN)" ] || \
+	docker run \
+		--rm \
+		-v $$(pwd):/usr/src \
+		sonarsource/sonar-scanner-cli \
+			-Dsonar.projectKey=$(ORGANIZATION)_$(REPO):$(SAFE_BRANCH_NAME) \
+			-Dsonar.projectName=$(REPO) \
+			-Dsonar.projectVersion=$(VERSION) \
+			-Dsonar.host.url=$(SONAR_HOST_URL) \
+			-Dsonar.login=$(SONAR_AUTH_TOKEN)
 
 clean:
 	docker-compose -f docker-compose.test.yml rm -f || true
