@@ -267,11 +267,47 @@ const TaekionAPI = ({ store } = {}) => {
     throw new Error('endpoint tbc');
   };
 
-  const explorerListDirectory = async ({ deployment, volume, inode }) => apiRequest({
-    deployment,
-    method: 'get',
-    path: `/volume/${volume}/explorer/dir/${inode}`,
-  });
+  const explorerListDirectory = async ({ deployment, volume, inode }) => {
+    const data = await apiRequest({
+      deployment,
+      method: 'get',
+      path: `/volume/${volume}/explorer/dir/${inode}`,
+    })
+    return data.payload;
+  }
+
+  const explorerDownloadFile = async ({ deployment, volume, inode, res }) => {
+    const connection = await ServiceProxy({
+      store,
+      id: deployment,
+    })
+
+    const networkName = connection.applied_state.sawtooth.networkName
+    const fullServiceName = [networkName, 'middleware'].join('-')
+
+    console.log('--------------------------------------------')
+    console.dir({
+      volume,
+      inode,
+    })
+
+    try {
+      const url = `${connection.baseUrl}/${fullServiceName}:taekionrest/proxy/volume/${volume}/explorer/file/${inode}`
+      const upstream = await connection.client({
+        method: 'GET',
+        url,
+        responseType: 'stream'
+      })
+
+      res.status(200)
+      res.set(upstream.headers)
+      upstream.data.pipe(res)
+      
+    } catch (e) {
+      console.log(e.toString())
+      throw e
+    }
+  }
 
   
   return {
@@ -288,6 +324,7 @@ const TaekionAPI = ({ store } = {}) => {
     apiRequest,
     apiRequestProxy,
     explorerListDirectory,
+    explorerDownloadFile,
   };
 };
 

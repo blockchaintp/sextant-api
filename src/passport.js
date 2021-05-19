@@ -9,6 +9,26 @@ const pino = require('pino')({
   name: 'passport',
 })
 
+const getRequestAccessToken = (req, res) => {
+  if(req.headers && req.headers.authorization) {
+    const parts = req.headers.authorization.split(' ')
+    if(parts.length != 2) {
+      res._code = 400
+      throw new Error(`bad authorization header format`)
+    }
+    const [ scheme, token ] = parts
+    if (/^Bearer$/i.test(scheme)) {
+      return token
+    } else {
+      res._code = 400
+      throw new Error(`bad authorization header format`)
+    }
+  }
+  else if(req.query.token) {
+    return req.query.token
+  }
+}
+
 const PassportHandlers = ({
   app,
   settings,
@@ -50,45 +70,33 @@ const PassportHandlers = ({
 
     try {
 
-      if(req.headers && req.headers.authorization) {
-        const parts = req.headers.authorization.split(' ')
+      const token = getRequestAccessToken(req)
+      
+      if(token) {
+        
+        const decoded = await userUtils.decodeToken(token, settings.tokenSecret)
 
-        if(parts.length != 2) {
-          res._code = 400
-          throw new Error(`bad authorization header format`)
+        // no user if we have no decoded token
+        if(!decoded) return next()
+
+        // no user if we don't have an id in the token
+        if(!decoded.id) return next()
+
+        // no user if we don't have a server_side_key in the token
+        if(!decoded.server_side_key) return next()
+
+        const user = await controllers.user.get({
+          id: decoded.id,
+        })
+
+        if(!user || user.server_side_key != decoded.server_side_key) {
+          res._code = 403
+          throw new Error(`access denied`)
         }
 
-        const [ scheme, token ] = parts
+        req.user = userUtils.safe(user)
 
-        if (/^Bearer$/i.test(scheme)) {
-
-          const decoded = await userUtils.decodeToken(token, settings.tokenSecret)
-
-          // no user if we have no decoded token
-          if(!decoded) return next()
-
-          // no user if we don't have an id in the token
-          if(!decoded.id) return next()
-
-          // no user if we don't have a server_side_key in the token
-          if(!decoded.server_side_key) return next()
-
-          const user = await controllers.user.get({
-            id: decoded.id,
-          })
-
-          if(!user || user.server_side_key != decoded.server_side_key) {
-            res._code = 403
-            throw new Error(`access denied`)
-          }
-
-          req.user = userUtils.safe(user)
-
-          return next()
-        } else {
-          res._code = 400
-          throw new Error(`bad authorization header format`)
-        }
+        return next()
       }
       else {
         return next()

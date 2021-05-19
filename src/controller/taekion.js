@@ -122,6 +122,18 @@ const TaekionController = ({ store }) => {
     inode,
   })
 
+  const explorerDownloadFile = ({
+    deployment,
+    volume,
+    inode,
+    res,
+  }) => api.explorerDownloadFile({
+    deployment,
+    volume,
+    inode,
+    res,
+  })
+
   const restApiProxy = ({
     deployment,
     req,
@@ -147,6 +159,7 @@ const TaekionController = ({ store }) => {
     createSnapshot,
     deleteSnapshot,
     explorerListDirectory,
+    explorerDownloadFile,
     restApiProxy,
   }
 }
