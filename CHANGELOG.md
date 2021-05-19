@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* build(npm): record TAP test results to file as well [view commit](https://github.com/catenasys/sextant-api/commit/71181e7a157347d17d0b10dfdb72cc1b2e9f539f)
+* build(gitignore): update gitignore [view commit](https://github.com/catenasys/sextant-api/commit/a1f9df7a5e0f474cbf5bb9b88e29e628f5e8cb03)
+* build: remove unnecessary files and dirs [view commit](https://github.com/catenasys/sextant-api/commit/372dbbdbbe348a8b411ce255fe940e8343d00b97)
+* build(pre-commit): update and correct pre-commit declarations [view commit](https://github.com/catenasys/sextant-api/commit/3cd8fb70fde7145e54a52e0046988e571835ae09)
 * fix(kubectl): add actual kubectl command to logging [view commit](https://github.com/catenasys/sextant-api/commit/b4c39ef15427b2b17f25070b470d4c425024c205)
 * fix(deployment-controller): add logging to delete pod action [view commit](https://github.com/catenasys/sextant-api/commit/b7c1754f6ffcac79d15bcbb23965875434192e47)
 * feat(kubectl): add logging to kubectl commands [view commit](https://github.com/catenasys/sextant-api/commit/899d8964979cebd913780d2def35b3e4c3305dd0)
