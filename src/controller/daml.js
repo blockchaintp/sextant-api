@@ -75,6 +75,7 @@ const DamlController = ({ store }) => {
   const addParty = async ({
     id,
     partyName,
+    partyIdHint,
   }) => {
     if (!id) throw new Error('id must be given to controller.deployment.addParty')
     if (!partyName) throw new Error('partyName must be given to controller.deployment.addParty')
@@ -82,6 +83,7 @@ const DamlController = ({ store }) => {
     await damlRPC.addParty({
       id,
       partyName,
+      partyIdHint,
     })
 
     return true
@@ -126,7 +128,6 @@ const DamlController = ({ store }) => {
       token,
     }
   }
-
 
   const getArchives = async ({
     id,

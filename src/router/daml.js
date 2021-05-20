@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const fs = require('fs')
 const Promise = require('bluebird')
 const tmp = require('tmp')
@@ -5,7 +6,6 @@ const tmp = require('tmp')
 const tempFile = Promise.promisify(tmp.file)
 
 const DamlRoutes = (controllers) => {
-
   const getKeyManagerKeys = async (req, res, next) => {
     const data = await controllers.daml.getKeyManagerKeys({
       id: req.params.id,
@@ -68,6 +68,7 @@ const DamlRoutes = (controllers) => {
       id: req.params.id,
       publicKey: req.body.publicKey,
       partyName: req.body.partyName,
+      partyIdHint: req.body.partyIdHint,
     })
     res
       .status(201)
@@ -106,7 +107,6 @@ const DamlRoutes = (controllers) => {
   }
 
   const uploadArchive = async (req, res, next) => {
-
     const {
       name,
       type,
@@ -141,10 +141,10 @@ const DamlRoutes = (controllers) => {
       res
         .status(201)
         .json(data)
-    } catch(e) {
+    } catch (e) {
       removeFile()
       throw e
-    }    
+    }
   }
 
   const getTimeServiceInfo = async (req, res, next) => {
@@ -173,7 +173,7 @@ const DamlRoutes = (controllers) => {
     uploadArchive,
 
     getTimeServiceInfo,
-    
+
   }
 }
 
