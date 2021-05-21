@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* fix(kubectl-grpcurl): clean up logging [view commit](https://github.com/catenasys/sextant-api/commit/908cba91633cd6079a1325a76340e66e05fa0dca)
+* style(grpcurl): linting [view commit](https://github.com/catenasys/sextant-api/commit/3c88a5296c4091f5f3082e67c933ccd1121a092e)
+* feat(damlrpc-api): included add-party-id-hint to the add-party operation [view commit](https://github.com/catenasys/sextant-api/commit/c12ba4ac239b1999f7b1abe3ae9fda42b6dab657)
+* style(daml-rpc): linting [view commit](https://github.com/catenasys/sextant-api/commit/913bfe2ecbd595150b4c4a240ff165a77538a65d)
+* feat(daml-controller): add party-id-hint as an arg in the add party func [view commit](https://github.com/catenasys/sextant-api/commit/1e047be20e1ac156b2850b0dd08c783ecaee6417)
+* feat(daml-routes): use the party-id-hint from the request body in add party func [view commit](https://github.com/catenasys/sextant-api/commit/c0f2c686e56270b274001ca9df84774a2931490e)
+* style(daml-routes): linting [view commit](https://github.com/catenasys/sextant-api/commit/a16ff33bb6d17a18eb2966d334fda9baa2c1ccd7)
 * build(npm): record TAP test results to file as well [view commit](https://github.com/catenasys/sextant-api/commit/71181e7a157347d17d0b10dfdb72cc1b2e9f539f)
 * build(gitignore): update gitignore [view commit](https://github.com/catenasys/sextant-api/commit/a1f9df7a5e0f474cbf5bb9b88e29e628f5e8cb03)
 * build: remove unnecessary files and dirs [view commit](https://github.com/catenasys/sextant-api/commit/372dbbdbbe348a8b411ce255fe940e8343d00b97)
