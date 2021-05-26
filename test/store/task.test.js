@@ -166,9 +166,6 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest('task store -> load with status', async (t) => {
     const store = TaskStore(getConnection())
 
-    // eslint-disable-next-line no-unused-vars
-    const ids = Object.keys(taskMap).map((i) => parseInt(i, 10))
-
     const tasks = await store.list({
       status: TASK_STATUS.running,
     })

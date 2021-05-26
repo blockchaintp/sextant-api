@@ -16,8 +16,6 @@ const {
 database.testSuiteWithDatabase((getConnection) => {
   let testCluster = null
   let testDeployment = null
-  // eslint-disable-next-line no-unused-vars
-  let deploymentMap = {}
 
   asyncTest('deployment store -> create clusters', async () => {
     const clusters = await fixtures.insertTestClusters(getConnection())
@@ -68,7 +66,6 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(testDeployment.name, compareDeployment.name, 'the name is correct')
     t.equal(testDeployment.status, DEPLOYMENT_STATUS_DEFAULT, 'the state defaults to created')
     t.equal(testDeployment.maintenance_flag, false, 'the maintenance_flag defaults to false')
-    deploymentMap = deployments
   })
 
   asyncTest('deployment store -> list with ordered data', async (t) => {

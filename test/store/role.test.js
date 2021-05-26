@@ -15,13 +15,11 @@ const {
 
 database.testSuiteWithDatabase((getConnection) => {
   // eslint-disable-next-line no-unused-vars
-  let userMap = {}
   let roleMap = {}
   let testUser = null
 
   asyncTest('role store -> create users', async () => {
     const users = await fixtures.insertTestUsers(getConnection())
-    userMap = users
     testUser = users[USER_TYPES.admin]
   })
 
