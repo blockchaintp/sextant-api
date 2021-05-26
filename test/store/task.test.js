@@ -1,5 +1,3 @@
-'use strict'
-
 const database = require('../database')
 const fixtures = require('../fixtures')
 const tools = require('../tools')
@@ -14,12 +12,11 @@ const {
   TASK_STATUS,
 } = config
 
-database.testSuiteWithDatabase(getConnection => {
-
+database.testSuiteWithDatabase((getConnection) => {
   let taskMap = {}
   let userMap = {}
 
-  asyncTest('task store -> create users', async (t) => {
+  asyncTest('task store -> create users', async () => {
     const users = await fixtures.insertTestUsers(getConnection())
     userMap = users
   })
@@ -27,11 +24,10 @@ database.testSuiteWithDatabase(getConnection => {
   asyncTest('task store -> list no data', async (t) => {
     const store = TaskStore(getConnection())
     const tasks = await store.list({})
-    t.equal(tasks.length, 0, `there were no tasks`)
+    t.equal(tasks.length, 0, 'there were no tasks')
   })
 
   asyncTest('task store -> create with missing values', async (t) => {
-
     const store = TaskStore(getConnection())
 
     await tools.insertWithMissingValues(t, store, {
@@ -45,25 +41,20 @@ database.testSuiteWithDatabase(getConnection => {
     })
   })
 
-  asyncTest('task store -> create tasks for admin user', async (t) => {
+  asyncTest('task store -> create tasks for admin user', async () => {
     const tasks = await fixtures.insertTestTasks(getConnection(), userMap[USER_TYPES.admin].id)
     taskMap = tasks
   })
 
-  asyncTest('task store -> create tasks for write user', async (t) => {
-    const insertData = fixtures.SIMPLE_TASK_DATA.map(task => {
-      return Object.assign({}, task, {
-        resource_id: task.resource_id + 10,
-      })
-    })
+  asyncTest('task store -> create tasks for write user', async () => {
+    const insertData = fixtures.SIMPLE_TASK_DATA.map((task) => ({ ...task, resource_id: task.resource_id + 10 }))
     const tasks = await fixtures.insertTestTasks(getConnection(), userMap[USER_TYPES.user].id, insertData)
-    Object.keys(tasks).forEach(key => {
+    Object.keys(tasks).forEach((key) => {
       taskMap[key] = tasks[key]
     })
   })
 
   asyncTest('task store -> list all', async (t) => {
-
     const store = TaskStore(getConnection())
 
     // we inserted each set of tasks for 2 users
@@ -73,33 +64,28 @@ database.testSuiteWithDatabase(getConnection => {
     t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
   })
 
-
   asyncTest('task store -> list by cluster', async (t) => {
-
     const store = TaskStore(getConnection())
 
     const tasks = await store.list({
       cluster: 10,
     })
-    t.equal(tasks.length, 1, `there was 1 task`)
-    t.equal(tasks[0].resource_type, RESOURCE_TYPES.cluster, `the resource_type is correct`)
-    t.equal(tasks[0].resource_id, 10, `the resource_id is correct`)
+    t.equal(tasks.length, 1, 'there was 1 task')
+    t.equal(tasks[0].resource_type, RESOURCE_TYPES.cluster, 'the resource_type is correct')
+    t.equal(tasks[0].resource_id, 10, 'the resource_id is correct')
   })
-  
   asyncTest('task store -> list by deployment', async (t) => {
-
     const store = TaskStore(getConnection())
 
     const tasks = await store.list({
       deployment: 11,
     })
-    t.equal(tasks.length, 1, `there was 1 task`)
-    t.equal(tasks[0].resource_type, RESOURCE_TYPES.deployment, `the resource_type is correct`)
-    t.equal(tasks[0].resource_id, 11, `the resource_id is correct`)
+    t.equal(tasks.length, 1, 'there was 1 task')
+    t.equal(tasks[0].resource_type, RESOURCE_TYPES.deployment, 'the resource_type is correct')
+    t.equal(tasks[0].resource_id, 11, 'the resource_id is correct')
   })
 
   asyncTest('task store -> list by user', async (t) => {
-
     const store = TaskStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_TASK_DATA.length
@@ -109,12 +95,10 @@ database.testSuiteWithDatabase(getConnection => {
       user: userId,
     })
     t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
-    t.deepEqual(tasks.map(task => task.user), [userId, userId], `the user ids are correct`)
+    t.deepEqual(tasks.map((task) => task.user), [userId, userId], 'the user ids are correct')
   })
 
-
   asyncTest('task store -> get', async (t) => {
-
     const store = TaskStore(getConnection())
 
     const ids = Object.keys(taskMap)
@@ -122,11 +106,10 @@ database.testSuiteWithDatabase(getConnection => {
     const task = await store.get({
       id: ids[0],
     })
-    t.deepEqual(task, taskMap[ids[0]], `the returned task is correct`)
+    t.deepEqual(task, taskMap[ids[0]], 'the returned task is correct')
   })
 
   asyncTest('task store -> update bad status', async (t) => {
-
     const store = TaskStore(getConnection())
 
     const ids = Object.keys(taskMap)
@@ -137,19 +120,17 @@ database.testSuiteWithDatabase(getConnection => {
       await store.update({
         id: ids[0],
         data: {
-          status: 'apples'
-        }
+          status: 'apples',
+        },
       })
-    }
-    catch(err) {
+    } catch (err) {
       error = err
     }
 
-    t.ok(error, `there was an error`)
+    t.ok(error, 'there was an error')
   })
 
   asyncTest('task store -> update status', async (t) => {
-
     const store = TaskStore(getConnection())
 
     const ids = Object.keys(taskMap)
@@ -158,42 +139,40 @@ database.testSuiteWithDatabase(getConnection => {
       id: ids[0],
       data: {
         status: TASK_STATUS.running,
-      }
+      },
     })
 
     const task = await store.get({
       id: ids[0],
     })
-    t.equal(task.status, TASK_STATUS.running, `the updated status is ok`)
+    t.equal(task.status, TASK_STATUS.running, 'the updated status is ok')
   })
 
   asyncTest('task store -> activeForResource', async (t) => {
-
     const store = TaskStore(getConnection())
 
-    const ids = Object.keys(taskMap).map(i => parseInt(i))
+    const ids = Object.keys(taskMap).map((i) => parseInt(i, 10))
 
     const tasks = await store.activeForResource({
       cluster: 10,
     })
 
-    t.equal(tasks.length, 1, `there was 1 task`)
-    t.deepEqual(tasks.map(task => task.resource_type), [RESOURCE_TYPES.cluster], `the resource_types are correct`)
-    t.deepEqual(tasks.map(task => task.id), [ids[0]], `the resource_ids are correct`)
-    t.deepEqual(tasks.map(task => task.resource_id), [10], `the resource_ids are correct`)
+    t.equal(tasks.length, 1, 'there was 1 task')
+    t.deepEqual(tasks.map((task) => task.resource_type), [RESOURCE_TYPES.cluster], 'the resource_types are correct')
+    t.deepEqual(tasks.map((task) => task.id), [ids[0]], 'the resource_ids are correct')
+    t.deepEqual(tasks.map((task) => task.resource_id), [10], 'the resource_ids are correct')
   })
 
   asyncTest('task store -> load with status', async (t) => {
-
     const store = TaskStore(getConnection())
 
-    const ids = Object.keys(taskMap).map(i => parseInt(i))
+    // eslint-disable-next-line no-unused-vars
+    const ids = Object.keys(taskMap).map((i) => parseInt(i, 10))
 
     const tasks = await store.list({
       status: TASK_STATUS.running,
     })
 
-    t.equal(tasks.length, 1, `there was 1 task`)
+    t.equal(tasks.length, 1, 'there was 1 task')
   })
-
 })
