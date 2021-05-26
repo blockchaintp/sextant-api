@@ -1,10 +1,9 @@
-const ClusterKubectl = require('../../utils/clusterKubectl')
+/* eslint-disable no-undef */
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const ClusterUpdate = ({
   testMode,
 }) => function* clusterUpdateTask(params) {
-  
   const {
     store,
     task,
@@ -13,32 +12,24 @@ const ClusterUpdate = ({
 
   const id = task.resource_id
 
-  const cluster = yield store.cluster.get({
-    id,
-  }, trx)
-
   // TODO: mock the kubectl handler for tests
-  if(testMode) {
+  if (testMode) {
     yield saveAppliedState({
       id,
       store,
-      trx
+      trx,
     })
     return
   }
 
-  const clusterKubectl = yield ClusterKubectl({
-    cluster,
-    store,
-  })
-
   // test we can connect to the remote cluster with the details provided
+  // eslint-disable-next-line no-unused-vars
   const namespaces = yield clusterKubectl.jsonCommand('get ns')
 
   yield saveAppliedState({
     id,
     store,
-    trx
+    trx,
   })
 }
 
