@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /*
 
   keeps looping waiting for tasks to be in 'created' state
@@ -35,8 +36,6 @@
       * invoke the task handler
       * if callback is error - switch task to 'error'
       * if callback has result - switch task to 'finished'
-  
-  
   task handlers
   -------------
 
@@ -53,7 +52,6 @@
     task,                   // the task database record
     logging,                // if the task handler should log
   }) {
-    
     const data = yield store.thing.list()
 
     // this step will never happen if the task was cancelled in the meantime
@@ -61,12 +59,11 @@
       ...
     })
   }
-  
 */
 
 const EventEmitter = require('events')
 const Promise = require('bluebird')
-const async = require('async')
+
 const pino = require('pino')({
   name: 'task',
 })
@@ -78,7 +75,6 @@ const resourceUpdaters = require('./tasks/resource_updaters/index')
 const {
   TASK_STATUS,
   RESOURCE_TYPES,
-  TASK_RESOURCE_COMPLETE_STATUS,
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
@@ -87,13 +83,12 @@ const TaskProcessor = ({
   handlers,
   logging,
 }) => {
-
-  if(!store) {
-    throw new Error(`store required`)
+  if (!store) {
+    throw new Error('store required')
   }
 
-  if(!handlers) {
-    throw new Error(`handlers required`)
+  if (!handlers) {
+    throw new Error('handlers required')
   }
 
   const taskProcessor = new EventEmitter()
@@ -107,39 +102,36 @@ const TaskProcessor = ({
   }
 
   // get the current status of a task
-  const loadTaskStatus = (id) => 
-    store.task.get({
-      id,
-    })
-      .then(task => task.status)
+  const loadTaskStatus = (id) => store.task.get({
+    id,
+  })
+    .then((task) => task.status)
 
   // get a list of tasks with the given status
   const loadTasksWithStatus = (status) => store.task.list({
     status,
   })
-    
   const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
   const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
 
   // return a function that will check a running task cancel status
   const isTaskCancelled = async (task) => {
     const status = await loadTaskStatus(task.id)
-    return status == TASK_STATUS.cancelling
+    return status === TASK_STATUS.cancelling
   }
 
   // update the status of a task
   // timestamps indicates what fields we should stamp as now
   const updateTaskStatus = (task, status, timestamps) => {
-
     const updateData = {
       status,
     }
 
-    if(timestamps.started) {
+    if (timestamps.started) {
       updateData.started_at = store.knex.fn.now()
     }
 
-    if(timestamps.ended) {
+    if (timestamps.ended) {
       updateData.ended_at = store.knex.fn.now()
     }
 
@@ -152,13 +144,12 @@ const TaskProcessor = ({
   // mark the task as failed and update the corresponding resource with
   // the error status
   const errorTask = async (task, error) => {
-
-    if(logging) {
+    if (logging) {
       pino.error({
         action: 'error',
         error: error.toString(),
         stack: error.stack,
-        task: task,
+        task,
       })
     }
 
@@ -169,18 +160,17 @@ const TaskProcessor = ({
         status: TASK_STATUS.error,
         ended_at: store.knex.fn.now(),
         error: error.toString().substring(0, 250),
-      }
+      },
     })
 
-    // update the corresponding resource 
+    // update the corresponding resource
     const resourceTypeStore = resourceTypeStores[task.resource_type]
 
     // import the correct resource updater based on the task.action
     // resourceUpdaters are defined in tasks/resource_updaters
-    const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters['default']
+    const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters.default
 
     await resourceUpdater(task, error, resourceTypeStore)
-
   }
 
   // mark the task as complete and update the corresponding resource with
@@ -188,17 +178,16 @@ const TaskProcessor = ({
   // the resource status
   const completeTask = async (task, trx, cancelled) => {
     // what status are we setting the task to
-    const finalTaskStatus = cancelled ?
-        TASK_STATUS.cancelled :
-        TASK_STATUS.finished
+    const finalTaskStatus = cancelled
+      ? TASK_STATUS.cancelled
+      : TASK_STATUS.finished
 
-    await updateTaskStatus(task, finalTaskStatus, {ended: true})
+    await updateTaskStatus(task, finalTaskStatus, { ended: true })
 
     // if the task completed - we update the resource to the correct status
-    if(!cancelled) {
+    if (!cancelled) {
       // get a reference to the store handler for the task resource
       const resourceTypeStore = resourceTypeStores[task.resource_type]
-      const finalResourceStatus = TASK_RESOURCE_COMPLETE_STATUS[task.action]
 
       await resourceTypeStore.update({
         id: task.resource_id,
@@ -213,17 +202,16 @@ const TaskProcessor = ({
   // we create a transaction and pass it as part of the params into the task
   // this means the task's database updates will get unwound on an error
   const runTask = async (task) => {
-    await store.transaction(async trx => {
-      
+    await store.transaction(async (trx) => {
       // check that we have a handler for the task
       const handler = handlers[task.action]
 
-      if(!handler) {
+      if (!handler) {
         throw new Error(`no handler was found for task: ${task.action}`)
       }
 
       // update the task be to in running state
-      const runningTask = await updateTaskStatus(task, TASK_STATUS.running, {started: true})
+      const runningTask = await updateTaskStatus(task, TASK_STATUS.running, { started: true })
 
       // create the task runner
       const runner = Task({
@@ -236,25 +224,22 @@ const TaskProcessor = ({
         },
         // before each yielded step of the task - check if the database has a cancel
         // status and cancel the task if yes
-        onStep: async (task) => {
+        onStep: async () => {
           const isCancelled = await isTaskCancelled(runningTask)
-          if(isCancelled) runner.cancel()
+          if (isCancelled) runner.cancel()
         },
       })
 
       taskProcessor.emit('task.start', task)
 
       await runner.run()
-      
       await completeTask(task, trx, runner.cancelled)
-      
       taskProcessor.emit('task.complete', task)
     })
-      .catch(async err => {
+      .catch(async (err) => {
         await errorTask(task, err)
         taskProcessor.emit('task.error', task, err)
       })
-    
     taskProcessor.emit('task.processed', task)
   }
 
@@ -265,25 +250,25 @@ const TaskProcessor = ({
   const restartTasks = async () => {
     const tasks = await loadRunningTasks()
 
-    const runTasks = tasks.filter(task => task.restartable)
-    const errorTasks = tasks.filter(task => !task.restartable)
+    const runTasks = tasks.filter((task) => task.restartable)
+    const errorTasks = tasks.filter((task) => !task.restartable)
 
     await Promise.all([
       Promise.each(runTasks, runTask),
-      Promise.each(errorTasks, task => errorTask(task, `the server restarted whilst this task was running and the task is not restartable`)),
+      Promise.each(errorTasks, (task) => errorTask(task, 'the server restarted whilst this task was running and the task is not restartable')),
     ])
   }
 
   // called on each loop
   const controlLoop = async () => {
-    if(!controlLoopRunning) return
+    if (!controlLoopRunning) return
     try {
       const runTasks = await loadCreatedTasks()
       await Promise.each(runTasks, runTask)
       await Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
       controlLoop()
-    } catch(err) {
-      if(logging) {
+    } catch (err) {
+      if (logging) {
         pino.error({
           type: 'controlloop',
           error: err.toString(),
@@ -295,18 +280,18 @@ const TaskProcessor = ({
 
   // start the control loop waiting for tasks in 'created' state
   const startControlLoop = () => {
-    if(stopped) throw new Error(`the task processor was stopped`)
+    if (stopped) throw new Error('the task processor was stopped')
     controlLoopRunning = true
     controlLoop()
   }
 
   const start = async () => {
-    if(stopped) throw new Error(`the task processor was stopped`)
+    if (stopped) throw new Error('the task processor was stopped')
     try {
       await restartTasks()
       startControlLoop()
-    } catch(err) {
-      if(logging) {
+    } catch (err) {
+      if (logging) {
         pino.error({
           type: 'start',
           error: err.toString(),
