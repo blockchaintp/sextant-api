@@ -22,10 +22,6 @@ const ClusterUpdate = ({
     return
   }
 
-  // test we can connect to the remote cluster with the details provided
-  // eslint-disable-next-line no-unused-vars
-  const namespaces = yield clusterKubectl.jsonCommand('get ns')
-
   yield saveAppliedState({
     id,
     store,

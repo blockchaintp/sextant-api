@@ -188,9 +188,6 @@ const TaskProcessor = ({
     if (!cancelled) {
       // get a reference to the store handler for the task resource
       const resourceTypeStore = resourceTypeStores[task.resource_type]
-      // eslint-disable-next-line no-unused-vars
-      const finalResourceStatus = TASK_RESOURCE_COMPLETE_STATUS[task.action]
-
       await resourceTypeStore.update({
         id: task.resource_id,
         data: {

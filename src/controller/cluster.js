@@ -200,10 +200,6 @@ const ClusterController = ({ store }) => {
 
     if (!CLUSTER_PROVISION_TYPE[provision_type]) throw new Error(`unknown provision_type: ${provision_type}`)
 
-    const extractedSecrets = clusterUtils.extractClusterSecrets({
-      desired_state,
-    })
-
     // validate the incoming form data
     await validate({
       schema: clusterForms.server[provision_type].add,
@@ -227,22 +223,6 @@ const ClusterController = ({ store }) => {
         provision_type,
         capabilities,
         desired_state: {},
-      },
-    }, trx)
-
-    // insert the cluster secrets for that cluster
-    const updatedDesiredState = await createClusterSecrets({
-      cluster,
-      secrets: extractedSecrets.secrets,
-      desired_state: extractedSecrets.desired_state,
-    }, trx)
-
-    // update the cluster desired state with pointers to the secrets
-    // eslint-disable-next-line no-unused-vars
-    const updatedCluster = await store.cluster.update({
-      id: cluster.id,
-      data: {
-        desired_state: updatedDesiredState,
       },
     }, trx)
 
@@ -345,13 +325,6 @@ const ClusterController = ({ store }) => {
 
       formData.desired_state = updatedDesiredState
     }
-
-    // save the cluster
-    // eslint-disable-next-line no-unused-vars
-    const updatedCluster = await store.cluster.update({
-      id,
-      data: formData,
-    }, trx)
 
     // if there is an update to the desired state
     // trigger a task to update it
