@@ -15,8 +15,6 @@ const {
 
 database.testSuiteWithDatabase((getConnection) => {
   let testCluster = null
-  // eslint-disable-next-line no-unused-vars
-  let clusterMap = {}
 
   asyncTest('cluster store -> list no data', async (t) => {
     const store = ClusterStore(getConnection())
@@ -69,7 +67,6 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(testCluster.provision_type, compareCluster.provision_type, 'the provision_type is correct')
     t.equal(testCluster.status, CLUSTER_STATUS_DEFAULT, 'the state defaults to created')
     t.equal(testCluster.maintenance_flag, false, 'the maintenance_flag defaults to false')
-    clusterMap = clusters
   })
 
   asyncTest('cluster store -> list with ordered data', async (t) => {

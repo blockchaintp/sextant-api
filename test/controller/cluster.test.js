@@ -631,8 +631,6 @@ database.testSuiteWithDatabase((getConnection) => {
 
   asyncTestError('cluster controller -> fail to delete the cluster permenantly', async () => {
     const controller = getController()
-    // eslint-disable-next-line no-unused-vars
-    const store = Store(getConnection())
 
     const testUser = userMap[USER_TYPES.admin]
 
