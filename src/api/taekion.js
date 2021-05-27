@@ -285,12 +285,6 @@ const TaekionAPI = ({ store } = {}) => {
     const networkName = connection.applied_state.sawtooth.networkName
     const fullServiceName = [networkName, 'middleware'].join('-')
 
-    console.log('--------------------------------------------')
-    console.dir({
-      volume,
-      inode,
-    })
-
     try {
       const url = `${connection.baseUrl}/${fullServiceName}:taekionrest/proxy/volume/${volume}/explorer/file/${inode}`
       const upstream = await connection.client({
@@ -304,8 +298,8 @@ const TaekionAPI = ({ store } = {}) => {
       upstream.data.pipe(res)
       
     } catch (e) {
-      console.log(e.toString())
-      throw e
+      res.status(e.response.status)
+      e.response.data.pipe(res)
     }
   }
 
