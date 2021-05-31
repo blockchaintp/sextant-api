@@ -1,5 +1,7 @@
+/* eslint-disable no-shadow */
+/* eslint-disable consistent-return */
 const fs = require('fs')
-const exec = require('child_process').exec
+const { exec } = require('child_process')
 const yaml = require('js-yaml')
 const async = require('async')
 const pino = require('pino')({
@@ -7,22 +9,19 @@ const pino = require('pino')({
 })
 
 const command = (cmd, options, done) => {
-
-  if(!done) {
+  if (!done) {
     done = options
     options = {}
   }
 
-  const useOptions = Object.assign({}, options, {
-    // allow 5MB back on stdout 
-    //(which should not happen but some logs might be longer than 200kb which is the default)
-    maxBuffer: 1024 * 1024 * 5,
-  })
+  // allow 5MB back on stdout
+  // (which should not happen but some logs might be longer than 200kb which is the default)
+  const useOptions = { ...options, maxBuffer: 1024 * 1024 * 5 }
 
   // inject the current process env into the passed environment because when an env option
   // is given to exec it doesn't inherit by default
-  if(options.env) {
-    useOptions.env = Object.assign({}, process.env, options.env)
+  if (options.env) {
+    useOptions.env = { ...process.env, ...options.env }
   }
 
   const runCommand = `kops ${cmd}`
@@ -34,12 +33,12 @@ const command = (cmd, options, done) => {
   })
 
   exec(runCommand, useOptions, (err, stdout, stderr) => {
-    if(err) return done(err)
+    if (err) return done(err)
     done(null, stdout.toString(), stderr.toString())
   })
 }
 
-const getStateStore = (bucket) => `s3://${ bucket }/kopsState`
+const getStateStore = (bucket) => `s3://${bucket}/kopsState`
 
 /*
 
@@ -54,15 +53,14 @@ const getStateStore = (bucket) => `s3://${ bucket }/kopsState`
 
 */
 const createCluster = (params, done) => {
-
-  if(!params.bucket) return done(`bucket param required for kops.createCluster`)
-  if(!params.yamlPath) return done(`yamlPath param required for kops.createCluster`)
+  if (!params.bucket) return done('bucket param required for kops.createCluster')
+  if (!params.yamlPath) return done('yamlPath param required for kops.createCluster')
 
   const { bucket, yamlPath } = params
 
   command(`create \\
-    --state ${ getStateStore(bucket) } \\
-    -f ${ yamlPath }
+    --state ${getStateStore(bucket)} \\
+    -f ${yamlPath}
 `, done)
 }
 
@@ -75,19 +73,18 @@ const createCluster = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const clusterExists = (params, done) => {
-
-  if(!params.name) return done(`name param required for kops.clusterExists`)
-  if(!params.domain) return done(`domain param required for kops.clusterExists`)
-  if(!params.bucket) return done(`bucket param required for kops.clusterExists`)
+  if (!params.name) return done('name param required for kops.clusterExists')
+  if (!params.domain) return done('domain param required for kops.clusterExists')
+  if (!params.bucket) return done('bucket param required for kops.clusterExists')
 
   const { name, domain, bucket } = params
 
-  command(`get clusters --state ${ getStateStore(bucket) }`, (err, results) => {
-    if(err) return done(null, false)
-    const exists = results.indexOf(`${ name }.${ domain }`) >= 0
+  command(`get clusters --state ${getStateStore(bucket)}`, (err, results) => {
+    if (err) return done(null, false)
+    const exists = results.indexOf(`${name}.${domain}`) >= 0
     done(null, exists)
   })
 }
@@ -101,18 +98,17 @@ const clusterExists = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const destroyCluster = (params, done) => {
-
-  if(!params.name) return done(`name param required for kops.destroyCluster`)
-  if(!params.domain) return done(`domain param required for kops.destroyCluster`)
-  if(!params.bucket) return done(`bucket param required for kops.destroyCluster`)
+  if (!params.name) return done('name param required for kops.destroyCluster')
+  if (!params.domain) return done('domain param required for kops.destroyCluster')
+  if (!params.bucket) return done('bucket param required for kops.destroyCluster')
 
   const { name, domain, bucket } = params
 
-  command(`delete cluster ${ name }.${ domain } \\
-    --state ${ getStateStore(bucket) } \\
+  command(`delete cluster ${name}.${domain} \\
+    --state ${getStateStore(bucket)} \\
     --yes
 `, done)
 }
@@ -125,20 +121,21 @@ const destroyCluster = (params, done) => {
    * domain
    * keyFilePath
    * bucket
-  
+
 */
 const createSecret = (params, done) => {
-  if(!params.name) return done(`name param required for kops.createSecret`)
-  if(!params.domain) return done(`domain param required for kops.createSecret`)
-  if(!params.publicKeyFilePath) return done(`keyFilePath param required for kops.createSecret`)
-  if(!params.bucket) return done(`bucket param required for kops.createSecret`)
+  if (!params.name) return done('name param required for kops.createSecret')
+  if (!params.domain) return done('domain param required for kops.createSecret')
+  if (!params.publicKeyFilePath) return done('keyFilePath param required for kops.createSecret')
+  if (!params.bucket) return done('bucket param required for kops.createSecret')
 
+  const {
+    name, domain, publicKeyFilePath, bucket,
+  } = params
 
-  const { name, domain, publicKeyFilePath, bucket } = params
-
-  command(`create secret --name ${ name }.${ domain } \\
-    --state ${ getStateStore(bucket) } \\
-    sshpublickey admin -i ${ publicKeyFilePath }
+  command(`create secret --name ${name}.${domain} \\
+    --state ${getStateStore(bucket)} \\
+    sshpublickey admin -i ${publicKeyFilePath}
 `, done)
 }
 
@@ -149,17 +146,17 @@ const createSecret = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const updateCluster = (params, done) => {
-  if(!params.name) return done(`name param required for kops.updateCluster`)
-  if(!params.domain) return done(`domain param required for kops.updateCluster`)
-  if(!params.bucket) return done(`bucket param required for kops.updateCluster`)
+  if (!params.name) return done('name param required for kops.updateCluster')
+  if (!params.domain) return done('domain param required for kops.updateCluster')
+  if (!params.bucket) return done('bucket param required for kops.updateCluster')
 
   const { name, domain, bucket } = params
 
-  command(`update cluster ${ name }.${ domain } \\
-    --state ${ getStateStore(bucket) } \\
+  command(`update cluster ${name}.${domain} \\
+    --state ${getStateStore(bucket)} \\
     --yes
 `, done)
 }
@@ -171,17 +168,17 @@ const updateCluster = (params, done) => {
    * name
    * domain
    * bucket
-  
+
 */
 const validateCluster = (params, done) => {
-  if(!params.name) return done(`name param required for kops.validateCluster`)
-  if(!params.domain) return done(`domain param required for kops.validateCluster`)
-  if(!params.bucket) return done(`bucket param required for kops.validateCluster`)
+  if (!params.name) return done('name param required for kops.validateCluster')
+  if (!params.domain) return done('domain param required for kops.validateCluster')
+  if (!params.bucket) return done('bucket param required for kops.validateCluster')
 
   const { name, domain, bucket } = params
 
-  command(`validate cluster ${ name }.${ domain } \\
-    --state ${ getStateStore(bucket) }
+  command(`validate cluster ${name}.${domain} \\
+    --state ${getStateStore(bucket)}
 `, done)
 }
 
@@ -201,22 +198,24 @@ const validateCluster = (params, done) => {
 
 */
 const exportKubeConfig = (params, done) => {
-  if(!params.name) return done(`name param required for kops.exportKubeConfig`)
-  if(!params.domain) return done(`domain param required for kops.exportKubeConfig`)
-  if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.exportKubeConfig`)
-  if(!params.bucket) return done(`bucket param required for kops.exportKubeConfig`)
+  if (!params.name) return done('name param required for kops.exportKubeConfig')
+  if (!params.domain) return done('domain param required for kops.exportKubeConfig')
+  if (!params.kubeConfigPath) return done('kubeConfigPath param required for kops.exportKubeConfig')
+  if (!params.bucket) return done('bucket param required for kops.exportKubeConfig')
 
-  const { name, domain, kubeConfigPath, bucket } = params
+  const {
+    name, domain, kubeConfigPath, bucket,
+  } = params
 
-  command(`export kubecfg ${ name }.${ domain } \\
-    --state ${ getStateStore(bucket) }
-`, 
+  command(`export kubecfg ${name}.${domain} \\
+    --state ${getStateStore(bucket)}
+`,
   {
     env: {
       KUBECONFIG: kubeConfigPath,
-    }
+    },
   },
-  done)  
+  done)
 }
 
 /*
@@ -225,20 +224,20 @@ const exportKubeConfig = (params, done) => {
 
   params:
 
-   * name 
+   * name
    * domain
    * kubeConfigPath
    * bucket
-  
+
 */
 const extractKubeConfigAuthDetails = (params, done) => {
-  if(!params.name) return done(`name param required for kops.extractKubeConfigAuthDetails`)
-  if(!params.domain) return done(`domain param required for kops.extractKubeConfigAuthDetails`)
-  if(!params.kubeConfigPath) return done(`kubeConfigPath param required for kops.extractKubeConfigAuthDetails`)
+  if (!params.name) return done('name param required for kops.extractKubeConfigAuthDetails')
+  if (!params.domain) return done('domain param required for kops.extractKubeConfigAuthDetails')
+  if (!params.kubeConfigPath) return done('kubeConfigPath param required for kops.extractKubeConfigAuthDetails')
 
   const { name, domain, kubeConfigPath } = params
 
-  const clusterName = `${ name }.${ domain }`
+  const clusterName = `${name}.${domain}`
 
   async.waterfall([
     (next) => fs.readFile(kubeConfigPath, 'utf8', next),
@@ -251,11 +250,11 @@ const extractKubeConfigAuthDetails = (params, done) => {
         return next(e.toString())
       }
 
-      const cluster = parsedKubeconfig.clusters.filter(cluster => cluster.name == clusterName)[0]
-      const user = parsedKubeconfig.users.filter(user => user.name == clusterName)[0]
+      const cluster = parsedKubeconfig.clusters.filter((cluster) => cluster.name === clusterName)[0]
+      const user = parsedKubeconfig.users.filter((user) => user.name === clusterName)[0]
 
-      if(!cluster) return next(`no cluster in kubeconfig found for ${ clusterName } `)
-      if(!user) return next(`no user in kubeconfig found for ${ clusterName } `)
+      if (!cluster) return next(`no cluster in kubeconfig found for ${clusterName} `)
+      if (!user) return next(`no user in kubeconfig found for ${clusterName} `)
 
       const authDetails = {
         ca: Buffer.from(cluster.cluster['certificate-authority-data'], 'base64').toString(),
@@ -266,7 +265,7 @@ const extractKubeConfigAuthDetails = (params, done) => {
       }
 
       next(null, authDetails)
-    }
+    },
   ], done)
 }
 

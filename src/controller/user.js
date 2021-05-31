@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 const config = require('../config')
 const utils = require('../utils/user')
 
@@ -5,37 +6,36 @@ const userForms = require('../forms/user')
 const validate = require('../forms/validate')
 
 const UserController = ({ store, settings }) => {
-  
-  if(!settings) throw new Error(`settings required for user controller`)
-  if(!settings.tokenSecret) throw new Error(`settings.tokenSecret required for user controller`)
-  
+  if (!settings) throw new Error('settings required for user controller')
+  if (!settings.tokenSecret) throw new Error('settings.tokenSecret required for user controller')
+
   /*
-  
+
     count the number of users
 
     params:
 
   */
-  const count = async (params) => {
+  const count = async () => {
     const users = await store.user.list({})
     return users.length
   }
 
   /*
-  
+
     search current users - used for the role form
     only return the username because all users should be able to
     add other users
-  
+
   */
   const search = async ({
     search,
   }) => {
-    if(!search) return []
+    if (!search) return []
     const users = await store.user.list({})
     return users
-      .filter(user => user.username.toLowerCase().indexOf(search.toLowerCase()) >= 0)
-      .map(user => ({
+      .filter((user) => user.username.toLowerCase().indexOf(search.toLowerCase()) >= 0)
+      .map((user) => ({
         id: user.id,
         permission: user.permission,
         username: user.username,
@@ -43,7 +43,7 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     list the current users
 
     params:
@@ -53,25 +53,25 @@ const UserController = ({ store, settings }) => {
       array[user]
 
   */
-  const list = (params) => store.user.list({})
+  const list = () => store.user.list({})
 
   /*
-  
+
     get a user given the username or id
 
     params:
 
      * id
      * username
-    
+
     one of username of id must be given
-    
+
   */
   const get = ({
     id,
     username,
   }) => {
-    if(!id && !username) throw new Error(`id or username required for controller.user.get`)
+    if (!id && !username) throw new Error('id or username required for controller.user.get')
     return store.user.get({
       username,
       id,
@@ -79,31 +79,31 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     check a user password
 
     params:
 
      * username - string
      * password - string
-    
+
   */
   const checkPassword = async ({
     username,
     password,
   }) => {
-    if(!username) throw new Error(`username required for controller.user.checkPassword`)
-    if(!password) throw new Error(`password required for controller.user.checkPassword`)
+    if (!username) throw new Error('username required for controller.user.checkPassword')
+    if (!password) throw new Error('password required for controller.user.checkPassword')
     const user = await get({
       username,
     })
-    if(!user) return false
+    if (!user) return false
     const result = await utils.compareHashedPasswords(password, user.hashed_password)
     return result
   }
 
   /*
-  
+
     add a new user
 
     params:
@@ -111,24 +111,23 @@ const UserController = ({ store, settings }) => {
      * username - string
      * password - string
      * permission - enumerations.USER_TYPES
-    
+
   */
   const create = async ({
     username,
     password,
     permission,
   }) => {
+    if (!username) throw new Error('username required for controller.user.create')
+    if (!password) throw new Error('password required for controller.user.create')
+    if (!permission) throw new Error('permission required for controller.user.create')
 
-    if(!username) throw new Error(`username required for controller.user.create`)
-    if(!password) throw new Error(`password required for controller.user.create`)
-    if(!permission) throw new Error(`permission required for controller.user.create`)
-
-    const existingUsers = await count({})
+    const existingUsers = await count()
 
     const formData = {
       username,
       password,
-      permission: existingUsers == 0 ? config.USER_TYPES.superuser : permission,
+      permission: existingUsers === 0 ? config.USER_TYPES.superuser : permission,
     }
 
     await validate({
@@ -144,12 +143,12 @@ const UserController = ({ store, settings }) => {
         permission: formData.permission,
         hashed_password,
         server_side_key: utils.getTokenServerSideKey(),
-      }
+      },
     })
   }
 
   /*
-  
+
     update a user
 
     params:
@@ -160,52 +159,48 @@ const UserController = ({ store, settings }) => {
         * password
         * permission
         * meta
-    
+
   */
   const update = async ({
     id,
     data,
   }) => {
-
-    if(!id) throw new Error(`id must be given to controller.user.update`)
-    if(!data) throw new Error(`data param must be given to controller.user.update`)
+    if (!id) throw new Error('id must be given to controller.user.update')
+    if (!data) throw new Error('data param must be given to controller.user.update')
 
     // check someone is not trying to manually overwrite a users server_side_key
-    if(data.server_side_key) throw new Error(`access denied`)
+    if (data.server_side_key) throw new Error('access denied')
 
     await validate({
       schema: userForms.server.edit,
       data,
     })
 
-    if(data.password) {
+    if (data.password) {
       const hashed_password = await utils.getPasswordHash(data.password)
-      data = Object.assign({}, data, {
-        hashed_password,
-      })
-      delete(data.password)
+      data = { ...data, hashed_password }
+      delete (data.password)
     }
 
     return store.user.update({
       id,
       data,
-    })    
+    })
   }
 
   /*
-  
+
     get a users token
 
     params:
 
       * id
-    
+
   */
   const getToken = async ({
     id,
   }) => {
-
-    if(!id) throw new Error(`id must be given to controller.user.getToken`)
+    if (!id) throw new Error('id must be given to controller.user.getToken')
 
     const user = await get({
       id,
@@ -215,19 +210,18 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     get a users roles
 
     params:
 
       * id
-    
+
   */
   const getRoles = ({
     id,
   }) => {
-
-    if(!id) throw new Error(`id must be given to controller.user.getRoles`)
+    if (!id) throw new Error('id must be given to controller.user.getRoles')
 
     return store.role.listForUser({
       user: id,
@@ -235,19 +229,18 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     update a users token server_side_key
 
     params:
 
       * id
-    
+
   */
   const updateToken = async ({
     id,
   }) => {
-
-    if(!id) throw new Error(`id must be given to controller.user.updateToken`)
+    if (!id) throw new Error('id must be given to controller.user.updateToken')
 
     await store.user.update({
       id,
@@ -262,18 +255,18 @@ const UserController = ({ store, settings }) => {
   }
 
   /*
-  
+
     delete a user
 
     params:
 
      * id
-    
+
   */
   const del = ({
     id,
   }) => {
-    if(!id) throw new Error(`id must be given to controller.user.delete`)
+    if (!id) throw new Error('id must be given to controller.user.delete')
     return store.user.delete({
       id,
     })
@@ -292,7 +285,6 @@ const UserController = ({ store, settings }) => {
     updateToken,
     delete: del,
   }
-
 }
 
 module.exports = UserController
