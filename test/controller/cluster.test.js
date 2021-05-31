@@ -471,14 +471,14 @@ database.testSuiteWithDatabase((getConnection) => {
     const store = Store(getConnection())
 
     function* saveAppliedState(params) {
-      const cluster = yield params.store.cluster.get({
+      const currentCluster = yield params.store.cluster.get({
         id: params.task.resource_id,
       })
 
       yield params.store.cluster.update({
-        id: cluster.id,
+        id: currentCluster.id,
         data: {
-          applied_state: cluster.desired_state,
+          applied_state: currentCluster.desired_state,
         },
       })
     }

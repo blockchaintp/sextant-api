@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 /*
 
   the file store and secret store are basically the same
@@ -84,13 +83,13 @@ const FileSecretStoreTest = ({
   asyncTest(`${title} store -> get file`, async (t) => {
     const store = GetStore(getConnection())
 
-    const testCluster = clusterMap.testcluster
+    const currentTestCluster = clusterMap.testcluster
 
     const file = await store.get({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
       name: testFile.name,
     })
-    t.equal(file.cluster, testCluster.id, 'the cluster is correct')
+    t.equal(file.cluster, currentTestCluster.id, 'the cluster is correct')
     t.equal(file.name, testFile.name, 'the name is correct')
     t.equal(file.base64data, testFile.base64data, 'the base64data is correct')
     t.equal(base64.decodeToString(file.base64data), testFile.rawData, 'the plainData is correct')
@@ -99,10 +98,10 @@ const FileSecretStoreTest = ({
   asyncTest(`${title} store -> update file`, async (t) => {
     const store = GetStore(getConnection())
 
-    const testCluster = clusterMap.testcluster
+    const currentTestCluster = clusterMap.testcluster
 
     await store.update({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
       name: testFile.name,
       data: {
         rawData: testFile.updatedRawData,
@@ -110,7 +109,7 @@ const FileSecretStoreTest = ({
     })
 
     const file = await store.get({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
       name: testFile.name,
     })
 
@@ -121,10 +120,10 @@ const FileSecretStoreTest = ({
   asyncTest(`${title} store -> update file with base64 data`, async (t) => {
     const store = GetStore(getConnection())
 
-    const testCluster = clusterMap.testcluster
+    const currentTestCluster = clusterMap.testcluster
 
     await store.update({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
       name: testFile.name,
       data: {
         base64Data: testFile.updatedBase64Data,
@@ -132,7 +131,7 @@ const FileSecretStoreTest = ({
     })
 
     const file = await store.get({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
       name: testFile.name,
     })
 
@@ -143,15 +142,15 @@ const FileSecretStoreTest = ({
   asyncTest(`${title} store -> delete file`, async (t) => {
     const store = GetStore(getConnection())
 
-    const testCluster = clusterMap.testcluster
+    const currentTestCluster = clusterMap.testcluster
 
     await store.delete({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
       name: testFile.name,
     })
 
     const files = await store.list({
-      cluster: testCluster.id,
+      cluster: currentTestCluster.id,
     })
 
     t.equal(files.length, 1, 'there is only 1 file')

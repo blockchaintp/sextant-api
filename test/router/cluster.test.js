@@ -233,7 +233,8 @@ app.testSuiteWithAppTaskHandlers({
           t,
           user: userUtils.USERS.admin,
         },
-        (next) => {
+
+        (currentNext) => {
           tools.sessionRequest({
             t,
             method: 'put',
@@ -243,10 +244,10 @@ app.testSuiteWithAppTaskHandlers({
               name: 'new cluster name',
             },
           }, (err, res) => {
-            if (err) return next(err)
+            if (err) return currentNext(err)
             t.equal(res.statusCode, 200, 'the cluster was updated')
             createdClusters.admin.name = 'new cluster name'
-            setTimeout(next, TASK_CONTROLLER_LOOP_DELAY * 2)
+            setTimeout(currentNext, TASK_CONTROLLER_LOOP_DELAY * 2)
           })
         }, next)
       },
@@ -257,18 +258,18 @@ app.testSuiteWithAppTaskHandlers({
           t,
           user: userUtils.USERS.admin,
         },
-        (next) => {
+        (currentNext) => {
           tools.sessionRequest({
             t,
             method: 'get',
             url: `${url}/clusters/${createdClusters.admin.id}`,
             json: true,
           }, (err, res, body) => {
-            if (err) return next(err)
+            if (err) return currentNext(err)
             t.equal(res.statusCode, 200, 'the cluster was created')
             t.equal(body.name, createdClusters.admin.name, 'the cluster name is correct')
             t.equal(body.status, CLUSTER_STATUS.provisioned, 'the cluster is provisioned')
-            next()
+            currentNext()
           })
         }, next)
       },

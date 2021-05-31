@@ -620,10 +620,11 @@ app.testSuiteWithApp(({
         method: 'get',
         url: `${url}/user/${USER_RECORDS.normal.id}`,
         json: true,
-      }, (err, res, body) => {
-        t.notok(err, 'there is no error')
-        t.equal(res.statusCode, 200, '200 code')
-        t.equal(body.meta.othervalue, 20, 'updated value is correct')
+
+      }, (currentErr, currentRes, currentBody) => {
+        t.notok(currentErr, 'there is no error')
+        t.equal(currentRes.statusCode, 200, '200 code')
+        t.equal(currentBody.meta.othervalue, 20, 'updated value is correct')
         t.end()
       })
     })

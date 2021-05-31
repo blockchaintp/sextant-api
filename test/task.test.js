@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 const Promise = require('bluebird')
 const tape = require('tape')
 
@@ -137,7 +136,8 @@ tape('task -> we can cancel a task via an on step complete handler', async (t) =
 
   const task = Task({
     generator: testTask,
-    onStep: (task) => task.cancel(),
+
+    onStep: (currentTask) => currentTask.cancel(),
   })
 
   await Promise.all([
