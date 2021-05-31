@@ -76,10 +76,10 @@ const TaekionController = ({ store }) => {
         deployment,
       })
 
-      const snapshotCollections = await Promise.map(volumes, async (volume) => {
+      const snapshotCollections = await Promise.map(volumes, async (currentVolume) => {
         const snapshots = await listSnapshots({
           deployment,
-          volume: volume.uuid,
+          volume: currentVolume.uuid,
         })
         return snapshots
       })

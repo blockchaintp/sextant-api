@@ -250,8 +250,8 @@ const extractKubeConfigAuthDetails = (params, done) => {
         return next(e.toString())
       }
 
-      const cluster = parsedKubeconfig.clusters.filter((cluster) => cluster.name === clusterName)[0]
-      const user = parsedKubeconfig.users.filter((user) => user.name === clusterName)[0]
+      const cluster = parsedKubeconfig.clusters.filter((currentCluster) => currentCluster.name === clusterName)[0]
+      const user = parsedKubeconfig.users.filter((currentUser) => currentUser.name === clusterName)[0]
 
       if (!cluster) return next(`no cluster in kubeconfig found for ${clusterName} `)
       if (!user) return next(`no user in kubeconfig found for ${clusterName} `)

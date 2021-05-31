@@ -40,11 +40,11 @@ const ClusterController = ({ store }) => {
   }) => {
     if (!user) throw new Error('user required for controllers.cluster.list')
 
-    const clusters = await store.cluster.list({
+    const currentClusters = await store.cluster.list({
       deleted,
     })
 
-    const filteredClusters = await Promise.filter(clusters, async (cluster) => {
+    const filteredClusters = await Promise.filter(currentClusters, async (cluster) => {
       const canSeeCluster = await RBAC(store, user, {
         resource_type: 'cluster',
         resource_id: cluster.id,
@@ -62,7 +62,6 @@ const ClusterController = ({ store }) => {
      * clusters
     */
     const loadMostRecentTasksForClusters = ({
-      // eslint-disable-next-line no-shadow
       clusters,
     }) => Promise.map(clusters, async (cluster) => {
       const task = await store.task.mostRecentForResource({
@@ -220,7 +219,7 @@ const ClusterController = ({ store }) => {
 
     // check there is no cluster already with that name
     const clusters = await store.cluster.list({})
-    const existingCluster = clusters.find((cluster) => cluster.name.toLowerCase() === name.toLowerCase())
+    const existingCluster = clusters.find((currentCluster) => currentCluster.name.toLowerCase() === name.toLowerCase())
     if (existingCluster) throw new Error(`there is already a cluster with the name ${name}`)
 
     // create the cluster record
@@ -581,7 +580,7 @@ const ClusterController = ({ store }) => {
     }, trx)
 
     // eslint-disable-next-line eqeqeq
-    const role = roles.find((role) => role.user == user)
+    const role = roles.find((currentRole) => currentRole.user == user)
     if (!role) throw new Error(`no role for user ${user} found for cluster ${id}`)
 
     return store.role.delete({

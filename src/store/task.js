@@ -44,7 +44,7 @@ const TaskStore = (knex) => {
     if (status) {
       queryStatus = typeof (status) === 'string' ? [status] : status
 
-      const badStatuses = queryStatus.filter((status) => enumerations.TASK_STATUS.indexOf(status) < 0)
+      const badStatuses = queryStatus.filter((currentStatus) => enumerations.TASK_STATUS.indexOf(currentStatus) < 0)
 
       if (badStatuses.length > 0) {
         throw new Error(`bad task status: ${badStatuses.join(', ')}`)
