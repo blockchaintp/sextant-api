@@ -137,7 +137,7 @@ tape('task -> we can cancel a task via an on step complete handler', async (t) =
   const task = Task({
     generator: testTask,
 
-    onStep: (currentTask) => currentTask.cancel(),
+    onStep: (innerTask) => innerTask.cancel(),
   })
 
   await Promise.all([
