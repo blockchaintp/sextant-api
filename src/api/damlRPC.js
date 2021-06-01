@@ -501,8 +501,7 @@ const DamlRPC = ({
     return result
   }
 
-  // eslint-disable-next-line no-empty-pattern
-  const getTimeServiceInfo = ({} = {}) => database.damlTimeService
+  const getTimeServiceInfo = () => database.damlTimeService
 
   // eslint-disable-next-line max-len
   // grpcurl -plaintext -H 'Authorization: Bearer 123' -d '{"dar_file": "ABC"}' localhost:39000 com.daml.ledger.api.v1.admin.PackageManagementService.UploadDarFile
