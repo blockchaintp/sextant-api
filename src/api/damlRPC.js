@@ -166,12 +166,12 @@ const DamlRPC = ({
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
         const {
-          currentParticipantId,
+          innerParticipantId,
         } = await grpccurl({
           service: 'admin.PartyManagementService',
           method: 'GetParticipantId',
         })
-        return currentParticipantId
+        return innerParticipantId
       },
     })
 
