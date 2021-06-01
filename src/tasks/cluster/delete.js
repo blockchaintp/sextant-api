@@ -1,15 +1,11 @@
-const Promise = require('bluebird')
-
 const config = require('../../config')
 
 const {
   DEPLOYMENT_STATUS,
 } = config
 
-const ClusterDelete = ({
-  
-}) => function* clusterCreateTask(params) {
-
+// eslint-disable-next-line no-empty-pattern
+const ClusterDelete = ({}) => function* clusterCreateTask(params) {
   const {
     store,
     task,
@@ -22,11 +18,9 @@ const ClusterDelete = ({
     deleted: true,
   }, trx)
 
-  const nonDeletedDeployments = deployments.filter(deployment => deployment.status != DEPLOYMENT_STATUS.deleted)
+  const nonDeletedDeployments = deployments.filter((deployment) => deployment.status !== DEPLOYMENT_STATUS.deleted)
 
-  if(nonDeletedDeployments.length > 0) throw new Error(`all deployments for this cluster must be in deleted state`)
-
-  
+  if (nonDeletedDeployments.length > 0) throw new Error('all deployments for this cluster must be in deleted state')
 }
 
 module.exports = ClusterDelete

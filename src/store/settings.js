@@ -1,5 +1,3 @@
-const config = require('../config')
-
 /*
 
   NOTE - this could be replaced with something like Hashicorp vault
@@ -8,17 +6,14 @@ const config = require('../config')
 */
 
 const SettingsStore = (knex) => {
-
   /*
 
     list all settings for sextant
 
   */
-  const list = ({}, trx) => {
-
-    return (trx || knex).select('*')
-      .from('settings')
-  }
+  // eslint-disable-next-line no-empty-pattern
+  const list = ({}, trx) => (trx || knex).select('*')
+    .from('settings')
 
   /*
 
@@ -33,12 +28,12 @@ const SettingsStore = (knex) => {
     id,
     key,
   }, trx) => {
-    if(!id && !key) throw new Error(`id or key must be given to store.settings.get`)
+    if (!id && !key) throw new Error('id or key must be given to store.settings.get')
 
     const queryParams = {}
 
-    if(id) queryParams.id = id
-    if(key) queryParams.key = key
+    if (id) queryParams.id = id
+    if (key) queryParams.key = key
 
     return (trx || knex).select('*')
       .from('settings')
@@ -61,11 +56,11 @@ const SettingsStore = (knex) => {
   const create = async ({
     data: {
       key,
-      value
-    }
+      value,
+    },
   }, trx) => {
-    if(!key) throw new Error(`data.key param must be given to store.settings.create`)
-    if(!value) throw new Error(`data.value param must be given to store.settings.create`)
+    if (!key) throw new Error('data.key param must be given to store.settings.create')
+    if (!value) throw new Error('data.value param must be given to store.settings.create')
 
     const insertData = {
       key,
@@ -84,30 +79,28 @@ const SettingsStore = (knex) => {
 
     params:
 
-
       * key, value
 
   */
   const update = async ({
     key,
     data: {
-      value
-    }
+      value,
+    },
   }, trx) => {
-
-    if(!key) throw new Error(`key must be given to store.settings.update`)
-    if(!value) throw new Error(`data.value param must be given to store.settings.update`)
+    if (!key) throw new Error('key must be given to store.settings.update')
+    if (!value) throw new Error('data.value param must be given to store.settings.update')
 
     const queryParams = {
-      key
+      key,
     }
 
-    if(key) queryParams.key = key
+    if (key) queryParams.key = key
 
     const [result] = await (trx || knex)('settings')
       .where(queryParams)
       .update({
-        value: value,
+        value,
       })
       .returning('*')
     return result
@@ -126,13 +119,13 @@ const SettingsStore = (knex) => {
     id,
     key,
   }, trx) => {
-    if(!id && !key) throw new Error(`id or key must be given to store.settings.del`)
+    if (!id && !key) throw new Error('id or key must be given to store.settings.del')
 
     const queryParams = {
     }
 
-    if(id) queryParams.id = id
-    if(key) queryParams.key = key
+    if (id) queryParams.id = id
+    if (key) queryParams.key = key
 
     const [result] = await (trx || knex)('settings')
       .where(queryParams)
@@ -148,7 +141,6 @@ const SettingsStore = (knex) => {
     update,
     delete: del,
   }
-
 }
 
 module.exports = SettingsStore
