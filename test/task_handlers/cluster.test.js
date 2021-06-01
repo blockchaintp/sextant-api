@@ -1,8 +1,5 @@
-'use strict'
-
+/* eslint-disable max-len */
 const Promise = require('bluebird')
-const async = require('async')
-const tape = require('tape')
 const database = require('../database')
 const fixtures = require('../fixtures')
 
@@ -22,9 +19,7 @@ const {
   TASK_CONTROLLER_LOOP_DELAY,
 } = config
 
-
-database.testSuiteWithDatabase(getConnection => {
-
+database.testSuiteWithDatabase((getConnection) => {
   const getController = () => {
     const store = Store(getConnection())
     return ClusterController({
@@ -41,14 +36,13 @@ database.testSuiteWithDatabase(getConnection => {
   }
 
   let userMap = {}
-  let testClusters = {}
+  const testClusters = {}
 
-  asyncTest('cluster task_handlers -> create users', async (t) => {
+  asyncTest('cluster task_handlers -> create users', async () => {
     userMap = await fixtures.insertTestUsers(getConnection())
   })
 
   asyncTest('cluster task_handlers -> create cluster', async (t) => {
-  
     const store = Store(getConnection())
 
     const handlers = Tasks({
@@ -76,27 +70,25 @@ database.testSuiteWithDatabase(getConnection => {
       id: testClusters.admin.id,
     })
 
-    t.deepEqual(updatedCluster.desired_state, testClusters.admin.desired_state, `the applied_state has been updated to the desired_state`)
-    t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, `the cluster status is provisioned`)
+    t.deepEqual(updatedCluster.desired_state, testClusters.admin.desired_state, 'the applied_state has been updated to the desired_state')
+    t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, 'the cluster status is provisioned')
 
     await taskProcessor.stop()
   })
 
   asyncTest('cluster task_handlers -> create cluster error', async (t) => {
-  
     const handlers = {
-      [TASK_ACTION['cluster.create']]: function* errorClusterCreate(params) {
+      [TASK_ACTION['cluster.create']]: function* errorClusterCreate() {
+        yield undefined
         throw new Error('test')
-      }
+      },
     }
     const controller = getController()
     const taskProcessor = getTaskProcessor(handlers)
     const testUser = userMap[USER_TYPES.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
-    const insertData = Object.assign({}, clusterData, {
-      name: 'error cluster',
-    })
+    const insertData = { ...clusterData, name: 'error cluster' }
 
     await taskProcessor.start()
 
@@ -112,16 +104,15 @@ database.testSuiteWithDatabase(getConnection => {
       withTask: true,
     })
 
-    
-    t.equal(updatedCluster.status, CLUSTER_STATUS.error, `the cluster status is error`)
-    t.equal(updatedCluster.task.error, `Error: test`, `the task error message is correct`)
+    t.equal(updatedCluster.status, CLUSTER_STATUS.error, 'the cluster status is error')
+    t.equal(updatedCluster.task.error, 'Error: test', 'the task error message is correct')
 
     await taskProcessor.stop()
   })
 
   /*
   asyncTest('cluster controller -> update cluster', async (t) => {
-  
+
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
     const testUser = userMap[USER_TYPES.admin]
@@ -171,11 +162,11 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('cluster controller -> delete cluster', async (t) => {
-  
+
     const controller = getController()
     const taskProcessor = getTaskProcessor({})
     const testUser = userMap[USER_TYPES.admin]
-    
+
     async.series([
 
       next => taskProcessor.start(next),
@@ -205,5 +196,4 @@ database.testSuiteWithDatabase(getConnection => {
 
   })
 */
-  
 })

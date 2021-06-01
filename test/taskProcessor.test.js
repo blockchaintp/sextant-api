@@ -1,8 +1,6 @@
-'use strict'
-
-const tape = require('tape')
+/* eslint-disable object-shorthand */
+/* eslint-disable no-shadow */
 const Promise = require('bluebird')
-const async = require('async')
 const asyncTest = require('./asyncTest')
 const Store = require('../src/store')
 const TaskProcessor = require('../src/taskprocessor')
@@ -20,11 +18,10 @@ const {
   CLUSTER_PROVISION_TYPE,
 } = config
 
-database.testSuiteWithDatabase(getConnection => {
-
+database.testSuiteWithDatabase((getConnection) => {
   let userMap = {}
 
-  asyncTest('task store -> create users', async (t) => {
+  asyncTest('task store -> create users', async () => {
     const users = await fixtures.insertTestUsers(getConnection())
     userMap = users
   })
@@ -40,8 +37,8 @@ database.testSuiteWithDatabase(getConnection => {
     },
     resource_status: {
       completed: 'provisioned',
-      error: 'error'
-    }
+      error: 'error',
+    },
   })
 
   const getCompareTask = (task) => ({
@@ -51,7 +48,7 @@ database.testSuiteWithDatabase(getConnection => {
     restartable: task.restartable,
     action: task.action,
     payload: task.payload,
-    resource_status: task.resource_status
+    resource_status: task.resource_status,
   })
 
   let store = null
@@ -74,17 +71,17 @@ database.testSuiteWithDatabase(getConnection => {
     await taskProcessor.start()
 
     const createdTask = await store.task.create({
-      data: taskData
+      data: taskData,
     })
 
-    await new Promise(resolve => taskProcessor.on('task.processed', resolve))
-    
+    await new Promise((resolve) => taskProcessor.on('task.processed', resolve))
+
     await taskProcessor.stop()
 
     return createdTask
   }
 
-  asyncTest('make store', async (t) => {
+  asyncTest('make store', async () => {
     store = Store(getConnection())
   })
 
@@ -96,6 +93,7 @@ database.testSuiteWithDatabase(getConnection => {
     const handlers = {
       [TASK_ACTION['cluster.create']]: function* (params) {
         handlerParams = params
+        yield undefined
       },
     }
 
@@ -105,19 +103,19 @@ database.testSuiteWithDatabase(getConnection => {
       handlers,
     })
 
-    t.ok(handlerParams.store, `the store was passed to the task handler`)
-    t.deepEqual(getCompareTask(handlerParams.task), taskData, `the task data is correct`)
-    t.equal(handlerParams.task.status, TASK_STATUS.running, `the task is in running status`)
-    t.equal(handlerParams.task.id, createdTask.id, `the created task id is the same`)
+    t.ok(handlerParams.store, 'the store was passed to the task handler')
+    t.deepEqual(getCompareTask(handlerParams.task), taskData, 'the task data is correct')
+    t.equal(handlerParams.task.status, TASK_STATUS.running, 'the task is in running status')
+    t.equal(handlerParams.task.id, createdTask.id, 'the created task id is the same')
   })
 
   asyncTest('task processor -> error task handler', async (t) => {
-    const ERROR_TEXT = `this is a test error`
+    const ERROR_TEXT = 'this is a test error'
 
     const taskData = getTaskFixture()
 
     const handlers = {
-      [TASK_ACTION['cluster.create']]: function* (params) {
+      [TASK_ACTION['cluster.create']]: function* () {
         yield Promise.delay(1000)
         throw new Error(ERROR_TEXT)
       },
@@ -133,8 +131,8 @@ database.testSuiteWithDatabase(getConnection => {
       id: createdTask.id,
     })
 
-    t.equal(finalTask.status, TASK_STATUS.error, `the task was errored`)
-    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, `the error message was correct`)
+    t.equal(finalTask.status, TASK_STATUS.error, 'the task was errored')
+    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, 'the error message was correct')
   }, cleanUp)
 
   asyncTest('cancel a task halfway through', async (t) => {
@@ -165,8 +163,8 @@ database.testSuiteWithDatabase(getConnection => {
       id: createdTask.id,
     })
 
-    t.equal(sawStep, false, `we never got to the step after the cancel`)
-    t.equal(finalTask.status, TASK_STATUS.cancelled, `the task was cancelled`)
+    t.equal(sawStep, false, 'we never got to the step after the cancel')
+    t.equal(finalTask.status, TASK_STATUS.cancelled, 'the task was cancelled')
   }, cleanUp)
 
   asyncTest('check the transaction rollback is working', async (t) => {
@@ -186,14 +184,13 @@ database.testSuiteWithDatabase(getConnection => {
         capabilities: {
           funkyFeature: true,
         },
-      }
+      },
     })
 
     let updatedCluster = null
 
     const handlers = {
       [TASK_ACTION['cluster.create']]: function* (params) {
-
         const {
           trx,
         } = params
@@ -227,11 +224,9 @@ database.testSuiteWithDatabase(getConnection => {
       id: cluster.id,
     })
 
-    t.equal(updatedCluster.name, NEW_NAME, `the name was updated inside the handler`)
-    t.equal(finalCluster.name, ORIGINAL_NAME, `the name was rolled back with the transaction`)
-    t.equal(finalTask.status, TASK_STATUS.error, `the task was errored`)
-    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, `the error message was correct`)
-
+    t.equal(updatedCluster.name, NEW_NAME, 'the name was updated inside the handler')
+    t.equal(finalCluster.name, ORIGINAL_NAME, 'the name was rolled back with the transaction')
+    t.equal(finalTask.status, TASK_STATUS.error, 'the task was errored')
+    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, 'the error message was correct')
   }, cleanUp)
-
 })
