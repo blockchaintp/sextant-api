@@ -126,12 +126,12 @@ const DamlRPC = ({
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
         const {
-          currentLedgerId,
+          innerLedgerId,
         } = await grpccurl({
           service: 'LedgerIdentityService',
           method: 'GetLedgerIdentity',
         })
-        return currentLedgerId
+        return innerLedgerId
       },
     })
 
