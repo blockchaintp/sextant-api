@@ -14,7 +14,7 @@ const {
 module.exports = (opts) => ({
   [TASK_ACTION['cluster.create']]: ClusterCreate(opts),
   [TASK_ACTION['cluster.update']]: ClusterUpdate(opts),
-  [TASK_ACTION['cluster.delete']]: ClusterDelete(opts),
+  [TASK_ACTION['cluster.delete']]: ClusterDelete(),
   [TASK_ACTION['deployment.create']]: DeploymentCreate(opts),
   [TASK_ACTION['deployment.update']]: DeploymentUpdate(opts),
   [TASK_ACTION['deployment.delete']]: DeploymentDelete(opts),
