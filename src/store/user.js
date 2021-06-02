@@ -1,16 +1,15 @@
 const config = require('../config')
 
 const UserStore = (knex) => {
-
   /*
-  
+
     list all users
 
     params:
 
   */
+  // eslint-disable-next-line no-empty-pattern
   const list = ({}, trx) => {
-
     const orderBy = config.LIST_ORDER_BY_FIELDS.user
 
     return (trx || knex).select('*')
@@ -19,7 +18,7 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     get a single user
 
     params:
@@ -27,20 +26,20 @@ const UserStore = (knex) => {
       * id or username
 
       * transaction - used if present
-    
+
     one of id or username must be given
-  
+
   */
   const get = ({
     id,
     username,
   }, trx) => {
-    if(!id && !username) throw new Error(`one of id or username must be given to store.user.get`)
+    if (!id && !username) throw new Error('one of id or username must be given to store.user.get')
 
     const query = {}
-    if(id) query.id = id
-    if(username) query.username = username
-    
+    if (id) query.id = id
+    if (username) query.username = username
+
     return (trx || knex).select('*')
       .from(config.TABLES.user)
       .where(query)
@@ -48,7 +47,7 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     insert a new user
 
     params:
@@ -68,12 +67,12 @@ const UserStore = (knex) => {
       server_side_key,
       permission,
       meta,
-    }
+    },
   }, trx) => {
-    if(!username) throw new Error(`data.username param must be given to store.user.create`)
-    if(!hashed_password) throw new Error(`data.hashed_password param must be given to store.user.create`)
-    if(!server_side_key) throw new Error(`data.server_side_key param must be given to store.user.create`)
-    if(!permission) throw new Error(`data.permission param must be given to store.user.create`)
+    if (!username) throw new Error('data.username param must be given to store.user.create')
+    if (!hashed_password) throw new Error('data.hashed_password param must be given to store.user.create')
+    if (!server_side_key) throw new Error('data.server_side_key param must be given to store.user.create')
+    if (!permission) throw new Error('data.permission param must be given to store.user.create')
 
     const [result] = await (trx || knex)(config.TABLES.user)
       .insert({
@@ -89,7 +88,7 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     update a user
 
     params:
@@ -100,16 +99,16 @@ const UserStore = (knex) => {
         * hashed_password
         * permission
         * meta
-    
+
     one of id or username must be given
-  
+
   */
   const update = async ({
     id,
     data,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.user.update`)
-    if(!data) throw new Error(`data param must be given to store.user.update`)
+    if (!id) throw new Error('id must be given to store.user.update')
+    if (!data) throw new Error('data param must be given to store.user.update')
 
     const [result] = await (trx || knex)(config.TABLES.user)
       .where({
@@ -121,18 +120,18 @@ const UserStore = (knex) => {
   }
 
   /*
-  
+
     delete a single user
 
     params:
 
       * id
-    
+
   */
   const del = async ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.user.delete`)
+    if (!id) throw new Error('id must be given to store.user.delete')
 
     const [result] = await (trx || knex)(config.TABLES.user)
       .where({
