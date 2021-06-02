@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+* refactor(tests): add yield statements to empty generators [view commit](https://github.com/catenasys/sextant-api/commit/e08175cf3124c471a8833f4fc87adc943135c1b9)
+* refactor(src): linting [view commit](https://github.com/catenasys/sextant-api/commit/923cd60cba2be08e081f229b8cf80b6034b77c58)
+* refactor(damlrpc-and-settings-tp): remove unexpected empty object pattern and linting [view commit](https://github.com/catenasys/sextant-api/commit/d71374af31b3cffce47379bda38e859eeab27ba6)
+* refactor(damlrpc): updates declarations with more semantic prefixes [view commit](https://github.com/catenasys/sextant-api/commit/461e0162b140b97d875b78bee13c4fb20eaccd75)
+* refactor(damlrpc): updates declarations with more semantic prefixes [view commit](https://github.com/catenasys/sextant-api/commit/298d40b2a20067b518f65764662643bd8e5241d1)
+* refactor(test): updates declarations with more semantic prefixes [view commit](https://github.com/catenasys/sextant-api/commit/22c27578848adf1084f49fcf57a62bdb7a0b2a00)
+* refactor(test): removes variable shadowing [view commit](https://github.com/catenasys/sextant-api/commit/f477f8ef10c4ea55dd5966c1b9dd70fe5bf3e2bc)
+* refactor(src): removes variable shadowing [view commit](https://github.com/catenasys/sextant-api/commit/5b097a09460da2c16c69974475d8725ff99e9a6d)
+* refactor(test): lints all files pertaining to this ticket in test [view commit](https://github.com/catenasys/sextant-api/commit/2c81168655b391675f5e1fb2672b16a7aa4de831)
+* refactor(src): lints all files pertaining to this ticket in src [view commit](https://github.com/catenasys/sextant-api/commit/6b7a8baca0966245ab1931bda6fe9502f9bb573c)
+* refactor(test): removes useless assignments to variables [view commit](https://github.com/catenasys/sextant-api/commit/9197b34fa1cf848eefc8cf8fe40bf24b2438136b)
+* refactor(src): removes useless assignments to variables [view commit](https://github.com/catenasys/sextant-api/commit/f1ad0299957f9f843f1ab780e9dd854eade50964)
+* refactor(test): linting [view commit](https://github.com/catenasys/sextant-api/commit/37badd8fb5b94bae1f353d53d07ab6b72b03b3e8)
+* refactor(src): linting [view commit](https://github.com/catenasys/sextant-api/commit/0a7ca478ee6d59b4d8952b844bbf8ba008141149)
 * fix(kubectl-grpcurl): clean up logging [view commit](https://github.com/catenasys/sextant-api/commit/908cba91633cd6079a1325a76340e66e05fa0dca)
 * style(grpcurl): linting [view commit](https://github.com/catenasys/sextant-api/commit/3c88a5296c4091f5f3082e67c933ccd1121a092e)
 * feat(damlrpc-api): included add-party-id-hint to the add-party operation [view commit](https://github.com/catenasys/sextant-api/commit/c12ba4ac239b1999f7b1abe3ae9fda42b6dab657)
