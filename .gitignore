@@ -224,3 +224,4 @@ taekion/client-wrapper/client-wrapper
 
 # temporary directory used in Makefile/Jenkins build
 build/
+.scannerwork
