@@ -218,7 +218,7 @@ const DeployentController = ({ store }) => {
     });
 
     const existingDeployment = deployments.find(
-      (deployment) => deployment.name.toLowerCase() === name.toLowerCase(),
+      (currentDeployment) => currentDeployment.name.toLowerCase() === name.toLowerCase(),
     );
     if (existingDeployment) throw new Error(`there is already a deployment with the name ${name}`);
 

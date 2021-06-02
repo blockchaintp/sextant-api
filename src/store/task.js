@@ -1,10 +1,10 @@
+/* eslint-disable no-shadow */
 const config = require('../config')
 const enumerations = require('../enumerations')
 
 const TaskStore = (knex) => {
-
   /*
-  
+
     list all tasks
 
     we can filter tasks based on the following params:
@@ -14,9 +14,9 @@ const TaskStore = (knex) => {
      * user - list all tasks started by a user
      * status - list all tasks that have the given status
      * limit - whether the limit the number of results
-    
+
     all the above are optional - if nothing is defined we list all tasks across the system
-  
+
   */
   const list = ({
     cluster,
@@ -25,29 +25,28 @@ const TaskStore = (knex) => {
     status,
     limit,
   }, trx) => {
-
     const query = {}
 
-    if(cluster) {
+    if (cluster) {
       query.resource_type = config.RESOURCE_TYPES.cluster
       query.resource_id = cluster
     }
 
-    if(deployment) {
+    if (deployment) {
       query.resource_type = config.RESOURCE_TYPES.deployment
       query.resource_id = deployment
     }
 
-    if(user) query.user = user
+    if (user) query.user = user
 
     let queryStatus = []
 
-    if(status) {
-      queryStatus = typeof(status) === 'string' ? [status] : status
+    if (status) {
+      queryStatus = typeof (status) === 'string' ? [status] : status
 
-      const badStatuses = queryStatus.filter(status => enumerations.TASK_STATUS.indexOf(status) < 0)
+      const badStatuses = queryStatus.filter((currentStatus) => enumerations.TASK_STATUS.indexOf(currentStatus) < 0)
 
-      if(badStatuses.length > 0) {
+      if (badStatuses.length > 0) {
         throw new Error(`bad task status: ${badStatuses.join(', ')}`)
       }
     }
@@ -58,29 +57,26 @@ const TaskStore = (knex) => {
       .from(config.TABLES.task)
       .orderBy(orderBy.field, orderBy.direction)
 
-    if(Object.keys(query).length > 0 && queryStatus.length > 0) {
+    if (Object.keys(query).length > 0 && queryStatus.length > 0) {
       sqlQuery
         .whereIn('status', queryStatus)
         .andWhere(query)
-    }
-    else if(Object.keys(query).length > 0) {
+    } else if (Object.keys(query).length > 0) {
       sqlQuery.where(query)
-    }
-    else if(queryStatus.length > 0) {
+    } else if (queryStatus.length > 0) {
       sqlQuery
         .whereIn('status', queryStatus)
     }
 
-    if(limit) {
+    if (limit) {
       sqlQuery.limit(limit)
     }
 
     return sqlQuery
   }
 
-
   /*
-  
+
     get active tasks for either a specific resource
 
     params:
@@ -93,8 +89,7 @@ const TaskStore = (knex) => {
     cluster,
     deployment,
   }, trx) => {
-
-    if(!cluster && !deployment) throw new Error(`cluster or deployment required for controller.task.activeForResource`)
+    if (!cluster && !deployment) throw new Error('cluster or deployment required for controller.task.activeForResource')
 
     const query = {
       // created tasks are expected to be picked up by the worker any moment
@@ -102,14 +97,14 @@ const TaskStore = (knex) => {
       status: config.TASK_ACTIVE_STATUSES,
     }
 
-    if(cluster) query.cluster = cluster
-    if(deployment) query.deployment = deployment
+    if (cluster) query.cluster = cluster
+    if (deployment) query.deployment = deployment
 
     return list(query, trx)
   }
 
   /*
-  
+
     load the most recent task for a given resource
 
     params:
@@ -122,21 +117,20 @@ const TaskStore = (knex) => {
     cluster,
     deployment,
   }, trx) => {
-    if(!cluster && !deployment) throw new Error(`cluster or deployment required for controller.task.activeForResource`)
+    if (!cluster && !deployment) throw new Error('cluster or deployment required for controller.task.activeForResource')
 
     const query = {}
 
-    if(cluster) query.cluster = cluster
-    if(deployment) query.deployment = deployment
+    if (cluster) query.cluster = cluster
+    if (deployment) query.deployment = deployment
 
     query.limit = 1
 
     return list(query, trx).first()
   }
 
-
   /*
-  
+
     get a single task
 
     params:
@@ -147,7 +141,7 @@ const TaskStore = (knex) => {
   const get = ({
     id,
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.task.get`)
+    if (!id) throw new Error('id must be given to store.task.get')
 
     return (trx || knex).select('*')
       .from(config.TABLES.task)
@@ -158,7 +152,7 @@ const TaskStore = (knex) => {
   }
 
   /*
-  
+
     insert a new task
 
     params:
@@ -171,7 +165,7 @@ const TaskStore = (knex) => {
         * restartable
         * payload
         * status
-    
+
   */
   const create = async ({
     data: {
@@ -181,15 +175,15 @@ const TaskStore = (knex) => {
       action,
       restartable,
       payload,
-      resource_status
-    }
+      resource_status,
+    },
   }, trx) => {
-    if(!user) throw new Error(`data.user param must be given to store.task.create`)
-    if(!resource_type) throw new Error(`data.resource_type param must be given to store.task.create`)
-    if(!resource_id) throw new Error(`data.resource_id param must be given to store.task.create`)
-    if(!action) throw new Error(`data.action param must be given to store.task.create`)
-    if(typeof(restartable) !== 'boolean') throw new Error(`data.restartable param must be given to store.task.create`)
-    if(!payload) throw new Error(`data.payload param must be given to store.task.create`)
+    if (!user) throw new Error('data.user param must be given to store.task.create')
+    if (!resource_type) throw new Error('data.resource_type param must be given to store.task.create')
+    if (!resource_id) throw new Error('data.resource_id param must be given to store.task.create')
+    if (!action) throw new Error('data.action param must be given to store.task.create')
+    if (typeof (restartable) !== 'boolean') throw new Error('data.restartable param must be given to store.task.create')
+    if (!payload) throw new Error('data.payload param must be given to store.task.create')
 
     const [result] = await (trx || knex)(config.TABLES.task)
       .insert({
@@ -199,14 +193,14 @@ const TaskStore = (knex) => {
         action,
         restartable,
         payload,
-        resource_status
+        resource_status,
       })
       .returning('*')
     return result
   }
 
   /*
-  
+
     update a task status
 
     params:
@@ -217,7 +211,7 @@ const TaskStore = (knex) => {
         * error
         * started_at
         * ended_at
-  
+
   */
   const update = async ({
     id,
@@ -225,21 +219,21 @@ const TaskStore = (knex) => {
       status,
       error,
       started_at,
-      ended_at
-    }
+      ended_at,
+    },
   }, trx) => {
-    if(!id) throw new Error(`id must be given to store.task.update`)
-    if(!status) throw new Error(`data.status param must be given to store.task.update`)
+    if (!id) throw new Error('id must be given to store.task.update')
+    if (!status) throw new Error('data.status param must be given to store.task.update')
 
-    if(enumerations.TASK_STATUS.indexOf(status) < 0) throw new Error(`bad status: ${status}`)
+    if (enumerations.TASK_STATUS.indexOf(status) < 0) throw new Error(`bad status: ${status}`)
 
     const updateData = {
       status,
     }
 
-    if(error) updateData.error = error
-    if(started_at) updateData.started_at = started_at
-    if(ended_at) updateData.ended_at = ended_at
+    if (error) updateData.error = error
+    if (started_at) updateData.started_at = started_at
+    if (ended_at) updateData.ended_at = ended_at
 
     const [result] = await (trx || knex)(config.TABLES.task)
       .where({
@@ -251,20 +245,20 @@ const TaskStore = (knex) => {
   }
 
   /*
-  
+
     delete tasks for a resource
 
     params:
 
      * id
-  
+
   */
   const deleteForResource = ({
     resource_type,
     resource_id,
   }, trx) => {
-    if(!resource_type) throw new Error(`resource_type must be given to store.task.deleteForResource`)
-    if(!resource_id) throw new Error(`resource_type must be given to store.task.deleteForResource`)
+    if (!resource_type) throw new Error('resource_type must be given to store.task.deleteForResource')
+    if (!resource_id) throw new Error('resource_type must be given to store.task.deleteForResource')
     return (trx || knex)(config.TABLES.task)
       .where({
         resource_type,

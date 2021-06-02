@@ -126,12 +126,12 @@ const DamlRPC = ({
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
         const {
-          ledgerId,
+          innerLedgerId,
         } = await grpccurl({
           service: 'LedgerIdentityService',
           method: 'GetLedgerIdentity',
         })
-        return ledgerId
+        return innerLedgerId
       },
     })
 
@@ -166,12 +166,12 @@ const DamlRPC = ({
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
         const {
-          participantId,
+          innerParticipantId,
         } = await grpccurl({
           service: 'admin.PartyManagementService',
           method: 'GetParticipantId',
         })
-        return participantId
+        return innerParticipantId
       },
     })
 
