@@ -95,7 +95,7 @@ const HELPERS = {
       return false
     }
 
-    const users = await store.user.list({})
+    const users = await store.user.list()
     if (users.length > 0) return false
     return true
   },

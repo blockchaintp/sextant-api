@@ -9,7 +9,7 @@ const UserStore = (knex) => {
 
   */
   // eslint-disable-next-line no-empty-pattern
-  const list = ({}, trx) => {
+  const list = (trx) => {
     const orderBy = config.LIST_ORDER_BY_FIELDS.user
 
     return (trx || knex).select('*')

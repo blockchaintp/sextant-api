@@ -4,8 +4,7 @@ const {
   DEPLOYMENT_STATUS,
 } = config
 
-// eslint-disable-next-line no-empty-pattern
-const ClusterDelete = ({}) => function* clusterCreateTask(params) {
+const ClusterDelete = () => function* clusterCreateTask(params) {
   const {
     store,
     task,

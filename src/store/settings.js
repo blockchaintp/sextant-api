@@ -12,7 +12,7 @@ const SettingsStore = (knex) => {
 
   */
   // eslint-disable-next-line no-empty-pattern
-  const list = ({}, trx) => (trx || knex).select('*')
+  const list = (trx) => (trx || knex).select('*')
     .from('settings')
 
   /*

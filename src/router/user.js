@@ -1,13 +1,13 @@
+/* eslint-disable consistent-return */
 const userUtils = require('../utils/user')
 
 const UserRoutes = (controllers) => {
+  const status = async (req, res) => {
+    const result = req.user
+      ? userUtils.safe(req.user)
+      : null
 
-  const status = async (req, res, next) => {
-    const result = req.user ?
-      userUtils.safe(req.user) :
-      null
-
-    if(result) {
+    if (result) {
       const roles = await controllers.user.getRoles({
         id: result.id,
       })
@@ -20,14 +20,14 @@ const UserRoutes = (controllers) => {
       .json(result)
   }
 
-  const hasInitialUser = async (req, res, next) => {
+  const hasInitialUser = async (req, res) => {
     const userCount = await controllers.user.count({})
     res
       .status(200)
-      .json(userCount > 0 ? true : false)
+      .json(userCount > 0)
   }
 
-  const login = async (req, res, next) => {
+  const login = async (req, res) => {
     const { username, password } = req.body
 
     const ok = await controllers.user.checkPassword({
@@ -35,10 +35,10 @@ const UserRoutes = (controllers) => {
       password,
     })
 
-    if(!ok) {
+    if (!ok) {
       res.status(403)
       res.json({
-        error: `incorrect login details`
+        error: 'incorrect login details',
       })
       return
     }
@@ -48,8 +48,8 @@ const UserRoutes = (controllers) => {
     })
 
     await new Promise((resolve, reject) => {
-      req.login(userUtils.safe(user), err => {
-        if(err) return reject(err)
+      req.login(userUtils.safe(user), (err) => {
+        if (err) return reject(err)
         resolve()
       })
     })
@@ -59,7 +59,7 @@ const UserRoutes = (controllers) => {
     })
   }
 
-  const logout = (req, res, next) => {
+  const logout = (req, res) => {
     req.logout()
     res
       .status(200)
@@ -68,14 +68,14 @@ const UserRoutes = (controllers) => {
       })
   }
 
-  const list = async (req, res, next) => {
-    const users = await controllers.user.list({})
+  const list = async (req, res) => {
+    const users = await controllers.user.list()
     res
       .status(200)
       .json(users.map(userUtils.safe))
   }
 
-  const search = async (req, res, next) => {
+  const search = async (req, res) => {
     const users = await controllers.user.search({
       search: req.query.search,
     })
@@ -84,7 +84,7 @@ const UserRoutes = (controllers) => {
       .json(users)
   }
 
-  const get = async (req, res, next) => {
+  const get = async (req, res) => {
     const user = await controllers.user.get({
       id: req.params.id,
     })
@@ -100,16 +100,17 @@ const UserRoutes = (controllers) => {
     //
     //  * an superuser user locking themselves out of the system (by downgrading)
     //  * a normal user giving themselves superuser access
-    if(req.user.id == req.params.id && req.body.permission && req.body.permission !== req.user.permission) {
+    // eslint-disable-next-line eqeqeq
+    if (req.user.id == req.params.id && req.body.permission && req.body.permission !== req.user.permission) {
       res._code = 403
-      return next(`cannot change own permission`)
+      return next('cannot change own permission')
     }
 
     // a user cannot attempt to update tokens using the normal update method
     // otherwise we might get broken tokens
-    if(req.body.server_side_key) {
+    if (req.body.server_side_key) {
       res._code = 403
-      return next(`cannot change server_side_key via update`)
+      return next('cannot change server_side_key via update')
     }
 
     const user = await controllers.user.update({
@@ -122,7 +123,7 @@ const UserRoutes = (controllers) => {
       .json(userUtils.safe(user))
   }
 
-  const getToken = async (req, res, next) => {
+  const getToken = async (req, res) => {
     const token = await controllers.user.getToken({
       id: req.params.id,
     })
@@ -133,7 +134,7 @@ const UserRoutes = (controllers) => {
       })
   }
 
-  const updateToken = async (req, res, next) => {
+  const updateToken = async (req, res) => {
     await controllers.user.updateToken({
       id: req.params.id,
     })
@@ -144,7 +145,7 @@ const UserRoutes = (controllers) => {
       })
   }
 
-  const create = async (req, res, next) => {
+  const create = async (req, res) => {
     const user = await controllers.user.create(req.body)
     res
       .status(201)
@@ -152,11 +153,11 @@ const UserRoutes = (controllers) => {
   }
 
   const del = async (req, res, next) => {
-
     // make sure a user cannot delete themselves
-    if(req.user.id == req.params.id) {
+    // eslint-disable-next-line eqeqeq
+    if (req.user.id == req.params.id) {
       res._code = 403
-      return next(`cannot delete yourself`)
+      return next('cannot delete yourself')
     }
 
     await controllers.user.delete({
