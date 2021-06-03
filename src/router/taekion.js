@@ -203,6 +203,7 @@ const TaekionRoutes = (controllers) => {
       volume,
       directory_inode,
       file_inode,
+      download_filename: req.query.download_filename,
       res,
     })
   }

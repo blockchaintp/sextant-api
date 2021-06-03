@@ -281,6 +281,7 @@ const TaekionAPI = ({ store } = {}) => {
     volume,
     directory_inode,
     file_inode,
+    download_filename,
     res,
   }) => {
     const connection = await ServiceProxy({
@@ -298,9 +299,11 @@ const TaekionAPI = ({ store } = {}) => {
         url,
         responseType: 'stream'
       })
-
       res.status(200)
       res.set(upstream.headers)
+      if(download_filename) {
+        res.set('Content-Disposition', `attachment; filename="${download_filename}"`)
+      }
       upstream.data.pipe(res)
       
     } catch (e) {

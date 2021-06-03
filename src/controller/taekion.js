@@ -127,12 +127,14 @@ const TaekionController = ({ store }) => {
     volume,
     directory_inode,
     file_inode,
+    download_filename,
     res,
   }) => api.explorerDownloadFile({
     deployment,
     volume,
     directory_inode,
     file_inode,
+    download_filename,
     res,
   })
 
