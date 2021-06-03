@@ -15,7 +15,7 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest('user store -> list no data', async (t) => {
     const store = UserStore(getConnection())
 
-    const users = await store.list({})
+    const users = await store.list()
     t.equal(users.length, 0, 'there were no users')
   })
 
@@ -62,7 +62,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const correctOrder = [].concat(enumerations.USER_TYPES)
     correctOrder.sort()
 
-    const users = await store.list({})
+    const users = await store.list()
     t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
     t.deepEqual(users.map((user) => user.username), correctOrder, 'the users were in the correct order')
   })
@@ -107,7 +107,7 @@ database.testSuiteWithDatabase((getConnection) => {
       id: userMap[config.USER_TYPES.admin].id,
     })
 
-    const users = await store.list({})
+    const users = await store.list()
     t.equal(users.length, fixtures.SIMPLE_USER_DATA.length - 1, 'there is 1 less user')
   })
 })
