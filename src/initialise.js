@@ -13,7 +13,7 @@ const createInitialUser = async ({
   // check to see if we have been given an initial user and password
   // to create
   if (settings.initialUser && settings.initialPassword) {
-    const users = await store.user.list({})
+    const users = await store.user.list()
     if (users.length <= 0) {
       const hashed_password = await userUtils.getPasswordHash(settings.initialPassword)
       await store.user.create({

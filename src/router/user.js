@@ -69,7 +69,7 @@ const UserRoutes = (controllers) => {
   }
 
   const list = async (req, res) => {
-    const users = await controllers.user.list({})
+    const users = await controllers.user.list()
     res
       .status(200)
       .json(users.map(userUtils.safe))

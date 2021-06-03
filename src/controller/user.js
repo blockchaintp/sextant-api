@@ -17,7 +17,7 @@ const UserController = ({ store, settings }) => {
 
   */
   const count = async () => {
-    const users = await store.user.list({})
+    const users = await store.user.list()
     return users.length
   }
 
@@ -32,7 +32,7 @@ const UserController = ({ store, settings }) => {
     searchParams,
   }) => {
     if (!searchParams) return []
-    const users = await store.user.list({})
+    const users = await store.user.list()
     return users
       .filter((user) => user.username.toLowerCase().indexOf(searchParams.toLowerCase()) >= 0)
       .map((user) => ({
@@ -53,7 +53,7 @@ const UserController = ({ store, settings }) => {
       array[user]
 
   */
-  const list = () => store.user.list({})
+  const list = () => store.user.list()
 
   /*
 
