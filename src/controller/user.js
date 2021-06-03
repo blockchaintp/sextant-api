@@ -29,12 +29,12 @@ const UserController = ({ store, settings }) => {
 
   */
   const search = async ({
-    search,
+    searchParams,
   }) => {
-    if (!search) return []
+    if (!searchParams) return []
     const users = await store.user.list({})
     return users
-      .filter((user) => user.username.toLowerCase().indexOf(search.toLowerCase()) >= 0)
+      .filter((user) => user.username.toLowerCase().indexOf(searchParams.toLowerCase()) >= 0)
       .map((user) => ({
         id: user.id,
         permission: user.permission,
