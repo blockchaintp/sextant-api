@@ -276,7 +276,13 @@ const TaekionAPI = ({ store } = {}) => {
     return data.payload;
   }
 
-  const explorerDownloadFile = async ({ deployment, volume, inode, res }) => {
+  const explorerDownloadFile = async ({
+    deployment,
+    volume,
+    directory_inode,
+    file_inode,
+    res,
+  }) => {
     const connection = await ServiceProxy({
       store,
       id: deployment,
@@ -286,7 +292,7 @@ const TaekionAPI = ({ store } = {}) => {
     const fullServiceName = [networkName, 'middleware'].join('-')
 
     try {
-      const url = `${connection.baseUrl}/${fullServiceName}:taekionrest/proxy/volume/${volume}/explorer/file/${inode}`
+      const url = `${connection.baseUrl}/${fullServiceName}:taekionrest/proxy/volume/${volume}/explorer/dir/${directory_inode}/file/${file_inode}`
       const upstream = await connection.client({
         method: 'GET',
         url,

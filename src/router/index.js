@@ -960,7 +960,8 @@ const Routes = ({
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
    *      - $ref: '#/parameters/volumeParam'
-   *      - $ref: '#/parameters/inodeParam'
+   *      - $ref: '#/parameters/directory_inodeParam'
+   *      - $ref: '#/parameters/file_inodeParam'
    *    get:
    *      security:
    *        - bearerAuth: []
@@ -968,7 +969,7 @@ const Routes = ({
    *        default:
    *          description:
    */
-    app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/file/:inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerDownloadFile))
+    app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:directory_inode/file/:file_inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerDownloadFile))
 }
 
 module.exports = Routes

@@ -195,12 +195,14 @@ const TaekionRoutes = (controllers) => {
     const {
       id,
       volume,
-      inode,
+      directory_inode,
+      file_inode,
     } = req.params
     await controllers.taekion.explorerDownloadFile({
       deployment: id,
       volume,
-      inode,
+      directory_inode,
+      file_inode,
       res,
     })
   }
