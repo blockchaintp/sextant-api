@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* refactor(test): remove empty object pattern [view commit](https://github.com/catenasys/sextant-api/commit/88ce8fa44915b286bd139565207b1df2755aeb20)
+* refactor(test): linting [view commit](https://github.com/catenasys/sextant-api/commit/e7db842b63152ebfc1d0ea371b6a096154762792)
+* refactor(src): remove empty object patttern [view commit](https://github.com/catenasys/sextant-api/commit/51c99398698c80791ebe2bd713ae630d5e667e1c)
+* refactor(src): linting [view commit](https://github.com/catenasys/sextant-api/commit/4a1db0f678b54cfa7abfee2ad803eab9ba14df82)
+* fix(cluster-delete-task): remove empty options object from definition and instances [view commit](https://github.com/catenasys/sextant-api/commit/2c5c0bca392a832e4462ea6f6440e61389650701)
 * refactor(tests): add yield statements to empty generators [view commit](https://github.com/catenasys/sextant-api/commit/e08175cf3124c471a8833f4fc87adc943135c1b9)
 * refactor(src): linting [view commit](https://github.com/catenasys/sextant-api/commit/923cd60cba2be08e081f229b8cf80b6034b77c58)
 * refactor(damlrpc-and-settings-tp): remove unexpected empty object pattern and linting [view commit](https://github.com/catenasys/sextant-api/commit/d71374af31b3cffce47379bda38e859eeab27ba6)
