@@ -9,15 +9,16 @@ REPO ?= $(shell git remote show -n origin | grep Fetch | awk '{print $$NF}' | \
 									sed -e 's/git@github.com://' | \
 									sed -e 's@https://github.com/@@' | \
 									awk -F'[/.]' '{print $$2}' )
-
-BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD )
+BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD |sed -e \
+												's@refs/heads/@@')
 SAFE_BRANCH_NAME ?= $(shell if [ -n "$$BRANCH_NAME" ]; then\
 															echo $$BRANCH_NAME; \
 														else \
 															git symbolic-ref -q HEAD|sed -e \
 																's@refs/heads/@@'|sed -e 's@/@_@g'; \
 														fi)
-VERSION ?= $(shell git describe | cut -c2-  )
+PR_KEY = $(shell echo $(BRANCH_NAME) | cut -c4- )
+VERSION ?= $(shell git describe | cut -c2- )
 LONG_VERSION ?= $(shell git describe --long --dirty |cut -c2- )
 UID := $(shell id -u)
 GID := $(shell id -g)
@@ -65,6 +66,51 @@ MAVEN_DEPLOY_TARGET = \
 # BEGIN Standardized directives
 ##
 
+##
+# Standard targets
+##
+
+# A complete build sequence
+.PHONY: all
+all: build test package analyze archive
+
+# Clean everything but the docker images
+.PHONY: clean
+clean: clean_dirs
+
+# Clean everything and the docker image, leaving the repo pristine
+.PHONY: distclean
+distclean: clean
+
+# All compilation tasks
+.PHONY: build
+build: dirs
+
+# All tasks which produce a test result
+.PHONY: test
+test: build
+
+# Produce packages
+.PHONY: package
+package: build
+
+# Linting, Static Analysis, Test Analysis and reporting
+.PHONY: analyze
+analyze: test
+
+# Archive the source code
+.PHONY: archive
+archive: dirs archive_git
+
+# Any prerequisite directories, which should also be gitignored
+.PHONY: dirs
+dirs: dirs_standard
+
+# Any publishing to external systems other than docker registries, e.g. Maven
+.PHONY: publish
+publish: package
+
+
 # Maven Version of Sonar Analysis
 .PHONY: analyze_sonar_mvn
 analyze_sonar_mvn: package
@@ -79,15 +125,74 @@ analyze_sonar_mvn: package
 .PHONY: analyze_sonar_generic
 analyze_sonar_generic:
 	[ -z "$(SONAR_AUTH_TOKEN)" ] || \
-	docker run \
-		--rm \
-		-v $$(pwd):/usr/src \
-		sonarsource/sonar-scanner-cli \
-			-Dsonar.projectKey=$(ORGANIZATION)_$(REPO):$(SAFE_BRANCH_NAME) \
-			-Dsonar.projectName="$(ORGANIZATION)/$(REPO) $(SAFE_BRANCH_NAME)" \
-			-Dsonar.projectVersion=$(VERSION) \
-			-Dsonar.host.url=$(SONAR_HOST_URL) \
-			-Dsonar.login=$(SONAR_AUTH_TOKEN)
+		if [ -z "$(CHANGE_BRANCH)" ]; then \
+			docker run \
+				--rm \
+				-v $$(pwd):/usr/src \
+				sonarsource/sonar-scanner-cli \
+					-Dsonar.organization=$(ORGANIZATION) \
+					-Dsonar.projectKey=$(ORGANIZATION)_$(REPO) \
+					-Dsonar.projectName="$(ORGANIZATION)/$(REPO)" \
+					-Dsonar.branch.name=$(BRANCH_NAME) \
+					-Dsonar.projectVersion=$(VERSION) \
+					-Dsonar.host.url=$(SONAR_HOST_URL) \
+					-Dsonar.login=$(SONAR_AUTH_TOKEN) \
+					-Dsonar.junit.reportPaths=**/target/surefire-reports; \
+		else \
+			docker run \
+				--rm \
+				-v $$(pwd):/usr/src \
+				sonarsource/sonar-scanner-cli \
+					-Dsonar.organization=$(ORGANIZATION) \
+					-Dsonar.projectKey=$(ORGANIZATION)_$(REPO) \
+					-Dsonar.projectName="$(ORGANIZATION)/$(REPO)" \
+					-Dsonar.pullrequest.key=$(BRANCH_NAME) \
+					-Dsonar.pullrequest.branch=$(CHANGE_BRANCH) \
+					-Dsonar.pullrequest.base=$(CHANGE_TARGET) \
+					-Dsonar.projectVersion=$(VERSION) \
+					-Dsonar.host.url=$(SONAR_HOST_URL) \
+					-Dsonar.login=$(SONAR_AUTH_TOKEN) \
+					-Dsonar.junit.reportPaths=**/target/surefire-reports; \
+		fi
+
+.PHONY: analyze_sonar_js
+analyze_sonar_js:
+	[ -z "$(SONAR_AUTH_TOKEN)" ] || \
+		if [ -z "$(CHANGE_BRANCH)" ]; then \
+			docker run \
+				--rm \
+				-v $$(pwd):/usr/src \
+				sonarsource/sonar-scanner-cli \
+					-Dsonar.organization=$(ORGANIZATION) \
+					-Dsonar.projectKey=$(ORGANIZATION)_$(REPO) \
+					-Dsonar.projectName="$(ORGANIZATION)/$(REPO)" \
+					-Dsonar.branch.name=$(BRANCH_NAME) \
+					-Dsonar.projectVersion=$(LONG_VERSION) \
+					-Dsonar.host.url=$(SONAR_HOST_URL) \
+					-Dsonar.login=$(SONAR_AUTH_TOKEN) \
+					-Dsonar.sources=src \
+					-Dsonar.tests=test \
+					-Dsonar.junit.reportPaths=build/junit.xml \
+					-Dsonar.javascript.lcov.reportPaths=build/lcov.info; \
+		else \
+			docker run \
+				--rm \
+				-v $$(pwd):/usr/src \
+				sonarsource/sonar-scanner-cli \
+					-Dsonar.organization=$(ORGANIZATION) \
+					-Dsonar.projectKey=$(ORGANIZATION)_$(REPO) \
+					-Dsonar.projectName="$(ORGANIZATION)/$(REPO)" \
+					-Dsonar.pullrequest.key=$(PR_KEY) \
+					-Dsonar.pullrequest.branch=$(CHANGE_BRANCH) \
+					-Dsonar.pullrequest.base=$(CHANGE_TARGET) \
+					-Dsonar.projectVersion=$(LONG_VERSION) \
+					-Dsonar.host.url=$(SONAR_HOST_URL) \
+					-Dsonar.login=$(SONAR_AUTH_TOKEN) \
+					-Dsonar.sources=src \
+					-Dsonar.tests=test \
+					-Dsonar.junit.reportPaths=build/junit.xml \
+					-Dsonar.javascript.lcov.reportPaths=build/lcov.info; \
+		fi
 
 .PHONY: archive_git
 archive_git: build/$(REPO)-$(VERSION).zip build/$(REPO)-$(VERSION).tgz
@@ -112,7 +217,6 @@ DOCKER_MVN := $(TOOLCHAIN) mvn -Drevision=$(MAVEN_REVISION) -B
 BUSYBOX := docker run --rm -v $(HOME)/.m2/repository:/root/.m2/repository \
 		-v $(MAVEN_SETTINGS):/root/.m2/settings.xml -v $(PWD):/project \
 		busybox:latest
-
 
 $(MARKERS)/build_toolchain_docker: dirs
 	if [ -r docker/toolchain.docker ]; then \
@@ -172,47 +276,3 @@ $(MARKERS)/check_ignores:
 ##
 # END Standardized directives
 ##
-
-##
-# Standard targets
-##
-
-# A complete build sequence
-.PHONY: all
-all: build test package analyze archive
-
-# Clean everything but the docker images
-.PHONY: clean
-clean: clean_dirs
-
-# Clean everything and the docker image, leaving the repo pristine
-.PHONY: distclean
-distclean: clean
-
-# All compilation tasks
-.PHONY: build
-build: dirs
-
-# All tasks which produce a test result
-.PHONY: test
-test: build
-
-# Produce packages
-.PHONY: package
-package: build
-
-# Linting, Static Analysis, Test Analysis and reporting
-.PHONY: analyze
-analyze: test
-
-# Archive the source code
-.PHONY: archive
-archive: dirs archive_git
-
-# Any prerequisite directories, which should also be gitignored
-.PHONY: dirs
-dirs: dirs_standard
-
-# Any publishing to external systems other than docker registries, e.g. Maven
-.PHONY: publish
-publish: package

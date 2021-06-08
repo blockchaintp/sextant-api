@@ -7,13 +7,11 @@ build: $(MARKERS)/build_docker
 
 test: $(MARKERS)/test_npm test_pmd
 
-analyze: analyze_sonar_generic
+analyze: analyze_sonar_js
 
-clean: clean_container
+clean: clean_container clean_npm
 
 distclean: clean_docker
-
-package: package_docs
 
 $(MARKERS)/build_docker:
 	docker-compose -f docker-compose.yml build
@@ -30,10 +28,17 @@ clean_docker:
 	docker-compose -f docker-compose.test.yml down -v --rmi all || true
 	docker-compose -f docker-compose.yml down -v --rmi all || true
 
+.PHONY: clean_npm
+clean_npm:
+	rm -rf node_modules
+
 $(MARKERS)/test_npm:
 	docker-compose -f docker-compose.test.yml up -d
 	docker-compose -f docker-compose.test.yml exec -T api npm run test
-	docker cp api_test:/tmp/test.out ./build/sextant-api.tape.txt
+	docker cp api_test:/tmp/test.out ./build/results.tap
+	docker cp api_test:/tmp/junit.xml ./build/junit.xml
+	docker cp api_test:/tmp/lcov.info ./build/
+	docker cp api_test:/tmp/lcov-report ./build/
 	docker-compose -f docker-compose.test.yml down -v || true
 	docker-compose -f docker-compose.test.yml rm -f || true
 	touch $@
@@ -49,9 +54,10 @@ test_pmd:
 		--failOnViolation false \
 		--files /src --language ecmascript --format xml > build/cpd.xml
 
-.PHONY: package_docs
-package_docs:
+.PHONY: docs
+docs:
 	mkdir -p docs/api
 	docker run --rm -v $(PWD)/docs/api:/app/api/build \
 		sextant-api:$(ISOLATION_ID) run generate-swagger
 	$(BUSYBOX) find /project -type d -exec chown -R $(UID):$(GID) {} \;
+	find docs/api -type f -exec sed -i 's/[ \t]*$$//' {} \;

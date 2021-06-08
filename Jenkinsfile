@@ -61,7 +61,7 @@ pipeline {
           sh '''
             make test
           '''
-          step([$class: "TapPublisher", testResults: "build/sextant-api.tape.txt"])
+          step([$class: "TapPublisher", testResults: "build/results.tap"])
         }
       }
     }
@@ -76,7 +76,7 @@ pipeline {
 
     stage("Analyze") {
       steps {
-        withSonarQubeEnv('sonarqube') {
+        withSonarQubeEnv('sonarcloud') {
           sh '''
             make analyze
           '''
