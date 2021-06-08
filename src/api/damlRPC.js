@@ -482,20 +482,13 @@ const DamlRPC = ({
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
 
-        const {
-          packageIds = [],
-        } = await grpccurl({
+        const response = await grpccurl({
           service: 'admin.PackageManagementService',
           method: 'ListKnownPackages',
         })
+        const packages = response.packageDetails
 
-        const sortedPackageIds = packageIds.sort()
-
-        const data = sortedPackageIds.map((packageId) => ({
-          packageId,
-        }))
-
-        return data
+        return packages.sort()
       },
     })
     return result
