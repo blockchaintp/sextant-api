@@ -1,86 +1,57 @@
-export ISOLATION_ID ?= local
-PWD = $(shell pwd)
+MAKEFILE_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+include $(MAKEFILE_DIR)/standard_defs.mk
 
-ORGANIZATION ?= $(shell git remote show -n origin | grep Fetch | \
-												awk '{print $$NF}' | \
-												sed -e 's/git@github.com://' | \
-												sed -e 's@https://github.com/@@' | \
-												awk -F'[/.]' '{print $$1}' )
-REPO ?= $(shell git remote show -n origin | grep Fetch | \
-												awk '{print $$NF}' | \
-												sed -e 's/git@github.com://' | \
-												sed -e 's@https://github.com/@@' | \
-												awk -F'[/.]' '{print $$2}' )
-
-BRANCH_NAME ?= $(shell git symbolic-ref -q HEAD )
-SAFE_BRANCH_NAME ?= $(shell if [ -n "$$BRANCH_NAME" ]; then echo $$BRANCH_NAME; else \
-														git symbolic-ref -q HEAD|sed -e \
-														's@refs/heads/@@'|sed -e 's@/@_@g'; \
-														fi)
-VERSION ?= $(shell git describe | cut -c2-  )
-LONG_VERSION ?= $(shell git describe --long --dirty |cut -c2- )
-UID := $(shell id -u)
-GID := $(shell id -g)
-
-SONAR_HOST_URL ?= https://sonarqube.dev.catenasys.com
-SONAR_AUTH_TOKEN ?= $(SONAR_AUTH_TOKEN)
 PMD_IMAGE = blockchaintp/pmd:latest
 
-.PHONY: all clean build test test_npm test_pmd archive dirs analyze analyze_sonar
+build: $(MARKERS)/build_docker
 
-all: clean build test archive
+test: $(MARKERS)/test_npm test_pmd
 
-what:
-	echo $(ORGANIZATION)
-	echo $(REPO)
-dirs:
-	mkdir -p build
+analyze: analyze_sonar_generic
 
-build:
+clean: clean_container
+
+distclean: clean_docker
+
+package: package_docs
+
+$(MARKERS)/build_docker:
 	docker-compose -f docker-compose.yml build
 	docker-compose -f docker-compose.test.yml build
+	touch $@
 
-test:  test_npm test_pmd
+.PHONY: clean_container
+clean_container:
+	docker-compose -f docker-compose.test.yml rm -f || true
+	docker-compose -f docker-compose.yml rm -f || true
 
-test_npm: dirs
+.PHONY: clean_docker
+clean_docker:
+	docker-compose -f docker-compose.test.yml down -v --rmi all || true
+	docker-compose -f docker-compose.yml down -v --rmi all || true
+
+$(MARKERS)/test_npm:
 	docker-compose -f docker-compose.test.yml up -d
 	docker-compose -f docker-compose.test.yml exec -T api npm run test
 	docker cp api_test:/tmp/test.out ./build/sextant-api.tape.txt
 	docker-compose -f docker-compose.test.yml down -v || true
 	docker-compose -f docker-compose.test.yml rm -f || true
+	touch $@
 
-test_pmd: dirs
-	docker run -v $$(pwd)/src:/src $(PMD_IMAGE) pmd \
+test_pmd:
+	docker run --rm -v $$(pwd)/src:/src $(PMD_IMAGE) pmd \
 		-R /usr/local/rulesets/ecmascript/btp_basic.xml \
 		-d /src -f xml -min 1 \
 		--failOnViolation false \
 		-l ecmascript | sed -e 's@name=\"/src@name=\"src@'> build/pmd.xml
-	docker run -v $(pwd)/src:/src $(PMD_IMAGE) cpd --minimum-tokens 100 \
+	docker run --rm -v $(pwd)/src:/src $(PMD_IMAGE) cpd --minimum-tokens 100 \
 		--exclude /src/deployment_templates \
 		--failOnViolation false \
 		--files /src --language ecmascript --format xml > build/cpd.xml
 
-analyze: analyze_sonar
-
-analyze_sonar:
-	[ -z "$(SONAR_AUTH_TOKEN)" ] || \
-	docker run \
-		--rm \
-		-v $$(pwd):/usr/src \
-		sonarsource/sonar-scanner-cli \
-			-Dsonar.projectKey=$(ORGANIZATION)_$(REPO):$(SAFE_BRANCH_NAME) \
-			-Dsonar.projectName="$(ORGANIZATION)/$(REPO) $(SAFE_BRANCH_NAME)" \
-			-Dsonar.projectVersion=$(VERSION) \
-			-Dsonar.host.url=$(SONAR_HOST_URL) \
-			-Dsonar.login=$(SONAR_AUTH_TOKEN)
-
-clean:
-	docker-compose -f docker-compose.test.yml rm -f || true
-	docker-compose -f docker-compose.test.yml down -v --rmi all || true
-	docker-compose -f docker-compose.yml rm -f || true
-	docker-compose -f docker-compose.yml down -v --rmi all || true
-	rm -rf build
-
-archive: dirs
-	git archive HEAD --format=zip -9 --output=build/$(REPO)-$(VERSION).zip
-	git archive HEAD --format=tgz -9 --output=build/$(REPO)-$(VERSION).tgz
+.PHONY: package_docs
+package_docs:
+	mkdir -p docs/api
+	docker run --rm -v $(PWD)/docs/api:/app/api/build \
+		sextant-api:$(ISOLATION_ID) run generate-swagger
+	$(BUSYBOX) find /project -type d -exec chown -R $(UID):$(GID) {} \;
