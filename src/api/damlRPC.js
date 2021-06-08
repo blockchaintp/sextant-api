@@ -488,9 +488,7 @@ const DamlRPC = ({
         })
         const packages = response.packageDetails
 
-        const sortedPackages = packages.sort()
-
-        return sortedPackages
+        return packages.sort()
       },
     })
     return result
