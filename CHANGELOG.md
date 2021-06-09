@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+* build: report on test coverage [view commit](https://github.com/catenasys/sextant-api/commit/6624f5f9e91e2c68d5961489805ce85107119e40)
+* build: remove extraneous files [view commit](https://github.com/catenasys/sextant-api/commit/433adcec99943162af8c333a004aace42b0d50ee)
+* build: add docs/openapi.md generation [view commit](https://github.com/catenasys/sextant-api/commit/ef6af33483c14f856bed5f2be132418c9e86171f)
+* build: remove obsolete field [view commit](https://github.com/catenasys/sextant-api/commit/bedc5620520fdfe3892fdd4a62239f06f22ad650)
+* build: test should not build an image [view commit](https://github.com/catenasys/sextant-api/commit/f5056838bd2f7026733b7eafe17bb99b6062a8ea)
+* fix(damlrpc): refactor get-archives method for code smell [view commit](https://github.com/catenasys/sextant-api/commit/2b48cac1f5894684bbf3ed3e69460baac1c46da1)
+* fix(grpcurl): fix parsing of response so that expected data is returned [view commit](https://github.com/catenasys/sextant-api/commit/7aa8d81dedd66f19f16bc081bffc0fb4cece5e14)
 * refactor(test): remove empty object pattern [view commit](https://github.com/catenasys/sextant-api/commit/88ce8fa44915b286bd139565207b1df2755aeb20)
 * refactor(test): linting [view commit](https://github.com/catenasys/sextant-api/commit/e7db842b63152ebfc1d0ea371b6a096154762792)
 * refactor(src): remove empty object patttern [view commit](https://github.com/catenasys/sextant-api/commit/51c99398698c80791ebe2bd713ae630d5e667e1c)
