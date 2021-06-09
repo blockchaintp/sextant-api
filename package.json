@@ -9,8 +9,13 @@
     "download-helm-charts": "node scripts/download-helm-charts.js",
     "preserve": "npm run download-helm-charts && npm run migrate",
     "serve": "node src/index.js",
+    "generate-swagger": "node src/generateSwagger.js",
     "pretest": "npm run download-helm-charts",
-    "test": "tape {src,test}/**/*.test.js | tee /tmp/test.out | tap-spec",
+    "test" : "npm run cover:test && npm run cover:report && npm run test:report",
+    "test:tape": "tape {src,test}/**/*.test.js > /tmp/test.out",
+    "test:report" : "cat /tmp/test.out |tap-spec && cat /tmp/test.out | tap-junit > /tmp/junit.xml",
+    "cover:test": "nyc --silent npm run test:tape",
+    "cover:report": "nyc report --report-dir /tmp --reporter=text --reporter=lcov",
     "start": "npm run download-helm-charts && npm run serve"
   },
   "dependencies": {
@@ -49,15 +54,18 @@
     "split": "^1.0.1",
     "swagger-jsdoc": "^5.0.1",
     "swagger-ui-express": "^4.1.5",
-    "tap-spec": "^5.0.0",
     "tmp": "^0.0.33",
+    "widdershins": "^4.0.1",
     "yup": "^0.27.0"
   },
   "devDependencies": {
     "eslint": "^7.17.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "tape": "^4.13.3"
+    "tape": "^4.13.3",
+    "tap-spec": "^5.0.0",
+    "tap-junit": "^5.0.0",
+    "nyc": "^15.1.0"
   },
   "resolutions": {
     "lodash": "~4.17.13"

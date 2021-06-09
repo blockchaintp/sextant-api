@@ -7,11 +7,7 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=postgres
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        EDITION_MODULE: dev.js
+    image: sextant-api:$ISOLATION_ID
     entrypoint: bash -c 'tail -f /dev/null'
     container_name: api_test
     depends_on:
