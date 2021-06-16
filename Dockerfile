@@ -4,13 +4,13 @@ ARG KUBETPL_VERSION=0.9.0
 ARG HELM_VERSION=v3.1.2
 ARG GRPCURL_VERSION=1.8.0
 
-RUN apt-get update -y && \
+RUN apt-get update -yq && \
     apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python2-minimal mime-support gnupg && \
     curl --silent --location https://deb.nodesource.com/setup_${NODEJS_MAJOR_VERSION}.x | bash -  && \
     update-ca-certificates && \
-    apt-get update -y && apt-get upgrade -y  && \
+    apt-get update -yq && apt-get upgrade -yq && \
     apt-get install --yes nodejs && \
-    apt-get autoremove -y && apt-get clean -y
+    apt-get autoremove -yq && apt-get clean -yq
 
 RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl  && \
     chmod +x /usr/local/bin/kubectl
@@ -42,7 +42,7 @@ RUN curl https://storage.googleapis.com/btp-artifacts/grpcurl > /usr/local/bin/g
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
-RUN npm install
+RUN npm ci
 COPY . /app/api
 
 # this is the default noop metering module
