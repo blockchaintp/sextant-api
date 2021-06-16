@@ -139,12 +139,6 @@ const TASK_CONTROLLER_LOOP_DELAY = 500
 
 */
 
-// const ACCESS_LEVELS = {
-//   read: 1,
-//   write: 2,
-//   all: 3,
-// }
-
 // Maps to USER_TYPES = USER_TYPES in rbac definition
 const USER_TYPES = {
   superuser: 'superuser', // can do anything
@@ -194,7 +188,6 @@ const config = {
   TASK_STATUS_DEFAULT,
   TASK_RESOURCE_COMPLETE_STATUS,
   TASK_CONTROLLER_LOOP_DELAY,
-  // ACCESS_LEVELS,
   USER_TYPES,
   USER_ACCESS_LEVELS,
   PERMISSION_TYPES,
