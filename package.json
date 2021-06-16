@@ -11,9 +11,9 @@
     "serve": "node src/index.js",
     "generate-swagger": "node src/generateSwagger.js",
     "pretest": "npm run download-helm-charts",
-    "test" : "npm run cover:test && npm run cover:report && npm run test:report",
+    "test": "npm run cover:test && npm run cover:report && npm run test:report",
     "test:tape": "tape {src,test}/**/*.test.js > /tmp/test.out",
-    "test:report" : "cat /tmp/test.out |tap-spec && cat /tmp/test.out | tap-junit > /tmp/junit.xml",
+    "test:report": "cat /tmp/test.out |tap-spec && cat /tmp/test.out | tap-junit > /tmp/junit.xml",
     "cover:test": "nyc --silent npm run test:tape",
     "cover:report": "nyc report --report-dir /tmp --reporter=text --reporter=lcov",
     "start": "npm run download-helm-charts && npm run serve"
