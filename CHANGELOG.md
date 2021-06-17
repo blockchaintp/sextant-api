@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* build: switch to use npm ci rather than install [view commit](https://github.com/catenasys/sextant-api/commit/95a001ec869ee32f782743e6d9491c1c6815bfe2)
+* build: update package-lock.json [view commit](https://github.com/catenasys/sextant-api/commit/b79f147f04d05d332a405f8d1667339e8890a4c5)
+* fix(config): remove commented out access-levels constant [view commit](https://github.com/catenasys/sextant-api/commit/5884644dffc4e997a1b6bbe7ef516e3562599006)
+* style(config): linting [view commit](https://github.com/catenasys/sextant-api/commit/d18b04febe8856214024045aa926677a1dbbeb8f)
 * build: report on test coverage [view commit](https://github.com/catenasys/sextant-api/commit/6624f5f9e91e2c68d5961489805ce85107119e40)
 * build: remove extraneous files [view commit](https://github.com/catenasys/sextant-api/commit/433adcec99943162af8c333a004aace42b0d50ee)
 * build: add docs/openapi.md generation [view commit](https://github.com/catenasys/sextant-api/commit/ef6af33483c14f856bed5f2be132418c9e86171f)
