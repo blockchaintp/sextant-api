@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* build(node-modules): updates async package [view commit](https://github.com/catenasys/sextant-api/commit/f836e956a750e13860e2fc1661410631a2023825)
+* build(node-modules): updates all packages at the minor update level [view commit](https://github.com/catenasys/sextant-api/commit/51173a00b1a144dde70c48145b29bd629511b4eb)
+* build(node-modules): updates all packages at the patch level [view commit](https://github.com/catenasys/sextant-api/commit/d77bcd162b7b9159645a57cbf7216aae7682d5d0)
 * build: switch to use npm ci rather than install [view commit](https://github.com/catenasys/sextant-api/commit/95a001ec869ee32f782743e6d9491c1c6815bfe2)
 * build: update package-lock.json [view commit](https://github.com/catenasys/sextant-api/commit/b79f147f04d05d332a405f8d1667339e8890a4c5)
 * fix(config): remove commented out access-levels constant [view commit](https://github.com/catenasys/sextant-api/commit/5884644dffc4e997a1b6bbe7ef516e3562599006)
