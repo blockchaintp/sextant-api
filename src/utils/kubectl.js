@@ -166,7 +166,7 @@ const Kubectl = ({
 
   // trashes the tmp file if there is a kubeconfigPath in the setupDetails
   const localTeardown = async (setupDetails) => {
-    if (setupDetails.kubeConfigPath) {
+    if (setupDetails.kubeConfigPath && fs.existsSync(setupDetails.kubeConfigPath)) {
       fs.unlinkSync(setupDetails.kubeConfigPath)
     }
   }
