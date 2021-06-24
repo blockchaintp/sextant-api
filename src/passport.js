@@ -70,7 +70,7 @@ const PassportHandlers = ({
 
     try {
 
-      const token = getRequestAccessToken(req)
+      const token = getRequestAccessToken(req, res)
       
       if(token) {
         
