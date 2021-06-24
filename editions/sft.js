@@ -32,9 +32,9 @@ const edition = {
     },
     'nginx-ingress': {
       1.8: {
-        chart: 'btp-stable/nginx-ingress',
+        chart: 'btp-unstable/nginx-ingress',
         chartVersion: '~0.0.1',
-        order: 14,
+        order: 3,
         extension: 'ingress',
       },
     }
