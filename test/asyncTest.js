@@ -5,11 +5,11 @@ const asyncTest = (name, handler, cleanup) => {
     try {
       await handler(t)
       t.pass('there was no error')
-    } catch(err) {
+    } catch (err) {
       t.fail(err)
       console.log(err.stack)
     }
-    if(cleanup) {
+    if (cleanup) {
       await cleanup()
     }
     t.end()
