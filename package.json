@@ -7,8 +7,8 @@
   "scripts": {
     "migrate": "knex migrate:latest",
     "download-helm-charts": "node scripts/download-helm-charts.js",
-    "copy-helm-fixtures": "node -e 'require(\"./test/fixtures/helmFixtures\").copyFixtures()'",
-    "remove-helm-fixtures": "node -e 'require(\"./test/fixtures/helmFixtures\").removeFixtures()'",
+    "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C ./test/fixtures/ && node -e 'require(\"./test/fixtures/helmFixtures\").copyFixtures()'",
+    "remove-helm-fixtures": "node -e 'require(\"./test/fixtures/helmFixtures\").removeFixtures()' | rm -rf ./test/fixtures/helmCharts/ ",
     "preserve": "npm run download-helm-charts && npm run migrate",
     "serve": "node src/index.js",
     "generate-swagger": "node src/generateSwagger.js",
@@ -16,7 +16,7 @@
     "test": "npm run cover:test && npm run cover:report && npm run test:report",
     "posttest": "npm run remove-helm-fixtures",
     "test:tape": "tape {src,test}/**/*.test.js > /tmp/test.out",
-    "test:report": "cat /tmp/test.out |tap-spec && cat /tmp/test.out | tap-junit > /tmp/junit.xml",
+    "test:report": "cat /tmp/test.out | tap-spec && cat /tmp/test.out | tap-junit > /tmp/junit.xml",
     "cover:test": "nyc --silent npm run test:tape",
     "cover:report": "nyc report --report-dir /tmp --reporter=text --reporter=lcov",
     "start": "npm run download-helm-charts && npm run serve"
