@@ -7,8 +7,8 @@
   "scripts": {
     "migrate": "knex migrate:latest",
     "download-helm-charts": "node scripts/download-helm-charts.js",
-    "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C ./test/fixtures/ && node -e 'require(\"./test/fixtures/helmFixtures\").copyFixtures()'",
-    "remove-helm-fixtures": "node -e 'require(\"./test/fixtures/helmFixtures\").removeFixtures()' | rm -rf ./test/fixtures/helmCharts/ ",
+    "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C .",
+    "remove-helm-fixtures": "rm -rf ./helmCharts/*",
     "preserve": "npm run download-helm-charts && npm run migrate",
     "serve": "node src/index.js",
     "generate-swagger": "node src/generateSwagger.js",
