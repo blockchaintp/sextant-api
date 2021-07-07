@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* fix(ssh-keygen): adds `//NOSONAR` on line using octal literal [view commit](https://github.com/catenasys/sextant-api/commit/6c19a5d435c3aa8b65001f12e48caa933b2a2965)
+* fix(ssh-keygen): linting with update to octal literal format [view commit](https://github.com/catenasys/sextant-api/commit/82ac78075d91640424edfc62e472140f13a14d28)
 * build(node-modules): updates async package [view commit](https://github.com/catenasys/sextant-api/commit/f836e956a750e13860e2fc1661410631a2023825)
 * build(node-modules): updates all packages at the minor update level [view commit](https://github.com/catenasys/sextant-api/commit/51173a00b1a144dde70c48145b29bd629511b4eb)
 * build(node-modules): updates all packages at the patch level [view commit](https://github.com/catenasys/sextant-api/commit/d77bcd162b7b9159645a57cbf7216aae7682d5d0)
