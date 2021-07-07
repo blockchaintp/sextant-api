@@ -3,8 +3,9 @@ const builder = require('./builder')
 const validators = {
   url: [
     'matches',
+    // eslint-disable-next-line max-len
     ['^(?:([a-z0-9+.-]+):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$', 'i'],
-    'Must be a valid url - e.g. http://apiserver.com'
+    'Must be a valid url - e.g. http://apiserver.com',
   ],
   ca: [
     'matches',
@@ -13,13 +14,13 @@ const validators = {
       message: 'Must be a valid certificate',
       excludeEmptyString: true,
     },
-  ]
+  ],
 }
 
 const fields = {
   name: {
     id: 'name',
-    title: `Name`,
+    title: 'Name',
     helperText: 'Enter the name of the cluster',
     component: 'text',
     validate: {
@@ -29,7 +30,7 @@ const fields = {
   },
   apiServer: {
     id: 'desired_state.apiServer',
-    title: `API Server`,
+    title: 'API Server',
     helperText: 'Enter the URL for your API server',
     component: 'text',
     validate: {
@@ -41,7 +42,7 @@ const fields = {
   },
   token: {
     id: 'desired_state.token',
-    title: `Access Token`,
+    title: 'Access Token',
     helperText: 'Paste the base64 access token',
     component: 'textarea',
     rows: 5,
@@ -52,7 +53,7 @@ const fields = {
   },
   ca: {
     id: 'desired_state.ca',
-    title: `Certificate Authority`,
+    title: 'Certificate Authority',
     helperText: 'Paste the base64 certificate authority',
     component: 'textarea',
     rows: 5,
@@ -65,28 +66,24 @@ const fields = {
   },
 }
 
-const getLocalForm = (required) => {
-  return builder({
-    fields,
-    schema: [
-      'name',
-    ],
-    required,
-  })
-}
+const getLocalForm = (required) => builder({
+  fields,
+  schema: [
+    'name',
+  ],
+  required,
+})
 
-const getRemoteForm = (required) => {
-  return builder({
-    fields,
-    schema: [
-      'name',
-      'apiServer',
-      'token',
-      'ca',
-    ],
-    required,
-  })
-}
+const getRemoteForm = (required) => builder({
+  fields,
+  schema: [
+    'name',
+    'apiServer',
+    'token',
+    'ca',
+  ],
+  required,
+})
 
 const forms = {
   validators,
@@ -111,7 +108,7 @@ const forms = {
         'name',
         'apiServer',
       ]),
-    }
+    },
   },
   server: {
     local: {
