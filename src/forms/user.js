@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 /* eslint-disable max-len */
 
 // base user form that operates in the following modes:
@@ -93,7 +92,7 @@ const fields = {
   },
 }
 
-const required = {
+const formRequired = {
   browser: {
     add: [
       'username',
@@ -116,7 +115,7 @@ const required = {
   },
 }
 
-const schema = {
+const formSchema = {
   browser: [
     'username',
     'permission',
@@ -133,8 +132,8 @@ const schema = {
 const getUserForm = ({
   usernameDisabled,
   permissionDisabled,
-  schema, // NOSONAR
-  required, // NOSONAR
+  schema,
+  required,
 }) => builder({
   fields,
   schema,
@@ -152,32 +151,32 @@ const forms = {
     userAdd: getUserForm({
       usernameDisabled: false,
       permissionDisabled: false,
-      schema: schema.browser,
-      required: required.browser.add,
+      schema: formSchema.browser,
+      required: formRequired.browser.add,
     }),
     userEdit: getUserForm({
       usernameDisabled: true,
       permissionDisabled: false,
-      schema: schema.browser,
-      required: required.browser.edit,
+      schema: formSchema.browser,
+      required: formRequired.browser.edit,
     }),
     userSelf: getUserForm({
       usernameDisabled: true,
       permissionDisabled: true,
-      schema: schema.browser,
-      required: required.browser.edit,
+      schema: formSchema.browser,
+      required: formRequired.browser.edit,
     }),
   },
   server: {
     add: getUserForm({
       permissionDisabled: false,
-      schema: schema.server,
-      required: required.server.add,
+      schema: formSchema.server,
+      required: formRequired.server.add,
     }),
     edit: getUserForm({
       permissionDisabled: false,
-      schema: schema.server,
-      required: required.server.edit,
+      schema: formSchema.server,
+      required: formRequired.server.edit,
     }),
   },
 }
