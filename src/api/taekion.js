@@ -1,8 +1,38 @@
+const https = require('https')
+const axios = require('axios')
 const deploymentHttpConnection = require('../utils/deploymentHttpConnection');
 
 const TaekionAPI = ({ store } = {}) => {
   if (!store) {
     throw new Error('TaekionAPI requires a store');
+  }
+
+  const getDeploymentConnection = async ({
+    deployment,
+  }) => {
+    const connection = await deploymentHttpConnection({
+      store,
+      id: deployment,
+      onConnection: async (connection) => {
+        const networkName = connection.applied_state.sawtooth.networkName
+        const res = await axios({
+          method: 'GET',
+          url: `${connection.baseUrl}/pods`,
+          headers: {
+            'Authorization': `Bearer ${connection.token}`,
+          },
+          httpsAgent: new https.Agent({
+            ca: connection.ca,
+          })
+        })
+        const pod = res.data.items.find(p => {
+          return p.metadata.labels.app == `${networkName}-validator`
+        })
+        connection.podName = pod.metadata.name
+      }
+    })
+
+    return connection
   }
 
   const apiRequest = async ({
@@ -14,16 +44,12 @@ const TaekionAPI = ({ store } = {}) => {
     ...extra
   }) => {
 
-    const connection = await deploymentHttpConnection({
-      store,
-      id: deployment,
+    const connection = await getDeploymentConnection({
+      deployment,
     })
 
-    const networkName = connection.applied_state.sawtooth.networkName
-    const fullServiceName = [networkName, serviceName].join('-')
-
     try {
-      const url = `${connection.baseUrl}/services/${fullServiceName}:${portName}/proxy${path}`
+      const url = `${connection.baseUrl}/pods/${connection.podName}:8000/proxy${path}`
       const res = await connection.client({
         method,
         url,
@@ -51,15 +77,11 @@ const TaekionAPI = ({ store } = {}) => {
     ...extra
   }) => {
 
-    const connection = await deploymentHttpConnection({
-      store,
-      id: deployment,
+    const connection = await getDeploymentConnection({
+      deployment,
     })
 
-    const networkName = connection.applied_state.sawtooth.networkName
-    const fullServiceName = [networkName, serviceName].join('-')
-
-    const url = `${connection.baseUrl}/services/${fullServiceName}:${portName}/proxy${req.url}`
+    const url = `${connection.baseUrl}/pods/${connection.podName}:8000/proxy${req.url}`
     const useHeaders = Object.assign({}, req.headers)
 
     delete(useHeaders.host)

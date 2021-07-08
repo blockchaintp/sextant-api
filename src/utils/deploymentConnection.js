@@ -13,6 +13,7 @@ const cachedConnections = {}
 const deploymentConnection = async ({
   store,
   id,
+  onConnection,
 }) => {
 
   let connection = cachedConnections[id]
@@ -56,6 +57,10 @@ const deploymentConnection = async ({
       ca,
       namespace,
       applied_state,
+    }
+
+    if(onConnection) {
+      await onConnection(connection)
     }
 
     // keep cached connections for 5 mins

@@ -10,11 +10,13 @@ const deploymentConnection = require('./deploymentConnection')
 const deploymentHttpConnection = async ({
   store,
   id,
+  onConnection,
 }) => {
 
   const connection = await deploymentConnection({
     store,
     id,
+    onConnection,
   })
 
   const httpsAgent = new https.Agent({
