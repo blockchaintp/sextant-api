@@ -3,23 +3,14 @@
  *
  * License: Product
  */
-const Promise = require('bluebird')
-const https = require('https')
-const axios = require('axios')
-const fs = require('fs')
-const tmp = require('tmp')
-
 const getField = require('../deployment_templates/getField')
 const ClusterKubectl = require('./clusterKubectl')
 const base64 = require('./base64')
 
-
-const tempName = Promise.promisify(tmp.tmpName)
-const writeFile = Promise.promisify(fs.writeFile)
-
 const cachedConnections = {}
 
-const ServiceProxy = async ({
+// an axios instance with authentication and pointing to the deployment namespace
+const deploymentConnection = async ({
   store,
   id,
 }) => {
@@ -56,18 +47,7 @@ const ServiceProxy = async ({
     const apiServer = clusterKubectl.remoteCredentials.apiServer
     const token = base64.decodeToString(clusterKubectl.remoteCredentials.token)
     const ca = base64.decodeToString(clusterKubectl.remoteCredentials.ca)
-
-    const httpsAgent = new https.Agent({
-      ca,
-    })
-
-    const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}/services`
-    const client = axios.create({
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      httpsAgent
-    })
+    const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
 
     connection = cachedConnections[id] = {
       token,
@@ -75,7 +55,6 @@ const ServiceProxy = async ({
       baseUrl,
       ca,
       namespace,
-      client,
       applied_state,
     }
 
@@ -89,4 +68,4 @@ const ServiceProxy = async ({
   return connection
 }
 
-module.exports = ServiceProxy
+module.exports = deploymentConnection

@@ -1,4 +1,4 @@
-const ServiceProxy = require('../utils/serviceProxy');
+const deploymentHttpConnection = require('../utils/deploymentHttpConnection');
 
 const TaekionAPI = ({ store } = {}) => {
   if (!store) {
@@ -14,7 +14,7 @@ const TaekionAPI = ({ store } = {}) => {
     ...extra
   }) => {
 
-    const connection = await ServiceProxy({
+    const connection = await deploymentHttpConnection({
       store,
       id: deployment,
     })
@@ -23,7 +23,7 @@ const TaekionAPI = ({ store } = {}) => {
     const fullServiceName = [networkName, serviceName].join('-')
 
     try {
-      const url = `${connection.baseUrl}/${fullServiceName}:${portName}/proxy${path}`
+      const url = `${connection.baseUrl}/services/${fullServiceName}:${portName}/proxy${path}`
       const res = await connection.client({
         method,
         url,
@@ -51,7 +51,7 @@ const TaekionAPI = ({ store } = {}) => {
     ...extra
   }) => {
 
-    const connection = await ServiceProxy({
+    const connection = await deploymentHttpConnection({
       store,
       id: deployment,
     })
@@ -59,7 +59,7 @@ const TaekionAPI = ({ store } = {}) => {
     const networkName = connection.applied_state.sawtooth.networkName
     const fullServiceName = [networkName, serviceName].join('-')
 
-    const url = `${connection.baseUrl}/${fullServiceName}:${portName}/proxy${req.url}`
+    const url = `${connection.baseUrl}/services/${fullServiceName}:${portName}/proxy${req.url}`
     const useHeaders = Object.assign({}, req.headers)
 
     delete(useHeaders.host)
