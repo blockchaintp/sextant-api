@@ -103,6 +103,15 @@ const deploymentDeleteError = async (task, error, store) => {
       result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
   }
+  else if (errorTest(error, 'Release not loaded') || errorTest(error, 'not found')) {
+    completeTask(task, error, store)
+    pino.info({
+      error,
+      action: 'Update the deployment status',
+      info: 'The chart has likely been uninstalled via the command line',
+      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+    })
+  }
   else {
     // do not complete the task
     await store.update({
