@@ -488,7 +488,7 @@ const DamlRPC = ({
           })
           const packages = response.packageDetails
 
-          return packages
+          return packages ? packages.sort() : []
         },
       }))
     } catch (error) {
