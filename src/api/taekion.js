@@ -9,31 +9,27 @@ const TaekionAPI = ({ store } = {}) => {
 
   const getDeploymentConnection = async ({
     deployment,
-  }) => {
-    const connection = await deploymentHttpConnection({
-      store,
-      id: deployment,
-      onConnection: async (connection) => {
-        const networkName = connection.applied_state.sawtooth.networkName
-        const res = await axios({
-          method: 'GET',
-          url: `${connection.baseUrl}/pods`,
-          headers: {
-            'Authorization': `Bearer ${connection.token}`,
-          },
-          httpsAgent: new https.Agent({
-            ca: connection.ca,
-          })
+  }) => deploymentHttpConnection({
+    store,
+    id: deployment,
+    onConnection: async (connection) => {
+      const networkName = connection.applied_state.sawtooth.networkName
+      const res = await axios({
+        method: 'GET',
+        url: `${connection.baseUrl}/pods`,
+        headers: {
+          'Authorization': `Bearer ${connection.token}`,
+        },
+        httpsAgent: new https.Agent({
+          ca: connection.ca,
         })
-        const pod = res.data.items.find(p => {
-          return p.metadata.labels.app == `${networkName}-validator`
-        })
-        connection.podName = pod.metadata.name
-      }
-    })
-
-    return connection
-  }
+      })
+      const pod = res.data.items.find(p => {
+        return p.metadata.labels.app == `${networkName}-validator`
+      })
+      connection.podName = pod.metadata.name
+    }
+  })
 
   const apiRequest = async ({
     deployment,
