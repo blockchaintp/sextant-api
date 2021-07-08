@@ -75,12 +75,19 @@ const getHelmDeploymentDetails = () => {
     const deploymentTypeData = chartTable[deploymentType]
     const deploymentVersions = Object.keys(deploymentTypeData)
     for (const deploymentVersion of deploymentVersions) {
-      const { chart } = chartTable[deploymentType][deploymentVersion]
-      const chartName = chart.split('/')[1]
-      const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/${chartName}/sextant/details.yaml`)
-      const next = structureYamlContent(yamlContent)
-
-      details = merge(details, next, { arrayMerge: overwriteMerge })
+      try {
+        const { chart } = chartTable[deploymentType][deploymentVersion]
+        const chartName = chart.split('/')[1]
+        const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/${chartName}/sextant/details.yaml`)
+        const next = structureYamlContent(yamlContent)
+  
+        details = merge(details, next, { arrayMerge: overwriteMerge })
+      } catch(e) {
+        // if chart versions have a mismatch then allow the server to boot in dev mode
+        if(!process.env.IGNORE_BROKEN_CHARTS || process.env.NODE_ENV != 'development') {
+          throw e
+        }
+      }
     }
   }
 
@@ -91,7 +98,6 @@ const getHelmDeploymentDetails = () => {
 const mergedDeploymentDetails = () => {
   const classicDeployments = getClassicDeploymentDetails(edition.deployment.classic)
   const helmDeployments = getHelmDeploymentDetails()
-
   const merged = merge(classicDeployments, helmDeployments, { arrayMerge: overwriteMerge })
   return merged
 }
