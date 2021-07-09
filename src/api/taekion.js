@@ -31,6 +31,7 @@ const TaekionAPI = ({ store } = {}) => {
     }
   })
 
+  // this is for speaking to the taekion middleware
   const apiRequest = async ({
     deployment,
     serviceName = 'middleware',
@@ -64,6 +65,7 @@ const TaekionAPI = ({ store } = {}) => {
     }
   };
 
+  // this is for speaking to the sawtooth rest api
   const apiRequestProxy = async ({
     deployment,
     serviceName = 'middleware',
@@ -77,7 +79,7 @@ const TaekionAPI = ({ store } = {}) => {
       deployment,
     })
 
-    const url = `${connection.baseUrl}/pods/${connection.podName}:8000/proxy${req.url}`
+    const url = `${connection.baseUrl}/pods/${connection.podName}:8008/proxy${req.url}`
     const useHeaders = Object.assign({}, req.headers)
 
     delete(useHeaders.host)
@@ -302,16 +304,14 @@ const TaekionAPI = ({ store } = {}) => {
     download_filename,
     res,
   }) => {
-    const connection = await ServiceProxy({
-      store,
-      id: deployment,
+    const connection = await getDeploymentConnection({
+      deployment,
     })
 
-    const networkName = connection.applied_state.sawtooth.networkName
-    const fullServiceName = [networkName, 'middleware'].join('-')
-
     try {
-      const url = `${connection.baseUrl}/${fullServiceName}:taekionrest/proxy/volume/${volume}/explorer/dir/${directory_inode}/file/${file_inode}`
+
+      const path = `/volume/${volume}/explorer/dir/${directory_inode}/file/${file_inode}`
+      const url = `${connection.baseUrl}/pods/${connection.podName}:8000/proxy${path}`
       const upstream = await connection.client({
         method: 'GET',
         url,
