@@ -1,45 +1,63 @@
-const axios = require('axios');
-const DeploymentPodProxy = require('../utils/deploymentPodProxy');
+const https = require('https')
+const axios = require('axios')
+const deploymentHttpConnection = require('../utils/deploymentHttpConnection');
 
 const TaekionAPI = ({ store } = {}) => {
   if (!store) {
     throw new Error('TaekionAPI requires a store');
   }
 
+  const getDeploymentConnection = async ({
+    deployment,
+  }) => deploymentHttpConnection({
+    store,
+    id: deployment,
+    onConnection: async (connection) => {
+      const networkName = connection.applied_state.sawtooth.networkName
+      const res = await axios({
+        method: 'GET',
+        url: `${connection.baseUrl}/pods`,
+        headers: {
+          'Authorization': `Bearer ${connection.token}`,
+        },
+        httpsAgent: new https.Agent({
+          ca: connection.ca,
+        })
+      })
+      const pod = res.data.items.find(p => {
+        return p.metadata.labels.app == `${networkName}-validator`
+      })
+      connection.podName = pod.metadata.name
+    }
+  })
+
+  // this is for speaking to the taekion middleware
   const apiRequest = async ({
     deployment,
-    method = 'get',
-    url = '/',
-    podPort = 8000,
+    serviceName = 'middleware',
+    portName = 'taekionrest',
+    method = 'GET',
+    path,
     ...extra
   }) => {
-    const proxy = await DeploymentPodProxy({
-      store,
-      id: deployment,
-    });
 
-    const pod = await proxy.getPod();
-
-    if (!pod) throw new Error('no pod found');
+    const connection = await getDeploymentConnection({
+      deployment,
+    })
 
     try {
-      const res = await proxy.request({
-        pod: pod.metadata.name,
-        port: podPort,
-        handler: ({ port }) => axios({
-          method,
-          url: `http://localhost:${port}${url}`,
-          ...extra,
-        }),
-      });
-      return res.data;
+      const url = `${connection.baseUrl}/pods/${connection.podName}:8000/proxy${path}`
+      const res = await connection.client({
+        method,
+        url,
+        ...extra
+      })
+      return res.data
     } catch (e) {
       if (!e.response) {
         throw e;
       }
-      const errorMessage = e.response.data
-        .toString()
-        .replace(/^Error (\d+):/, (match, code) => code);
+      const errorMessage = JSON.stringify(e.response.data, null, 4)
       const finalError = new Error(errorMessage);
       finalError.response = e.response;
       finalError._code = e.response.status;
@@ -47,54 +65,47 @@ const TaekionAPI = ({ store } = {}) => {
     }
   };
 
-  const apiStreamRequest = async ({
+  // this is for speaking to the sawtooth rest api
+  const apiRequestProxy = async ({
     deployment,
-    podPort = 8000,
+    serviceName = 'middleware',
+    portName = 'taekionrest',
     req,
     res,
     ...extra
   }) => {
-    const proxy = await DeploymentPodProxy({
-      store,
-      id: deployment,
-    });
 
-    const pod = await proxy.getPod();
+    const connection = await getDeploymentConnection({
+      deployment,
+    })
 
-    if (!pod) throw new Error('no pod found');
+    const url = `${connection.baseUrl}/pods/${connection.podName}:8008/proxy${req.url}`
+    const useHeaders = Object.assign({}, req.headers)
+
+    delete(useHeaders.host)
+    delete(useHeaders.authorization)
 
     try {
-      await proxy.request({
-        pod: pod.metadata.name,
-        port: podPort,
-        handler: async ({ port }) => {
-          try {
-            console.log(`${req.method} ${req.url}`);
-            const upstreamRes = await axios({
-              method: req.method,
-              url: `http://localhost:${port}${req.url}`,
-              headers: req.headers,
-              responseType: 'stream',
-              data:
-                req.method.toLowerCase() === 'post'
-                || req.method.toLowerCase() === 'put'
-                  ? req
-                  : null,
-              ...extra,
-            });
-            res.status(upstreamRes.status);
-            res.set(upstreamRes.headers);
-            upstreamRes.data.pipe(res);
-          } catch (e) {
-            const errorMessage = e.response.data
-              .toString()
-              .replace(/^Error (\d+):/, (match, code) => code);
-            res.status(e.response.status);
-            res.end(errorMessage);
-          }
-        },
-      });
+
+      const upstreamRes = await connection.client({
+        method: req.method,
+        url,
+        headers: useHeaders,
+        responseType: 'stream',
+        data:
+          req.method.toLowerCase() === 'post'
+          || req.method.toLowerCase() === 'put'
+            ? req
+            : null,
+        ...extra,
+      })
+
+      res.status(upstreamRes.status)
+      res.set(upstreamRes.headers)
+      upstreamRes.data.pipe(res)
+
     } catch (e) {
+
       if (!e.response) {
         console.error(e.stack);
         res.status(500);
@@ -113,7 +124,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        url: '/keystore',
+        path: '/keystore',
       });
       return data.payload
     } catch (e) {
@@ -135,7 +146,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        url: `/keystore/${fingerprint}`,
+        path: `/keystore/${fingerprint}`,
       });
       return data.payload
     } catch (e) {
@@ -157,8 +168,8 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        method: 'post',
-        url: '/keystore',
+        method: 'POST',
+        path: '/keystore',
         data: {
           id: name,
           encryption: 'aes_gcm',
@@ -192,7 +203,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        url: '/volume',
+        path: '/volume',
       });
       return data.payload
     } catch (e) {
@@ -217,7 +228,7 @@ const TaekionAPI = ({ store } = {}) => {
   }) => apiRequest({
     deployment,
     method: 'post',
-    url: '/volume',
+    path: '/volume',
     data: {
       id: name,
       compression,
@@ -229,7 +240,7 @@ const TaekionAPI = ({ store } = {}) => {
   const updateVolume = ({ deployment, volume, name }) => apiRequest({
     deployment,
     method: 'put',
-    url: `/volume/${volume}`,
+    path: `/volume/${volume}`,
     data: {
       action: 'rename',
       id: name,
@@ -244,8 +255,7 @@ const TaekionAPI = ({ store } = {}) => {
     try {
       const data = await apiRequest({
         deployment,
-        method: 'get',
-        url: '/snapshot',
+        path: '/snapshot',
         params: {
           volume,
         },
@@ -266,7 +276,7 @@ const TaekionAPI = ({ store } = {}) => {
   const createSnapshot = ({ deployment, volume, name }) => apiRequest({
     deployment,
     method: 'post',
-    url: '/snapshot',
+    path: '/snapshot',
     data: {
       volume,
       id: name,
@@ -277,6 +287,50 @@ const TaekionAPI = ({ store } = {}) => {
     throw new Error('endpoint tbc');
   };
 
+  const explorerListDirectory = async ({ deployment, volume, inode }) => {
+    const data = await apiRequest({
+      deployment,
+      method: 'get',
+      path: `/volume/${volume}/explorer/dir/${inode}`,
+    })
+    return data.payload;
+  }
+
+  const explorerDownloadFile = async ({
+    deployment,
+    volume,
+    directory_inode,
+    file_inode,
+    download_filename,
+    res,
+  }) => {
+    const connection = await getDeploymentConnection({
+      deployment,
+    })
+
+    try {
+
+      const path = `/volume/${volume}/explorer/dir/${directory_inode}/file/${file_inode}`
+      const url = `${connection.baseUrl}/pods/${connection.podName}:8000/proxy${path}`
+      const upstream = await connection.client({
+        method: 'GET',
+        url,
+        responseType: 'stream'
+      })
+      res.status(200)
+      res.set(upstream.headers)
+      if(download_filename) {
+        res.set('Content-Disposition', `attachment; filename="${download_filename}"`)
+      }
+      upstream.data.pipe(res)
+      
+    } catch (e) {
+      res.status(e.response.status)
+      e.response.data.pipe(res)
+    }
+  }
+
+  
   return {
     listKeys,
     getKey,
@@ -289,7 +343,9 @@ const TaekionAPI = ({ store } = {}) => {
     createSnapshot,
     deleteSnapshot,
     apiRequest,
-    apiStreamRequest,
+    apiRequestProxy,
+    explorerListDirectory,
+    explorerDownloadFile,
   };
 };
 

@@ -30,6 +30,14 @@ const edition = {
         extension: 'tfs',
       },
     },
+    'nginx-ingress': {
+      1.8: {
+        chart: 'btp-unstable/nginx-ingress',
+        chartVersion: '~0.0.1',
+        order: 3,
+        extension: 'ingress',
+      },
+    }
   },
 };
 

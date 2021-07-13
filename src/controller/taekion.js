@@ -112,14 +112,42 @@ const TaekionController = ({ store }) => {
     id,
   })
 
+  const explorerListDirectory = ({
+    deployment,
+    volume,
+    inode,
+  }) => api.explorerListDirectory({
+    deployment,
+    volume,
+    inode,
+  })
+
+  const explorerDownloadFile = ({
+    deployment,
+    volume,
+    directory_inode,
+    file_inode,
+    download_filename,
+    res,
+  }) => api.explorerDownloadFile({
+    deployment,
+    volume,
+    directory_inode,
+    file_inode,
+    download_filename,
+    res,
+  })
+
   const restApiProxy = ({
     deployment,
     req,
     res,
-  }) => api.apiStreamRequest({
+  }) => api.apiRequestProxy({
     deployment,
-    // we are targeting the rest api not the taekion middleware
-    podPort: 8008,
+    // this will have the network name prepended
+    // so will become "tfs-rest-api"
+    serviceName: 'rest-api',
+    portName: 'rest-api',
     req,
     res,
   })
@@ -134,6 +162,8 @@ const TaekionController = ({ store }) => {
     listSnapshots,
     createSnapshot,
     deleteSnapshot,
+    explorerListDirectory,
+    explorerDownloadFile,
     restApiProxy,
   }
 }

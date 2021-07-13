@@ -933,6 +933,43 @@ const Routes = ({
    *          description:
    */
   app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
+
+  /**
+   * @swagger
+   *  /clusters/{cluster}/deployments/{deployment}/taekion/explorer/{volume}/dir/{inode}:
+   *    description:
+   *    parameters:
+   *      - $ref: '#/parameters/clusterParam'
+   *      - $ref: '#/parameters/deploymentParam'
+   *      - $ref: '#/parameters/volumeParam'
+   *      - $ref: '#/parameters/inodeParam'
+   *    get:
+   *      security:
+   *        - bearerAuth: []
+   *      responses:
+   *        default:
+   *          description:
+   */
+   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerListDirectory))
+
+   /**
+   * @swagger
+   *  /clusters/{cluster}/deployments/{deployment}/taekion/explorer/{volume}/file/{inode}:
+   *    description:
+   *    parameters:
+   *      - $ref: '#/parameters/clusterParam'
+   *      - $ref: '#/parameters/deploymentParam'
+   *      - $ref: '#/parameters/volumeParam'
+   *      - $ref: '#/parameters/directory_inodeParam'
+   *      - $ref: '#/parameters/file_inodeParam'
+   *    get:
+   *      security:
+   *        - bearerAuth: []
+   *      responses:
+   *        default:
+   *          description:
+   */
+    app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:directory_inode/file/:file_inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerDownloadFile))
 }
 
 module.exports = Routes
