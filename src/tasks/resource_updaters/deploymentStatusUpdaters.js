@@ -29,9 +29,10 @@ if (expression1) {
     })
   }
 */
-
-const pino = require('pino')({
+const pinoDeploymentDelete = require('pino')({
+  action: 'delete or undeploy a deployment',
   name: 'deployment status updator',
+  result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
 })
 
 const errorTest = (error, knownError) => {
@@ -69,47 +70,37 @@ const deploymentUpdateError = async (task, error, store) => {
 const deploymentDeleteError = async (task, error, store) => {
   if (errorTest(error, 'Unable to connect to the server')) {
     completeTask(task, error, store)
-    pino.info({
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
       info: 'The remote cluster is likely dead and cannot be reached',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
   }
   else if (errorTest(error, 'Kubernetes cluster unreachable')) {
     completeTask(task, error, store)
-    pino.info({
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
       info: 'The kubernetes cluster is likely dead and cannot be reached',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
   }
   else if (errorTest(error, 'unable to recognize')) {
     completeTask(task, error, store)
-    pino.info({
+    pinoDeploymentDelete.info({
       error,
-      action: 'Undeploy a deployment',
-      info: 'The kubernetes cluster is likely dead and cannot be reached',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+      info: 'The kubernetes cluster cannot be reached',
     })
   }
   else if (errorTest(error, 'unknown deployment version')) {
     completeTask(task, error, store)
-    pino.info({
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
-      info: 'The name of the chart has likely been changed',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+      info: 'The name of the helm chart has likely been changed',
     })
   }
   else if (errorTest(error, 'Release not loaded') || errorTest(error, 'not found')) {
     completeTask(task, error, store)
-    pino.info({
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
-      info: 'The chart has likely been uninstalled via the command line',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+      info: 'The helm chart has likely been uninstalled via the command line',
     })
   }
   else {
