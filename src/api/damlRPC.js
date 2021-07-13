@@ -465,33 +465,38 @@ const DamlRPC = ({
     // Extract archive information from one pod only
     // This is regardless of all validator pods
     // reaching consensus
-
-    const result = await proxy.request({
-      pod: pod.metadata.name,
-      port: DAML_RPC_PORT,
-      handler: async ({
-        port,
-      }) => {
-        const token = await getAdminJWTToken({
-          id,
-        })
-
-        const grpccurl = Grpcurl({
-          token,
+    try {
+      return await Promise.resolve(proxy.request({
+        pod: pod.metadata.name,
+        port: DAML_RPC_PORT,
+        handler: async ({
           port,
-          prefix: DAML_GRPC_METHOD_PREFIX,
-        })
+        }) => {
+          const token = await Promise.resolve(getAdminJWTToken({
+            id,
+          }))
 
-        const response = await grpccurl({
-          service: 'admin.PackageManagementService',
-          method: 'ListKnownPackages',
-        })
-        const packages = response.packageDetails
+          const grpccurl = Grpcurl({
+            token,
+            port,
+            prefix: DAML_GRPC_METHOD_PREFIX,
+          })
 
-        return packages.sort()
-      },
-    })
-    return result
+          const response = await grpccurl({
+            service: 'admin.PackageManagementService',
+            method: 'ListKnownPackages',
+          })
+          const packages = response.packageDetails
+
+          return packages ? packages.sort() : []
+        },
+      }))
+    } catch (error) {
+      pino.error({
+        action: getArchives,
+      })
+      return error
+    }
   }
 
   const getTimeServiceInfo = () => database.damlTimeService
