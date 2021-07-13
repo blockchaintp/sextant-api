@@ -264,14 +264,16 @@ const Kubectl = ({
   }
 
   // run a kubectl command and return [ stdout, stderr ]
-  const command = async (cmd, options = {}, commandType = 'kubectl') => {
+  const command = async (cmd, options = {}) => {
+    const commandType = 'kubectl'
     setupAndRunCommand(cmd, options, commandType)
   }
 
   // run a helm command and return [ stdout, stderr ]
   // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
   // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
-  const helmCommand = async (cmd, options = {}, commandType = 'helm') => {
+  const helmCommand = async (cmd, options = {}) => {
+    const commandType = 'helm'
     setupAndRunCommand(cmd, options, commandType)
   }
 
