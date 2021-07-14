@@ -29,16 +29,24 @@ if (expression1) {
     })
   }
 */
-
-const pino = require('pino')({
+const pinoDeploymentDelete = require('pino')({
+  action: 'delete or undeploy a deployment',
   name: 'deployment status updator',
+  result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
 })
 
 const errorTest = (error, knownError) => {
   const example = new RegExp(knownError)
-  const testStatus = example.test(error)
+  return example.test(error)
+}
 
-  return testStatus
+const completeTask = async (task, error, store) => {
+  await store.update({
+    id: task.resource_id,
+    data: {
+      status: task.resource_status.completed,
+    },
+  })
 }
 
 const deploymentCreateError = async (task, error, store) => {
@@ -61,62 +69,42 @@ const deploymentUpdateError = async (task, error, store) => {
 
 const deploymentDeleteError = async (task, error, store) => {
   if (errorTest(error, 'Unable to connect to the server')) {
-    await store.update({
-      id: task.resource_id,
-      data: {
-        status: task.resource_status.completed,
-      },
-    })
-    pino.info({
+    completeTask(task, error, store)
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
       info: 'The remote cluster is likely dead and cannot be reached',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
     })
   }
   else if (errorTest(error, 'Kubernetes cluster unreachable')) {
-    await store.update({
-      id: task.resource_id,
-      data: {
-        status: task.resource_status.completed,
-      },
-    })
-    pino.info({
+    completeTask(task, error, store)
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
-      info: 'The remote cluster is likely dead and cannot be reached',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+      info: 'The kubernetes cluster is likely dead and cannot be reached',
     })
   }
   else if (errorTest(error, 'unable to recognize')) {
-    await store.update({
-      id: task.resource_id,
-      data: {
-        status: task.resource_status.completed,
-      },
-    })
-    pino.info({
+    completeTask(task, error, store)
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
-      info: 'The remote cluster is likely dead and cannot be reached',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+      info: 'The kubernetes cluster cannot be reached',
     })
   }
   else if (errorTest(error, 'unknown deployment version')) {
-    await store.update({
-      id: task.resource_id,
-      data: {
-        status: task.resource_status.completed,
-      },
-    })
-    pino.info({
+    completeTask(task, error, store)
+    pinoDeploymentDelete.info({
       error,
-      action: 'Update the deployment status',
-      info: 'The name of the chart has likely been changed',
-      result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',
+      info: 'The name of the helm chart has likely been changed',
+    })
+  }
+  else if (errorTest(error, 'Release not loaded') || errorTest(error, 'not found')) {
+    completeTask(task, error, store)
+    pinoDeploymentDelete.info({
+      error,
+      info: 'The helm chart has likely been uninstalled via the command line',
     })
   }
   else {
+    // do not complete the task
     await store.update({
       id: task.resource_id,
       data: {

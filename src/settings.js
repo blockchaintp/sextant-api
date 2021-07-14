@@ -1,3 +1,5 @@
+const randomstring = require('randomstring')
+
 const config = require('./config')
 
 const required_env = [
@@ -27,7 +29,7 @@ ${missing_env.join('\n')}
 const args = require('minimist')(process.argv, {
   alias: {
     'initial-user': 'initialUser',
-    'initial-password': 'initialPassword',
+    'initial-password': `${randomstring.generate(14)}`,
   },
   default: {
     port: process.env.PORT || 80,

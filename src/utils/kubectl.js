@@ -242,13 +242,11 @@ const Kubectl = ({
       },
     }
   }
-
-  // run a kubectl command and return [ stdout, stderr ]
-  const command = async (cmd, options = {}) => {
+  const setupAndRunCommand = async (cmd, options, commandType) => {
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
-    const runCommand = `kubectl ${setupDetails.connectionArguments.join(' ')} ${cmd}`
-    pino.debug({ action: 'running a standard kubectl command', command: `${command}` })
+    const runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
+    pino.debug({ action: 'running a standard kubectl command', command: `${cmd}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch((err) => {
@@ -261,32 +259,22 @@ const Kubectl = ({
         throw err
       })
     await localTeardown(setupDetails)
-    pino.info({ message: 'kubectl command sucess' })
+    pino.debug({ message: `${commandType} command sucess` })
     return result
+  }
+
+  // run a kubectl command and return [ stdout, stderr ]
+  const command = async (cmd, options = {}) => {
+    const commandType = 'kubectl'
+    return setupAndRunCommand(cmd, options, commandType)
   }
 
   // run a helm command and return [ stdout, stderr ]
   // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
   // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
   const helmCommand = async (cmd, options = {}) => {
-    const setupDetails = await localSetup()
-    const useOptions = getOptions(options)
-    const runCommand = `helm ${setupDetails.connectionArguments.join(' ')} ${cmd}`
-    pino.debug({ action: 'running a standard helm command', command: `${command}` })
-    const result = await exec(runCommand, useOptions)
-      // remove the command itself from the error message so we don't leak credentials
-      .catch((err) => {
-        const errorParts = err.toString().split('\n')
-        const okErrorParts = errorParts
-          .filter((line) => (line.toLowerCase().indexOf('command failed:') >= 0 ? false : true))
-          .filter((line) => line)
-          .map((line) => line.replace(/error: /, ''))
-        err.message = okErrorParts.join('\n')
-        throw err
-      })
-    await localTeardown(setupDetails)
-    pino.info({ message: 'helm command sucess' })
-    return result
+    const commandType = 'helm'
+    return setupAndRunCommand(cmd, options, commandType)
   }
 
   // run a kubectl command and process stdout as JSON
@@ -295,7 +283,7 @@ const Kubectl = ({
     pino.debug({ action: 'running a kubectl command with json output', command: `${command}` })
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
-    pino.info({ message: 'kubectl command --output json sucess' })
+    pino.debug({ message: 'kubectl command --output json sucess' })
     return processedOutput
   }
 
