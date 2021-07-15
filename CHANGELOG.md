@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+* fix(kubectl): return values update-and-run-command on helm-command and command methods [view commit](https://github.com/catenasys/sextant-api/commit/aaf01bd8f51c397c28edabdd9b287939b86f9576)
+* refactor(deployment-status-updater): reduce duplicate code [view commit](https://github.com/catenasys/sextant-api/commit/2c0445f4ddd43d404f275a7e88f8655f4fc4832d)
+* fix(kubectl): define command-type inside command function istead of as an argument [view commit](https://github.com/catenasys/sextant-api/commit/c8e795d4b7e64eb6d6aefb07a97ed0583de8260d)
+* refactor(kubectl): extract duplicated code into function [view commit](https://github.com/catenasys/sextant-api/commit/87f637d4d81b8232a642ca6a667b2ebdab92d12d)
+* fix(deployment-status-updater): add case that handles when a helm chart is deleted via the command line [view commit](https://github.com/catenasys/sextant-api/commit/630ea6cae74b94622771d126e0b0fe7cb8b652bf)
+* refactor(deployment-status-updater): extract repeated code into function [view commit](https://github.com/catenasys/sextant-api/commit/ccf25995e965711feb6f3af0c21df6e0aa58c353)
+* fix(kubectl): reduce console logging noise with pino debug [view commit](https://github.com/catenasys/sextant-api/commit/c82ffe3ad2d7c8043afd962ae939b4eee7dc95d3)
+* fix(settings): repalce hard coded initial password with a randomly generated string [view commit](https://github.com/catenasys/sextant-api/commit/4ea9df26def8ac7dcee2db01ea1f59ed57bffbe5)
+* docs(fixtures): adds readme which describes the origin of the helm charts tar used for testing [view commit](https://github.com/catenasys/sextant-api/commit/8391a481104189438a303c436db2714b6fd1e512)
+* build(packages): streamlines the process of copying and removing helm fixtures in testing pipeline [view commit](https://github.com/catenasys/sextant-api/commit/0667ae7825a79bf06197ce10211e1558ae79f988)
+* build(tests-helmcharts): includes .tar.gz of a snapshot of helm charts and commands which create helm charts and clean them up after test runs [view commit](https://github.com/catenasys/sextant-api/commit/7d43839fced0f8bc0d5bc34b8cb0dd44ec34392c)
+* build(testing): adds functions which copy helm chart fixtures to ./helmCharts/ via npm scripts in package.json [view commit](https://github.com/catenasys/sextant-api/commit/76b9ef095904769b28c357a25ee194933032c3cd)
+* refactor(tests): linting [view commit](https://github.com/catenasys/sextant-api/commit/d6abd706dec6fb381023d6f214298a5951d1be6d)
 * fix(daml-rpc): allow for no packages to be returned in get-daml-archives method [view commit](https://github.com/catenasys/sextant-api/commit/d57de976ee6e22d433fe1e2c5acf11884973cf8a)
 * refactor(daml-rpc): remove unnessasary variable assignment and immediate return of await [view commit](https://github.com/catenasys/sextant-api/commit/aa2ec5c69965bb61bbae3425fe0b450118a6c60f)
 * fix(taekion-api-proxy): fix port for sawtooth rest api proxy [view commit](https://github.com/catenasys/sextant-api/commit/3aa8424b47554babc4fcef0f6363cf0d3f82fc78)
