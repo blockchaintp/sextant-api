@@ -1,11 +1,13 @@
+/* eslint-disable max-len */
+
 // base user form that operates in the following modes:
 
 //  * userAdd
-//    * used by superadmin to add users  
+//    * used by superadmin to add users
 //    * passwords are required
 //  * userEdit
-//    * used by superadmin to edit users 
-//    * passwords are optional - if left blank, existing details are used 
+//    * used by superadmin to edit users
+//    * passwords are optional - if left blank, existing details are used
 //  * userSelf
 //    * used by logged in user to change password
 //    * the accessLevel is not editable
@@ -27,7 +29,7 @@ const validators = {
 const fields = {
   username: {
     id: 'username',
-    title: `Username`,
+    title: 'Username',
     helperText: 'Enter your username',
     component: 'text',
 
@@ -41,7 +43,7 @@ const fields = {
   },
   password: {
     id: 'password',
-    title: `Password`,
+    title: 'Password',
     helperText: 'Enter your password',
     component: 'text',
     inputProps: {
@@ -57,7 +59,7 @@ const fields = {
   },
   confirmPassword: {
     id: 'confirmPassword',
-    title: `Confirm Password`,
+    title: 'Confirm Password',
     helperText: 'Confirm your password',
     component: 'text',
     inputProps: {
@@ -70,17 +72,17 @@ const fields = {
         validators.min(6),
         validators.sameAs('password'),
       ],
-    }
+    },
   },
   permission: {
     id: 'permission',
-    title: `Access Level`,
+    title: 'Access Level',
     helperText: 'Choose the access level for this user',
     component: 'select',
     options: [{
       title: 'Superuser',
       value: 'superuser',
-    },{
+    }, {
       title: 'Admin',
       value: 'admin',
     }, {
@@ -90,7 +92,7 @@ const fields = {
   },
 }
 
-const required = {
+const formRequired = {
   browser: {
     add: [
       'username',
@@ -110,10 +112,10 @@ const required = {
       'password',
     ],
     edit: [],
-  }
+  },
 }
 
-const schema = {
+const formSchema = {
   browser: [
     'username',
     'permission',
@@ -136,13 +138,12 @@ const getUserForm = ({
   fields,
   schema,
   required,
-  mapField: (field) => {
-    return (field.id == 'permission' && permissionDisabled) || (field.id == 'username' && usernameDisabled) ? Object.assign({}, field, {
-      extraProps: {
-        disabled: true,
-      }
-    }) : field
-  }
+  mapField: (field) => ((field.id === 'permission' && permissionDisabled) || (field.id === 'username' && usernameDisabled) ? ({
+    ...field,
+    extraProps: {
+      disabled: true,
+    },
+  }) : field),
 })
 
 const forms = {
@@ -150,33 +151,33 @@ const forms = {
     userAdd: getUserForm({
       usernameDisabled: false,
       permissionDisabled: false,
-      schema: schema.browser,
-      required: required.browser.add,
+      schema: formSchema.browser,
+      required: formRequired.browser.add,
     }),
     userEdit: getUserForm({
       usernameDisabled: true,
       permissionDisabled: false,
-      schema: schema.browser,
-      required: required.browser.edit,
+      schema: formSchema.browser,
+      required: formRequired.browser.edit,
     }),
     userSelf: getUserForm({
       usernameDisabled: true,
       permissionDisabled: true,
-      schema: schema.browser,
-      required: required.browser.edit,
+      schema: formSchema.browser,
+      required: formRequired.browser.edit,
     }),
   },
   server: {
     add: getUserForm({
       permissionDisabled: false,
-      schema: schema.server,
-      required: required.server.add,
+      schema: formSchema.server,
+      required: formRequired.server.add,
     }),
     edit: getUserForm({
       permissionDisabled: false,
-      schema: schema.server,
-      required: required.server.edit,
-    }), 
+      schema: formSchema.server,
+      required: formRequired.server.edit,
+    }),
   },
 }
 
