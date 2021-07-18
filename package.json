@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "migrate": "knex migrate:latest",
+    "check": "npm-check",
     "download-helm-charts": "node scripts/download-helm-charts.js",
     "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C .",
     "remove-helm-fixtures": "rm -rf ./helmCharts/*",
@@ -22,9 +23,7 @@
     "start": "npm run download-helm-charts && npm run serve"
   },
   "dependencies": {
-    "async": "^3.2.0",
-    "aws-regions": "^2.2.0",
-    "aws-sdk": "2.928.0",
+    "aws-sdk": "2.948.0",
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
@@ -39,18 +38,13 @@
     "express-session": "^1.17.2",
     "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
-    "http-proxy": "^1.18.1",
-    "joi": "^13.6.0",
     "js-yaml": "^3.14.1",
-    "jsonist": "^2.1.2",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.95.6",
+    "knex": "^0.95.7",
     "minimist": "^1.2.5",
-    "mkdirp": "^0.5.5",
-    "node-cidr": "^1.0.0",
-    "openapi-types": "^9.0.3",
+    "openapi-types": "^9.1.0",
     "passport": "^0.4.1",
-    "pg": "7.18.2",
+    "pg": "8.6.0",
     "pino": "^4.17.6",
     "randomstring": "^1.2.1",
     "request": "^2.88.2",
@@ -59,19 +53,18 @@
     "swagger-jsdoc": "^5.0.1",
     "swagger-ui-express": "^4.1.6",
     "tmp": "^0.2.1",
-    "widdershins": "^4.0.1",
     "yup": "^0.32.9"
   },
   "devDependencies": {
-    "eslint": "^7.28.0",
+    "async": "^3.2.0",
+    "eslint": "^7.31.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.23.4",
+    "npm-check": "^5.9.2",
     "nyc": "^15.1.0",
     "tap-junit": "^5.0.0",
     "tap-spec": "^5.0.0",
-    "tape": "^4.13.3"
-  },
-  "resolutions": {
-    "lodash": "~4.17.13"
+    "tape": "^4.13.3",
+    "widdershins": "^4.0.1"
   }
 }
