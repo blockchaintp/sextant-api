@@ -76,10 +76,12 @@ pipeline {
 
     stage("Analyze") {
       steps {
-        withSonarQubeEnv('sonarcloud') {
-          sh '''
-            make analyze
-          '''
+        withCredentials([string(credentialsId: 'fossa.full.token', variable: 'FOSSA_API_KEY')]) {
+          withSonarQubeEnv('sonarcloud') {
+            sh '''
+              make analyze
+            '''
+          }
         }
         waitForQualityGate abortPipeline: true
       }
@@ -103,13 +105,6 @@ pipeline {
   }
 
   post {
-      always {
-        // recordIssues enabledForFailure: true, tools: [mavenConsole(), java(), javaDoc()]
-        // recordIssues enabledForFailure: true, tool: checkStyle()
-        // recordIssues enabledForFailure: true, tool: spotBugs()
-        recordIssues enabledForFailure: true, tool: cpd(pattern: '**/build/cpd.xml')
-        recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/build/pmd.xml')
-      }
       success {
         echo "Successfully completed"
       }
