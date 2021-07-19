@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* refactor(src-forms-user): removes variable shadowing [view commit](https://github.com/catenasys/sextant-api/commit/eedc41b62ee9b817787178fce6b9acc06ff14507)
+* refactor(forms): linting [view commit](https://github.com/catenasys/sextant-api/commit/081daeb015fbdeed4d92e8c8c8d26b5ce33f191b)
 * fix(editions): bump tfs chart one minor version [view commit](https://github.com/catenasys/sextant-api/commit/670667dec9c4655cbdecfd96128ec6c64fcc77a0)
 * fix(kubectl): return values update-and-run-command on helm-command and command methods [view commit](https://github.com/catenasys/sextant-api/commit/aaf01bd8f51c397c28edabdd9b287939b86f9576)
 * refactor(deployment-status-updater): reduce duplicate code [view commit](https://github.com/catenasys/sextant-api/commit/2c0445f4ddd43d404f275a7e88f8655f4fc4832d)
