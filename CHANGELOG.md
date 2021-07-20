@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* docs: remove out of date items from README.md [view commit](https://github.com/catenasys/sextant-api/commit/77cebc272c64164f802b79fe54d7bfd22b49ab6c)
+* build: remove code that is no longer used [view commit](https://github.com/catenasys/sextant-api/commit/81d55c44e7338cc01d90b2f7a0851ad9e66c411f)
+* build: remove extraneous dependencies and update others [view commit](https://github.com/catenasys/sextant-api/commit/bf45e712b64d7f7690003fcad6270846c227d42e)
 * refactor(src-forms-user): removes variable shadowing [view commit](https://github.com/catenasys/sextant-api/commit/eedc41b62ee9b817787178fce6b9acc06ff14507)
 * refactor(forms): linting [view commit](https://github.com/catenasys/sextant-api/commit/081daeb015fbdeed4d92e8c8c8d26b5ce33f191b)
 * fix(editions): bump tfs chart one minor version [view commit](https://github.com/catenasys/sextant-api/commit/670667dec9c4655cbdecfd96128ec6c64fcc77a0)
