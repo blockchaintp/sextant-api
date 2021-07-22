@@ -287,11 +287,14 @@ const TaekionAPI = ({ store } = {}) => {
     throw new Error('endpoint tbc');
   };
 
-  const explorerListDirectory = async ({ deployment, volume, inode }) => {
+  const explorerListDirectory = async ({ deployment, volume, inode, snapshot }) => {
     const data = await apiRequest({
       deployment,
       method: 'get',
       path: `/volume/${volume}/explorer/dir/${inode}`,
+      params: {
+        snapshot_head: snapshot,
+      }
     })
     return data.payload;
   }

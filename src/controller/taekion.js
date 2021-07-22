@@ -116,10 +116,12 @@ const TaekionController = ({ store }) => {
     deployment,
     volume,
     inode,
+    snapshot,
   }) => api.explorerListDirectory({
     deployment,
     volume,
     inode,
+    snapshot,
   })
 
   const explorerDownloadFile = ({

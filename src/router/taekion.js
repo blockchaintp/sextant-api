@@ -180,11 +180,16 @@ const TaekionRoutes = (controllers) => {
       volume,
       inode,
     } = req.params
+
+    const {
+      snapshot,
+    } = req.query
     
     const data = await controllers.taekion.explorerListDirectory({
       deployment: id,
       volume,
       inode,
+      snapshot,
     })
     res
       .status(200)
