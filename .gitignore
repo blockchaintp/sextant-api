@@ -226,3 +226,6 @@ taekion/client-wrapper/client-wrapper
 build/
 .scannerwork
 markers
+
+# MkDocs documentation
+site/
