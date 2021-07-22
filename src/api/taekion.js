@@ -305,6 +305,7 @@ const TaekionAPI = ({ store } = {}) => {
     directory_inode,
     file_inode,
     download_filename,
+    snapshot,
     res,
   }) => {
     const connection = await getDeploymentConnection({
@@ -318,7 +319,10 @@ const TaekionAPI = ({ store } = {}) => {
       const upstream = await connection.client({
         method: 'GET',
         url,
-        responseType: 'stream'
+        responseType: 'stream',
+        params: {
+          snapshot_head: snapshot,
+        }
       })
       res.status(200)
       res.set(upstream.headers)
