@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* docs: add mkdocs setup [view commit](https://github.com/catenasys/sextant-api/commit/4547666f8e17938a374e746d0a5e8cae2fb026de)
 * docs: remove out of date items from README.md [view commit](https://github.com/catenasys/sextant-api/commit/77cebc272c64164f802b79fe54d7bfd22b49ab6c)
 * build: remove code that is no longer used [view commit](https://github.com/catenasys/sextant-api/commit/81d55c44e7338cc01d90b2f7a0851ad9e66c411f)
 * build: remove extraneous dependencies and update others [view commit](https://github.com/catenasys/sextant-api/commit/bf45e712b64d7f7690003fcad6270846c227d42e)
