@@ -723,19 +723,143 @@ bearerAuth
 
 `POST /clusters/{cluster}/deployments`
 
-Create and deploy a new deployment on a specific cluster.
+Create and deploy a new daml-on-besu deployment on a specific cluster.
 
 > Body parameter
 
 ```json
-{}
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "cannot be changed after it is set",
+      "type": "string",
+      "exmaple": "name"
+    },
+    "deployment_type": {
+      "description": "cannot be changed after it is set",
+      "type": "string",
+      "example": "daml-on-besu"
+    },
+    "deployment_version": {
+      "description": "cannot be changed after it is set",
+      "type": "string",
+      "example": "1.3"
+    },
+    "desired_state": {
+      "description": "optional configurations",
+      "type": "object",
+      "properties": {
+        "besu": {
+          "type": "object",
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "storageClass": {
+                  "type": "string",
+                  "example": "gp2"
+                }
+              }
+            }
+          }
+        },
+        "postgres": {
+          "type": "object",
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "storageClass": {
+                  "type": "string",
+                  "example": "gp2"
+                }
+              }
+            }
+          }
+        },
+        "imagePullSecrets": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "example": false
+            },
+            "value": {
+              "type": "array",
+              "description": "list of secrets' names",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "same as name used above"
+            },
+            "namespace": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "custom_yaml": {
+      "type": "string",
+      "example": ""
+    },
+    "deployment_method": {
+      "description": "the default value is helm",
+      "type": "string",
+      "example": "helm"
+    }
+  }
+}
 ```
 
 <h3 id="post__clusters_{cluster}_deployments-parameters">Parameters</h3>
 
 |Name|In|Type|Required|Description|
 |---|---|---|---|---|
-|body|body|any|false|deployment definition|
+|body|body|object|false|deployment definition|
+|» name|body|string|false|cannot be changed after it is set|
+|» deployment_type|body|string|false|cannot be changed after it is set|
+|» deployment_version|body|string|false|cannot be changed after it is set|
+|» desired_state|body|object|false|optional configurations|
+|»» besu|body|object|false|none|
+|»»» persistence|body|object|false|none|
+|»»»» enabled|body|boolean|false|none|
+|»»»» storageClass|body|string|false|none|
+|»» postgres|body|object|false|none|
+|»»» persistence|body|object|false|none|
+|»»»» enabled|body|boolean|false|none|
+|»»»» storageClass|body|string|false|none|
+|»» imagePullSecrets|body|object|false|none|
+|»»» enabled|body|boolean|false|none|
+|»»» value|body|[object]|false|list of secrets' names|
+|»»»» name|body|string|false|none|
+|»» deployment|body|object|false|none|
+|»»» name|body|string|false|same as name used above|
+|»»» namespace|body|string|false|none|
+|» custom_yaml|body|string|false|none|
+|» deployment_method|body|string|false|the default value is helm|
 |cluster|path|string|true|id of the cluster|
 |user|path|string|true|id of the user|
 
@@ -745,8 +869,9 @@ Create and deploy a new deployment on a specific cluster.
 |---|---|---|---|
 |default|Default|none|None|
 
-<aside class="success">
-This operation does not require authentication
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearerAuth
 </aside>
 
 ## get__clusters_{cluster}_deployments_{deployment}
@@ -777,12 +902,143 @@ bearerAuth
 
 `PUT /clusters/{cluster}/deployments/{deployment}`
 
-Update a specific deployment on a specific cluster.
+Update a specific daml-on-besu deployment on a specific cluster.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "cannot be changed after it is set",
+      "type": "string",
+      "exmaple": "name"
+    },
+    "deployment_type": {
+      "description": "cannot be changed after it is set",
+      "type": "string",
+      "example": "daml-on-besu"
+    },
+    "deployment_version": {
+      "description": "cannot be changed after it is set",
+      "type": "string",
+      "example": "1.3"
+    },
+    "desired_state": {
+      "description": "optional configurations",
+      "type": "object",
+      "properties": {
+        "besu": {
+          "type": "object",
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "storageClass": {
+                  "type": "string",
+                  "example": "gp2"
+                }
+              }
+            }
+          }
+        },
+        "postgres": {
+          "type": "object",
+          "properties": {
+            "persistence": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "storageClass": {
+                  "type": "string",
+                  "example": "gp2"
+                }
+              }
+            }
+          }
+        },
+        "imagePullSecrets": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "example": false
+            },
+            "value": {
+              "type": "array",
+              "description": "list of secrets' names",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "same as name used above"
+            },
+            "namespace": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "custom_yaml": {
+      "type": "string",
+      "example": ""
+    },
+    "deployment_method": {
+      "description": "the default value is helm",
+      "type": "string",
+      "example": "helm"
+    }
+  }
+}
+```
 
 <h3 id="put__clusters_{cluster}_deployments_{deployment}-parameters">Parameters</h3>
 
 |Name|In|Type|Required|Description|
 |---|---|---|---|---|
+|body|body|object|false|deployment definition|
+|» name|body|string|false|cannot be changed after it is set|
+|» deployment_type|body|string|false|cannot be changed after it is set|
+|» deployment_version|body|string|false|cannot be changed after it is set|
+|» desired_state|body|object|false|optional configurations|
+|»» besu|body|object|false|none|
+|»»» persistence|body|object|false|none|
+|»»»» enabled|body|boolean|false|none|
+|»»»» storageClass|body|string|false|none|
+|»» postgres|body|object|false|none|
+|»»» persistence|body|object|false|none|
+|»»»» enabled|body|boolean|false|none|
+|»»»» storageClass|body|string|false|none|
+|»» imagePullSecrets|body|object|false|none|
+|»»» enabled|body|boolean|false|none|
+|»»» value|body|[object]|false|list of secrets' names|
+|»»»» name|body|string|false|none|
+|»» deployment|body|object|false|none|
+|»»» name|body|string|false|same as name used above|
+|»»» namespace|body|string|false|none|
+|» custom_yaml|body|string|false|none|
+|» deployment_method|body|string|false|the default value is helm|
 |cluster|path|string|true|id of the cluster|
 |deployment|path|string|true|id of the deployment|
 
@@ -855,6 +1111,7 @@ Create a new role for a specific user on a specific deployment.
 
 |Name|In|Type|Required|Description|
 |---|---|---|---|---|
+|user|path|string|true|id of the user|
 |cluster|path|string|true|id of the cluster|
 |deployment|path|string|true|id of the deployment|
 
@@ -931,6 +1188,31 @@ Get the kubernetes resources for a specific deployment.
 |deployment|path|string|true|id of the deployment|
 
 <h3 id="get__clusters_{cluster}_deployments_{deployment}_resources-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|default|Default|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearerAuth
+</aside>
+
+## delete__clusters_{cluster}_deployments_{deployment}_pod_{pod}
+
+`DELETE /clusters/{cluster}/deployments/{deployment}/pod/{pod}`
+
+Delete a pod on a specific deploymentt
+
+<h3 id="delete__clusters_{cluster}_deployments_{deployment}_pod_{pod}-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|cluster|path|string|true|id of the cluster|
+|deployment|path|string|true|id of the deployment|
+|pod|path|string|true|name of the pod being deleted|
+
+<h3 id="delete__clusters_{cluster}_deployments_{deployment}_pod_{pod}-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
@@ -1445,6 +1727,52 @@ bearerAuth
 |snapshot|path|string|true|id of the snapshot|
 
 <h3 id="delete__clusters_{cluster}_deployments_{deployment}_taekion_volumes_{volume}_snapshots_{snapshot}-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|default|Default|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearerAuth
+</aside>
+
+## get__clusters_{cluster}_deployments_{deployment}_taekion_explorer_{volume}_dir_{inode}
+
+`GET /clusters/{cluster}/deployments/{deployment}/taekion/explorer/{volume}/dir/{inode}`
+
+<h3 id="get__clusters_{cluster}_deployments_{deployment}_taekion_explorer_{volume}_dir_{inode}-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|cluster|path|string|true|id of the cluster|
+|deployment|path|string|true|id of the deployment|
+|volume|path|string|true|id of the volume|
+
+<h3 id="get__clusters_{cluster}_deployments_{deployment}_taekion_explorer_{volume}_dir_{inode}-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|default|Default|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearerAuth
+</aside>
+
+## get__clusters_{cluster}_deployments_{deployment}_taekion_explorer_{volume}_file_{inode}
+
+`GET /clusters/{cluster}/deployments/{deployment}/taekion/explorer/{volume}/file/{inode}`
+
+<h3 id="get__clusters_{cluster}_deployments_{deployment}_taekion_explorer_{volume}_file_{inode}-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|cluster|path|string|true|id of the cluster|
+|deployment|path|string|true|id of the deployment|
+|volume|path|string|true|id of the volume|
+
+<h3 id="get__clusters_{cluster}_deployments_{deployment}_taekion_explorer_{volume}_file_{inode}-responses">Responses</h3>
 
 |Status|Meaning|Description|Schema|
 |---|---|---|---|
