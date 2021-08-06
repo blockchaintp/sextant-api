@@ -53,6 +53,13 @@ parameters:
     description: id of the user
     schema:
       type: string
+  podParam:
+    name: pod
+    in: path
+    required: true
+    description: name of the pod being deleted
+    schema:
+      type: string
   searchParam:
     name: search
     in: query
@@ -102,17 +109,175 @@ parameters:
             ca:
               type: string
   deployment:
-    type: object
-    properties:
-      name:
-        type: string
-      deployment_type:
-        type: string
-      deployment_version:
-        type: string
-      desired_state:
-        type: object
-        properties:
+    name: deployment body
+    in: body
+    description: deployment definition
+    schema:
+      type: object
+      properties:
+        name:
+          description: cannot be changed after it is set
+          type: string
+          exmaple: 'name'
+        deployment_type:
+          description: cannot be changed after it is set
+          type: string
+          example: 'sawtooth'
+        deployment_version:
+          description: cannot be changed after it is set
+          type: string
+          example: '1.1'
+        desired_state:
+          description: optional configurations
+          type: object
+          properties:
+            deployment_type:
+              description: replace 'deployment_type' with the same string used for the 'deployment_type' property above
+              type: object
+              properties:
+                dynamicPeering:
+                  type: boolean
+                  example: true
+                genesis:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      example: true
+                    seed:
+                      type: string
+                      description: random 24 character alphanumeric - changing the genesis seed is a destructive. Use the same genesis seed for any updates or redeploys of a given deployment.
+                      example: 'shjuRxYoW3c8SLL4jX34mHJH'
+                permissioned:
+                  type: boolean
+                  exmaple: false
+                consensus:
+                  type: integer
+                  example: 400
+                externalSeeds:
+                  type: array
+                  example: []
+                  description: seeds
+                  items:
+                    type: string
+                customTPs:
+                  type: array
+                  example: []
+                  description: transaction processors
+                  items:
+                    type: string
+                networkName:
+                  type: string
+                  description: name of the deployment - same as the name property above and cannot be changed
+                  example: 'rainbow'
+                namespace:
+                  description: same as the namespace property above and cannot be changed
+                  type: string
+                  example: 'pink'
+            affinity:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  example: false
+            imagePullSecrets:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  example: false
+                value:
+                  type: array
+                  example: []
+                  description: secrets
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+        custom_yaml:
+          type: string
+          example: ''
+        deployment_method:
+          description: the default value is helm
+          type: string
+          example: 'helm'
+  damlOnBesuDeployment:
+    name: deployment body
+    in: body
+    description: deployment definition
+    schema:
+      type: object
+      properties:
+        name:
+          description: cannot be changed after it is set
+          type: string
+          exmaple: 'name'
+        deployment_type:
+          description: cannot be changed after it is set
+          type: string
+          example: 'daml-on-besu'
+        deployment_version:
+          description: cannot be changed after it is set
+          type: string
+          example: '1.3'
+        desired_state:
+          description: optional configurations
+          type: object
+          properties:
+            besu:
+              type: object
+              properties:
+                persistence:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      example: false
+                    storageClass:
+                      type: string
+                      example: 'gp2'
+            postgres:
+              type: object
+              properties:
+                persistence:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      example: false
+                    storageClass:
+                      type: string
+                      example: 'gp2'
+            imagePullSecrets:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  example: false
+                value:
+                  type: array
+                  description: list of secrets' names
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+            deployment:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: same as name used above
+                namespace:
+                  type: string
+        custom_yaml:
+          type: string
+          example: ''
+        deployment_method:
+          description: the default value is helm
+          type: string
+          example: 'helm'
   cluster:
     type: object
     properties:
@@ -144,7 +309,7 @@ responses:
         example: 'superuser'
       username:
         type: string
-        example: 'mikaela'
+        example: 'bjorn'
       meta:
         schema:
           type: object

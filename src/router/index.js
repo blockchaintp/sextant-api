@@ -476,15 +476,11 @@ const Routes = ({
    *        default:
    *          description:
    *    post:
-   *      description: Create and deploy a new deployment on a specific cluster.
+   *      description: Create and deploy a new daml-on-besu deployment on a specific cluster.
+   *      security:
+   *        - bearerAuth: []
    *      parameters:
-   *        - name: deployment body
-   *          in: body
-   *          description: deployment definition
-   *          content:
-   *            deployment/sawtooth:
-   *              schema:
-   *                $ref: '#/parameters/deployment'
+   *        - $ref: '#/parameters/damlOnBesuDeployment'
    *      responses:
    *        default:
    *          description:
@@ -507,9 +503,11 @@ const Routes = ({
    *        default:
    *          description:
    *    put:
-   *      description: Update a specific deployment on a specific cluster.
+   *      description: Update a specific daml-on-besu deployment on a specific cluster.
    *      security:
    *        - bearerAuth: []
+   *      parameters:
+   *        - $ref: '#/parameters/damlOnBesuDeployment'
    *      responses:
    *        default:
    *          description:
@@ -543,6 +541,8 @@ const Routes = ({
    *      description: Create a new role for a specific user on a specific deployment.
    *      security:
    *        - bearerAuth: []
+   *      parameters:
+   *      - $ref: '#/parameters/userParam'
    *      responses:
    *        default:
    *          description:
@@ -602,7 +602,19 @@ const Routes = ({
 
   /**
    * @swagger
-   *  /clusters/{cluster}/deployments/{deployment}/resources:
+   *  /clusters/{cluster}/deployments/{deployment}/pod/{pod}:
+   *    description: Delete a pod on a specific deployment
+   *    parameters:
+   *      - $ref: '#/parameters/clusterParam'
+   *      - $ref: '#/parameters/deploymentParam'
+   *      - $ref: '#/parameters/podParam'
+   *    delete:
+   *      description: Delete a pod on a specific deploymentt
+   *      security:
+   *        - bearerAuth: []
+   *      responses:
+   *        default:
+   *          description:
    */
   app.delete(basePath('/clusters/:cluster/deployments/:id/pod/:pod'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.deletePod))
 
@@ -642,7 +654,7 @@ const Routes = ({
   /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/daml/enrolledKeys:
-   *    description:
+   *    description: not an active endpoint
    *    parameters:
    *      - $ref: '#/parameters/clusterParam'
    *      - $ref: '#/parameters/deploymentParam'
@@ -950,9 +962,9 @@ const Routes = ({
    *        default:
    *          description:
    */
-   app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerListDirectory))
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerListDirectory))
 
-   /**
+  /**
    * @swagger
    *  /clusters/{cluster}/deployments/{deployment}/taekion/explorer/{volume}/file/{inode}:
    *    description:
@@ -969,7 +981,7 @@ const Routes = ({
    *        default:
    *          description:
    */
-    app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:directory_inode/file/:file_inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerDownloadFile))
+  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:directory_inode/file/:file_inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerDownloadFile))
 }
 
 module.exports = Routes
