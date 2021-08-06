@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* fix(utils): refactor to use spawnsync instead of exec [view commit](https://github.com/catenasys/sextant-api/commit/0df25a366b657b31a567cd02fca0b47db1ef709d)
 * docs: add mkdocs setup [view commit](https://github.com/catenasys/sextant-api/commit/4547666f8e17938a374e746d0a5e8cae2fb026de)
 * docs: remove out of date items from README.md [view commit](https://github.com/catenasys/sextant-api/commit/77cebc272c64164f802b79fe54d7bfd22b49ab6c)
 * build: remove code that is no longer used [view commit](https://github.com/catenasys/sextant-api/commit/81d55c44e7338cc01d90b2f7a0851ad9e66c411f)
