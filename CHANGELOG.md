@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* docs(docs): remove todo from docs directory [view commit](https://github.com/catenasys/sextant-api/commit/73bcd1c2485b0af8f5fc411dd08ea25afbf99d19)
+* docs(openapi): update open api md file with new output [view commit](https://github.com/catenasys/sextant-api/commit/2607f8ee16c016d2f7da0e4b932dbcee0503c94d)
+* feat(swagger-defs): add to swagger definitions [view commit](https://github.com/catenasys/sextant-api/commit/4962b43959a80c89cf39f8c91a48c3733b3b067e)
+* docs(router-index): add to swagger docstrings [view commit](https://github.com/catenasys/sextant-api/commit/1dd937fe97ff15e9752871f41fc2d664a3721fb1)
 * fix(utils): refactor to use spawnsync instead of exec [view commit](https://github.com/catenasys/sextant-api/commit/0df25a366b657b31a567cd02fca0b47db1ef709d)
 * docs: add mkdocs setup [view commit](https://github.com/catenasys/sextant-api/commit/4547666f8e17938a374e746d0a5e8cae2fb026de)
 * docs: remove out of date items from README.md [view commit](https://github.com/catenasys/sextant-api/commit/77cebc272c64164f802b79fe54d7bfd22b49ab6c)
