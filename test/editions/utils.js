@@ -15,6 +15,15 @@ const addRepo = async (helmRepos) => {
   }
 }
 
+const getEditionFiles = async (directoryName) => {
+  try {
+    const files = await fs.readdirSync(directoryName)
+    return files
+  } catch (error) {
+    return error
+  }
+}
+
 const removeRepo = async (helmRepos) => {
   try {
     return await exec(`helm repo remove ${helmRepos.name}`)
@@ -90,6 +99,7 @@ module.exports = {
   confirmChartFileExists,
   confirmChartsExist,
   getChartFileName,
+  getEditionFiles,
   pullChart,
   removeChartFile,
   removeRepo,
