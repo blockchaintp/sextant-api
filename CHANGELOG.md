@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* build(deps): Bump tar from 6.1.0 to 6.1.8 [view commit](https://github.com/catenasys/sextant-api/commit/658effd923672428b5f7d7d4e6dfc463554d7ab3)
+* build(deps): Bump urijs from 1.19.6 to 1.19.7 [view commit](https://github.com/catenasys/sextant-api/commit/4c120d4cdef5124debc24f2aba3a488838ef7340)
+* test(test-editions): refactors all individual edition test files into one file which iterates over all files in editions directory instead [view commit](https://github.com/catenasys/sextant-api/commit/d23cc0ce020eae1fb00210878924b3d9d113c6ba)
+* test(test-editions): adds unit tests designed to test integrity of edition files and its contents [view commit](https://github.com/catenasys/sextant-api/commit/c50953fab0e346c1cd2f3c6acc353fbe57a09b53)
+* test(test-editions-utils): adds utility functions designed for unit tests on editions [view commit](https://github.com/catenasys/sextant-api/commit/28807438f2ab42d3c1a5b5ebf9fbe8ea3b0f3c0e)
 * docs(docs): remove todo from docs directory [view commit](https://github.com/catenasys/sextant-api/commit/73bcd1c2485b0af8f5fc411dd08ea25afbf99d19)
 * docs(openapi): update open api md file with new output [view commit](https://github.com/catenasys/sextant-api/commit/2607f8ee16c016d2f7da0e4b932dbcee0503c94d)
 * feat(swagger-defs): add to swagger definitions [view commit](https://github.com/catenasys/sextant-api/commit/4962b43959a80c89cf39f8c91a48c3733b3b067e)
