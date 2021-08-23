@@ -601,7 +601,7 @@ const DeployentController = ({ store }) => {
       field: 'namespace',
     });
 
-    const results = await {
+    const results = {
       pods: await kubectl
         .jsonCommand(`-n ${namespace} get po`)
         .then((result) => result.items),
