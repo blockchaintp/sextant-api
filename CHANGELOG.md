@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v2.2.2
 
 * build(deps): Bump tar from 6.1.0 to 6.1.8 [view commit](https://github.com/catenasys/sextant-api/commit/658effd923672428b5f7d7d4e6dfc463554d7ab3)
 * build(deps): Bump urijs from 1.19.6 to 1.19.7 [view commit](https://github.com/catenasys/sextant-api/commit/4c120d4cdef5124debc24f2aba3a488838ef7340)
