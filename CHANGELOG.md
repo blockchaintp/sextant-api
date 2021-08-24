@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* refactor(controller-deployment): removes redundant await on non-promise [view commit](https://github.com/catenasys/sextant-api/commit/0e88956d11b3469539d199ba793c860f4b5e3ca3)
+
 ## v2.2.2
 
 * build(deps): Bump tar from 6.1.0 to 6.1.8 [view commit](https://github.com/catenasys/sextant-api/commit/658effd923672428b5f7d7d4e6dfc463554d7ab3)
