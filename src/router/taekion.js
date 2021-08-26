@@ -180,11 +180,16 @@ const TaekionRoutes = (controllers) => {
       volume,
       inode,
     } = req.params
+
+    const {
+      snapshot,
+    } = req.query
     
     const data = await controllers.taekion.explorerListDirectory({
       deployment: id,
       volume,
       inode,
+      snapshot,
     })
     res
       .status(200)
@@ -198,12 +203,19 @@ const TaekionRoutes = (controllers) => {
       directory_inode,
       file_inode,
     } = req.params
+
+    const {
+      download_filename,
+      snapshot,
+    } = req.query
+
     await controllers.taekion.explorerDownloadFile({
       deployment: id,
       volume,
       directory_inode,
       file_inode,
-      download_filename: req.query.download_filename,
+      download_filename,
+      snapshot,
       res,
     })
   }
