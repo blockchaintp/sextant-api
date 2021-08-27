@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* feat(taekion-snapshot-ui): forward snapshot query param to file downloads [view commit](https://github.com/catenasys/sextant-api/commit/43316a199f48e9f74da5a3b7a461b7371c996a07)
+* feat(taekion-snapshot-ui): forward the snapshot param to the tfs middleware [view commit](https://github.com/catenasys/sextant-api/commit/aeff8663553fe7517dc47a89dc2b0e62ee7178ba)
 * refactor(controller-deployment): removes redundant await on non-promise [view commit](https://github.com/catenasys/sextant-api/commit/0e88956d11b3469539d199ba793c860f4b5e3ca3)
 
 ## v2.2.2
