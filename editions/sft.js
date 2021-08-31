@@ -17,7 +17,7 @@ const edition = {
     sawtooth: {
       1.1: {
         chart: 'btp-unstable/sawtooth',
-        chartVersion: '~0.1.27',
+        chartVersion: '~0.2.0',
         order: 2,
         extension: 'sawtooth',
       },
