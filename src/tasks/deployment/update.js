@@ -86,6 +86,12 @@ const DeploymentUpdate = ({
     store,
   })
 
+  // test we can connect to the remote cluster with the details provided
+  // If the namespace exists, continue. If not, create it.
+  const namespaces = yield clusterKubectl.jsonCommand('get ns')
+  const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === desiredNamespace)
+
+  if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${desiredNamespace}`)
   /*
   If this is a sawtooth deployment, use the helm chart to update the deployment on the cluster
   otherwise, use the template directory
