@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* build(deps): Bump tar from 6.1.8 to 6.1.11 [view commit](https://github.com/catenasys/sextant-api/commit/3d826327c30eb0a0de1004896d3b886843e0060b)
+* fix(redeploy-update): namespace will be created if it does not exist prior to redeploy [view commit](https://github.com/catenasys/sextant-api/commit/367a0898c50fab25cb7923419fb703ae8db6a99e)
+* fix(editions): update dev.js and sft.js sawtoth versions [view commit](https://github.com/catenasys/sextant-api/commit/55b733f72b42c38d206889c4aad11d49a148ac6d)
 * feat(taekion-snapshot-ui): forward snapshot query param to file downloads [view commit](https://github.com/catenasys/sextant-api/commit/43316a199f48e9f74da5a3b7a461b7371c996a07)
 * feat(taekion-snapshot-ui): forward the snapshot param to the tfs middleware [view commit](https://github.com/catenasys/sextant-api/commit/aeff8663553fe7517dc47a89dc2b0e62ee7178ba)
 * refactor(controller-deployment): removes redundant await on non-promise [view commit](https://github.com/catenasys/sextant-api/commit/0e88956d11b3469539d199ba793c860f4b5e3ca3)
