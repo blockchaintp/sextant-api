@@ -9,11 +9,11 @@ const TaekionAPI = ({ store } = {}) => {
 
   const getDeploymentConnection = async ({
     deployment,
+    podName = 'tfs-on-sawtooth'
   }) => deploymentHttpConnection({
     store,
     id: deployment,
     onConnection: async (connection) => {
-      const networkName = connection.applied_state.sawtooth.networkName
       const res = await axios({
         method: 'GET',
         url: `${connection.baseUrl}/pods`,
@@ -25,8 +25,10 @@ const TaekionAPI = ({ store } = {}) => {
         })
       })
       const pod = res.data.items.find(p => {
-        return p.metadata.labels.app == `${networkName}-validator`
+        return p.metadata.labels['app.kubernetes.io/name'] == podName
       })
+
+      if(!pod) throw new Error(`no pod was found`)
       connection.podName = pod.metadata.name
     }
   })
@@ -77,6 +79,7 @@ const TaekionAPI = ({ store } = {}) => {
 
     const connection = await getDeploymentConnection({
       deployment,
+      podName: 'sawtooth',
     })
 
     const url = `${connection.baseUrl}/pods/${connection.podName}:8008/proxy${req.url}`
@@ -105,7 +108,6 @@ const TaekionAPI = ({ store } = {}) => {
       upstreamRes.data.pipe(res)
 
     } catch (e) {
-
       if (!e.response) {
         console.error(e.stack);
         res.status(500);
