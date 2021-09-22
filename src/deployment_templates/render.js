@@ -13,14 +13,14 @@ const tempName = Promise.promisify(tmp.tmpName)
 const tmpDir = Promise.promisify(tmp.dir)
 const exec = Promise.promisify(childProcess.exec)
 
-const pino = require('pino')({
-  name: 'render.js',
+const logger = require('../logging').getLogger({
+  name: 'deployment_templates/render',
 })
 
 const DEFAULTS_FILE = 'defaults.yaml'
 
+// eslint-disable-next-line no-unused-vars
 const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
-
 
 /*
 
@@ -100,25 +100,20 @@ const getTemplateData = async ({
   })
   const initialData = merge(defaults, desired_state, { arrayMerge: overwriteMerge })
 
-  if ( initialData.sawtooth && initialData.sawtooth.customTPs ) {
+  if (initialData.sawtooth && initialData.sawtooth.customTPs) {
     const initialCustomTPs = initialData.sawtooth.customTPs
 
-    const formatedCustomTPs = initialCustomTPs.map( (tp) => {
-      return {
-        // id: tp.id and index: tp.index values removed,
-        name: tp.name,
-        image: tp.image,
-        command: tp.command ? tp.command.split(' ') : null,
-        args: tp.args ? tp.args.split(' ') : null,
-        }
-      })
-    
-    initialData.sawtooth.customTPs = formatedCustomTPs
+    const formattedCustomTPs = initialCustomTPs.map((tp) => ({
+      // id: tp.id and index: tp.index values removed,
+      name: tp.name,
+      image: tp.image,
+      command: tp.command ? tp.command.split(' ') : null,
+      args: tp.args ? tp.args.split(' ') : null,
+    }))
+
+    initialData.sawtooth.customTPs = formattedCustomTPs
   }
-  const formatedData = initialData
-  
-  return formatedData
-  
+  return initialData
 }
 
 /*
@@ -135,7 +130,7 @@ const writeTemplateValues = async ({
   deployment_type,
   deployment_version,
   desired_state,
-  custom_yaml
+  custom_yaml,
 }) => {
   const valuesPath = await tempName({
     postfix: '.yaml',
@@ -147,10 +142,10 @@ const writeTemplateValues = async ({
     desired_state,
   })
   let mergedYamlData
-  
+
   // parse string into yaml object
   const customYaml = yaml.safeLoad(custom_yaml)
-  
+
   if (customYaml) {
     // merge yaml from the form input with custom yaml input
     mergedYamlData = merge(templateData, customYaml, { arrayMerge: overwriteMerge })
@@ -180,9 +175,10 @@ const getTemplates = async ({
   })
   const files = await readdir(templateFolder)
 
-  return files.filter(filename => {
-    if(!filename.match(/\.yaml$/)) return false
-    if(filename == DEFAULTS_FILE) return false
+  return files.filter((filename) => {
+    if (!filename.match(/\.yaml$/)) return false
+    // eslint-disable-next-line eqeqeq
+    if (filename == DEFAULTS_FILE) return false
     return true
   }).sort()
 }
@@ -195,9 +191,10 @@ const getTemplates = async ({
 
 const cleanUp = async (filePath) => {
   await fs.unlink(filePath, (err) => {
-    pino.info({
+    logger.info({
       action: 'unlinkFile',
-      filepath: filePath
+      filepath: filePath,
+      error: err,
     })
   })
 }
@@ -212,33 +209,29 @@ const renderTemplate = async ({
   const outputTemplatePath = path.resolve(outputDirectory, templateName)
   const runCommand = `kubetpl render -i ${valuesPath} ${inputTemplatePath}`
   const stdout = await exec(runCommand)
-    .catch(err => {
+    .catch((err) => {
       // make the kubetpl error message nicely readable
-      err.message = err
+      const message = err
         .toString()
-        .split("\n")
-        .filter(line => line.indexOf('Error: ') == 0 ? false : true)
-        .map(line => {
-          return line
-            .split(/\s+/)
-            .filter(part => {
-              if(part.indexOf('.yaml') >= 0 && part.indexOf(':') < 0) return false
-              return true
-            })
-            .map(part => {
-              if(part.indexOf('.yaml') > 0) {
-                const pathParts = part.split('/')
-                return pathParts[pathParts.length-1]
-              }
-              else {
-                return part
-              }
-            }).join(' ')
-        })
-        .join("\n")
-      throw err
+        .split('\n')
+        .filter((line) => (line.indexOf('Error: ') !== 0))
+        .map((line) => line
+          .split(/\s+/)
+          .filter((part) => {
+            if (part.indexOf('.yaml') >= 0 && part.indexOf(':') < 0) return false
+            return true
+          })
+          .map((part) => {
+            if (part.indexOf('.yaml') > 0) {
+              const pathParts = part.split('/')
+              return pathParts[pathParts.length - 1]
+            }
+            return part
+          }).join(' '))
+        .join('\n')
+      throw new Error(message, { cause: err })
     })
-  const retFile=await writeFile(outputTemplatePath, stdout, 'utf8')
+  const retFile = await writeFile(outputTemplatePath, stdout, 'utf8')
   return retFile
 }
 
@@ -253,7 +246,7 @@ const renderTemplate = async ({
    * for each template - render it and write to the temp directory
 
 */
-const renderDeployment = async({
+const renderDeployment = async ({
   deployment_type,
   deployment_version,
   desired_state,
@@ -275,7 +268,7 @@ const renderDeployment = async({
     deployment_version,
   })
 
-  await Promise.each(templates, templateName => renderTemplate({
+  await Promise.each(templates, (templateName) => renderTemplate({
     templateName,
     valuesPath,
     inputDirectory,

@@ -1,6 +1,5 @@
-const pino = require('pino')({
-  name: 'meter function',
-})
+/* eslint-disable import/no-dynamic-require */
+/* eslint-disable global-require */
 
 class Meter {
   constructor(meteringDetails) {
@@ -22,12 +21,10 @@ class Meter {
   }
 
   record(dimension, value) {
-    this.meter.record(entitlement, value)
+    this.meter.record(dimension, value)
   }
-
 }
 
-
 module.exports = {
-  Meter
+  Meter,
 }

@@ -1,13 +1,14 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 const asyncHandler = require('express-async-handler')
 const bodyParser = require('body-parser')
-const pino = require('pino')({
-  name: 'app',
-})
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-const rbac = require('../rbac')
 
+const logger = require('../logging').getLogger({
+  name: 'router',
+})
+const rbac = require('../rbac')
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
@@ -49,7 +50,7 @@ const RbacMiddleware = (settings) => (store, resource_type, method) => async (re
     }
   } catch (err) {
     if (settings.logging) {
-      pino.error({
+      logger.error({
         action: 'error',
         error: err.error ? err.error.toString() : err.toString(),
         stack: err.stack,

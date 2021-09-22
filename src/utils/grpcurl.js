@@ -6,8 +6,8 @@ const tmp = require('tmp')
 const fs = require('fs')
 const childProcess = require('child_process')
 
-const pino = require('pino')({
-  name: 'grpcurl',
+const logger = require('../logging').getLogger({
+  name: 'utils/grpcurl',
 })
 
 const exec = Promise.promisify(childProcess.exec)
@@ -80,7 +80,7 @@ const Grpcurl = ({
       // run it
       const result = await exec(runCommand, commandOptions)
       const parsedResult = result ? JSON.parse(result) : {}
-      pino.info({
+      logger.info({
         service,
         method,
         data,

@@ -5,8 +5,8 @@
  * License: Product
  */
 
-const pino = require('pino')({
-  name: 'deployment.update',
+const logger = require('../../logging').getLogger({
+  name: 'tasks/deployment/update',
 })
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
@@ -142,7 +142,7 @@ const DeploymentUpdate = ({
       charts.forEach(
         yield (chartFile) => {
           const safeFileName = makeSafeFileName(chartFile)
-          pino.info({
+          logger.info({
             action: 'Applying chart',
             chartFile,
             safeFileName,
@@ -154,7 +154,7 @@ const DeploymentUpdate = ({
 
     yield clusterKubectl.command(`apply -f ${templateDirectory}`)
 
-    pino.info({
+    logger.info({
       action: 'applyTemplates',
       deployment: id,
       templateDirectory,

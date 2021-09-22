@@ -1,11 +1,11 @@
+/* eslint-disable no-underscore-dangle */
 const express = require('express')
 const Knex = require('knex')
 
-const Passport = require('./passport')
-
-const pino = require('pino')({
+const logger = require('./logging').getLogger({
   name: 'app',
 })
+const Passport = require('./passport')
 
 const Store = require('./store')
 const Controller = require('./controller')
@@ -20,10 +20,12 @@ const App = ({
   sessionStore,
   taskHandlers,
 }) => {
-
+  // eslint-disable-next-line no-param-reassign
   knex = knex || Knex(settings.postgres)
+  // eslint-disable-next-line no-param-reassign
   store = store || Store(knex)
 
+  // eslint-disable-next-line no-param-reassign
   controllers = controllers || Controller({
     store,
     settings,
@@ -67,10 +69,12 @@ const App = ({
     will hit this handler - always prefer a JSON response
 
   */
+  // The `next` here is required for some reason
+  // eslint-disable-next-line no-unused-vars
   app.use((req, res, next) => {
     const error = `url ${req.url} not found`
-    if(settings.logging) {
-      pino.error({
+    if (settings.logging) {
+      logger.error({
         action: 'error',
         error,
         code: 404,
@@ -86,17 +90,19 @@ const App = ({
     always prefer a JSON response
 
   */
+  // The `next` here is required for some reason
+  // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
-    if(settings.logging) {
-      pino.error({
+    if (settings.logging) {
+      logger.error({
         action: 'error',
         error: err.error ? err.error.toString() : err.toString(),
         stack: err.stack,
-        code: err._code || res._code || 500
+        code: err._code || res._code || 500,
       })
     }
     // if the error was with the deserializer then logout to clear the cookie
-    if(err.type == 'deserializeUser') {
+    if (err.type === 'deserializeUser') {
       req.logout()
     }
     res.status(err._code || res._code || 500)

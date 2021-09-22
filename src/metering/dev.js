@@ -1,32 +1,25 @@
-'use strict'
-
-const pino = require('pino')({
-  name: 'metering.ecs',
+const logger = require('../logging').getLogger({
+  name: 'metering/dev',
 })
 
-
 const start = (meteringDetails) => {
-  pino.info({
-    info: "There is no metering for dev mode"
+  logger.info({
+    info: 'There is no metering for dev mode',
+    meteringDetails,
   })
 }
 
-const stop = () => {
-  return null
-}
+const stop = () => null
 
-const isAllowed = (entitlement) => {
-  return true
-}
+// eslint-disable-next-line no-unused-vars
+const isAllowed = (entitlement) => true
 
-const record = (dimension, value) => {
-  return null
-}
-
+// eslint-disable-next-line no-unused-vars
+const record = (dimension, value) => null
 
 module.exports = {
   start,
   stop,
   isAllowed,
-  record
+  record,
 }

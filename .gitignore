@@ -230,3 +230,4 @@ markers
 # MkDocs documentation
 site/
 .tool-versions
+helmCharts/

@@ -1,28 +1,26 @@
-'use strict'
-
 const session = require('express-session')
 const pg = require('pg')
 const Knex = require('knex')
-const pgSession = require('connect-pg-simple')(session)
+const PgSession = require('connect-pg-simple')(session)
+
+const logger = require('./logging').getLogger({
+  name: 'index',
+})
+
 const settings = require('./settings')
-const Metering = require('./metering')
 const App = require('./app')
 const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
 const Store = require('./store')
 
-const pino = require('pino')({
-  name: 'app',
-})
-
-const { Meter }= require('./metering')
+const { Meter } = require('./metering')
 const { edition } = require('./edition')
 // Start metering
 const meter = new Meter(edition.metering)
 meter.start()
 
 const pgPool = new pg.Pool(settings.postgres.connection)
-const sessionStore = new pgSession({
+const sessionStore = new PgSession({
   pool: pgPool,
 })
 
@@ -38,7 +36,6 @@ const app = App({
 })
 
 const boot = async () => {
-
   // wait the the initialisation to complete
   // before we start listing on the port and
   // start the task processor
@@ -47,8 +44,8 @@ const boot = async () => {
   })
 
   app.listen(settings.port, () => {
-    if(settings.logging) {
-      pino.info({
+    if (settings.logging) {
+      logger.info({
         action: 'webserver.start',
         message: `webserver started on port ${settings.port}`,
       })
@@ -56,9 +53,9 @@ const boot = async () => {
   })
 
   app.taskProcessor.start(() => {
-    pino.info({
+    logger.info({
       action: 'taskProcessor.start',
-      message: `taskProcessor started`,
+      message: 'taskProcessor started',
     })
   })
 }

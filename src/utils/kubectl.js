@@ -24,8 +24,8 @@ const fs = require('fs')
 const childProcess = require('child_process')
 const yaml = require('js-yaml')
 
-const pino = require('pino')({
-  name: 'kubectl',
+const logger = require('../logging').getLogger({
+  name: 'utils/kubectl',
 })
 
 const base64 = require('./base64')
@@ -84,7 +84,7 @@ const Kubectl = ({
     const yamlText = yaml.safeDump(data)
     const tmpPath = await tempName({ postfix: '.yaml' })
     await writeFile(tmpPath, yamlText, 'utf8')
-    pino.debug({ message: `Wrote - ${tmpPath}` })
+    logger.debug({ message: `Wrote - ${tmpPath}` })
     return tmpPath
   }
 
@@ -246,7 +246,7 @@ const Kubectl = ({
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
     const runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
-    pino.debug({ action: 'running a standard kubectl command', command: `${cmd}` })
+    logger.debug({ action: 'running a standard kubectl command', command: `${cmd}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch((err) => {
@@ -259,7 +259,7 @@ const Kubectl = ({
         throw err
       })
     await localTeardown(setupDetails)
-    pino.debug({ message: `${commandType} command sucess` })
+    logger.debug({ message: `${commandType} command sucess` })
     return result
   }
 
@@ -280,10 +280,10 @@ const Kubectl = ({
   // run a kubectl command and process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
     const runCommand = `${cmd} --output json`
-    pino.debug({ action: 'running a kubectl command with json output', command: `${command}` })
+    logger.debug({ action: 'running a kubectl command with json output', command: `${command}` })
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
-    pino.debug({ message: 'kubectl command --output json sucess' })
+    logger.debug({ message: 'kubectl command --output json sucess' })
     return processedOutput
   }
 
