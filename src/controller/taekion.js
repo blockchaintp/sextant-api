@@ -36,15 +36,13 @@ const TaekionController = ({ store }) => {
   }) => {
     if (name === 'all') throw new Error('the name "all" is reserved for the system')
 
-    const data = await api.createVolume({
+    await api.createVolume({
       deployment,
       name,
       compression,
       encryption,
       fingerprint,
     })
-
-    return data
   }
 
   const updateVolume = ({
@@ -77,20 +75,18 @@ const TaekionController = ({ store }) => {
       })
 
       const snapshotCollections = await Promise.map(volumes, async (currentVolume) => {
-        const snapshots = await listSnapshots({
+        await listSnapshots({
           deployment,
           volume: currentVolume.uuid,
         })
-        return snapshots
       })
 
       return snapshotCollections.reduce((all, snapshotArray) => all.concat(snapshotArray), [])
     }
-    const data = await api.listSnapshots({
+    return api.listSnapshots({
       deployment,
       volume,
     })
-    return data
   }
 
   // curl http://localhost:8000/snapshot?create=snapshot1&volume=apples
@@ -146,7 +142,7 @@ const TaekionController = ({ store }) => {
     deployment,
     req,
     res,
-  }) => api.apiRequestProxy({
+  }) => api.stlRequestProxy({
     deployment,
     // this will have the network name prepended
     // so will become "tfs-rest-api"
