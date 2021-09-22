@@ -229,3 +229,4 @@ markers
 
 # MkDocs documentation
 site/
+.tool-versions
