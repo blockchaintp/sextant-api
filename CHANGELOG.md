@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* fix(taekionapi): fix the pod proxy connections now the chart has split tfs and sawtooth into different pods [view commit](https://github.com/catenasys/sextant-api/commit/2fab142835f2ba7408d5c1a1d05513b8f5db400d)
 * build(deps): Bump tar from 6.1.8 to 6.1.11 [view commit](https://github.com/catenasys/sextant-api/commit/3d826327c30eb0a0de1004896d3b886843e0060b)
 * fix(redeploy-update): namespace will be created if it does not exist prior to redeploy [view commit](https://github.com/catenasys/sextant-api/commit/367a0898c50fab25cb7923419fb703ae8db6a99e)
 * fix(editions): update dev.js and sft.js sawtoth versions [view commit](https://github.com/catenasys/sextant-api/commit/55b733f72b42c38d206889c4aad11d49a148ac6d)
