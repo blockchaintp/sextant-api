@@ -1,8 +1,8 @@
-const pino = require('pino')({
+const randomstring = require('randomstring')
+
+const logger = require('./logging').getLogger({
   name: 'initialise',
 })
-
-const randomstring = require('randomstring')
 const settings = require('./settings')
 const userUtils = require('./utils/user')
 const config = require('./config')
@@ -24,7 +24,7 @@ const createInitialUser = async ({
           server_side_key: userUtils.getTokenServerSideKey(),
         },
       })
-      pino.info({
+      logger.info({
         action: 'createInitialUser',
         username: settings.initialUser,
       })
@@ -77,7 +77,7 @@ const Initialise = async ({
     await handleSessionSecret({ store })
     await handleTokenSecret({ store })
   } catch (error) {
-    pino.error({
+    logger.error({
       error: error.toString(),
       stack: error.stack,
     })

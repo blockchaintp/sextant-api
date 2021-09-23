@@ -1,7 +1,7 @@
 /* eslint eqeqeq: "error" */
 const { Agent } = require('https')
 const axios = require('axios')
-const logger = require('pino')({
+const logger = require('../logging').getLogger({
   name: 'api/taekion',
 })
 const deploymentHttpConnection = require('../utils/deploymentHttpConnection')

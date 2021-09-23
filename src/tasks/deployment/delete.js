@@ -8,8 +8,8 @@ const {
   CLUSTER_STATUS,
 } = require('../../config')
 
-const pino = require('pino')({
-  name: 'deployment.delete',
+const logger = require('../../logging').getLogger({
+  name: 'tasks/deployment/delete',
 })
 
 const DeploymentDelete = ({
@@ -79,7 +79,8 @@ const DeploymentDelete = ({
       // read the error, if it's NOT a server error - then throw an error
       // status will be set to error
       // otherwise ignore the error and let the status be set to delete
-      const match = err.message.match(/Unable to connect to the server/g) || err.message.match(/Error from server \(NotFound\): namespaces/g)
+      const match = err.message.match(/Unable to connect to the server/g)
+        || err.message.match(/Error from server \(NotFound\): namespaces/g)
       if (match === null) {
         throw err
       }
@@ -95,16 +96,16 @@ const DeploymentDelete = ({
   const deleteHelmChartsInNamespace = async () => {
     try {
       const chartOut = await clusterKubectl.helmCommand(`list -n ${namespace} -q`)
-      // re-format the return of list - it is probably a string with "\n' seperators
+      // re-format the return of list - it is probably a string with "\n' separators
       const chartList = chartOut.replace(/\n/g, ' ').split(' ')
-      pino.info({
+      logger.info({
         action: 'deleteHelmChartsInNamespace',
         chartList,
       })
 
       chartList.forEach(async (chart) => {
         if (chart) {
-          pino.info({
+          logger.info({
             action: 'removing chart',
             chart,
             namespace,
@@ -113,7 +114,7 @@ const DeploymentDelete = ({
         }
       })
     } catch (err) {
-      pino.info({
+      logger.info({
         action: 'deleteHelmChartsInNamespace',
         message: 'benign if there are no helm charts to delete',
         err,
@@ -124,9 +125,9 @@ const DeploymentDelete = ({
   const deleteHelmChart = async (chartInfo, name, namespaceName) => {
     const { extension } = chartInfo
     const installationName = `${name}-${extension}`
-    pino.info({
+    logger.info({
       action: 'deleteHelmChart',
-      message: `deleting chart ${installationName} in namespace ${namespaceName}`
+      message: `deleting chart ${installationName} in namespace ${namespaceName}`,
     })
     await clusterKubectl.helmCommand(`uninstall -n ${namespaceName} ${installationName}`)
   }
@@ -152,7 +153,8 @@ const DeploymentDelete = ({
         // read the error, if it's NOT a server error - then throw an error
         // status will be set to error
         // otherwise ignore the error and let the status be set to delete
-        const match = err.message.match(/Unable to connect to the server/g) || err.message.match(/Error from server \(NotFound\): namespaces/g)
+        const match = err.message.match(/Unable to connect to the server/g)
+          || err.message.match(/Error from server \(NotFound\): namespaces/g)
         if (match === null) {
           throw err
         }

@@ -4,8 +4,8 @@
  * License: Product
  */
 
-const pino = require('pino')({
-  name: 'deploymentPodProxy',
+const logger = require('../logging').getLogger({
+  name: 'utils/deploymentPodProxy',
 })
 const getField = require('../deployment_templates/getField')
 const ClusterKubectl = require('./clusterKubectl')
@@ -24,21 +24,21 @@ const ProxyRequest = async ({
     port,
   })
   try {
-    pino.info({
+    logger.info({
       action: 'executing handler',
       port: portForward.port,
     })
     const result = await handler({
       port: portForward.port,
     })
-    pino.info({
+    logger.info({
       action: 'stopping proxy',
       port: portForward.port,
     })
     await portForward.stop()
     return result
   } catch (err) {
-    pino.info({
+    logger.info({
       action: 'stopping proxy',
       port: portForward.port,
     })
@@ -96,7 +96,7 @@ const DeploymentPodProxy = async ({
         const { containerStatuses } = pod.status
         containerStatuses.forEach((container) => {
           if (container.state.running) {
-            pino.info({
+            logger.info({
               action: 'filtering container statuses',
               status: `Container ${container.image} is running`,
             })

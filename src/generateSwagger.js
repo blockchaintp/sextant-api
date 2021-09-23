@@ -2,10 +2,13 @@
  * Generates a swagger.json file for the api.
  */
 const fs = require('fs')
+// eslint-disable-next-line import/no-extraneous-dependencies
 const widdershins = require('widdershins')
-const pino = require('pino')
-
 const swaggerJsdoc = require('swagger-jsdoc');
+
+const logger = require('./logging').getLogger({
+  name: 'generateSwagger',
+})
 
 const options = {
   swaggerDefinition: {
@@ -33,5 +36,5 @@ widdershins.convert(specs, widdershinsOptions)
     fs.writeFileSync('build/openapi.md', markdownOutput, 'utf8');
   })
   .catch((err) => {
-    pino.error(err)
+    logger.error(err)
   });

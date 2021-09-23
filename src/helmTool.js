@@ -9,8 +9,8 @@ const Promise = require('bluebird')
 const exec = Promise.promisify(childProcess.exec)
 const fsExtra = require('fs-extra')
 
-const pino = require('pino')({
-  name: 'helm tool',
+const logger = require('./logging').getLogger({
+  name: 'helmTool',
 })
 
 class HelmTool {
@@ -41,7 +41,7 @@ class HelmTool {
     const runHelmAdd = async (repo) => {
       const helmCommand = this.buildCommand(repo)
       await exec(helmCommand)
-      pino.info({
+      logger.info({
         action: `adding ${repo.name} repository`,
       })
     }
@@ -49,7 +49,7 @@ class HelmTool {
       try {
         await runHelmAdd(repo)
       } catch (err) {
-        pino.error({
+        logger.error({
           action: 'add repository',
           error: err,
         })
@@ -61,11 +61,11 @@ class HelmTool {
   async update() {
     try {
       await exec('helm repo update')
-      pino.info({
+      logger.info({
         action: 'updating helm repositories',
       })
     } catch (err) {
-      pino.error({
+      logger.error({
         action: 'helm repository update',
         error: err,
       })
@@ -86,11 +86,11 @@ class HelmTool {
 
       try {
         await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
-        pino.info({
+        logger.info({
           action: `removing /app/api/helmCharts/${deploymentType} if found`,
         })
       } catch (e) {
-        pino.error({
+        logger.error({
           action: 'fsExtra.remove()',
           error: e,
         })
@@ -98,11 +98,11 @@ class HelmTool {
 
       try {
         await exec(`helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`)
-        pino.info({
+        logger.info({
           action: `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`,
         })
       } catch (e) {
-        pino.error({
+        logger.error({
           action: 'helm pull command',
           error: e,
         })
@@ -120,7 +120,7 @@ class HelmTool {
           const deploymentVersionData = deploymentTypeData[deploymentVersion]
           await removeAndPull(deploymentType, deploymentVersion, deploymentVersionData)
         } catch (err) {
-          pino.error({
+          logger.error({
             action: 'remove directory then pull/untar chart',
             error: err,
           })

@@ -1,30 +1,29 @@
-'use strict'
-
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable eqeqeq */
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
-const Passport = require('passport').Passport
-const userUtils = require('./utils/user')
-
-const pino = require('pino')({
+const { Passport } = require('passport')
+const logger = require('./logging').getLogger({
   name: 'passport',
 })
 
+const userUtils = require('./utils/user')
+
+// eslint-disable-next-line consistent-return
 const getRequestAccessToken = (req, res) => {
-  if(req.headers && req.headers.authorization) {
+  if (req.headers && req.headers.authorization) {
     const parts = req.headers.authorization.split(' ')
-    if(parts.length != 2) {
+    if (parts.length != 2) {
       res._code = 400
-      throw new Error(`bad authorization header format`)
+      throw new Error('bad authorization header format')
     }
-    const [ scheme, token ] = parts
+    const [scheme, token] = parts
     if (/^Bearer$/i.test(scheme)) {
       return token
-    } else {
-      res._code = 400
-      throw new Error(`bad authorization header format`)
     }
-  }
-  else if(req.query.token) {
+    res._code = 400
+    throw new Error('bad authorization header format')
+  } else if (req.query.token) {
     return req.query.token
   }
 }
@@ -35,16 +34,16 @@ const PassportHandlers = ({
   sessionStore,
   controllers,
 }) => {
-  if(!app) {
-    throw new Error(`app required`)
+  if (!app) {
+    throw new Error('app required')
   }
 
-  if(!settings) {
-    throw new Error(`settings required`)
+  if (!settings) {
+    throw new Error('settings required')
   }
 
-  if(!controllers) {
-    throw new Error(`store required`)
+  if (!controllers) {
+    throw new Error('store required')
   }
 
   const passport = new Passport()
@@ -67,42 +66,37 @@ const PassportHandlers = ({
 
   // JWT token based access
   app.use(async (req, res, next) => {
-
     try {
-
       const token = getRequestAccessToken(req, res)
-      
-      if(token) {
-        
+
+      if (token) {
         const decoded = await userUtils.decodeToken(token, settings.tokenSecret)
 
         // no user if we have no decoded token
-        if(!decoded) return next()
+        if (!decoded) return next()
 
         // no user if we don't have an id in the token
-        if(!decoded.id) return next()
+        if (!decoded.id) return next()
 
         // no user if we don't have a server_side_key in the token
-        if(!decoded.server_side_key) return next()
+        if (!decoded.server_side_key) return next()
 
         const user = await controllers.user.get({
           id: decoded.id,
         })
 
-        if(!user || user.server_side_key != decoded.server_side_key) {
+        if (!user || user.server_side_key != decoded.server_side_key) {
           res._code = 403
-          throw new Error(`access denied`)
+          throw new Error('access denied')
         }
 
         req.user = userUtils.safe(user)
 
         return next()
       }
-      else {
-        return next()
-      }
-    }
-    catch(err) {
+
+      return next()
+    } catch (err) {
       return next(err)
     }
   })
@@ -114,26 +108,25 @@ const PassportHandlers = ({
   passport.deserializeUser(async (username, done) => {
     try {
       const user = await controllers.user.get({
-        username
+        username,
       })
 
-      if(!user) {
+      if (!user) {
         const errorInfo = {
           type: 'deserializeUser',
-          error: `no user found`
+          error: 'no user found',
         }
-        pino.error(errorInfo)
+        logger.error(errorInfo)
         return done(errorInfo)
       }
-      else {
-        return done(null, userUtils.safe(user))
-      }
-    } catch(err) {
+
+      return done(null, userUtils.safe(user))
+    } catch (err) {
       const errorInfo = {
         type: 'deserializeUser',
-        error: err.toString()
+        error: err.toString(),
       }
-      pino.error(errorInfo)
+      logger.error(errorInfo)
       return done(errorInfo)
     }
   })

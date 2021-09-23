@@ -9,8 +9,8 @@ const jwt = require('jsonwebtoken')
 const Promise = require('bluebird')
 const fs = require('fs')
 
-const pino = require('pino')({
-  name: 'damlRPC',
+const logger = require('../logging').getLogger({
+  name: 'api/damlRPC',
 })
 const database = require('./database')
 
@@ -179,7 +179,7 @@ const DamlRPC = ({
   }
 
   const getParticipants = async ({ id }) => {
-    pino.info({
+    logger.info({
       action: 'getParticipants',
       id,
     })
@@ -301,7 +301,7 @@ const DamlRPC = ({
     const participantId = await getParticipantId({
       id,
     })
-    pino.info({
+    logger.info({
       action: 'registerParticipant',
       participantId,
       publicKey,
@@ -334,7 +334,7 @@ const DamlRPC = ({
     partyName,
     partyIdHint,
   }) => {
-    pino.info({
+    logger.info({
       action: 'addParty',
       id,
       partyName,
@@ -360,7 +360,7 @@ const DamlRPC = ({
         port,
       // eslint-disable-next-line consistent-return
       }) => {
-        pino.debug(`Allocating party to ${pod.metadata.name}`)
+        logger.debug(`Allocating party to ${pod.metadata.name}`)
         const data = {
           partyIdHint: partyIdHint || partyName,
           displayName: partyName,
@@ -443,7 +443,7 @@ const DamlRPC = ({
   const getArchives = async ({
     id,
   } = {}) => {
-    pino.info({
+    logger.info({
       action: 'getArchives',
       id,
     })
@@ -492,7 +492,7 @@ const DamlRPC = ({
         },
       }))
     } catch (error) {
-      pino.error({
+      logger.error({
         action: getArchives,
       })
       return error
@@ -509,7 +509,7 @@ const DamlRPC = ({
     size,
     localFilepath,
   } = {}) => {
-    pino.info({
+    logger.info({
       action: 'uploadArchive',
       id,
       name,

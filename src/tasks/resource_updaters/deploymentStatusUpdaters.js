@@ -29,7 +29,7 @@ if (expression1) {
     })
   }
 */
-const pinoDeploymentDelete = require('pino')({
+const pinoDeploymentDelete = require('../../logging').getLogger({
   action: 'delete or undeploy a deployment',
   name: 'deployment status updator',
   result: 'The deployment status WILL UPDATE to the deleted (undeployed) state in the database',

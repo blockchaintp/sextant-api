@@ -64,8 +64,8 @@
 const EventEmitter = require('events')
 const Promise = require('bluebird')
 
-const pino = require('pino')({
-  name: 'task',
+const logger = require('./logging').getLogger({
+  name: 'taskprocessor',
 })
 
 const config = require('./config')
@@ -145,7 +145,7 @@ const TaskProcessor = ({
   // the error status
   const errorTask = async (task, error) => {
     if (logging) {
-      pino.error({
+      logger.error({
         action: 'error',
         error: error.toString(),
         stack: error.stack,
@@ -269,7 +269,7 @@ const TaskProcessor = ({
       controlLoop()
     } catch (err) {
       if (logging) {
-        pino.error({
+        logger.error({
           type: 'controlloop',
           error: err.toString(),
         })
@@ -292,7 +292,7 @@ const TaskProcessor = ({
       startControlLoop()
     } catch (err) {
       if (logging) {
-        pino.error({
+        logger.error({
           type: 'start',
           error: err.toString(),
         })

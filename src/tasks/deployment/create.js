@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
-const pino = require('pino')({
-  name: 'deployment.create',
+const logger = require('../../logging').getLogger({
+  name: 'tasks/deployment/create',
 })
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
@@ -120,7 +120,7 @@ const DeploymentCreate = ({
 
     // if there is a charts directory, do a helm command for each chart
     //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
-    pino.info({
+    logger.info({
       action: 'charts',
       charts,
     })
@@ -134,7 +134,7 @@ const DeploymentCreate = ({
       charts.forEach(
         yield (chartFile) => {
           const safeFileName = makeSafeFileName(chartFile)
-          pino.info({
+          logger.info({
             action: 'Applying chart',
             chartFile,
             namespace,
@@ -148,7 +148,7 @@ const DeploymentCreate = ({
 
     yield clusterKubectl.command(`apply -f ${templateDirectory}`)
 
-    pino.info({
+    logger.info({
       action: 'applyTemplates',
       deployment: id,
       templateDirectory,
