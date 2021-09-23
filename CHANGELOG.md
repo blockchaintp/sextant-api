@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+* fix(api): correct teakion getPodConnection param [view commit](https://github.com/catenasys/sextant-api/commit/a00eb3254baa08922649f1ae4855f9d8ddeebb21)
+* build(deps): Bump axios from 0.21.1 to 0.21.2 [view commit](https://github.com/catenasys/sextant-api/commit/0498ac06861981e4dc0ad2f416324951503042e2)
+* refactor: logging to use single logging tree [view commit](https://github.com/catenasys/sextant-api/commit/b95db46e7b39e69542c2eb10f9b0b65e2364533b)
+* fix(taekion): correct k8s connection semantics to use labels [view commit](https://github.com/catenasys/sextant-api/commit/f3058953c741d8ef5534b1a1aea9fd722bcc1e79)
 * fix(taekionapi): fix the pod proxy connections now the chart has split tfs and sawtooth into different pods [view commit](https://github.com/catenasys/sextant-api/commit/2fab142835f2ba7408d5c1a1d05513b8f5db400d)
 * build(deps): Bump tar from 6.1.8 to 6.1.11 [view commit](https://github.com/catenasys/sextant-api/commit/3d826327c30eb0a0de1004896d3b886843e0060b)
 * fix(redeploy-update): namespace will be created if it does not exist prior to redeploy [view commit](https://github.com/catenasys/sextant-api/commit/367a0898c50fab25cb7923419fb703ae8db6a99e)
