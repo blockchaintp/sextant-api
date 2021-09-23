@@ -52,7 +52,7 @@ const TaekionAPI = ({ store } = {}) => {
   const getPodConnection = async ({
     deployment,
     labels = {},
-  }) => getItemConnection({ deployment, itemType: 'pods', labels })
+  }) => getItemConnection({ deployment, kind: 'pods', labels })
 
   // this is for speaking to the taekion middleware
   const tfsApiRequest = async ({
