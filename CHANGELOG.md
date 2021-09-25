@@ -218,11 +218,11 @@
 * feat(task-util): add new known error to deployment status updator [view commit](https://github.com/catenasys/sextant-api/commit/ff62f1aa4e00fe91ecc39b7402ea38358793c3d2)
 * feat(form-string-array): configure the image pull secrets to be an array of strings not an array of objects [view commit](https://github.com/catenasys/sextant-api/commit/27a6f355939166e6026091c545ab56dd0a61e471)
 
-## v2.1.9
+## stopBuild/v2.1.9
 
 * fix(editions): update to use btp-stable where appropriate [view commit](https://github.com/catenasys/sextant-api/commit/ddbb2bf375ea02a9a25b2beb4ddd70a6f4adc40a)
 
-## v2.1.8
+## stopBuild/v2.1.8
 
 * feat(edition): update classic taekion as tfs on sawtooth helm chart [view commit](https://github.com/catenasys/sextant-api/commit/1f9c71445c5d2559734d5d5d930981b1d21a0278)
 * feat(edition): pull down tfs on sawtooth helm chart via edition module [view commit](https://github.com/catenasys/sextant-api/commit/db99a36c426afbb067a62400fa5fb4844d19765d)
@@ -337,7 +337,7 @@
 * add taekion routes [view commit](https://github.com/catenasys/sextant-api/commit/7f6b817a304a0c7f855c9931bfc15969d5bb0087)
 * split daml routes/controllers from deployment and add taekion api stubs [view commit](https://github.com/catenasys/sextant-api/commit/d81e5905e32ff936d34d0dc35f9235d16e2e8d78)
 
-## v2.1.1
+## stopBuild/v2.1.1
 
 * style(linter): allow underscores in variable names [view commit](https://github.com/catenasys/sextant-api/commit/3234eeb5f90f727ecdb0a7129ee75193b2af8121)
 * build(packages): add linting package [view commit](https://github.com/catenasys/sextant-api/commit/75cf4373318e53453413c1ee159975af2ba008ca)
@@ -364,7 +364,7 @@
 * SXT-299 Handle known errors in the resource updators [view commit](https://github.com/catenasys/sextant-api/commit/800b4bbb2231f30d3d52c9dc660a01bf5fa6f99c)
 * Add probot-stale and CODEOWNERS [view commit](https://github.com/catenasys/sextant-api/commit/e6089961d4ba7218bde1f0c48dbf9a22250201c6)
 
-## v2.1.0
+## stopBuild/v2.1.0
 
 * Update non-dev edition modules for helm chart integration [view commit](https://github.com/catenasys/sextant-api/commit/5ebefa9753028122724c229b7c13fd78b28661a0)
 * HELM3 Remove sextant parent object from template loader [view commit](https://github.com/catenasys/sextant-api/commit/5bfbde6ab8c0429b90546662fbbed2dac2c623c1)
