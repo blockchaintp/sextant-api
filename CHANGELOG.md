@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v2.2.3
 
 * fix(api): correct teakion getPodConnection param [view commit](https://github.com/catenasys/sextant-api/commit/a00eb3254baa08922649f1ae4855f9d8ddeebb21)
 * build(deps): Bump axios from 0.21.1 to 0.21.2 [view commit](https://github.com/catenasys/sextant-api/commit/0498ac06861981e4dc0ad2f416324951503042e2)
