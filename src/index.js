@@ -29,7 +29,7 @@ const sessionStore = new PgSession({
 const knex = Knex(settings.postgres)
 const store = Store(knex)
 
-schedule.scheduleJob('* */5 * * * *', () => { deploymentMeter(store) })
+const deploymentMeterJob = schedule.scheduleJob('*/1 * * * *', () => { deploymentMeter(store) })
 
 const app = App({
   knex,
@@ -65,3 +65,5 @@ const boot = async () => {
 }
 
 boot()
+
+module.exports = deploymentMeterJob
