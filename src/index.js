@@ -2,6 +2,7 @@ const session = require('express-session')
 const pg = require('pg')
 const Knex = require('knex')
 const PgSession = require('connect-pg-simple')(session)
+const schedule = require('node-schedule')
 
 const logger = require('./logging').getLogger({
   name: 'index',
@@ -13,6 +14,7 @@ const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
 const Store = require('./store')
 
+const deploymentMeter = require('./metering/deploymentMeter')
 const { Meter } = require('./metering')
 const { edition } = require('./edition')
 // Start metering
@@ -26,6 +28,8 @@ const sessionStore = new PgSession({
 
 const knex = Knex(settings.postgres)
 const store = Store(knex)
+
+schedule.scheduleJob('* */5 * * * *', () => { deploymentMeter(store) })
 
 const app = App({
   knex,
