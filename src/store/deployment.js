@@ -174,7 +174,6 @@ const DeploymentStore = (knex) => {
       .update(data)
       .returning('*')
     return result
-    // returns undefined if there is nothing to update
   }
 
   return {
