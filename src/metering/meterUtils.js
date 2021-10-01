@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const Promise = require('bluebird')
 
 const ClusterKubectl = require('../utils/clusterKubectl')
@@ -8,6 +9,7 @@ const getDeployments = async (store) => {
     cluster: 'all',
     deleted: true,
   })
+  deployments.forEach((deployment) => console.log('\n', 'name -', `${deployment.name},`, 'status:', `${deployment.status},`, 'updated_at:', deployment.updated_at))
   return deployments
 }
 
@@ -46,6 +48,8 @@ const getHelmList = async (deployment, store) => {
 
 const translateStatus = (helmStatus) => {
   switch (helmStatus) {
+    case undefined:
+      return 'deleted'
     case 'unknown':
       return undefined
     case 'deployed':
@@ -74,10 +78,11 @@ const translateStatus = (helmStatus) => {
 
 const processHelmStatus = (helmStatus, deployment) => {
   // add good info to the helmStatus
+  const status = helmStatus ? helmStatus.status : undefined
   const processedHelmStatus = { helm_response: helmStatus }
   processedHelmStatus.name = deployment.name
   processedHelmStatus.cluster_id = deployment.cluster
-  processedHelmStatus.status = translateStatus(helmStatus.status)
+  processedHelmStatus.status = translateStatus(status)
   processedHelmStatus.deployment_version = deployment.deployment_version
   processedHelmStatus.deployment_type = deployment.deployment_type
   processedHelmStatus.updated_at = new Date()
@@ -87,7 +92,7 @@ const processHelmStatus = (helmStatus, deployment) => {
 }
 
 const updateStatus = async (processedHelmStatus, store) => {
-  await store.deployment.updateStatus({
+  const response = await store.deployment.updateStatus({
     id: processedHelmStatus.deployment_id,
     time: processedHelmStatus.time,
     data: {
@@ -95,27 +100,20 @@ const updateStatus = async (processedHelmStatus, store) => {
       updated_at: processedHelmStatus.updated_at,
     },
   })
+  return response
 }
 
-const getHelmStatuses = (deployments, store) => Promise.map(deployments, async (deployment) => {
-  try {
+const getHelmStatuses = (deployments, store) => {
+  if (!deployments) return []
+  return Promise.map(deployments, async (deployment) => {
     const helmList = await Promise.resolve(getHelmList(deployment, store))
     const helmStatus = helmList.find((release) => release.name === `${deployment.name}-${deployment.deployment_type}`)
     // TODO check to make sure the chart is correct not just the name
     const processedHelmStatus = processHelmStatus(helmStatus, deployment)
-    // Update the deployment status is more recent and new
-    const response = await updateStatus(processedHelmStatus, store)
-
+    // Update the deployment status if it is more recent and new
+    const response = await Promise.resolve(updateStatus(processedHelmStatus, store))
     return { processedHelmStatus, response }
-  } catch (error) {
-    console.log('error in the getHelmStatuses function')
-    console.log(error);
-    return []
-  }
-})
-
-const saveHelmHistory = async (processedHelmStatus, store) => {
-  await store.deploymentHistory.create(processedHelmStatus)
+  })
 }
 
 module.exports = {
@@ -126,5 +124,4 @@ module.exports = {
   getHelmList,
   getHelmStatuses,
   updateStatus,
-  saveHelmHistory,
 }
