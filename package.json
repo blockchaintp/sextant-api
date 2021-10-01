@@ -45,7 +45,7 @@
     "node-schedule": "^2.0.0",
     "openapi-types": "^9.1.0",
     "passport": "^0.4.1",
-    "pg": "8.6.0",
+    "pg": "8.7.1",
     "pino": "^4.17.6",
     "randomstring": "^1.2.1",
     "request": "^2.88.2",
