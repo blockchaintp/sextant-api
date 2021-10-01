@@ -5,7 +5,6 @@ const SaveAppliedState = async ({
   store,
   trx,
 }) => {
-
   const deployment = await store.deployment.get({
     id,
   }, trx)
@@ -14,8 +13,9 @@ const SaveAppliedState = async ({
     id,
     data: {
       applied_state: deployment.desired_state,
+      updated_at: new Date(),
     },
-  }, trx)  
+  }, trx)
 }
 
 module.exports = SaveAppliedState

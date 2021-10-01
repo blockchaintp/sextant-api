@@ -193,6 +193,7 @@ const TaskProcessor = ({
         id: task.resource_id,
         data: {
           status: task.resource_status.completed,
+          updated_at: new Date(),
         },
       }, trx)
     }
@@ -225,7 +226,7 @@ const TaskProcessor = ({
         // before each yielded step of the task - check if the database has a cancel
         // status and cancel the task if yes
         onStep: async () => {
-          const isCancelled = await isTaskCancelled(runningTask)
+          const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
           if (isCancelled) runner.cancel()
         },
       })

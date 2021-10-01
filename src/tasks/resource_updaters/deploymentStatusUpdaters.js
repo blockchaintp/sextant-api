@@ -45,6 +45,7 @@ const completeTask = async (task, error, store) => {
     id: task.resource_id,
     data: {
       status: task.resource_status.completed,
+      updated_at: new Date(),
     },
   })
 }
@@ -54,6 +55,7 @@ const deploymentCreateError = async (task, error, store) => {
     id: task.resource_id,
     data: {
       status: task.resource_status.error,
+      updated_at: new Date(),
     },
   })
 }
@@ -63,6 +65,7 @@ const deploymentUpdateError = async (task, error, store) => {
     id: task.resource_id,
     data: {
       status: task.resource_status.error,
+      updated_at: new Date(),
     },
   })
 }
@@ -109,6 +112,7 @@ const deploymentDeleteError = async (task, error, store) => {
       id: task.resource_id,
       data: {
         status: task.resource_status.error,
+        updated_at: new Date(),
       },
     })
   }
