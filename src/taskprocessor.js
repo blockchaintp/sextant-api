@@ -188,12 +188,19 @@ const TaskProcessor = ({
     if (!cancelled) {
       // get a reference to the store handler for the task resource
       const resourceTypeStore = resourceTypeStores[task.resource_type]
-
+      if (task.resource_type === 'deployment') {
+        await resourceTypeStore.update({
+          id: task.resource_id,
+          data: {
+            status: task.resource_status.completed,
+            updated_at: new Date(),
+          },
+        }, trx)
+      }
       await resourceTypeStore.update({
         id: task.resource_id,
         data: {
           status: task.resource_status.completed,
-          updated_at: new Date(),
         },
       }, trx)
     }
