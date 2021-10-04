@@ -42,8 +42,7 @@ const getHelmList = async (deployment, store) => {
   // helm list -n <namespace>
   // returns one entry per chart in namespace
   const command = `list -n ${namespace} -o json`
-  const helmStatus = await Promise.resolve(executeHelmCommand(clusterKubectl, command))
-  return helmStatus
+  return Promise.resolve(executeHelmCommand(clusterKubectl, command))
 }
 
 const translateStatus = (helmStatus) => {
@@ -91,8 +90,8 @@ const processHelmStatus = (helmStatus, deployment) => {
   return processedHelmStatus
 }
 
-const updateStatus = async (processedHelmStatus, store) => {
-  const response = await store.deployment.updateStatus({
+const updateStatus = async (processedHelmStatus, store) => store.deployment
+  .updateStatus({
     id: processedHelmStatus.deployment_id,
     time: processedHelmStatus.time,
     data: {
@@ -100,15 +99,12 @@ const updateStatus = async (processedHelmStatus, store) => {
       updated_at: processedHelmStatus.updated_at,
     },
   })
-  return response
-}
 
 const getHelmStatuses = (deployments, store) => {
   if (!deployments) return []
   return Promise.map(deployments, async (deployment) => {
     const helmList = await Promise.resolve(getHelmList(deployment, store))
     const helmStatus = helmList.find((release) => release.name === `${deployment.name}-${deployment.deployment_type}`)
-    // TODO check to make sure the chart is correct not just the name
     const processedHelmStatus = processHelmStatus(helmStatus, deployment)
     // Update the deployment status if it is more recent and new
     const response = await Promise.resolve(updateStatus(processedHelmStatus, store))
