@@ -15,6 +15,7 @@ const TaskHandlers = require('./tasks')
 const Store = require('./store')
 const deploymentStatusPoll = require('./jobs/deploymentStatusPoll')
 
+const deploymentCounter = require('./jobs/deploymentCounter')
 const { Meter } = require('./metering')
 const { edition } = require('./edition')
 // Start metering
@@ -29,7 +30,9 @@ const sessionStore = new PgSession({
 const knex = Knex(settings.postgres)
 const store = Store(knex)
 
+deploymentCounter(store)
 deploymentStatusPoll(store)
+const deploymentCounterJob = schedule.scheduleJob('* */1 * * *', () => { deploymentCounter(store) })
 const deploymentStatusPollJob = schedule.scheduleJob('*/5 * * * *', () => { deploymentStatusPoll(store) })
 
 const app = App({
@@ -67,4 +70,7 @@ const boot = async () => {
 
 boot()
 
-module.exports = { deploymentStatusPollJob }
+module.exports = {
+  deploymentStatusPollJob,
+  deploymentCounterJob,
+}
