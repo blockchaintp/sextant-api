@@ -40,6 +40,13 @@ const DeploymentStore = (knex) => {
     return sqlQuery
   }
 
+  const listActive = (trx) => {
+    const sqlQuery = (trx || knex).select('*')
+      .from(config.TABLES.deployment)
+      .where('status', '=', 'provisioned')
+    return sqlQuery
+  }
+
   /*
 
     get a single deployment
@@ -236,6 +243,7 @@ const DeploymentStore = (knex) => {
 
   return {
     list,
+    listActive,
     get,
     create,
     update,
