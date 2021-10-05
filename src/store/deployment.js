@@ -41,9 +41,10 @@ const DeploymentStore = (knex) => {
   }
 
   const listActive = (trx) => {
-    const sqlQuery = (trx || knex).select('*')
-      .from(config.TABLES.deployment)
-      .where('status', '=', 'provisioned')
+    const sqlQuery = (trx || knex).select('*').from(config.TABLES.deployment)
+
+    sqlQuery.where('status', '=', 'provisioned')
+
     return sqlQuery
   }
 
