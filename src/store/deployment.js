@@ -159,12 +159,30 @@ const DeploymentStore = (knex) => {
     return result
   }
 
+  const updateStatus = async ({
+    id,
+    data,
+  }, trx) => {
+    if (!id) throw new Error('id must be given to store.cluster.update')
+    if (!data) throw new Error('data param must be given to store.cluster.update')
+    const [result] = await (trx || knex)(config.TABLES.deployment)
+      .where({
+        id,
+      })
+      .andWhere('updated_at', '<', data.updated_at)
+      .andWhereNot('status', '=', `${data.status}`)
+      .update(data)
+      .returning('*')
+    return result
+  }
+
   return {
     list,
     get,
     create,
     update,
     delete: del,
+    updateStatus,
   }
 }
 

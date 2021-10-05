@@ -188,7 +188,15 @@ const TaskProcessor = ({
     if (!cancelled) {
       // get a reference to the store handler for the task resource
       const resourceTypeStore = resourceTypeStores[task.resource_type]
-
+      if (task.resource_type === 'deployment') {
+        await resourceTypeStore.update({
+          id: task.resource_id,
+          data: {
+            status: task.resource_status.completed,
+            updated_at: new Date(),
+          },
+        }, trx)
+      }
       await resourceTypeStore.update({
         id: task.resource_id,
         data: {
@@ -225,7 +233,7 @@ const TaskProcessor = ({
         // before each yielded step of the task - check if the database has a cancel
         // status and cancel the task if yes
         onStep: async () => {
-          const isCancelled = await isTaskCancelled(runningTask)
+          const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
           if (isCancelled) runner.cancel()
         },
       })
