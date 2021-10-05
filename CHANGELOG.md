@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Unreleased
+
+* style(meter-utils): address sonar linting bugs [view commit](https://github.com/catenasys/sextant-api/commit/44eb0370c06c4c478b14fec91a9ca4451dc358c2)
+* fix(task-prosessor): conditionally check to see if resource is a deployment before running reasource updater func [view commit](https://github.com/catenasys/sextant-api/commit/a60f765b2af68e58abcdbb846946eaa200f258ce)
+* fix(index): move scheduler to after boot invocation [view commit](https://github.com/catenasys/sextant-api/commit/cc6134a06b6434ea8beb7f4c157153d14cb4722c)
+* build(packages-and-lock): update pg one minor version [view commit](https://github.com/catenasys/sextant-api/commit/a805c7a6cdf58c8d784ea65ab65b901a0afd14b2)
+* fix(root): update deployment status poll to run every 5 minutes [view commit](https://github.com/catenasys/sextant-api/commit/223a7c6fd20d2fa1f5f1c68efd4ad8ab45ade006)
+* style(deployment-meter): remove comments from development [view commit](https://github.com/catenasys/sextant-api/commit/82eaf8fe3b0c4cd7a31f3144fce1458f3b9212f4)
+* fix(meter-utils): refine util functions for getting deployment status [view commit](https://github.com/catenasys/sextant-api/commit/18c47d31865fb38fb33e7c45486289fd79df3979)
+* fix(status-updaters): replace knex-fn-now with date object anywhere the status of a deployment is being update [view commit](https://github.com/catenasys/sextant-api/commit/e0e17164a7de06102037eb18bdc2a966154cf707)
+* feat(deployment-store): add update-status method to deployment store methods [view commit](https://github.com/catenasys/sextant-api/commit/d986ad0601f2accc65ec2a9596715286ff7d3e62)
+* fix(index): store deployment meter job in a variable [view commit](https://github.com/catenasys/sextant-api/commit/49c56afec00cd79f35c3e64b17ecb140b99d05e5)
+* feat(metering): build meter for deployments [view commit](https://github.com/catenasys/sextant-api/commit/db0bc5ee49d241402c961f412746db6a449cfd53)
+* feat(index): add scheduled job for metering into the root of the app [view commit](https://github.com/catenasys/sextant-api/commit/e12d043d59684fb89eb6b24fa8aee4089ec39c85)
+* build(package-and-lock): add node-schedule and upgrade knex four sub-minor versions [view commit](https://github.com/catenasys/sextant-api/commit/d2100cd434e8c79a24838e29b4b820572ce6df88)
+* feat(migrations): add migration for an updated-at field in the deployment table [view commit](https://github.com/catenasys/sextant-api/commit/6f222fb365c11d6a2c5dcf407b564b2850c7338f)
+
 ## v2.2.3
 
 * fix(api): correct teakion getPodConnection param [view commit](https://github.com/catenasys/sextant-api/commit/a00eb3254baa08922649f1ae4855f9d8ddeebb21)
