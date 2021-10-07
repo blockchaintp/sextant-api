@@ -14,7 +14,7 @@ const getDeployments = async (store) => {
     deleted: true,
   })
 
-  logger.info({
+  logger.debug({
     function: 'getDeployments',
     deployments: deployments.map((deployment) => ({
       name: deployment.name,
@@ -29,7 +29,7 @@ const executeHelmCommand = async (configuredClusterKubectl, command) => {
   try {
     const helmResponse = await configuredClusterKubectl.helmCommand(command)
     const parsedHelmResponse = JSON.parse(helmResponse)
-    logger.info({
+    logger.debug({
       function: 'executeHelmCommand',
       command,
       parsedResponse: parsedHelmResponse.map((response) => ({
@@ -66,87 +66,66 @@ const runHelmList = async (deployment, store) => {
   })
 
   const command = `list -n ${namespace} -o json`
-  logger.info({
+  logger.debug({
     action: `running helm list command on ${deployment.name} deployment`,
   })
   return Promise.resolve(executeHelmCommand(clusterKubectl, command))
 }
 
 const translateStatus = (helmStatus) => {
-  logger.info({
-    function: 'translateStatus',
-    input: helmStatus,
-  })
+  let translatedStatus
   switch (helmStatus) {
     case undefined:
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is undefined so the translation is 'deleted'",
-      })
-      return 'deleted'
+      translatedStatus = 'deleted'
+      break
     case 'unknown':
       logger.warn({
         function: 'translateStatus',
-        warning: "The helm status is 'unknown'. The translation is undefined",
+        warning: "The helm status is 'unknown'.",
       })
-      return undefined
+      translatedStatus = undefined
+      break
     case 'deployed':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'deployed' so the translation is 'provisioned'",
-      })
-      return 'provisioned'
+      translatedStatus = 'provisioned'
+      break
     case 'uninstalled':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'uninstalled' so the translation is 'deleted'",
-      })
-      return 'deleted'
+      translatedStatus = 'deleted'
+      break
     case 'superseded':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'superseded' so the translation is 'provisioned'",
-      })
-      return 'provisioned'
+      translatedStatus = 'provisioned'
+      break
     case 'failed':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'failed' so the translation is 'error'",
-      })
-      return 'error'
+      translatedStatus = 'error'
+      break
     case 'uninstalling':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'uninstalling' so the translation is 'deleted'",
-      })
-      return 'deleted'
+      translatedStatus = 'deleted'
+      break
     case 'pending-install':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'pending-install' so the translation is 'provisioned'",
-      })
-      return 'provisioned'
+      translatedStatus = 'provisioned'
+      break
     case 'pending-upgrade':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'pending-upgrade' so the translation is 'provisioned'",
-      })
-      return 'provisioned'
+      translatedStatus = 'provisioned'
+      break
     case 'pending-rollback':
-      logger.info({
-        function: 'translateStatus',
-        message: "The helm status is 'pending-rollback' so the translation is 'provisioned'",
-      })
-      return 'provisioned'
+      translatedStatus = 'provisioned'
+      break
     case 'error':
-      return 'error'
+      translatedStatus = 'error'
+      break
     default:
       logger.warn({
         function: 'translateStatus',
         warning: `There is no match for the helm status ${helmStatus}.`,
       })
-      return undefined
+      translatedStatus = undefined
   }
+  logger.debug({
+    function: 'translateStatus',
+    helmStatus,
+    translatedStatus,
+    message: `${helmStatus} translated to ${translatedStatus}`,
+  })
+  return translatedStatus
 }
 
 const processHelmResponse = (helmResponse, deployment) => {
@@ -177,7 +156,7 @@ const updateStatus = async (processedHelmResponse, store) => {
         updated_at: processedHelmResponse.updated_at,
       },
     })
-  logger.info({
+  logger.debug({
     function: 'updateStatus',
     deployment: processedHelmResponse.name,
     status: processedHelmResponse.status,
@@ -188,7 +167,7 @@ const updateStatus = async (processedHelmResponse, store) => {
 
 const getHelmStatuses = (deployments, store) => {
   if (!deployments) return []
-  logger.info({
+  logger.debug({
     function: 'gethelmStatuses',
     note: 'executes helm list for each deployment stored in the database',
   })

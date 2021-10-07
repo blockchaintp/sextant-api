@@ -10,14 +10,14 @@ const {
 const deploymentStatusPoll = async (store) => {
   // get a list of all of the deployments in the database
   logger.info({
-    action: 'running the deployment status poll',
+    action: 'running the Ddeployment Status Poll',
     time: new Date(),
   })
   const deployments = await getDeployments(store)
   // for each deployment, get the helm status and check to see if the deployment status needs to be updated
   // if it does - update it in the DB
   const deploymentStatuses = await getHelmStatuses(deployments, store)
-  logger.info({
+  logger.debug({
     deploymentStatuses: deploymentStatuses.map((deployment) => {
       const helmResponse = deployment.helm_response
       return {
@@ -29,7 +29,7 @@ const deploymentStatusPoll = async (store) => {
     }),
   })
   logger.info({
-    action: 'exiting the poll',
+    action: 'exiting the Deployment Status Poll',
     time: new Date(),
   })
 }
