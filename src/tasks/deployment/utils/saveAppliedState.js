@@ -13,7 +13,6 @@ const SaveAppliedState = async ({
     id,
     data: {
       applied_state: deployment.desired_state,
-      updated_at: new Date(),
     },
   }, trx)
 }
