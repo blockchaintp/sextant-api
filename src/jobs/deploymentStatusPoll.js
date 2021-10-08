@@ -17,16 +17,12 @@ const deploymentStatusPoll = async (store) => {
   // for each deployment, get the helm status and check to see if the deployment status needs to be updated
   // if it does - update it in the DB
   const deploymentStatuses = await getHelmStatuses(deployments, store)
-  logger.debug({
-    deploymentStatuses: deploymentStatuses.map((deployment) => {
-      const helmResponse = deployment.helm_response
-      return {
-        name: helmResponse.name,
-        namespace: helmResponse.namespace,
-        helmStatus: helmResponse.status,
-        sextantStatus: deployment.status,
-      }
-    }),
+  logger.info({
+    deploymentStatuses: deploymentStatuses.map((deployment) => ({
+      name: deployment.name,
+      helmStatus: deployment.helmStatus,
+      sextantStatus: deployment.status,
+    })),
   })
   logger.info({
     action: 'exiting the Deployment Status Poll',
