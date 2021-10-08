@@ -46,10 +46,9 @@ const deploymentToHelmRelease = (deployment) => {
   const chart = `${chartName}-${chartVersion}`
   const {
     extension,
-    name,
     namespace,
   } = chartInfo
-  const releaseName = `${name}-${extension}`
+  const releaseName = `${deployment.name}-${extension}`
 
   const release = {
     name: releaseName,
