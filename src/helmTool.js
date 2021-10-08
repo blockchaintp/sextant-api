@@ -39,11 +39,14 @@ class HelmTool {
     // runs helm add for all the repos in the editions object
     // iterate through the repos array adding each one
     const runHelmAdd = async (repo) => {
-      const helmCommand = this.buildCommand(repo)
-      await exec(helmCommand)
       logger.info({
         action: `adding ${repo.name} repository`,
       })
+      const helmCommand = this.buildCommand(repo)
+      logger.debug({ action: 'helm add', command: helmCommand })
+      const result = await exec(helmCommand)
+      logger.trace({ action: 'helm add', command: helmCommand, result })
+      return result
     }
     for (const repo of this.helmRepos) {
       try {
@@ -60,10 +63,13 @@ class HelmTool {
 
   async update() {
     try {
-      await exec('helm repo update')
       logger.info({
         action: 'updating helm repositories',
       })
+      const command = 'helm repo update'
+      logger.debug({ action: 'helm repo update', command })
+      const result = await exec(command)
+      logger.trace({ action: 'helm repo update', command, result })
     } catch (err) {
       logger.error({
         action: 'helm repository update',
@@ -75,8 +81,10 @@ class HelmTool {
 
   async storeChartsLocally() {
     const getExactChartVersion = async (chart, chartVersion) => {
-      const searchValue = await exec(`helm search repo ${chart} --version ${chartVersion} -o json`)
-
+      const cmd = `helm search repo ${chart} --version ${chartVersion} -o json`
+      logger.debug({ action: 'getExactChartVersion', command: cmd })
+      const searchValue = await exec(cmd)
+      logger.trace({ action: 'getExactChartVersion', command: cmd, result: searchValue })
       return JSON.parse(searchValue)[0].version
     }
 
@@ -85,27 +93,33 @@ class HelmTool {
       const exactChartVersion = await getExactChartVersion(chart, chartVersion)
 
       try {
-        await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
         logger.info({
           action: `removing /app/api/helmCharts/${deploymentType} if found`,
         })
+        await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
       } catch (e) {
         logger.error({
           action: 'fsExtra.remove()',
           error: e,
         })
+        throw e
       }
 
       try {
-        await exec(`helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`)
         logger.info({
           action: `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`,
         })
+        const cmd = `helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`
+        logger.debug({ action: 'helm pull', command: cmd })
+        const result = await exec(cmd)
+        logger.trace({ action: 'helm pull', command: cmd, result })
+        return result
       } catch (e) {
         logger.error({
           action: 'helm pull command',
           error: e,
         })
+        throw e
       }
     }
 

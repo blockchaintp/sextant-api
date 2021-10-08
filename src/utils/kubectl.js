@@ -201,10 +201,16 @@ const Kubectl = ({
       `${localPort}:${port}`,
     ])
 
+    const cmd = 'kubectl'
+    const { env } = useOptions
+
     const forwardingProcess = await new Promise((resolve, reject) => {
       let complete = false
       let stderr = ''
 
+      logger.debug({
+        action: 'start forwardingProcess', command: cmd, args, env,
+      })
       const spawnedProcess = childProcess.spawn('kubectl', args, {
         env: useOptions.env,
         stdio: 'pipe',
@@ -238,6 +244,9 @@ const Kubectl = ({
     return {
       port: localPort,
       stop: async () => {
+        logger.debug({
+          action: 'stop forwardingProcess', command: cmd, args, env,
+        })
         forwardingProcess.kill()
       },
     }
@@ -246,7 +255,7 @@ const Kubectl = ({
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
     const runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
-    logger.debug({ action: 'running a standard kubectl command', command: `${cmd}` })
+    logger.debug({ action: commandType, command: `${cmd}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
       .catch((err) => {
@@ -259,7 +268,8 @@ const Kubectl = ({
         throw err
       })
     await localTeardown(setupDetails)
-    logger.debug({ message: `${commandType} command sucess` })
+    logger.trace({ action: commandType, command: `${cmd}`, result })
+    logger.debug({ action: commandType, message: 'command success' })
     return result
   }
 

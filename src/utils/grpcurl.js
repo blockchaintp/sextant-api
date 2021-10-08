@@ -77,13 +77,20 @@ const Grpcurl = ({
       // in the patched grpcurl -max-msg-sz applies to both request + response
       const runCommand = `${dataSource} grpcurl -plaintext -max-msg-sz ${MAX_MESSAGE_SIZE} -H 'Authorization: $GRPC_TOKEN' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
 
-      // run it
+      logger.debug({
+        action: 'grpcurl', command: runCommand, service, method,
+      })
+      logger.trace({
+        action: 'grpcurl', command: runCommand, service, method, data,
+      })
       const result = await exec(runCommand, commandOptions)
       const parsedResult = result ? JSON.parse(result) : {}
-      logger.info({
+      logger.trace({
+        action: 'grpcurl',
         service,
         method,
         data,
+        result,
         parsedResult,
       })
       await cleanup()

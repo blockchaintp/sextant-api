@@ -208,6 +208,7 @@ const renderTemplate = async ({
   const inputTemplatePath = path.resolve(inputDirectory, templateName)
   const outputTemplatePath = path.resolve(outputDirectory, templateName)
   const runCommand = `kubetpl render -i ${valuesPath} ${inputTemplatePath}`
+  logger.debug({ action: 'renderTemplate', command: runCommand })
   const stdout = await exec(runCommand)
     .catch((err) => {
       // make the kubetpl error message nicely readable
@@ -231,8 +232,8 @@ const renderTemplate = async ({
         .join('\n')
       throw new Error(message, { cause: err })
     })
-  const retFile = await writeFile(outputTemplatePath, stdout, 'utf8')
-  return retFile
+  logger.trace({ action: 'renderTemplate', command: runCommand, stdout })
+  return writeFile(outputTemplatePath, stdout, 'utf8')
 }
 
 /*
