@@ -293,7 +293,7 @@ const Kubectl = ({
     logger.debug({ action: 'running a kubectl command with json output', command: `${command}` })
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
-    logger.debug({ message: 'kubectl command --output json sucess' })
+    logger.debug({ message: 'kubectl command --output json success' })
     return processedOutput
   }
 

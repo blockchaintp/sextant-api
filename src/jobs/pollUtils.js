@@ -1,8 +1,7 @@
 /* eslint-disable max-len */
 const Promise = require('bluebird')
 const logger = require('../logging').getLogger({
-  name: 'deploymentStatusPoll utilities',
-  job: 'Deployment Status Poll',
+  name: 'jobs/pollUtils',
 })
 
 const ClusterKubectl = require('../utils/clusterKubectl')
@@ -15,7 +14,7 @@ const getDeployments = async (store) => {
   })
 
   logger.debug({
-    function: 'getDeployments',
+    fn: 'getDeployments',
     deployments: deployments.map((deployment) => ({
       name: deployment.name,
       type: deployment.deployment_type,
@@ -30,7 +29,7 @@ const executeHelmCommand = async (configuredClusterKubectl, command) => {
     const helmResponse = await configuredClusterKubectl.helmCommand(command)
     const parsedHelmResponse = JSON.parse(helmResponse)
     logger.debug({
-      function: 'executeHelmCommand',
+      fn: 'executeHelmCommand',
       command,
       parsedResponse: parsedHelmResponse.map((response) => ({
         name: response.name,
@@ -80,7 +79,7 @@ const translateStatus = (helmStatus) => {
       break
     case 'unknown':
       logger.warn({
-        function: 'translateStatus',
+        fn: 'translateStatus',
         warning: "The helm status is 'unknown'.",
       })
       translatedStatus = undefined
@@ -114,13 +113,13 @@ const translateStatus = (helmStatus) => {
       break
     default:
       logger.warn({
-        function: 'translateStatus',
+        fn: 'translateStatus',
         warning: `There is no match for the helm status ${helmStatus}.`,
       })
       translatedStatus = undefined
   }
-  logger.debug({
-    function: 'translateStatus',
+  logger.trace({
+    fn: 'translateStatus',
     helmStatus,
     translatedStatus,
     message: `${helmStatus} translated to ${translatedStatus}`,
@@ -157,7 +156,7 @@ const updateStatus = async (processedHelmResponse, store) => {
       },
     })
   logger.debug({
-    function: 'updateStatus',
+    fn: 'updateStatus',
     deployment: processedHelmResponse.name,
     status: processedHelmResponse.status,
     updated: !!databaseResponse,
@@ -168,7 +167,7 @@ const updateStatus = async (processedHelmResponse, store) => {
 const getHelmStatuses = (deployments, store) => {
   if (!deployments) return []
   logger.debug({
-    function: 'gethelmStatuses',
+    fn: 'getHelmStatuses',
     note: 'executes helm list for each deployment stored in the database',
   })
   return Promise.map(deployments, async (deployment) => {
@@ -176,6 +175,7 @@ const getHelmStatuses = (deployments, store) => {
     // returns a release with the given name
     // will be undefined if a match is not found in the helm list
     const helmResponse = helmList.find((release) => release.name === `${deployment.name}-${deployment.deployment_type}`)
+    logger.trace({ fn: 'getHelmStatuses', message: 'selected helmResponse', helmResponse })
     const processedHelmResponse = processHelmResponse(helmResponse, deployment)
     await Promise.resolve(updateStatus(processedHelmResponse, store))
     return processedHelmResponse

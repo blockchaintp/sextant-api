@@ -1,6 +1,5 @@
 const logger = require('../logging').getLogger({
-  name: 'jobs',
-  job: 'Deployment Status Poll',
+  name: 'jobs/deploymentStatusPoll',
 })
 const {
   getDeployments,
