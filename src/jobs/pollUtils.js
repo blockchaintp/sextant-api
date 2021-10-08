@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 const Promise = require('bluebird')
+const deploymentNames = require('../utils/deploymentNames')
 const logger = require('../logging').getLogger({
   name: 'jobs/pollUtils',
 })
@@ -7,19 +8,15 @@ const logger = require('../logging').getLogger({
 const ClusterKubectl = require('../utils/clusterKubectl')
 const getField = require('../deployment_templates/getField')
 
-const getDeployments = async (store) => {
+const getAllDeployments = async (store) => {
   const deployments = await store.deployment.list({
     cluster: 'all',
     deleted: true,
   })
 
   logger.debug({
-    fn: 'getDeployments',
-    deployments: deployments.map((deployment) => ({
-      name: deployment.name,
-      type: deployment.deployment_type,
-      status: deployment.status,
-    })),
+    fn: 'getAllDeployments',
+    deployments,
   })
   return deployments
 }
@@ -174,7 +171,8 @@ const getHelmStatuses = (deployments, store) => {
     const helmList = await Promise.resolve(runHelmList(deployment, store))
     // returns a release with the given name
     // will be undefined if a match is not found in the helm list
-    const helmResponse = helmList.find((release) => release.name === `${deployment.name}-${deployment.deployment_type}`)
+    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+    const helmResponse = helmList.find((release) => release.name === modelRelease.name)
     logger.trace({ fn: 'getHelmStatuses', message: 'selected helmResponse', helmResponse })
     const processedHelmResponse = processHelmResponse(helmResponse, deployment)
     await Promise.resolve(updateStatus(processedHelmResponse, store))
@@ -183,7 +181,7 @@ const getHelmStatuses = (deployments, store) => {
 }
 
 module.exports = {
-  getDeployments,
+  getAllDeployments,
   translateStatus,
   processHelmResponse,
   executeHelmCommand,
