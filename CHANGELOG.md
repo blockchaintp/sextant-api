@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* refactor(deployment-status-poll): refactor logging [view commit](https://github.com/catenasys/sextant-api/commit/282091fea62a43e41fd9603405febb86ae3417c4)
+* build(dev-packages): update eslint-plugin-import and eslint [view commit](https://github.com/catenasys/sextant-api/commit/92d43a586995c760171c1b22f51ca649e9aa0016)
+* refactor(index): replace deployment-meter job with deployment-status-poll-job [view commit](https://github.com/catenasys/sextant-api/commit/a1b466d8ed090f15ab83968103c0a73549d56704)
+* fix(save-applied-state-func): removes unneseary updated-at prop from updater [view commit](https://github.com/catenasys/sextant-api/commit/3c567ddd8c354267c68355bb64f2a81c6c0f5baf)
+* refactor(jobs): adds jobs directory for job definitions and utils [view commit](https://github.com/catenasys/sextant-api/commit/8f0835f5d15939a3d6c68f7558c2b13c9b8393e6)
+* refactor(scheduler): remove misleading deployment meter names files [view commit](https://github.com/catenasys/sextant-api/commit/2be53f84fd1aae3f8760074923fa67f6a99eafdc)
 * style(meter-utils): address sonar linting bugs [view commit](https://github.com/catenasys/sextant-api/commit/44eb0370c06c4c478b14fec91a9ca4451dc358c2)
 * fix(task-prosessor): conditionally check to see if resource is a deployment before running reasource updater func [view commit](https://github.com/catenasys/sextant-api/commit/a60f765b2af68e58abcdbb846946eaa200f258ce)
 * fix(index): move scheduler to after boot invocation [view commit](https://github.com/catenasys/sextant-api/commit/cc6134a06b6434ea8beb7f4c157153d14cb4722c)
