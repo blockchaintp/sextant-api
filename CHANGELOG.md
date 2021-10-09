@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* fix(utils): correct release name construction [view commit](https://github.com/catenasys/sextant-api/commit/bc044f6fb562d46507f09975a67d432c1288d571)
+* refactor: add a utility library to deal with deployment/release names [view commit](https://github.com/catenasys/sextant-api/commit/2544860760c6b455d0b9e5443485a16a76d420e8)
+* refactor: additional logging [view commit](https://github.com/catenasys/sextant-api/commit/f6e2b59f3aac7211851b2f8b862606fb6c835f6d)
+* refactor: improve logging around exec and spawn statements [view commit](https://github.com/catenasys/sextant-api/commit/0534a2788c3bf34efb6c927405d25481e00ea2b9)
+* fix(status-poll): fix undefined reference in log message [view commit](https://github.com/catenasys/sextant-api/commit/6a7c71b3e92c98a3a11629cd59dcb2dc0f0ea060)
 * refactor(deployment-status-poll): refactor logging [view commit](https://github.com/catenasys/sextant-api/commit/282091fea62a43e41fd9603405febb86ae3417c4)
 * build(dev-packages): update eslint-plugin-import and eslint [view commit](https://github.com/catenasys/sextant-api/commit/92d43a586995c760171c1b22f51ca649e9aa0016)
 * refactor(index): replace deployment-meter job with deployment-status-poll-job [view commit](https://github.com/catenasys/sextant-api/commit/a1b466d8ed090f15ab83968103c0a73549d56704)
