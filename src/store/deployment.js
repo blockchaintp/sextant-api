@@ -1,6 +1,8 @@
 const config = require('../config')
+const DeploymentHistoryStore = require('./deploymenthistory')
 
 const DeploymentStore = (knex) => {
+  const deploymentHistoryStore = DeploymentHistoryStore(knex)
   /*
 
     list all deployments for a cluster
@@ -103,6 +105,19 @@ const DeploymentStore = (knex) => {
         deployment_method,
       })
       .returning('*')
+
+    await deploymentHistoryStore.create({
+      data: {
+        cluster_id: cluster,
+        name,
+        deployment_id: result.id,
+        deployment_type,
+        deployment_version,
+        status: result.status,
+        helm_response: {},
+      },
+    }, trx)
+
     return result
   }
 
@@ -133,6 +148,20 @@ const DeploymentStore = (knex) => {
       })
       .update(data)
       .returning('*')
+    const previousRecord = await deploymentHistoryStore.get({ deployment_id: id, limit: 30, first: true })
+    if (previousRecord.status !== result.status) {
+      await deploymentHistoryStore.create({
+        data: {
+          cluster_id: result.cluster,
+          deployment_id: id,
+          name: result.name,
+          deployment_type: result.deployment_type,
+          deployment_version: result.deployment_version,
+          status: result.status,
+          helm_response: {},
+        },
+      }, trx)
+    }
     return result
   }
 
@@ -149,6 +178,7 @@ const DeploymentStore = (knex) => {
     id,
   }, trx) => {
     if (!id) throw new Error('id must be given to store.deployment.delete')
+    const deployment = await DeploymentStore(knex).get({ id }, trx)
 
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
@@ -156,11 +186,26 @@ const DeploymentStore = (knex) => {
       })
       .del()
       .returning('*')
+
+    const deleteStatus = deployment.status === 'deleted' ? 'erased' : 'deleted'
+    await deploymentHistoryStore.create({
+      data: {
+        cluster_id: result.cluster,
+        deployment_id: id,
+        name: result.name,
+        deployment_type: result.deployment_type,
+        deployment_version: result.deployment_version,
+        status: deleteStatus,
+        helm_response: {},
+      },
+    }, trx)
+
     return result
   }
 
   const updateStatus = async ({
     id,
+    helm_response,
     data,
   }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
@@ -173,6 +218,19 @@ const DeploymentStore = (knex) => {
       .andWhereNot('status', '=', `${data.status}`)
       .update(data)
       .returning('*')
+    if (result) {
+      await deploymentHistoryStore.create({
+        data: {
+          cluster_id: result.cluster,
+          deployment_id: id,
+          name: result.name,
+          deployment_type: result.deployment_type,
+          deployment_version: result.deployment_version,
+          status: result.status,
+          helm_response,
+        },
+      }, trx)
+    }
     return result
   }
 
