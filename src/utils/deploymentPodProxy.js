@@ -7,7 +7,7 @@
 const logger = require('../logging').getLogger({
   name: 'utils/deploymentPodProxy',
 })
-const getField = require('../deployment_templates/getField')
+const deploymentNames = require('./deploymentNames')
 const ClusterKubectl = require('./clusterKubectl')
 
 const ProxyRequest = async ({
@@ -50,7 +50,7 @@ const ProxyRequest = async ({
 const DeploymentPodProxy = async ({
   store,
   id,
-  label = 'app=<name>-validator',
+  labelPattern = 'app.kubernetes.io/instance=<name>',
 }) => {
   const deployment = await store.deployment.get({
     id,
@@ -60,38 +60,25 @@ const DeploymentPodProxy = async ({
     id: deployment.cluster,
   })
 
+  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+
   const {
-    deployment_type,
-    deployment_version,
-    applied_state,
-  } = deployment
-
-  const namespace = getField({
-    deployment_type,
-    deployment_version,
-    data: applied_state,
-    field: 'namespace',
-  })
-
-  const networkName = getField({
-    deployment_type,
-    deployment_version,
-    data: applied_state,
-    field: 'name',
-  })
+    name,
+    namespace,
+  } = modelRelease
 
   const clusterKubectl = await ClusterKubectl({
     cluster,
     store,
   })
 
-  const useLabel = label.replace('<name>', networkName)
+  const useLabel = labelPattern.replace('<name>', name)
 
   const getPods = () => clusterKubectl
     .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
     .then((data) => {
       const allPods = data.items
-      const runningPods = allPods.filter((pod) => {
+      return allPods.filter((pod) => {
         let running = true
         const { containerStatuses } = pod.status
         containerStatuses.forEach((container) => {
@@ -104,7 +91,6 @@ const DeploymentPodProxy = async ({
         })
         return running
       })
-      return runningPods
     })
 
   const getPod = async () => {
