@@ -130,6 +130,7 @@ const processHelmResponse = (helmResponse, deployment) => {
   const translatedStatus = translateStatus(helmStatus)
 
   const processedHelmResponse = { helm_response: helmResponse }
+  processedHelmResponse.helmStatus = helmStatus
   processedHelmResponse.name = deployment.name
   processedHelmResponse.cluster_id = deployment.cluster
   processedHelmResponse.status = translatedStatus
@@ -146,7 +147,7 @@ const updateStatus = async (processedHelmResponse, store) => {
   const databaseResponse = await store.deployment
     .updateStatus({
       id: processedHelmResponse.deployment_id,
-      time: processedHelmResponse.time,
+      helm_response: processedHelmResponse.helm_response,
       data: {
         status: processedHelmResponse.status,
         updated_at: processedHelmResponse.updated_at,
