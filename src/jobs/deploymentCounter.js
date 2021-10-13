@@ -1,6 +1,5 @@
 const logger = require('../logging').getLogger({
-  name: 'jobs',
-  job: 'Deployment Counter',
+  name: 'jobs/deploymentCounter',
 })
 
 const deploymentCounter = async (store) => {
