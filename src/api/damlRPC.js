@@ -104,7 +104,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     const pods = await proxy.getPods()
@@ -144,7 +144,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     const pods = await proxy.getPods()
@@ -186,7 +186,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     const token = await getAdminJWTToken({
@@ -252,7 +252,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     const pods = await proxy.getPods()
@@ -344,7 +344,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     const pods = await proxy.getPods()
@@ -452,7 +452,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     // We need to get all pods here
@@ -524,7 +524,7 @@ const DamlRPC = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     // We need to get all pods here
