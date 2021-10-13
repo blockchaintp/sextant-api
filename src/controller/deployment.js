@@ -7,10 +7,10 @@ const config = require('../config');
 const userUtils = require('../utils/user');
 const ClusterKubectl = require('../utils/clusterKubectl');
 const RBAC = require('../rbac');
+const deploymentNames = require('../utils/deploymentNames')
 
 const deploymentForms = require('../forms/deployment');
 const deploymentTemplates = require('../deployment_templates');
-const getField = require('../deployment_templates/getField');
 const validate = require('../forms/validate');
 const { edition } = require('../edition');
 
@@ -588,20 +588,13 @@ const DeployentController = ({ store }) => {
       store,
     });
 
+    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+
     const {
-      deployment_type,
-      deployment_version,
-      applied_state,
-    } = deployment;
+      namespace,
+    } = modelRelease
 
-    const namespace = getField({
-      deployment_type,
-      deployment_version,
-      data: applied_state,
-      field: 'namespace',
-    });
-
-    const results = {
+    return {
       pods: await kubectl
         .jsonCommand(`-n ${namespace} get po`)
         .then((result) => result.items),
@@ -615,8 +608,6 @@ const DeployentController = ({ store }) => {
         .jsonCommand(`-n ${namespace} get pvc`)
         .then((result) => result.items),
     };
-
-    return results;
   };
 
   /*
@@ -649,18 +640,12 @@ const DeployentController = ({ store }) => {
       store,
     });
 
-    const {
-      deployment_type,
-      deployment_version,
-      applied_state,
-    } = deployment;
+    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-    const namespace = getField({
-      deployment_type,
-      deployment_version,
-      data: applied_state,
-      field: 'namespace',
-    });
+    const {
+      namespace,
+    } = modelRelease
+
     logger.info({ action: `Delete pod ${pod} in ${namespace} using kubectl` })
     await kubectl
       .command(`delete pod ${pod} -n ${namespace} `)

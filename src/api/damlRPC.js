@@ -13,11 +13,11 @@ const logger = require('../logging').getLogger({
   name: 'api/damlRPC',
 })
 const database = require('./database')
+const deploymentNames = require('../utils/deploymentNames')
 
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const SecretLoader = require('../utils/secretLoader')
 const Grpcurl = require('../utils/grpcurl')
-const getField = require('../deployment_templates/getField')
 
 const DAML_GRPC_METHOD_PREFIX = 'com.daml.ledger.api.v1.'
 const DAML_RPC_PORT = 39000
@@ -36,25 +36,18 @@ const DamlRPC = ({
       id,
     })
 
-    const {
-      deployment_type,
-      deployment_version,
-      applied_state,
-    } = deployment
+    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-    const networkName = getField({
-      deployment_type,
-      deployment_version,
-      data: applied_state,
-      field: 'name',
-    })
+    const {
+      name,
+    } = modelRelease
 
     const secretLoader = await SecretLoader({
       store,
       id,
     })
 
-    const secretName = `${networkName}-cert`
+    const secretName = `${name}-cert`
     const secret = await secretLoader.getSecret(secretName)
     if (!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
     const keyBase64 = secret.data['jwt.key']

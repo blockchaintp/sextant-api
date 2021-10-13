@@ -3,7 +3,7 @@
  *
  * License: Product
  */
-const getField = require('../deployment_templates/getField')
+const deploymentNames = require('./deploymentNames')
 const ClusterKubectl = require('./clusterKubectl')
 const base64 = require('./base64')
 
@@ -15,42 +15,42 @@ const deploymentConnection = async ({
   id,
   onConnection,
 }) => {
-
   let connection = cachedConnections[id]
 
-  if(!connection) {
+  if (!connection) {
     const deployment = await store.deployment.get({
       id,
     })
-  
+
     const cluster = await store.cluster.get({
       id: deployment.cluster,
     })
-  
+
     const {
-      deployment_type,
-      deployment_version,
       applied_state,
     } = deployment
 
-    const namespace = getField({
-      deployment_type,
-      deployment_version,
-      data: applied_state,
-      field: 'namespace',
-    })
+    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+
+    const {
+      namespace,
+    } = modelRelease
 
     const clusterKubectl = await ClusterKubectl({
       cluster,
       store,
     })
 
-    const apiServer = clusterKubectl.remoteCredentials.apiServer
-    const token = base64.decodeToString(clusterKubectl.remoteCredentials.token)
-    const ca = base64.decodeToString(clusterKubectl.remoteCredentials.ca)
+    const {
+      apiServer,
+      token_enc,
+      ca_enc,
+    } = clusterKubectl.remoteCredentials
+    const token = base64.decode(token_enc)
+    const ca = base64.decode(ca_enc)
     const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
 
-    connection = cachedConnections[id] = {
+    cachedConnections[id] = {
       token,
       apiServer,
       baseUrl,
@@ -58,15 +58,16 @@ const deploymentConnection = async ({
       namespace,
       applied_state,
     }
+    connection = cachedConnections[id]
 
-    if(onConnection) {
+    if (onConnection) {
       await onConnection(connection)
     }
 
     // keep cached connections for 5 mins
     // this is to avoid doing multiple database + kubectl for each request
     setTimeout(() => {
-      delete(cachedConnections[id])
+      delete (cachedConnections[id])
     }, 1000 * 60 * 5)
   }
 
