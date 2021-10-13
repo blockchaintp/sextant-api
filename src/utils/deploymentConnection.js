@@ -43,18 +43,18 @@ const deploymentConnection = async ({
 
     const {
       apiServer,
-      token_enc,
-      ca_enc,
+      token,
+      ca,
     } = clusterKubectl.remoteCredentials
-    const token = base64.decode(token_enc)
-    const ca = base64.decode(ca_enc)
+    const token_dec = base64.decode(token)
+    const ca_dec = base64.decode(ca)
     const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
 
     cachedConnections[id] = {
-      token,
+      token: token_dec,
       apiServer,
       baseUrl,
-      ca,
+      ca: ca_dec,
       namespace,
       applied_state,
     }
