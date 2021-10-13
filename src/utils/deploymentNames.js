@@ -19,13 +19,22 @@ const getBestNamespace = (deployment) => {
   if (deployment.desired_state && deployment.desired_state.namespace) {
     return deployment.desired_state.namespace
   }
-  logger.warn({ fn: 'getBestNamespace', deployment }, 'Deployment specified namespace via a field path')
   const {
     deployment_type,
     deployment_version,
     applied_state,
   } = deployment
-  return getField(deployment_type, deployment_version, applied_state, 'namespace')
+  logger.warn({
+    fn: 'getBestNamespace',
+    deployment_type,
+    deployment_version,
+  }, 'Deployment specified namespace via a field path')
+  return getField({
+    deployment_type,
+    deployment_version,
+    data: applied_state,
+    field: 'namespace',
+  })
 }
 
 /**

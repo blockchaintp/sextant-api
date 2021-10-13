@@ -5,7 +5,10 @@
 // unified way
 
 const dotty = require('dotty')
-const deploymentTypes = require('../deployment_templates/index')
+const deploymentTypes = require('../deployment_templates')
+const logger = require('../logging').getLogger({
+  name: 'utils/getField',
+})
 
 const getField = ({
   deployment_type,
@@ -14,11 +17,20 @@ const getField = ({
   field,
 }) => {
   const type = deploymentTypes[deployment_type]
-  if (!type) throw new Error(`unknown deployment_type ${deployment_type}`)
+  if (!type) {
+    logger.trace({ deployment_type, deploymentTypes }, 'no deployment type')
+    throw new Error(`unknown deployment_type ${deployment_type}`)
+  }
   const paths = type.paths[deployment_version]
-  if (!paths) throw new Error(`unknown deployment version ${deployment_type} ${deployment_version}`)
+  if (!paths) {
+    logger.trace({ deployment_version, paths: type.paths }, 'no deployment_version')
+    throw new Error(`unknown deployment version ${deployment_type} ${deployment_version}`)
+  }
   const path = paths[field]
-  if (!path) throw new Error(`unknown deployment field ${deployment_type} ${deployment_version} ${field}`)
+  if (!path) {
+    logger.trace({ field, paths }, 'no field')
+    throw new Error(`unknown deployment field ${deployment_type} ${deployment_version} ${field}`)
+  }
   return dotty.get(data, path)
 }
 
