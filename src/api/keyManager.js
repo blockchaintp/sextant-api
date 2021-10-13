@@ -27,7 +27,7 @@ const KeyManager = ({
     const proxy = await DeploymentPodProxy({
       store,
       id,
-      label: 'daml=<name>-daml-rpc',
+      labelPattern: 'app.kubernetes.io/instance=<name>,component=daml',
     })
 
     const pods = await proxy.getPods()
@@ -37,7 +37,7 @@ const KeyManager = ({
     const participantDetails = await damlRPC.getParticipantDetails({
       id,
     })
-    
+
     const results = participantDetails.map((item) => {
       const result = [{
         publicKey: database.getKey(),
