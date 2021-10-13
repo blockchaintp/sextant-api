@@ -594,19 +594,20 @@ const DeployentController = ({ store }) => {
       namespace,
     } = modelRelease
 
+    const items = await await kubectl
+      .jsonCommand(`-n ${namespace} get po,no,svc,pvc`)
+      .then((result) => result.items)
+
+    const pods = items.filter((item) => item.kind === 'Pod')
+    const nodes = items.filter((item) => item.kind === 'Node')
+    const services = items.filter((item) => item.kind === 'Service')
+    const volumes = items.filter((item) => item.kind === 'PersistentVolumeClaim')
+
     return {
-      pods: await kubectl
-        .jsonCommand(`-n ${namespace} get po`)
-        .then((result) => result.items),
-      nodes: await kubectl
-        .jsonCommand(`-n ${namespace} get no`)
-        .then((result) => result.items),
-      services: await kubectl
-        .jsonCommand(`-n ${namespace} get svc`)
-        .then((result) => result.items),
-      volumes: await kubectl
-        .jsonCommand(`-n ${namespace} get pvc`)
-        .then((result) => result.items),
+      pods,
+      nodes,
+      services,
+      volumes,
     };
   };
 
