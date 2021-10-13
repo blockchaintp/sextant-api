@@ -7,6 +7,7 @@ const helmUtils = require('../tasks/deployment/utils/helmUtils')
 const logger = require('../logging').getLogger({
   name: 'utils/deploymentNames',
 })
+const getField = require('./getField')
 
 const getBestNamespace = (deployment) => {
   if (deployment.namespace) {
@@ -18,8 +19,13 @@ const getBestNamespace = (deployment) => {
   if (deployment.desired_state && deployment.desired_state.namespace) {
     return deployment.desired_state.namespace
   }
-  logger.warn({ fn: 'getBestNamespace', deployment }, 'Deployment specified no usable namespaces')
-  return undefined
+  logger.warn({ fn: 'getBestNamespace', deployment }, 'Deployment specified namespace via a field path')
+  const {
+    deployment_type,
+    deployment_version,
+    applied_state,
+  } = deployment
+  return getField(deployment_type, deployment_version, applied_state, 'namespace')
 }
 
 /**
