@@ -5,7 +5,7 @@ const logger = require('../../logging').getLogger({
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')
-const getField = require('../../deployment_templates/getField')
+const deploymentNames = require('../../utils/deploymentNames')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
 const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
@@ -54,19 +54,12 @@ const DeploymentCreate = ({
     deployment_method,
   } = deployment
 
-  const namespace = getField({
-    deployment_type,
-    deployment_version,
-    data: desired_state,
-    field: 'namespace',
-  })
+  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const networkName = getField({
-    deployment_type,
-    deployment_version,
-    data: desired_state,
-    field: 'name',
-  })
+  const {
+    name,
+    namespace,
+  } = modelRelease
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -91,8 +84,7 @@ const DeploymentCreate = ({
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
     const chartversion = yield getChartVersion(deployment_type, deployment_version)
     const { chart } = chartInfo
-    const { extension } = chartInfo
-    const installationName = `${networkName}-${extension}`
+    const installationName = `${name}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
     const useChart = process.env.USE_LOCAL_CHART ? process.env.USE_LOCAL_CHART : chart
     yield clusterKubectl.helmCommand(`-n ${namespace} install ${installationName} -f ${valuesPath} ${useChart} --version ${chartversion}`)
@@ -113,13 +105,6 @@ const DeploymentCreate = ({
       deployment_version,
     })
 
-    const makeSafeFileName = (chartFile) => {
-      const safeFileName = chartFile.match(/[a-z]([-a-z0-9]*[a-z])*/)[0]
-      return safeFileName
-    }
-
-    // if there is a charts directory, do a helm command for each chart
-    //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
     logger.info({
       action: 'charts',
       charts,
@@ -133,15 +118,13 @@ const DeploymentCreate = ({
 
       charts.forEach(
         yield (chartFile) => {
-          const safeFileName = makeSafeFileName(chartFile)
           logger.info({
             action: 'Applying chart',
             chartFile,
             namespace,
-            networkName,
-            safeFileName,
+            name,
           })
-          clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${safeFileName} ${chartsFolder}/${chartFile}`)
+          clusterKubectl.helmCommand(`-n ${namespace} install ${name} ${chartsFolder}/${chartFile}`)
         },
       )
     }

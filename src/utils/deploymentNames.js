@@ -8,6 +8,20 @@ const logger = require('../logging').getLogger({
   name: 'utils/deploymentNames',
 })
 
+const getBestNamespace = (deployment) => {
+  if (deployment.namespace) {
+    return deployment.namespace
+  }
+  if (deployment.applied_state && deployment.applied_state.namespace) {
+    return deployment.applied_state.namespace
+  }
+  if (deployment.desired_state && deployment.desired_state.namespace) {
+    return deployment.desired_state.namespace
+  }
+  logger.warn({ fn: 'getBestNamespace', deployment }, 'Deployment specified no usable namespaces')
+  return undefined
+}
+
 /**
  * Given a helm release status object translate that into an object that
  * __resembles__ a sextant deployment object.
@@ -46,13 +60,13 @@ const deploymentToHelmRelease = (deployment) => {
   const chart = `${chartName}-${chartVersion}`
   const {
     extension,
-    namespace,
   } = chartInfo
+
   const releaseName = `${deployment.name}-${extension}`
 
   const release = {
     name: releaseName,
-    namespace,
+    namespace: getBestNamespace(deployment),
     chart,
   }
   logger.trace({ fn: 'deploymentToHelmRelease', deployment, release })

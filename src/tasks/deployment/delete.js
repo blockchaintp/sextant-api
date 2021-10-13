@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
-const getField = require('../../deployment_templates/getField')
+const deploymentNames = require('../../utils/deploymentNames')
 const { getChartInfo } = require('./utils/helmUtils')
 
 const {
@@ -52,19 +52,12 @@ const DeploymentDelete = ({
     ? desired_state
     : applied_state
 
-  const namespace = getField({
-    deployment_type,
-    deployment_version,
-    data: useData,
-    field: 'namespace',
-  })
+  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const networkName = getField({
-    deployment_type,
-    deployment_version,
-    data: useData,
-    field: 'name',
-  })
+  const {
+    name,
+    namespace,
+  } = modelRelease
 
   const clusterKubectl = yield ClusterKubectl({
     cluster,
@@ -122,9 +115,7 @@ const DeploymentDelete = ({
     }
   }
 
-  const deleteHelmChart = async (chartInfo, name, namespaceName) => {
-    const { extension } = chartInfo
-    const installationName = `${name}-${extension}`
+  const deleteHelmChart = async (chartInfo, installationName, namespaceName) => {
     logger.info({
       action: 'deleteHelmChart',
       message: `deleting chart ${installationName} in namespace ${namespaceName}`,
@@ -134,7 +125,7 @@ const DeploymentDelete = ({
 
   if (deployment_method === 'helm') {
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
-    yield deleteHelmChart(chartInfo, networkName, namespace)
+    yield deleteHelmChart(chartInfo, name, namespace)
   } else {
     // function expects arg named desired_state,
     // but we will use applied_state if there is no error status

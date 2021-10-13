@@ -11,7 +11,7 @@ const logger = require('../../logging').getLogger({
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const renderTemplates = require('../../deployment_templates/render')
 const { getCharts, getChartsFolder } = require('../../deployment_templates/helmRender')
-const getField = require('../../deployment_templates/getField')
+const deploymentNames = require('../../utils/deploymentNames')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
 const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
@@ -38,37 +38,17 @@ const DeploymentUpdate = ({
   const {
     deployment_type,
     deployment_version,
-    applied_state,
     desired_state,
     custom_yaml,
     deployment_method,
   } = deployment
 
-  const desiredNamespace = getField({
-    deployment_type,
-    deployment_version,
-    data: desired_state,
-    field: 'namespace',
-  })
+  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const appliedNamespace = getField({
-    deployment_type,
-    deployment_version,
-    data: applied_state,
-    field: 'namespace',
-  })
-
-  const appliedNetworkName = getField({
-    deployment_type,
-    deployment_version,
-    data: applied_state,
-    field: 'name',
-  })
-
-  // check that the user is not trying to change the k8s namespace
-  if (appliedNamespace && desiredNamespace !== appliedNamespace) {
-    throw new Error('you cannot change the namespace of a deployment')
-  }
+  const {
+    name,
+    namespace,
+  } = modelRelease
 
   // TODO: mock the kubectl handler for tests
   if (testMode) {
@@ -89,9 +69,9 @@ const DeploymentUpdate = ({
   // test we can connect to the remote cluster with the details provided
   // If the namespace exists, continue. If not, create it.
   const namespaces = yield clusterKubectl.jsonCommand('get ns')
-  const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === desiredNamespace)
+  const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
 
-  if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${desiredNamespace}`)
+  if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
   /*
   If this is a sawtooth deployment, use the helm chart to update the deployment on the cluster
   otherwise, use the template directory
@@ -101,14 +81,14 @@ const DeploymentUpdate = ({
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
     const chartversion = yield getChartVersion(deployment_type, deployment_version)
 
-    const { chart, extension } = chartInfo
-    const installationName = `${appliedNetworkName}-${extension}`
+    const { chart } = chartInfo
+    const installationName = `${name}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
 
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
     // if the chart is installed, upgrade it. Otherwise, install it
-    yield clusterKubectl.helmCommand(`-n ${appliedNamespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
+    yield clusterKubectl.helmCommand(`-n ${namespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
   } else {
     const templateDirectory = yield renderTemplates({
       deployment_type,
@@ -117,22 +97,11 @@ const DeploymentUpdate = ({
       custom_yaml,
     })
 
-    // templateDirectory is src/deployment_templates/{deployment_type}/{deployment_version}
-    // for each file in ${templateDirectory}/charts/*.tgz
-    // yield clusterKubectl.helmCommand(`-n ${namespace} install <someName>-<theChartfile> -f <theChartFile>.tgz `)
-
     const charts = yield getCharts({
       deployment_type,
       deployment_version,
     })
 
-    const makeSafeFileName = (chartFile) => {
-      const safeFileName = chartFile.match(/[a-z]([-a-z0-9]*[a-z])*/)[0]
-      return safeFileName
-    }
-
-    // if there is a charts directory, do a helm command for each chart
-    //      yield clusterKubectl.helmCommand(`-n ${namespace} install ${networkName}-${makeSafeName(chartFile)} ${chartFile}`
     if (charts) {
       const chartsFolder = getChartsFolder({
         deployment_type,
@@ -141,13 +110,12 @@ const DeploymentUpdate = ({
 
       charts.forEach(
         yield (chartFile) => {
-          const safeFileName = makeSafeFileName(chartFile)
           logger.info({
             action: 'Applying chart',
             chartFile,
-            safeFileName,
+            name,
           })
-          clusterKubectl.helmCommand(`-n ${appliedNamespace} install ${appliedNetworkName}-${safeFileName} ${chartsFolder}/${chartFile} || true`)
+          clusterKubectl.helmCommand(`-n ${namespace} install ${name} ${chartsFolder}/${chartFile} || true`)
         },
       )
     }

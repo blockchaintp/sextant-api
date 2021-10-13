@@ -6,7 +6,6 @@ const logger = require('../logging').getLogger({
 })
 
 const ClusterKubectl = require('../utils/clusterKubectl')
-const getField = require('../deployment_templates/getField')
 
 const getAllDeployments = async (store) => {
   const deployments = await store.deployment.list({
@@ -44,13 +43,11 @@ const executeHelmCommand = async (configuredClusterKubectl, command) => {
 }
 
 const runHelmList = async (deployment, store) => {
-  // returns a list of the active helm deployments in a given namespace
-  const namespace = getField({
-    deployment_type: deployment.deployment_type,
-    deployment_version: deployment.deployment_version,
-    data: deployment.desired_state,
-    field: 'namespace',
-  })
+  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+
+  const {
+    namespace,
+  } = modelRelease
 
   const cluster = await store.cluster.get({
     id: deployment.cluster,
