@@ -88,7 +88,13 @@ const deploymentToHelmRelease = (deployment) => {
   return release
 }
 
+const getChartNameForDeployment = (deployment) => {
+  const chartInfo = helmUtils.getChartInfo(deployment.deployment_type, deployment.deployment_version)
+  return helmUtils.getChartName(chartInfo)
+}
+
 module.exports = {
   helmReleaseToDeployment,
   deploymentToHelmRelease,
+  getChartNameForDeployment,
 }

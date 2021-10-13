@@ -29,6 +29,18 @@ const DamlRPC = ({
     throw new Error('Daml rpc requires a store')
   }
 
+  const getCertSecretName = (deployment) => {
+    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+
+    const {
+      name,
+    } = modelRelease
+
+    const chartName = deploymentNames.getChartNameForDeployment(deployment)
+
+    return `${name}-${chartName}-cert`
+  }
+
   const getPrivateKey = async ({
     id,
   }) => {
@@ -36,19 +48,12 @@ const DamlRPC = ({
       id,
     })
 
-    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
-
-    const {
-      name,
-      chart,
-    } = modelRelease
-
     const secretLoader = await SecretLoader({
       store,
       id,
     })
 
-    const secretName = `${name}-${chart}-cert`
+    const secretName = getCertSecretName(deployment)
     const secret = await secretLoader.getSecret(secretName)
     if (!secret || !secret.data) throw new Error(`no secret found to sign token ${secretName}`)
     const keyBase64 = secret.data['jwt.key']
