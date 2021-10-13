@@ -18,6 +18,7 @@ const getBestNamespace = (deployment) => {
   if (deployment.desired_state && deployment.desired_state.namespace) {
     return deployment.desired_state.namespace
   }
+  logger.warn({ fn: 'getBestNamespace', deployment }, 'Deployment specified no usable namespaces')
   return undefined
 }
 
