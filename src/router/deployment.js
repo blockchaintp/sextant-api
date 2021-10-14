@@ -131,7 +131,7 @@ const DeploymentRoutes = (controllers) => {
 
     // eslint-disable-next-line eqeqeq
     if (deployment.status == DEPLOYMENT_STATUS.deleted) {
-      data = await controllers.deployment.deletePermenantly({
+      data = await controllers.deployment.deletePermanently({
         id: req.params.id,
         user: req.user,
       })

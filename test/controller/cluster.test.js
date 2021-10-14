@@ -636,7 +636,7 @@ database.testSuiteWithDatabase((getConnection) => {
 
     const testCluster = testClusters.withSecrets
 
-    await controller.deletePermenantly({
+    await controller.deletePermanently({
       id: testCluster.id,
       user: testUser,
     })
@@ -667,7 +667,7 @@ database.testSuiteWithDatabase((getConnection) => {
 
     await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
-    await controller.deletePermenantly({
+    await controller.deletePermanently({
       id: testCluster.id,
       user: testUser,
     })

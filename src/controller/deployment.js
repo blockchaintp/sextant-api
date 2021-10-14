@@ -39,7 +39,7 @@ const {
   USER_TYPES,
 } = config;
 
-const DeployentController = ({ store }) => {
+const DeploymentController = ({ store }) => {
   /*
 
     load the most recent task for each cluster so the frontend can display
@@ -250,7 +250,7 @@ const DeployentController = ({ store }) => {
       }, trx);
     }
 
-    const task = await store.task.create({
+    return store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.deployment,
@@ -264,8 +264,6 @@ const DeployentController = ({ store }) => {
         },
       },
     }, trx);
-
-    return task;
   });
 
   /*
@@ -319,7 +317,7 @@ const DeployentController = ({ store }) => {
       data,
     }, trx);
 
-    const task = await store.task.create({
+    return store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.deployment,
@@ -333,8 +331,6 @@ const DeployentController = ({ store }) => {
         },
       },
     }, trx);
-
-    return task;
   });
 
   /*
@@ -492,7 +488,7 @@ const DeployentController = ({ store }) => {
     if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment');
 
     // create a delete task
-    const task = await store.task.create({
+    return store.task.create({
       data: {
         user: user.id,
         resource_type: config.RESOURCE_TYPES.deployment,
@@ -506,8 +502,6 @@ const DeployentController = ({ store }) => {
         },
       },
     }, trx);
-
-    return task;
   });
 
   /*
@@ -521,7 +515,7 @@ const DeployentController = ({ store }) => {
      * id
 
   */
-  const deletePermenantly = ({
+  const deletePermanently = ({
     user,
     id,
   }) => store.transaction(async (trx) => {
@@ -539,7 +533,7 @@ const DeployentController = ({ store }) => {
       id,
     }, trx);
 
-    if (deployment.status !== DEPLOYMENT_STATUS.deleted) throw new Error('a deployment must be in deleted status to be deleted permenantly');
+    if (deployment.status !== DEPLOYMENT_STATUS.deleted) throw new Error('a deployment must be in deleted status to be deleted permanently');
 
     // delete the cluster tasks, roles and then the cluster
     await store.task.deleteForResource({
@@ -685,7 +679,7 @@ const DeployentController = ({ store }) => {
     update,
     getTasks,
     delete: del,
-    deletePermenantly,
+    deletePermanently,
     resources,
     deletePod,
     summary,
@@ -695,4 +689,4 @@ const DeployentController = ({ store }) => {
   };
 };
 
-module.exports = DeployentController;
+module.exports = DeploymentController;

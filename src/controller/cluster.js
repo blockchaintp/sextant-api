@@ -425,7 +425,7 @@ const ClusterController = ({ store }) => {
      * user - the user that is creating the cluster
      * id
   */
-  const deletePermenantly = ({
+  const deletePermanently = ({
     user,
     id,
   }) => store.transaction(async (trx) => {
@@ -478,7 +478,7 @@ const ClusterController = ({ store }) => {
       resource_type: 'cluster',
       resource_id: cluster.id,
     }, trx)
-    await store.cluster.deletePermenantly({
+    await store.cluster.deletePermanently({
       id: cluster.id,
     }, trx)
 
@@ -670,7 +670,7 @@ const ClusterController = ({ store }) => {
     create,
     update,
     delete: del,
-    deletePermenantly,
+    deletePermanently,
     getRoles,
     createRole,
     deleteRole,

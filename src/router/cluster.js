@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable eqeqeq */
 const config = require('../config')
 
 const {
@@ -5,8 +7,7 @@ const {
 } = config
 
 const ClusterRoutes = (controllers) => {
-
-  const list = async (req, res, next) => {
+  const list = async (req, res, _next) => {
     const data = await controllers.cluster.list({
       user: req.user,
       deleted: req.query.showDeleted,
@@ -15,24 +16,23 @@ const ClusterRoutes = (controllers) => {
     res.json(data)
   }
 
-  const get = async (req, res, next) => {
+  const get = async (req, res, _next) => {
     const data = await controllers.cluster.get({
       id: req.params.id,
       withTask: req.query.withTasks,
     })
-    if(!data) {
+    if (!data) {
       res
         .status(404)
         .json({
           error: `no cluster found with id: ${req.params.id}`,
         })
-    }
-    else {
+    } else {
       res.json(data)
     }
   }
 
-  const create = async (req, res, next) => {
+  const create = async (req, res, _next) => {
     const data = await controllers.cluster.create({
       user: req.user,
       data: req.body,
@@ -42,7 +42,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const update = async (req, res, next) => {
+  const update = async (req, res, _next) => {
     const data = await controllers.cluster.update({
       id: req.params.id,
       user: req.user,
@@ -53,21 +53,19 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const del = async (req, res, next) => {
-
+  const del = async (req, res, _next) => {
     const cluster = await controllers.cluster.get({
       id: req.params.id,
     })
 
     let data = null
 
-    if(cluster.status == CLUSTER_STATUS.deleted) {
-      data = await controllers.cluster.deletePermenantly({
+    if (cluster.status == CLUSTER_STATUS.deleted) {
+      data = await controllers.cluster.deletePermanently({
         id: req.params.id,
         user: req.user,
       })
-    }
-    else {
+    } else {
       data = await controllers.cluster.delete({
         id: req.params.id,
         user: req.user,
@@ -79,7 +77,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const listRoles = async (req, res, next) => {
+  const listRoles = async (req, res, _next) => {
     const data = await controllers.cluster.getRoles({
       id: req.params.id,
     })
@@ -88,7 +86,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const createRole = async (req, res, next) => {
+  const createRole = async (req, res, _next) => {
     const data = await controllers.cluster.createRole({
       id: req.params.id,
       user: req.body.user,
@@ -100,7 +98,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const deleteRole = async (req, res, next) => {
+  const deleteRole = async (req, res, _next) => {
     const data = await controllers.cluster.deleteRole({
       id: req.params.id,
       user: req.params.userid,
@@ -110,7 +108,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const listTasks = async (req, res, next) => {
+  const listTasks = async (req, res, _next) => {
     const data = await controllers.cluster.getTasks({
       id: req.params.id,
     })
@@ -119,7 +117,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const resources = async (req, res, next) => {
+  const resources = async (req, res, _next) => {
     const data = await controllers.cluster.resources({
       id: req.params.id,
     })
@@ -128,7 +126,7 @@ const ClusterRoutes = (controllers) => {
       .json(data)
   }
 
-  const summary = async (req, res, next) => {
+  const summary = async (req, res, _next) => {
     const data = await controllers.cluster.summary({
       id: req.params.id,
     })

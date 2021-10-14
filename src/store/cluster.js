@@ -148,10 +148,10 @@ const ClusterStore = (knex) => {
     return result
   }
 
-  const deletePermenantly = async ({
+  const deletePermanently = async ({
     id,
   }, trx) => {
-    if (!id) throw new Error('id must be given to store.cluster.deletePermenantly')
+    if (!id) throw new Error('id must be given to store.cluster.deletePermanently')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
       .where({
@@ -168,7 +168,7 @@ const ClusterStore = (knex) => {
     create,
     update,
     delete: del,
-    deletePermenantly,
+    deletePermanently,
   }
 }
 
