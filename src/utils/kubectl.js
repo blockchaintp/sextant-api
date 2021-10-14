@@ -242,7 +242,12 @@ const Kubectl = ({
   const setupAndRunCommand = async (cmd, options, commandType) => {
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
-    const runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
+    let runCommand;
+    if (commandType === 'kubectl') {
+      runCommand = `${commandType} ${cmd} ${setupDetails.connectionArguments.join(' ')}`
+    } else {
+      runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
+    }
     logger.debug({ action: commandType, command: `${cmd}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
