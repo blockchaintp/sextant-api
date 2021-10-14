@@ -59,7 +59,7 @@ pipeline {
           sh '''
             make test
           '''
-          step([$class: "TapPublisher", testResults: "build/results.tap"])
+          step([$class: "TapPublisher", failIfNoResults: true, testResults: "build/results.tap"])
         }
       }
     }

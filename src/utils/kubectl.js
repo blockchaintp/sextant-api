@@ -18,11 +18,12 @@
 
 const Promise = require('bluebird')
 const tmp = require('tmp')
-const split = require('split')
 const getPort = require('get-port')
 const fs = require('fs')
+const k8s = require('@kubernetes/client-node');
 const childProcess = require('child_process')
 const yaml = require('js-yaml')
+const net = require('net')
 
 const logger = require('../logging').getLogger({
   name: 'utils/kubectl',
@@ -34,7 +35,6 @@ const exec = Promise.promisify(childProcess.exec)
 
 const tempName = Promise.promisify(tmp.tmpName)
 const writeFile = Promise.promisify(fs.writeFile)
-const readFile = Promise.promisify(fs.readFile)
 
 const MODES = ['local', 'remote', 'test']
 
@@ -88,80 +88,88 @@ const Kubectl = ({
     return tmpPath
   }
 
+  const createRemoteConfig = async () => {
+    const cluster = {
+      name: 'target',
+      server: remoteCredentials.apiServer,
+      caData: remoteCredentials.ca,
+    }
+
+    const user = {
+      name: 'sextant',
+      token: base64.decode(remoteCredentials.token).toString(),
+    }
+
+    const context = {
+      cluster: cluster.name,
+      user: user.name,
+      name: 'target-context',
+    }
+
+    const kc = new k8s.KubeConfig();
+    kc.loadFromOptions({
+      clusters: [cluster],
+      users: [user],
+      contexts: [context],
+      currentContext: context.name,
+    })
+    return kc
+  }
+
+  const createLocalConfig = async () => {
+    const cluster = {
+      name: 'target',
+      server: LOCAL_API_SERVER,
+      caFile: LOCAL_CA_PATH,
+    }
+
+    const user = {
+      name: 'sextant',
+      keyFile: LOCAL_TOKEN_PATH,
+    }
+
+    const context = {
+      cluster: cluster.name,
+      user: user.name,
+      name: 'target-context',
+    }
+
+    const kc = new k8s.KubeConfig();
+    kc.loadFromOptions({
+      clusters: [cluster],
+      users: [user],
+      contexts: [context],
+      currentContext: context.name,
+    })
+    return kc
+  }
+
+  const getConfig = async () => {
+    if (mode === 'remote') {
+      return createRemoteConfig()
+    }
+    if (mode === 'local') {
+      return createLocalConfig()
+    }
+    const kc = new k8s.KubeConfig();
+    kc.loadFromDefault()
+    return kc
+  }
+
   /*
-
     write the ca data to a tempfile so we can inject it into kubectl commands
-
   */
-
   // creates/writes kubeconfig to tmp file for remote modes and
   // returns connection arguments and kubeconfig path (setupDetails) to be used by following functions
   const localSetup = async () => {
-    if (mode === 'remote') {
-      const kubeconfigData = {
-        kind: 'Config',
-        preferences: {},
-        users: [
-          {
-            name: 'sextant',
-            user: {
-              token: base64.decode(remoteCredentials.token).toString(),
-            },
-          },
-        ],
-        contexts: [
-          {
-            context: {
-              cluster: 'target',
-              user: 'sextant',
-            },
-            name: 'target-context',
-          },
-        ],
-        'current-context': 'target-context',
-        clusters: [
-          {
-            cluster: {
-              'certificate-authority-data': remoteCredentials.ca,
-              server: remoteCredentials.apiServer,
-            },
-            name: 'target',
+    const kubeConfig = await getConfig();
+    const kubeConfigData = JSON.parse(kubeConfig.exportConfig())
+    const kubeConfigPath = await writeTempYaml(kubeConfigData)
+    const connectionArguments = [
+      '--kubeconfig', kubeConfigPath,
+    ]
 
-          },
-        ],
-      }
-      const kubeConfigPath = await writeTempYaml(kubeconfigData)
-
-      const connectionArguments = [
-        '--kubeconfig', kubeConfigPath,
-      ]
-
-      return {
-        kubeConfigPath,
-        connectionArguments,
-      }
-    }
-    if (mode === 'local') {
-      const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
-
-      const connectionArguments = [
-        '--certificate-authority',
-        LOCAL_CA_PATH,
-        '--token',
-        token,
-        '--server',
-        LOCAL_API_SERVER,
-      ]
-
-      return { connectionArguments }
-    }
-    if (mode === 'test') {
-      return {
-        kubeConfigPath: '/dev/null',
-        connectionArguments: [],
-      }
-    }
-    throw new Error('mode required for Kubectl')
+    return { kubeConfigPath, connectionArguments }
   }
 
   // trashes the tmp file if there is a kubeconfigPath in the setupDetails
@@ -182,6 +190,24 @@ const Kubectl = ({
     return useOptions
   }
 
+  const apiPortForward = async ({
+    namespace,
+    pod,
+    port,
+    localPort = 0,
+  }) => {
+    const kubeConfig = await getConfig()
+    const forward = new k8s.PortForward(kubeConfig)
+    const server = net.createServer((socket) => {
+      forward.portForward(namespace, pod, [port], socket, null, socket);
+    })
+    const usePort = localPort === 0 ? port : localPort
+    logger.debug({
+      namespace, pod, port, localPort,
+    }, 'starting port-forward')
+    return server.listen(usePort, '127.0.0.1')
+  }
+
   // pick a free local port and setup a port-forward to a pod
   // return an object that can close the forwarding process
   const portForward = async ({
@@ -190,71 +216,38 @@ const Kubectl = ({
     port,
   }) => {
     if (!pod) throw new Error('A running pod is required for port forwarding')
-    const setupDetails = await localSetup()
-    const useOptions = getOptions({})
     const localPort = await getPort()
 
-    const args = setupDetails.connectionArguments.concat([
-      '-n', namespace,
-      'port-forward',
-      `pod/${pod}`,
-      `${localPort}:${port}`,
-    ])
-
-    const cmd = 'kubectl'
-    const { env } = useOptions
-
-    const forwardingProcess = await new Promise((resolve, reject) => {
-      let complete = false
-      let stderr = ''
-
-      logger.debug({
-        action: 'start forwardingProcess', command: cmd, args, env,
-      })
-      const spawnedProcess = childProcess.spawn('kubectl', args, {
-        env: useOptions.env,
-        stdio: 'pipe',
-      })
-
-      // watch for confirmation the proxy is setup
-      spawnedProcess.stdout
-        .pipe(split())
-        .on('data', (line) => {
-          // this is the key line kubectl port-forward prints once the proxy is setup
-          if (line === `Forwarding from 127.0.0.1:${localPort} -> ${port}`) { complete = true }
-          resolve(spawnedProcess)
-        })
-
-      // capture stderr so we can throw an error if there is one
-      spawnedProcess.stderr
-        .pipe(split())
-        .on('data', (line) => {
-          stderr += `${line}\n`
-        })
-
-      spawnedProcess.on('exit', (code) => {
-        if (code > 0 && !complete) {
-          complete = true
-          reject(new Error(stderr))
-        }
-      })
+    const server = await apiPortForward({
+      namespace,
+      pod,
+      port,
+      localPort,
     })
 
-    await localTeardown(setupDetails)
     return {
       port: localPort,
       stop: async () => {
         logger.debug({
-          action: 'stop forwardingProcess', command: cmd, args, env,
+          namespace, pod, port, localPort,
+        }, 'stopping port-forward')
+        server.close(() => {
+          logger.debug({
+            namespace, pod, port, localPort,
+          }, 'stopped port-forward')
         })
-        forwardingProcess.kill()
       },
     }
   }
   const setupAndRunCommand = async (cmd, options, commandType) => {
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
-    const runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
+    let runCommand;
+    if (commandType === 'kubectl') {
+      runCommand = `${commandType} ${cmd} ${setupDetails.connectionArguments.join(' ')}`
+    } else {
+      runCommand = `${commandType} ${setupDetails.connectionArguments.join(' ')} ${cmd}`
+    }
     logger.debug({ action: commandType, command: `${cmd}` })
     const result = await exec(runCommand, useOptions)
       // remove the command itself from the error message so we don't leak credentials
@@ -280,8 +273,6 @@ const Kubectl = ({
   }
 
   // run a helm command and return [ stdout, stderr ]
-  // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
-  // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
   const helmCommand = async (cmd, options = {}) => {
     const commandType = 'helm'
     return setupAndRunCommand(cmd, options, commandType)
