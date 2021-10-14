@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+* fix: reduce resources command to a single kubectl [view commit](https://github.com/catenasys/sextant-api/commit/0c1564fccc25daf5d23c289e698512a0d91d37d2)
+* fix(utils): correct base64 decoding [view commit](https://github.com/catenasys/sextant-api/commit/ef38b8b1a8dee78245b6adccf166db28186647c7)
+* refactor: factor out cert secret name [view commit](https://github.com/catenasys/sextant-api/commit/a4935359ab4056537484eeec0b2c869239f24e0d)
+* fix: correct daml-rpc cert secret name [view commit](https://github.com/catenasys/sextant-api/commit/9f48dd27827d404a97ae922cd9b9520e71b1cd15)
+* fix: correct getField call [view commit](https://github.com/catenasys/sextant-api/commit/f86b8d35b1c1dc364d3c159501df98234384cc35)
+* fix: use getField as last resort [view commit](https://github.com/catenasys/sextant-api/commit/0810b3cf22368aa4a486506c659f322d7167b4e0)
+* fix: log any cases where there is no usable namespace [view commit](https://github.com/catenasys/sextant-api/commit/9c480166366934f3ef17b3bb7b211a1ceac3a488)
+* fix: return best available namespace [view commit](https://github.com/catenasys/sextant-api/commit/66e2c7b776d3d115e31d8719deed68015f494b72)
+* refactor: deploymentNames for consistent names [view commit](https://github.com/catenasys/sextant-api/commit/c0e7e1a4b277935b7688bf1f9a4f4e2c7af6f4c5)
+* feat(migrations and store): add and integrate deployment-history table into src [view commit](https://github.com/catenasys/sextant-api/commit/1e331b7dafb966a95fb87664e3cb18bbcea03f3e)
+* fix(api): correct DeploymentPodProxy usage [view commit](https://github.com/catenasys/sextant-api/commit/0ea595fa982d5a2e74ab66aec5c3994c439bd854)
+* fix(utils): use standard label for pod proxy and codified naming fns [view commit](https://github.com/catenasys/sextant-api/commit/8376939c21693993c1ca951efc6cb65529628374)
+* feat(editions): update dev edition of daml-on-sawtooth to ~0.2.0 [view commit](https://github.com/catenasys/sextant-api/commit/667d2618bca31528688a47a31acb11cb141dcc96)
 * fix(utils): correct release name construction [view commit](https://github.com/catenasys/sextant-api/commit/bc044f6fb562d46507f09975a67d432c1288d571)
 * refactor: add a utility library to deal with deployment/release names [view commit](https://github.com/catenasys/sextant-api/commit/2544860760c6b455d0b9e5443485a16a76d420e8)
 * refactor: additional logging [view commit](https://github.com/catenasys/sextant-api/commit/f6e2b59f3aac7211851b2f8b862606fb6c835f6d)
