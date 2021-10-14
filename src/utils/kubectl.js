@@ -18,12 +18,12 @@
 
 const Promise = require('bluebird')
 const tmp = require('tmp')
-const split = require('split')
 const getPort = require('get-port')
 const fs = require('fs')
 const k8s = require('@kubernetes/client-node');
 const childProcess = require('child_process')
 const yaml = require('js-yaml')
+const net = require('net')
 
 const logger = require('../logging').getLogger({
   name: 'utils/kubectl',
@@ -163,7 +163,7 @@ const Kubectl = ({
   // returns connection arguments and kubeconfig path (setupDetails) to be used by following functions
   const localSetup = async () => {
     const kubeConfig = await getConfig();
-    const kubeConfigData = JSON.parse(kubeConfig)
+    const kubeConfigData = JSON.parse(kubeConfig.exportConfig())
     const kubeConfigPath = await writeTempYaml(kubeConfigData)
     const connectionArguments = [
       '--kubeconfig', kubeConfigPath,
@@ -190,6 +190,24 @@ const Kubectl = ({
     return useOptions
   }
 
+  const apiPortForward = async ({
+    namespace,
+    pod,
+    port,
+    localPort = 0,
+  }) => {
+    const kubeConfig = await getConfig()
+    const forward = new k8s.PortForward(kubeConfig)
+    const server = net.createServer((socket) => {
+      forward.portForward(namespace, pod, [port], socket, null, socket);
+    })
+    const usePort = localPort === 0 ? port : localPort
+    logger.debug({
+      namespace, pod, port, localPort,
+    }, 'starting port-forward')
+    return server.listen(usePort, '127.0.0.1')
+  }
+
   // pick a free local port and setup a port-forward to a pod
   // return an object that can close the forwarding process
   const portForward = async ({
@@ -198,64 +216,26 @@ const Kubectl = ({
     port,
   }) => {
     if (!pod) throw new Error('A running pod is required for port forwarding')
-    const setupDetails = await localSetup()
-    const useOptions = getOptions({})
     const localPort = await getPort()
 
-    const args = setupDetails.connectionArguments.concat([
-      '-n', namespace,
-      'port-forward',
-      `pod/${pod}`,
-      `${localPort}:${port}`,
-    ])
-
-    const cmd = 'kubectl'
-    const { env } = useOptions
-
-    const forwardingProcess = await new Promise((resolve, reject) => {
-      let complete = false
-      let stderr = ''
-
-      logger.debug({
-        action: 'start forwardingProcess', command: cmd, args, env,
-      })
-      const spawnedProcess = childProcess.spawn('kubectl', args, {
-        env: useOptions.env,
-        stdio: 'pipe',
-      })
-
-      // watch for confirmation the proxy is setup
-      spawnedProcess.stdout
-        .pipe(split())
-        .on('data', (line) => {
-          // this is the key line kubectl port-forward prints once the proxy is setup
-          if (line === `Forwarding from 127.0.0.1:${localPort} -> ${port}`) { complete = true }
-          resolve(spawnedProcess)
-        })
-
-      // capture stderr so we can throw an error if there is one
-      spawnedProcess.stderr
-        .pipe(split())
-        .on('data', (line) => {
-          stderr += `${line}\n`
-        })
-
-      spawnedProcess.on('exit', (code) => {
-        if (code > 0 && !complete) {
-          complete = true
-          reject(new Error(stderr))
-        }
-      })
+    const server = await apiPortForward({
+      namespace,
+      pod,
+      port,
+      localPort,
     })
 
-    await localTeardown(setupDetails)
     return {
       port: localPort,
       stop: async () => {
         logger.debug({
-          action: 'stop forwardingProcess', command: cmd, args, env,
+          namespace, pod, port, localPort,
+        }, 'stopping port-forward')
+        server.close(() => {
+          logger.debug({
+            namespace, pod, port, localPort,
+          }, 'stopped port-forward')
         })
-        forwardingProcess.kill()
       },
     }
   }
