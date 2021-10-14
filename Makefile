@@ -20,6 +20,8 @@ $(MARKERS)/build_docker:
 
 .PHONY: clean_container
 clean_container:
+	docker-compose -f docker-compose.test.yml down -v || true
+	docker-compose -f docker-compose.yml down -v || true
 	docker-compose -f docker-compose.test.yml rm -f || true
 	docker-compose -f docker-compose.yml rm -f || true
 
@@ -34,7 +36,7 @@ clean_npm:
 
 $(MARKERS)/test_npm:
 	docker-compose -f docker-compose.test.yml up -d
-	docker-compose -f docker-compose.test.yml exec -T api npm run test
+	docker-compose -f docker-compose.test.yml exec -T api npm run test || true
 	docker cp api_test:/tmp/test.out ./build/results.tap
 	docker cp api_test:/tmp/junit.xml ./build/junit.xml
 	docker cp api_test:/tmp/lcov.info ./build/

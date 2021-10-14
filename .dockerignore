@@ -1,4 +1,15 @@
-node_modules
+.github
+.scannerwork
 build
 markers
-.scannerwork
+node_modules
+.fossa.yaml
+.pre-commit-config.yaml
+.readthedocs.yaml
+CHANGELOG.md
+docker-compose*.yml
+Jenkinsfile
+Makefile
+mkdocs.yml
+standard_defs.mk
+test.sh
