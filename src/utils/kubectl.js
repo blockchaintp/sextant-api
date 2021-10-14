@@ -21,6 +21,7 @@ const tmp = require('tmp')
 const split = require('split')
 const getPort = require('get-port')
 const fs = require('fs')
+const k8s = require('@kubernetes/client-node');
 const childProcess = require('child_process')
 const yaml = require('js-yaml')
 
@@ -34,7 +35,6 @@ const exec = Promise.promisify(childProcess.exec)
 
 const tempName = Promise.promisify(tmp.tmpName)
 const writeFile = Promise.promisify(fs.writeFile)
-const readFile = Promise.promisify(fs.readFile)
 
 const MODES = ['local', 'remote', 'test']
 
@@ -88,80 +88,88 @@ const Kubectl = ({
     return tmpPath
   }
 
+  const createRemoteConfig = async () => {
+    const cluster = {
+      name: 'target',
+      server: remoteCredentials.apiServer,
+      caData: remoteCredentials.ca,
+    }
+
+    const user = {
+      name: 'sextant',
+      token: base64.decode(remoteCredentials.token).toString(),
+    }
+
+    const context = {
+      cluster: cluster.name,
+      user: user.name,
+      name: 'target-context',
+    }
+
+    const kc = new k8s.KubeConfig();
+    kc.loadFromOptions({
+      clusters: [cluster],
+      users: [user],
+      contexts: [context],
+      currentContext: context.name,
+    })
+    return kc
+  }
+
+  const createLocalConfig = async () => {
+    const cluster = {
+      name: 'target',
+      server: LOCAL_API_SERVER,
+      caFile: LOCAL_CA_PATH,
+    }
+
+    const user = {
+      name: 'sextant',
+      keyFile: LOCAL_TOKEN_PATH,
+    }
+
+    const context = {
+      cluster: cluster.name,
+      user: user.name,
+      name: 'target-context',
+    }
+
+    const kc = new k8s.KubeConfig();
+    kc.loadFromOptions({
+      clusters: [cluster],
+      users: [user],
+      contexts: [context],
+      currentContext: context.name,
+    })
+    return kc
+  }
+
+  const getConfig = async () => {
+    if (mode === 'remote') {
+      return createRemoteConfig()
+    }
+    if (mode === 'local') {
+      return createLocalConfig()
+    }
+    const kc = new k8s.KubeConfig();
+    kc.loadFromDefault()
+    return kc
+  }
+
   /*
-
     write the ca data to a tempfile so we can inject it into kubectl commands
-
   */
-
   // creates/writes kubeconfig to tmp file for remote modes and
   // returns connection arguments and kubeconfig path (setupDetails) to be used by following functions
   const localSetup = async () => {
-    if (mode === 'remote') {
-      const kubeconfigData = {
-        kind: 'Config',
-        preferences: {},
-        users: [
-          {
-            name: 'sextant',
-            user: {
-              token: base64.decode(remoteCredentials.token).toString(),
-            },
-          },
-        ],
-        contexts: [
-          {
-            context: {
-              cluster: 'target',
-              user: 'sextant',
-            },
-            name: 'target-context',
-          },
-        ],
-        'current-context': 'target-context',
-        clusters: [
-          {
-            cluster: {
-              'certificate-authority-data': remoteCredentials.ca,
-              server: remoteCredentials.apiServer,
-            },
-            name: 'target',
+    const kubeConfig = await getConfig();
+    const kubeConfigData = JSON.parse(kubeConfig)
+    const kubeConfigPath = await writeTempYaml(kubeConfigData)
+    const connectionArguments = [
+      '--kubeconfig', kubeConfigPath,
+    ]
 
-          },
-        ],
-      }
-      const kubeConfigPath = await writeTempYaml(kubeconfigData)
-
-      const connectionArguments = [
-        '--kubeconfig', kubeConfigPath,
-      ]
-
-      return {
-        kubeConfigPath,
-        connectionArguments,
-      }
-    }
-    if (mode === 'local') {
-      const token = await readFile(LOCAL_TOKEN_PATH, 'utf8')
-
-      const connectionArguments = [
-        '--certificate-authority',
-        LOCAL_CA_PATH,
-        '--token',
-        token,
-        '--server',
-        LOCAL_API_SERVER,
-      ]
-
-      return { connectionArguments }
-    }
-    if (mode === 'test') {
-      return {
-        kubeConfigPath: '/dev/null',
-        connectionArguments: [],
-      }
-    }
-    throw new Error('mode required for Kubectl')
+    return { kubeConfigPath, connectionArguments }
   }
 
   // trashes the tmp file if there is a kubeconfigPath in the setupDetails
@@ -280,8 +288,6 @@ const Kubectl = ({
   }
 
   // run a helm command and return [ stdout, stderr ]
-  // helmCommand("-n someNamespace install <someName>-<theChartfile> -f <theChartFile>.tgz")
-  // helmCommand("-n someNamespace uninstall <someName>-<theChartfile>")
   const helmCommand = async (cmd, options = {}) => {
     const commandType = 'helm'
     return setupAndRunCommand(cmd, options, commandType)

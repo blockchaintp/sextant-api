@@ -1,15 +1,5 @@
-const Kubectl = require('./kubectl')
-
-// return a kubectl instance that is bound to a certain cluster via it's
-// kubeconfig file
-const getKubectl = (store, clustername, done) => {
-  const kubeconfigPath = store.getLocalClusterFilePath(clustername, 'kubeConfig')
-  const kubectl = Kubectl(kubeconfigPath)
-  done(null, kubectl)
-}
-
 /*
-  
+
   extract the cluster secrets from the desired state
   this is so we never save secrets inside of tasks or cluster records
   they are only saved in the clustersecret store (which can be replaced later)
@@ -24,28 +14,29 @@ const getKubectl = (store, clustername, done) => {
 const extractClusterSecrets = ({
   desired_state,
 }) => {
-
   const secrets = {}
 
-  if(!desired_state) return {
-    desired_state,
-    secrets,
+  if (!desired_state) {
+    return {
+      desired_state,
+      secrets,
+    }
   }
 
-  const returnDesiredState = Object.assign({}, desired_state)
+  const returnDesiredState = { ...desired_state }
 
-  if(returnDesiredState.token) {
+  if (returnDesiredState.token) {
     secrets.token = {
       rawData: returnDesiredState.token,
     }
-    delete(returnDesiredState.token)
+    delete (returnDesiredState.token)
   }
 
-  if(returnDesiredState.ca) {
+  if (returnDesiredState.ca) {
     secrets.ca = {
       rawData: returnDesiredState.ca,
     }
-    delete(returnDesiredState.ca)
+    delete (returnDesiredState.ca)
   }
 
   return {
@@ -55,6 +46,5 @@ const extractClusterSecrets = ({
 }
 
 module.exports = {
-  getKubectl,
   extractClusterSecrets,
 }
