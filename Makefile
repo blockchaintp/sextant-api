@@ -37,10 +37,10 @@ clean_npm:
 $(MARKERS)/test_npm:
 	docker-compose -f docker-compose.test.yml up -d
 	docker-compose -f docker-compose.test.yml exec -T api npm run test || true
-	docker cp api_test:/tmp/test.out ./build/results.tap
-	docker cp api_test:/tmp/junit.xml ./build/junit.xml
-	docker cp api_test:/tmp/lcov.info ./build/
-	docker cp api_test:/tmp/lcov-report ./build/
+	docker cp api_test:/tmp/test.out ./build/results.tap || true
+	docker cp api_test:/tmp/junit.xml ./build/junit.xml || true
+	docker cp api_test:/tmp/lcov.info ./build/ || true
+	docker cp api_test:/tmp/lcov-report ./build/ || true
 	docker-compose -f docker-compose.test.yml down -v || true
 	docker-compose -f docker-compose.test.yml rm -f || true
 	touch $@
