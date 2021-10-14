@@ -25,7 +25,7 @@
   "dependencies": {
     "@kubernetes/client-node": "^0.15.1",
     "aws-sdk": "2.948.0",
-    "axios": "^0.21.2",
+    "axios": "^0.21.4",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.0",
@@ -44,7 +44,7 @@
     "knex": "^0.95.11",
     "minimist": "^1.2.5",
     "node-schedule": "^2.0.0",
-    "openapi-types": "^9.1.0",
+    "openapi-types": "^9.3.0",
     "passport": "^0.4.1",
     "pg": "8.7.1",
     "pino": "^4.17.6",
@@ -55,18 +55,18 @@
     "swagger-jsdoc": "^5.0.1",
     "swagger-ui-express": "^4.1.6",
     "tmp": "^0.2.1",
-    "yup": "^0.32.9"
+    "yup": "^0.32.11"
   },
   "devDependencies": {
-    "async": "^3.2.0",
+    "async": "^3.2.1",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-import": "^2.25.2",
     "npm-check": "^5.9.2",
     "nyc": "^15.1.0",
-    "tap-junit": "^5.0.0",
+    "tap-junit": "^5.0.1",
     "tap-spec": "^5.0.0",
-    "tape": "^4.13.3",
+    "tape": "^4.14.0",
     "widdershins": "^4.0.1"
   }
 }
