@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+* fix: for kubectl flags after cmd [view commit](https://github.com/catenasys/sextant-api/commit/94abfe0beb7c4e2e520d6ad03e39298a361fd5d0)
+* fix(utils): use k8s api for portforward [view commit](https://github.com/catenasys/sextant-api/commit/93a46b79691408f9211f17b0b6d7bc834fdc99fe)
+* build(deps): update dependencies [view commit](https://github.com/catenasys/sextant-api/commit/9eeb5e5db8c333d8dc676aeca8b1642ecc5ac58b)
+* refactor(utils): kubectl to use kubernetes/client-node for config [view commit](https://github.com/catenasys/sextant-api/commit/9b0493cbe4b10c8fa96326676492715b05cea821)
+* build(deps): add @kubernetes/client-node [view commit](https://github.com/catenasys/sextant-api/commit/013d26cd8f8bb7b2cb6f7cbec29cb67bcba09de9)
+* docs: remove out of date text file [view commit](https://github.com/catenasys/sextant-api/commit/cf32f4407b6c7dffcf4887dba45e56447cfab3f9)
+* build: add more files to .dockerignore [view commit](https://github.com/catenasys/sextant-api/commit/8d299756ba8fd82b45ae1a0a7b4971cae9556ee5)
+* style: corrected some typos and minor style issues [view commit](https://github.com/catenasys/sextant-api/commit/8bc5800bb25583597ff088117a9d68f9e1a666c2)
 * fix: reduce resources command to a single kubectl [view commit](https://github.com/catenasys/sextant-api/commit/0c1564fccc25daf5d23c289e698512a0d91d37d2)
 * fix(utils): correct base64 decoding [view commit](https://github.com/catenasys/sextant-api/commit/ef38b8b1a8dee78245b6adccf166db28186647c7)
 * refactor: factor out cert secret name [view commit](https://github.com/catenasys/sextant-api/commit/a4935359ab4056537484eeec0b2c869239f24e0d)
