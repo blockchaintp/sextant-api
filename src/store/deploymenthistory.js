@@ -7,8 +7,9 @@ const DeploymentHistoryStore = (knex) => {
     .from('deployment_history')
 
   const get = ({
+    date,
     deployment_id,
-    limit,
+    limit = 20,
     first,
   }, trx) => {
     if (!deployment_id) throw new Error('id must be given to store.deploymentresult.get')
@@ -18,19 +19,19 @@ const DeploymentHistoryStore = (knex) => {
         .from('deployment_history')
         .where({ deployment_id })
         .orderBy('recorded_at', 'desc')
-        .limit(limit)
         .first()
     }
-    if (limit) {
+    if (date) {
       return (trx || knex).select('*')
         .from('deployment_history')
         .where({ deployment_id })
+        .andWhere('recorded_at', '>=', date)
         .orderBy('recorded_at', 'desc')
-        .limit(limit)
     }
     return (trx || knex).select('*')
       .from('deployment_history')
       .where({ deployment_id })
+      .limit(limit)
       .orderBy('recorded_at', 'desc')
   }
 
@@ -61,10 +62,9 @@ const DeploymentHistoryStore = (knex) => {
       })
       .returning('*')
     logger.debug({
-      message: `New result recorded for ${result.name}.`,
       deployment_id: result.deployment_id,
       status: result.status,
-    })
+    }, `New result recorded for ${result.name}.`)
 
     return result
   }
