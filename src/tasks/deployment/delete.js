@@ -66,7 +66,7 @@ const DeploymentDelete = ({
 
   const deleteTheRest = async () => {
     try {
-      await clusterKubectl.command(`delete configmap validator-public -n ${namespace} || true`)
+      await clusterKubectl.deleteConfigMap(namespace, 'validator-public')
       // delete stacks if they are there
     } catch (err) {
       // read the error, if it's NOT a server error - then throw an error
@@ -74,6 +74,7 @@ const DeploymentDelete = ({
       // otherwise ignore the error and let the status be set to delete
       const match = err.message.match(/Unable to connect to the server/g)
         || err.message.match(/Error from server \(NotFound\): namespaces/g)
+        || err.message.match(/Error from server \(NotFound\): configmaps/g)
       if (match === null) {
         throw err
       }

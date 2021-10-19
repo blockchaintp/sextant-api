@@ -392,6 +392,30 @@ const Kubectl = ({
     return body
   }
 
+  const deletePod = async (namespace, name) => {
+    const client = await getClient()
+    const { body } = await client.deleteNamespacedPod(name, namespace)
+    logger.info({
+      body,
+      namespace,
+      name,
+      fn: 'deletePod',
+    })
+    return body
+  }
+
+  const deleteConfigMap = async (namespace, name) => {
+    const client = await getClient()
+    const { body } = await client.deleteNamespacedConfigMap(name, namespace)
+    logger.info({
+      body,
+      namespace,
+      name,
+      fn: 'deleteConfigMap',
+    })
+    return body
+  }
+
   return {
     command,
     helmCommand,
@@ -405,6 +429,8 @@ const Kubectl = ({
     getSecrets,
     getSecretByName,
     getPersistentVolumeClaims,
+    deletePod,
+    deleteConfigMap,
   }
 }
 

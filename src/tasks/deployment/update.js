@@ -85,7 +85,7 @@ const DeploymentUpdate = ({
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
     // if the chart is installed, upgrade it. Otherwise, install it
-    yield clusterKubectl.helmCommand(`-n ${namespace} upgrade --create-namespace --install ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
+    yield clusterKubectl.helmCommand(`-n ${namespace} upgrade --create-namespace ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
   } else {
     // test we can connect to the remote cluster with the details provided
     // If the namespace exists, continue. If not, create it.

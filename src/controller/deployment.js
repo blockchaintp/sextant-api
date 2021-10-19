@@ -1,8 +1,5 @@
 /* eslint-disable max-len */
 const Promise = require('bluebird');
-const logger = require('../logging').getLogger({
-  name: 'controller/deployment',
-})
 const config = require('../config');
 const userUtils = require('../utils/user');
 const ClusterKubectl = require('../utils/clusterKubectl');
@@ -642,9 +639,7 @@ const DeploymentController = ({ store }) => {
       namespace,
     } = modelRelease
 
-    logger.info({ action: `Delete pod ${pod} in ${namespace} using kubectl` })
-    await kubectl
-      .command(`delete pod ${pod} -n ${namespace} `)
+    await kubectl.deletePod(namespace, pod)
   };
 
   /*
