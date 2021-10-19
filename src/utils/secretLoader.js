@@ -29,7 +29,7 @@ const SecretLoader = async ({
     store,
   })
 
-  const getSecret = async (name) => clusterKubectl.jsonCommand(`-n ${namespace} get secret ${name}`)
+  const getSecret = async (name) => clusterKubectl.getSecretByName(namespace, name)
 
   return {
     getSecret,

@@ -313,16 +313,23 @@ const Kubectl = ({
     return del(filepath)
   }
 
+  const getClient = async (api = k8s.CoreV1Api) => {
+    const kc = await getConfig()
+    return kc.makeApiClient(api)
+  }
+
   const getPods = async (namespace, options = {}) => {
     const {
       labelSelector,
       fieldSelector,
     } = options
-    const kc = await getConfig()
-    const client = kc.makeApiClient(k8s.CoreV1Api)
+    const client = await getClient()
     const { body } = await client.listNamespacedPod(
       namespace, undefined, false, undefined, fieldSelector, labelSelector,
     )
+    logger.trace({
+      numberOfPods: body.items ? body.items.length : 0, namespace, labelSelector, fieldSelector, fn: 'getPods',
+    })
     return body
   }
 
@@ -331,9 +338,79 @@ const Kubectl = ({
       labelSelector,
       fieldSelector,
     } = options
-    const kc = await getConfig()
-    const client = kc.makeApiClient(k8s.CoreV1Api)
+    const client = await getClient()
     const { body } = await client.listNode(undefined, false, undefined, fieldSelector, labelSelector)
+    logger.trace({
+      numberOfNodes: body.items ? body.items.length : 0, labelSelector, fieldSelector, fn: 'getNodes',
+    })
+    return body
+  }
+
+  const getServices = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedService(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfServices: body.items ? body.items.length : 0, namespace, labelSelector, fieldSelector, fn: 'getServices',
+    })
+    return body
+  }
+
+  const getNamespaces = async (options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespace(undefined, false, undefined, fieldSelector, labelSelector)
+    logger.trace({
+      numberOfNamespaces: body.items ? body.items.length : 0, labelSelector, fieldSelector, fn: 'getNamespaces',
+    })
+    return body
+  }
+
+  const getSecrets = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedSecret(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfSecrets: body.items ? body.items.length : 0, namespace, labelSelector, fieldSelector, fn: 'getSecrets',
+    })
+    return body
+  }
+
+  const getSecretByName = async (namespace, name) => {
+    const client = await getClient()
+    const { body } = await client.readNamespacedSecret(name, namespace)
+    return body
+  }
+
+  const getPersistentVolumeClaims = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedPersistentVolumeClaim(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfPersistentVolumeClaims: body.items ? body.items.length : 0,
+      namespace,
+      labelSelector,
+      fieldSelector,
+      fn: 'getPersistentVolumeClaims',
+    })
     return body
   }
 
@@ -349,6 +426,11 @@ const Kubectl = ({
     remoteCredentials,
     getPods,
     getNodes,
+    getServices,
+    getNamespaces,
+    getSecrets,
+    getSecretByName,
+    getPersistentVolumeClaims,
   }
 }
 

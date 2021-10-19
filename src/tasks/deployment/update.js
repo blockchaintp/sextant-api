@@ -71,7 +71,7 @@ const DeploymentUpdate = ({
 
   // test we can connect to the remote cluster with the details provided
   // If the namespace exists, continue. If not, create it.
-  const namespaces = yield clusterKubectl.jsonCommand('get ns')
+  const namespaces = yield clusterKubectl.getNamespaces()
   const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
 
   if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)

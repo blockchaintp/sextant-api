@@ -1,12 +1,9 @@
-const Promise = require('bluebird')
-
 const ClusterKubectl = require('../../utils/clusterKubectl')
 const saveAppliedState = require('./utils/saveAppliedState')
 
 const ClusterCreate = ({
   testMode,
 }) => function* clusterCreateTask(params) {
-
   const {
     store,
     task,
@@ -20,7 +17,7 @@ const ClusterCreate = ({
   }, trx)
 
   // TODO: mock the kubectl handler for tests
-  if(testMode) {
+  if (testMode) {
     yield saveAppliedState({
       id,
       store,
@@ -36,15 +33,13 @@ const ClusterCreate = ({
   })
 
   // test we can connect to the remote cluster with the details provided
-  yield clusterKubectl.jsonCommand('get ns')
-  
+  yield clusterKubectl.getNamespaces()
+
   yield saveAppliedState({
     id,
     store,
     trx,
   })
-
-  
 }
 
 module.exports = ClusterCreate
