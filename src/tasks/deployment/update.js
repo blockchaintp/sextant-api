@@ -15,6 +15,7 @@ const deploymentNames = require('../../utils/deploymentNames')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
 const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
+const KeyPair = require('../../utils/sextantKeyPair')
 
 const DeploymentUpdate = ({
   testMode,
@@ -30,6 +31,8 @@ const DeploymentUpdate = ({
   const deployment = yield store.deployment.get({
     id,
   }, trx)
+
+  KeyPair.getOrCreate({ store, deployment: deployment.id }, trx)
 
   const cluster = yield store.cluster.get({
     id: deployment.cluster,

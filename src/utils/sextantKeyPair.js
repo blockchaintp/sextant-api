@@ -28,11 +28,28 @@ const get = async ({
     deployment,
     name: 'sextantKeypair',
   }, trx)
-  logger.trace({ secret }, 'Sextant KeyPair fetched')
+  if (!secret) {
+    logger.debug({ deployment }, 'no sextantKeypair found for deployment')
+    return undefined
+  }
+  logger.trace({ deployment }, 'sextantKeypair fetched')
   return JSON.parse(base64.decode(secret.base64data))
+}
+
+// load the sextant keypair for a deployment
+const getOrCreate = async ({
+  store,
+  deployment,
+}, trx) => {
+  let secret = await get({ store, deployment }, trx)
+  if (!secret) {
+    secret = await create({ store, deployment }, trx)
+  }
+  return secret
 }
 
 module.exports = {
   create,
   get,
+  getOrCreate,
 }
