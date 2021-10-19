@@ -10,28 +10,31 @@ const DeploymentHistoryStore = (knex) => {
     deployment_id,
     limit,
     first,
+    after,
+    before,
   }, trx) => {
     if (!deployment_id) throw new Error('id must be given to store.deploymentresult.get')
-
-    if (first) {
-      return (trx || knex).select('*')
-        .from('deployment_history')
-        .where({ deployment_id })
-        .orderBy('recorded_at', 'desc')
-        .limit(limit)
-        .first()
-    }
-    if (limit) {
-      return (trx || knex).select('*')
-        .from('deployment_history')
-        .where({ deployment_id })
-        .orderBy('recorded_at', 'desc')
-        .limit(limit)
-    }
-    return (trx || knex).select('*')
+    let query = (trx || knex).select('*')
       .from('deployment_history')
       .where({ deployment_id })
-      .orderBy('recorded_at', 'desc')
+
+    if (limit) {
+      query = query.limit(limit)
+    }
+
+    query = query.orderBy('recorded_at', 'desc')
+
+    if (first) {
+      query = query.first()
+    }
+    if (after) {
+      query = query.andWhere('recorded_at', '>=', after)
+    }
+    if (before) {
+      query = query.andWhere('recorded_at', '<', before)
+    }
+
+    return query
   }
 
   const create = async ({
@@ -61,10 +64,9 @@ const DeploymentHistoryStore = (knex) => {
       })
       .returning('*')
     logger.debug({
-      message: `New result recorded for ${result.name}.`,
       deployment_id: result.deployment_id,
       status: result.status,
-    })
+    }, `New result recorded for ${result.name}.`)
 
     return result
   }

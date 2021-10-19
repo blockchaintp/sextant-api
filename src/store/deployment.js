@@ -142,14 +142,14 @@ const DeploymentStore = (knex) => {
   }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
+    const previousRecord = await deploymentHistoryStore.get({ deployment_id: id, first: true })
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
         id,
       })
       .update(data)
       .returning('*')
-    const previousRecord = await deploymentHistoryStore.get({ deployment_id: id, limit: 30, first: true })
-    if (previousRecord.status !== result.status) {
+    if (previousRecord && previousRecord.status !== result.status) {
       await deploymentHistoryStore.create({
         data: {
           cluster_id: result.cluster,
