@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* fix(utils): logg the keypair that was fetched [view commit](https://github.com/catenasys/sextant-api/commit/b9459ccf2202ad99871a0538635d7313c0ebed58)
+* fix: attempt to getField only if applied_state exists [view commit](https://github.com/catenasys/sextant-api/commit/444ebc4d11c2618094f715dca1f3be23f437f3ba)
+* fix(utils): use desired_state if no other option [view commit](https://github.com/catenasys/sextant-api/commit/6351c611ea51721e254a1f2b74525ed11b238a92)
 * fix: for kubectl flags after cmd [view commit](https://github.com/catenasys/sextant-api/commit/94abfe0beb7c4e2e520d6ad03e39298a361fd5d0)
 * fix(utils): use k8s api for portforward [view commit](https://github.com/catenasys/sextant-api/commit/93a46b79691408f9211f17b0b6d7bc834fdc99fe)
 * build(deps): update dependencies [view commit](https://github.com/catenasys/sextant-api/commit/9eeb5e5db8c333d8dc676aeca8b1642ecc5ac58b)
