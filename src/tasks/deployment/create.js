@@ -66,19 +66,6 @@ const DeploymentCreate = ({
     store,
   })
 
-  // test we can connect to the remote cluster with the details provided
-  // If the namespace exists, continue. If not, create it.
-  const namespaces = yield clusterKubectl.getNamespaces()
-  const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
-
-  if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
-
-  // If the secret exists, continue. If not, create it.
-  const secretsArray = yield clusterKubectl.getSecrets(namespace)
-  const existingSecret = secretsArray.items.find((item) => item.metadata.name === 'sextant-public-key')
-
-  if (!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
-
   // if the deploymentMethod is helm, use helm to create deployment, otherwise use the deployment templates directory
   if (deployment_method === 'helm') {
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
@@ -87,8 +74,15 @@ const DeploymentCreate = ({
     const installationName = `${name}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
     const useChart = process.env.USE_LOCAL_CHART ? process.env.USE_LOCAL_CHART : chart
-    yield clusterKubectl.helmCommand(`-n ${namespace} install ${installationName} -f ${valuesPath} ${useChart} --version ${chartversion}`)
+    yield clusterKubectl.helmCommand(`-n ${namespace} install --create-namespace ${installationName} -f ${valuesPath} ${useChart} --version ${chartversion}`)
   } else {
+    // test we can connect to the remote cluster with the details provided
+    // If the namespace exists, continue. If not, create it.
+    const namespaces = yield clusterKubectl.getNamespaces()
+    const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
+
+    if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
+
     const templateDirectory = yield renderTemplates({
       deployment_type,
       deployment_version,
@@ -105,7 +99,7 @@ const DeploymentCreate = ({
       deployment_version,
     })
 
-    logger.info({
+    logger.trace({
       action: 'charts',
       charts,
     })
@@ -137,6 +131,11 @@ const DeploymentCreate = ({
       templateDirectory,
     })
   }
+
+  // If the secret exists, continue. If not, create it.
+  const secretsArray = yield clusterKubectl.getSecrets(namespace)
+  const existingSecret = secretsArray.items.find((item) => item.metadata.name === 'sextant-public-key')
+  if (!existingSecret) yield clusterKubectl.command(`-n ${namespace} create secret generic sextant-public-key --from-literal=publicKey=${keyPair.publicKey}`)
 
   yield saveAppliedState({
     id,
