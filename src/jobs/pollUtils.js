@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 const Promise = require('bluebird')
+const memoize = require('memoizee');
 const deploymentNames = require('../utils/deploymentNames')
 const logger = require('../logging').getLogger({
   name: 'jobs/pollUtils',
@@ -65,7 +66,7 @@ const runHelmList = async (deployment, store) => {
   return Promise.resolve(executeHelmCommand(clusterKubectl, command))
 }
 
-const translateStatus = (helmStatus) => {
+const translateStatus = memoize((helmStatus) => {
   let translatedStatus
   switch (helmStatus) {
     case undefined:
@@ -119,7 +120,7 @@ const translateStatus = (helmStatus) => {
     message: `${helmStatus} translated to ${translatedStatus}`,
   })
   return translatedStatus
-}
+})
 
 const processHelmResponse = (helmResponse, deployment) => {
   // returns an object full of useful information for the deployment status poll job
@@ -180,7 +181,6 @@ const getHelmStatuses = (deployments, store) => {
 
 module.exports = {
   getAllDeployments,
-  translateStatus,
   processHelmResponse,
   executeHelmCommand,
   runHelmList,
