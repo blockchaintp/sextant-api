@@ -13,6 +13,7 @@ services:
     depends_on:
       - postgres
     environment:
+      - LOG_LEVEL=debug
       - NODE_ENV=development
       - POSTGRES_SERVICE_HOST=postgres
       - POSTGRES_USER=postgres

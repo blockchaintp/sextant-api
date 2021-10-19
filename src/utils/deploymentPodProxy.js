@@ -75,7 +75,7 @@ const DeploymentPodProxy = async ({
   const useLabel = labelPattern.replace('<name>', name)
 
   const getPods = () => clusterKubectl
-    .jsonCommand(`-n ${namespace} get po -l ${useLabel}`)
+    .getPods(namespace, { labelSelector: useLabel })
     .then((data) => {
       const allPods = data.items
       return allPods.filter((pod) => {
@@ -87,14 +87,8 @@ const DeploymentPodProxy = async ({
       })
     })
 
-  const getPod = async () => {
-    const pods = await getPods()
-    return pods && pods.length > 0 ? pods[0] : null
-  }
-
   return {
     getPods,
-    getPod,
     request: ({
       pod,
       port,

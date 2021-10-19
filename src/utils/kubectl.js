@@ -239,6 +239,7 @@ const Kubectl = ({
       },
     }
   }
+
   const setupAndRunCommand = async (cmd, options, commandType) => {
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
@@ -312,6 +313,30 @@ const Kubectl = ({
     return del(filepath)
   }
 
+  const getPods = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const kc = await getConfig()
+    const client = kc.makeApiClient(k8s.CoreV1Api)
+    const { body } = await client.listNamespacedPod(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    return body
+  }
+
+  const getNodes = async (options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const kc = await getConfig()
+    const client = kc.makeApiClient(k8s.CoreV1Api)
+    const { body } = await client.listNode(undefined, false, undefined, fieldSelector, labelSelector)
+    return body
+  }
+
   return {
     command,
     helmCommand,
@@ -322,6 +347,8 @@ const Kubectl = ({
     delete: del,
     deleteInline,
     remoteCredentials,
+    getPods,
+    getNodes,
   }
 }
 
