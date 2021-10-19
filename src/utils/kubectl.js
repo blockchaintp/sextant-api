@@ -75,6 +75,8 @@ const Kubectl = ({
     if (!remoteCredentials.apiServer) throw new Error('apiServer required for remote credentials')
   }
 
+  const getRemoteCredentials = () => remoteCredentials
+
   /*
 
   write a YAML file
@@ -282,35 +284,11 @@ const Kubectl = ({
   // run a kubectl command and process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
     const runCommand = `${cmd} --output json`
-    logger.debug({ action: 'running a kubectl command with json output', command: `${command}` })
+    logger.warn({ command: `${command}` }, 'jsonCommand is deprecated')
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
     logger.debug({ message: 'kubectl command --output json success' })
     return processedOutput
-  }
-
-  // apply a filename
-  const apply = (filepath) => command(`apply -f ${filepath}`)
-
-  // given some YAML content - write a tempfile then apply it
-  const applyInline = async (data) => {
-    const filepath = await tempName({
-      postfix: '.yaml',
-    })
-    await writeFile(filepath, data, 'utf8')
-    return apply(filepath)
-  }
-
-  // delete the resources defined in filepath
-  const del = (filepath) => command(`delete -f ${filepath}`)
-
-  // given some YAML content - write a tempfile then delete the resources defined in it
-  const deleteInline = async (data) => {
-    const filepath = await tempName({
-      postfix: '.yaml',
-    })
-    await writeFile(filepath, data, 'utf8')
-    return del(filepath)
   }
 
   const getClient = async (api = k8s.CoreV1Api) => {
@@ -419,11 +397,7 @@ const Kubectl = ({
     helmCommand,
     portForward,
     jsonCommand,
-    apply,
-    applyInline,
-    delete: del,
-    deleteInline,
-    remoteCredentials,
+    getRemoteCredentials,
     getPods,
     getNodes,
     getServices,
