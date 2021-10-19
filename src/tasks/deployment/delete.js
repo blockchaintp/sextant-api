@@ -69,12 +69,16 @@ const DeploymentDelete = ({
       await clusterKubectl.deleteConfigMap(namespace, 'validator-public')
       // delete stacks if they are there
     } catch (err) {
+      let match = null
+      if (err.response && err.response.statusCode === 404) {
+        return
+      }
       // read the error, if it's NOT a server error - then throw an error
       // status will be set to error
       // otherwise ignore the error and let the status be set to delete
-      const match = err.message.match(/Unable to connect to the server/g)
+      logger.trace({ fn: 'deleteTheRest', err }, 'error deleting configmap')
+      match = err.message.match(/Unable to connect to the server/g)
         || err.message.match(/Error from server \(NotFound\): namespaces/g)
-        || err.message.match(/Error from server \(NotFound\): configmaps/g)
       if (match === null) {
         throw err
       }
@@ -93,23 +97,23 @@ const DeploymentDelete = ({
       // re-format the return of list - it is probably a string with "\n' separators
       const chartList = chartOut.replace(/\n/g, ' ').split(' ')
       logger.info({
-        action: 'deleteHelmChartsInNamespace',
+        fn: 'deleteHelmChartsInNamespace',
         chartList,
       })
 
       chartList.forEach(async (chart) => {
         if (chart) {
           logger.info({
-            action: 'removing chart',
+            fn: 'deleteHelmChartsInNamespace',
             chart,
             namespace,
-          })
+          }, 'removing chart')
           await clusterKubectl.helmCommand(`uninstall -n ${namespace} ${chart}`)
         }
       })
     } catch (err) {
-      logger.info({
-        action: 'deleteHelmChartsInNamespace',
+      logger.warn({
+        fn: 'deleteHelmChartsInNamespace',
         message: 'benign if there are no helm charts to delete',
         err,
       })
@@ -118,9 +122,8 @@ const DeploymentDelete = ({
 
   const deleteHelmChart = async (chartInfo, installationName, namespaceName) => {
     logger.info({
-      action: 'deleteHelmChart',
-      message: `deleting chart ${installationName} in namespace ${namespaceName}`,
-    })
+      fn: 'deleteHelmChart',
+    }, `deleting chart ${installationName} in namespace ${namespaceName}`)
     await clusterKubectl.helmCommand(`uninstall -n ${namespaceName} ${installationName}`)
   }
 
