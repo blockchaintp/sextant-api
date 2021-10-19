@@ -9,9 +9,9 @@ test: $(MARKERS)/test_npm
 
 analyze: analyze_fossa analyze_sonar_js
 
-clean: clean_container clean_npm
+clean: clean_container
 
-distclean: clean_docker
+distclean: clean_docker clean_npm
 
 $(MARKERS)/build_docker:
 	docker-compose -f docker-compose.yml build
