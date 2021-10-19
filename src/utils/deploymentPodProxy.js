@@ -79,17 +79,11 @@ const DeploymentPodProxy = async ({
     .then((data) => {
       const allPods = data.items
       return allPods.filter((pod) => {
-        let running = true
-        const { containerStatuses } = pod.status
-        containerStatuses.forEach((container) => {
-          if (container.state.running) {
-            logger.info({
-              action: 'filtering container statuses',
-              status: `Container ${container.image} is running`,
-            })
-          } else { running = false }
-        })
-        return running
+        const readyConditions = pod.status.conditions.filter((item) => item.type === 'Ready')
+        if (readyConditions && readyConditions.length > 0) {
+          return readyConditions.every((condition) => condition.status === 'True')
+        }
+        return false
       })
     })
 

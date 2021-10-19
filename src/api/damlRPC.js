@@ -105,6 +105,7 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.debug({ fn: 'getLedgerId', numberOfPods: pods.length }, 'found daml pods')
 
     return proxy.request({
       pod: pods[0].metadata.name,
@@ -143,6 +144,7 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.debug({ fn: 'getParticipantId', numberOfPods: pods.length }, 'found daml pods')
 
     return proxy.request({
       pod: pods[0].metadata.name,
@@ -171,7 +173,7 @@ const DamlRPC = ({
 
   const getParticipants = async ({ id }) => {
     logger.info({
-      action: 'getParticipants',
+      fn: 'getParticipants',
       id,
     })
     const proxy = await DeploymentPodProxy({
@@ -187,6 +189,7 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.debug({ fn: 'getParticipants', numberOfPods: pods.length }, 'found daml pods')
 
     return Promise.map(pods, async (pod) => proxy.request({
       pod: pod ? pod.metadata.name : null,
@@ -241,8 +244,8 @@ const DamlRPC = ({
     })
 
     const pods = await proxy.getPods()
-
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.trace({ fn: 'getParticipantDetails', numberOfPods: pods.length }, 'found daml pods')
 
     return Promise.map(pods, async (pod) => proxy.request({
       pod: pod.metadata.name,
@@ -282,7 +285,7 @@ const DamlRPC = ({
       id,
     })
     logger.info({
-      action: 'registerParticipant',
+      fn: 'registerParticipant',
       participantId,
       publicKey,
     })
@@ -315,7 +318,7 @@ const DamlRPC = ({
     partyIdHint,
   }) => {
     logger.info({
-      action: 'addParty',
+      fn: 'addParty',
       id,
       partyName,
       partyIdHint,
@@ -330,6 +333,7 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.debug({ fn: 'addParty', numberOfPods: pods.length }, 'found daml pods')
 
     const pod = pods[0]
 
@@ -422,7 +426,7 @@ const DamlRPC = ({
     id,
   } = {}) => {
     logger.info({
-      action: 'getArchives',
+      fn: 'getArchives',
       id,
     })
 
@@ -437,6 +441,7 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.debug({ fn: 'getArchives', numberOfPods: pods.length }, 'found daml pods')
 
     const pod = pods[0]
 
@@ -471,7 +476,8 @@ const DamlRPC = ({
       }))
     } catch (error) {
       logger.error({
-        action: getArchives,
+        fn: 'getArchives',
+        error,
       })
       return error
     }
@@ -488,7 +494,7 @@ const DamlRPC = ({
     localFilepath,
   } = {}) => {
     logger.info({
-      action: 'uploadArchive',
+      fn: 'uploadArchive',
       id,
       name,
       size,
@@ -509,6 +515,7 @@ const DamlRPC = ({
     const pods = await proxy.getPods()
 
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
+    logger.debug({ fn: 'uploadArchive', numberOfPods: pods.length }, 'found daml pods')
 
     const pod = pods[0]
 
