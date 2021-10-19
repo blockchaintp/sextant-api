@@ -30,15 +30,8 @@ const DamlRPC = ({
   }
 
   const getCertSecretName = (deployment) => {
-    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
-
-    const {
-      name,
-    } = modelRelease
-
-    const chartName = deploymentNames.getChartNameForDeployment(deployment)
-
-    return `${name}-${chartName}-cert`
+    const fullName = deploymentNames.deploymentReleaseFullName(deployment)
+    return `${fullName}-cert`
   }
 
   const getPrivateKey = async ({

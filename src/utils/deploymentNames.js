@@ -83,22 +83,30 @@ const helmReleaseToDeployment = memoize((release) => {
  * @param {*} deployment a sextant deployment object
  */
 const deploymentToHelmRelease = memoize((deployment) => {
-  const chartInfo = helmUtils.getChartInfo(deployment.deployment_type, deployment.deployment_version)
-  const chartVersion = helmUtils.getChartVersion(deployment.deployment_type, deployment.deployment_version)
+  const {
+    deployment_type,
+    deployment_version,
+    name,
+  } = deployment
+  const chartInfo = helmUtils.getChartInfo(deployment_type, deployment_version)
+  const chartVersion = helmUtils.getChartVersion(deployment_type, deployment_version)
   const chartName = helmUtils.getChartName(chartInfo)
   const chart = `${chartName}-${chartVersion}`
   const {
     extension,
   } = chartInfo
 
-  const releaseName = `${deployment.name}-${extension}`
+  const releaseName = `${name}-${extension}`
 
   const release = {
     name: releaseName,
     namespace: getBestNamespace(deployment),
     chart,
   }
-  logger.trace({ fn: 'deploymentToHelmRelease', deployment, release })
+
+  logger.trace({
+    fn: 'deploymentToHelmRelease', deployment_type, deployment_version, deployment_name: name, release,
+  })
   return release
 }, { maxAge: 60000 })
 
@@ -107,8 +115,15 @@ const getChartNameForDeployment = memoize((deployment) => {
   return helmUtils.getChartName(chartInfo)
 }, { maxAge: 60000 })
 
+const deploymentReleaseFullName = memoize((deployment) => {
+  const { name } = deploymentToHelmRelease(deployment)
+  const chartName = getChartNameForDeployment(deployment)
+  return `${name}-${chartName}`
+}, { maxAge: 60000 })
+
 module.exports = {
   helmReleaseToDeployment,
   deploymentToHelmRelease,
+  deploymentReleaseFullName,
   getChartNameForDeployment,
 }
