@@ -1,8 +1,5 @@
 /* eslint-disable max-len */
 const Promise = require('bluebird');
-const logger = require('../logging').getLogger({
-  name: 'controller/deployment',
-})
 const config = require('../config');
 const userUtils = require('../utils/user');
 const ClusterKubectl = require('../utils/clusterKubectl');
@@ -588,14 +585,15 @@ const DeploymentController = ({ store }) => {
       namespace,
     } = modelRelease
 
-    const items = await await kubectl
-      .jsonCommand(`-n ${namespace} get po,no,svc,pvc`)
-      .then((result) => result.items)
-
-    const pods = items.filter((item) => item.kind === 'Pod')
-    const nodes = items.filter((item) => item.kind === 'Node')
-    const services = items.filter((item) => item.kind === 'Service')
-    const volumes = items.filter((item) => item.kind === 'PersistentVolumeClaim')
+    const options = {}
+    const podsBody = await kubectl.getPods(namespace, options)
+    const pods = podsBody.items || []
+    const nodesBody = await kubectl.getNodes()
+    const nodes = nodesBody.items || []
+    const servicesBody = await kubectl.getServices(namespace, options)
+    const services = servicesBody.items || []
+    const volumesBody = await kubectl.getPersistentVolumeClaims(namespace, options)
+    const volumes = volumesBody.items || []
 
     return {
       pods,
@@ -641,9 +639,7 @@ const DeploymentController = ({ store }) => {
       namespace,
     } = modelRelease
 
-    logger.info({ action: `Delete pod ${pod} in ${namespace} using kubectl` })
-    await kubectl
-      .command(`delete pod ${pod} -n ${namespace} `)
+    await kubectl.deletePod(namespace, pod)
   };
 
   /*

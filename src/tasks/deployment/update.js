@@ -69,14 +69,8 @@ const DeploymentUpdate = ({
     store,
   })
 
-  // test we can connect to the remote cluster with the details provided
-  // If the namespace exists, continue. If not, create it.
-  const namespaces = yield clusterKubectl.jsonCommand('get ns')
-  const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
-
-  if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
   /*
-  If this is a sawtooth deployment, use the helm chart to update the deployment on the cluster
+  use the helm chart to update the deployment on the cluster
   otherwise, use the template directory
   */
 
@@ -91,8 +85,15 @@ const DeploymentUpdate = ({
     const useChart = process.env.USE_LOCAL_CHARTS ? `/app/api/helmCharts/${chart.split('/')[1]}` : chart
 
     // if the chart is installed, upgrade it. Otherwise, install it
-    yield clusterKubectl.helmCommand(`-n ${namespace} upgrade ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
+    yield clusterKubectl.helmCommand(`-n ${namespace} upgrade --create-namespace ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`)
   } else {
+    // test we can connect to the remote cluster with the details provided
+    // If the namespace exists, continue. If not, create it.
+    const namespaces = yield clusterKubectl.getNamespaces()
+    const existingNamespace = namespaces.items.find((namespaceItem) => namespaceItem.metadata.name === namespace)
+
+    if (!existingNamespace) yield clusterKubectl.jsonCommand(`create ns ${namespace}`)
+
     const templateDirectory = yield renderTemplates({
       deployment_type,
       deployment_version,

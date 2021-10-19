@@ -1,8 +1,10 @@
+ARG K8S_VERSION=1.20.4
+FROM alpine/k8s:${K8S_VERSION} as k8s-stage
+
 FROM ubuntu:20.04
 ARG NODEJS_MAJOR_VERSION=12
 ARG KUBETPL_VERSION=0.9.0
-ARG HELM_VERSION=v3.1.2
-ARG GRPCURL_VERSION=1.8.0
+ARG GRPCURL_VERSION=1.8.5
 
 RUN apt-get update -yq && \
     apt-get install --yes ca-certificates make build-essential curl openssl openssh-client bash python2-minimal mime-support gnupg && \
@@ -12,30 +14,20 @@ RUN apt-get update -yq && \
     apt-get install --yes nodejs && \
     apt-get autoremove -yq && apt-get clean -yq
 
-RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl  && \
-    chmod +x /usr/local/bin/kubectl
-
 RUN curl -sSL https://github.com/shyiko/kubetpl/releases/download/${KUBETPL_VERSION}/kubetpl-${KUBETPL_VERSION}-linux-amd64 -o /usr/local/bin/kubetpl && \
     chmod +x /usr/local/bin/kubetpl
 
-RUN mkdir -p /app/api/tmp && \
-    curl -sSL https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -o /app/api/tmp/helm.tar.gz && \
-    cd /app/api/tmp && \
-    tar zxvf helm.tar.gz && \
-    cp linux-amd64/helm /usr/local/bin && \
-    rm -rf /app/api/tmp && \
-    chmod +x /usr/local/bin/helm
+COPY --from=k8s-stage --chown=root:bin /usr/bin/kubectl /usr/local/bin
+COPY --from=k8s-stage --chown=root:bin /usr/bin/helm /usr/local/bin
 
 # this is waiting for the upstream PR to be merged from
 # https://github.com/blockchaintp/grpcurl -> https://github.com/fullstorydev/grpcurl
-# RUN mkdir -p /app/api/tmp && \
-#   curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v${GRPCURL_VERSION}/grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz -o /app/api/tmp/grpcurl.tar.gz && \
-#     cd /app/api/tmp && \
-#     tar zxvf grpcurl.tar.gz && \
-#     cp grpcurl /usr/local/bin && \
-#     rm -rf /app/api/tmp && \
-#     chmod +x /usr/local/bin/grpcurl
-RUN curl https://storage.googleapis.com/btp-artifacts/grpcurl > /usr/local/bin/grpcurl && \
+RUN mkdir -p /app/api/tmp && \
+  curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v${GRPCURL_VERSION}/grpcurl_${GRPCURL_VERSION}_linux_x86_64.tar.gz -o /app/api/tmp/grpcurl.tar.gz && \
+    cd /app/api/tmp && \
+    tar zxvf grpcurl.tar.gz && \
+    cp grpcurl /usr/local/bin && \
+    rm -rf /app/api/tmp && \
     chmod +x /usr/local/bin/grpcurl
 
 # install api server

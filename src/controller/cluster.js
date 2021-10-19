@@ -628,13 +628,11 @@ const ClusterController = ({ store }) => {
       store,
     })
 
-    const results = await Promise.props({
+    return Promise.props({
       nodes: kubectl
-        .jsonCommand('get no')
+        .getNodes()
         .then((result) => result.items),
     })
-
-    return results
   }
 
   /*

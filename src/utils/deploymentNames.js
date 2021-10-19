@@ -3,13 +3,14 @@
  *
  * License: Product
  */
+const memoize = require('memoizee');
 const helmUtils = require('../tasks/deployment/utils/helmUtils')
 const logger = require('../logging').getLogger({
   name: 'utils/deploymentNames',
 })
-const getField = require('./getField')
+const getField = memoize(require('./getField'), { maxAge: 10000 })
 
-const getBestNamespace = (deployment) => {
+const getBestNamespace = memoize((deployment) => {
   if (deployment.namespace) {
     return deployment.namespace
   }
@@ -48,14 +49,14 @@ const getBestNamespace = (deployment) => {
     data: desired_state,
     field: 'namespace',
   })
-}
+}, { maxAge: 60000 })
 
 /**
  * Given a helm release status object translate that into an object that
  * __resembles__ a sextant deployment object.
  * @param {*} release the helm release status object
  */
-const helmReleaseToDeployment = (release) => {
+const helmReleaseToDeployment = memoize((release) => {
   const {
     name,
     namespace,
@@ -74,40 +75,55 @@ const helmReleaseToDeployment = (release) => {
   }
   logger.trace({ fn: 'helmReleaseToDeployment', deployment, release })
   return deployment
-}
+}, { maxAge: 60000 })
 
 /**
  * Given sextant deployment object translate that into an object that
  * __resembles__ a helm release status object.
  * @param {*} deployment a sextant deployment object
  */
-const deploymentToHelmRelease = (deployment) => {
-  const chartInfo = helmUtils.getChartInfo(deployment.deployment_type, deployment.deployment_version)
-  const chartVersion = helmUtils.getChartVersion(deployment.deployment_type, deployment.deployment_version)
+const deploymentToHelmRelease = memoize((deployment) => {
+  const {
+    deployment_type,
+    deployment_version,
+    name,
+  } = deployment
+  const chartInfo = helmUtils.getChartInfo(deployment_type, deployment_version)
+  const chartVersion = helmUtils.getChartVersion(deployment_type, deployment_version)
   const chartName = helmUtils.getChartName(chartInfo)
   const chart = `${chartName}-${chartVersion}`
   const {
     extension,
   } = chartInfo
 
-  const releaseName = `${deployment.name}-${extension}`
+  const releaseName = `${name}-${extension}`
 
   const release = {
     name: releaseName,
     namespace: getBestNamespace(deployment),
     chart,
   }
-  logger.trace({ fn: 'deploymentToHelmRelease', deployment, release })
-  return release
-}
 
-const getChartNameForDeployment = (deployment) => {
+  logger.trace({
+    fn: 'deploymentToHelmRelease', deployment_type, deployment_version, deployment_name: name, release,
+  })
+  return release
+}, { maxAge: 60000 })
+
+const getChartNameForDeployment = memoize((deployment) => {
   const chartInfo = helmUtils.getChartInfo(deployment.deployment_type, deployment.deployment_version)
   return helmUtils.getChartName(chartInfo)
-}
+}, { maxAge: 60000 })
+
+const deploymentReleaseFullName = memoize((deployment) => {
+  const { name } = deploymentToHelmRelease(deployment)
+  const chartName = getChartNameForDeployment(deployment)
+  return `${name}-${chartName}`
+}, { maxAge: 60000 })
 
 module.exports = {
   helmReleaseToDeployment,
   deploymentToHelmRelease,
+  deploymentReleaseFullName,
   getChartNameForDeployment,
 }

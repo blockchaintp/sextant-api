@@ -4,7 +4,7 @@
  *
  * License: Product
  */
-
+const memoize = require('memoizee');
 const jwt = require('jsonwebtoken')
 const Promise = require('bluebird')
 const fs = require('fs')
@@ -30,15 +30,8 @@ const DamlRPC = ({
   }
 
   const getCertSecretName = (deployment) => {
-    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
-
-    const {
-      name,
-    } = modelRelease
-
-    const chartName = deploymentNames.getChartNameForDeployment(deployment)
-
-    return `${name}-${chartName}-cert`
+    const fullName = deploymentNames.deploymentReleaseFullName(deployment)
+    return `${fullName}-cert`
   }
 
   const getPrivateKey = async ({
@@ -93,7 +86,7 @@ const DamlRPC = ({
 
   // eslint-disable-next-line max-len
   // grpcurl -plaintext -H 'Authorization: Bearer 123' localhost:39000 com.daml.ledger.api.v1.LedgerIdentityService.GetLedgerIdentity
-  const getLedgerId = async ({
+  const m_getLedgerId = async ({
     id,
   }) => {
     const proxy = await DeploymentPodProxy({
@@ -131,8 +124,9 @@ const DamlRPC = ({
       },
     })
   }
+  const getLedgerId = memoize(m_getLedgerId, { maxAge: 30000, promise: true })
 
-  const getParticipantId = async ({
+  const m_getParticipantId = async ({
     id,
   }) => {
     const proxy = await DeploymentPodProxy({
@@ -170,8 +164,9 @@ const DamlRPC = ({
       },
     })
   }
+  const getParticipantId = memoize(m_getParticipantId, { maxAge: 30000, promise: true })
 
-  const getParticipants = async ({ id }) => {
+  const m_getParticipants = async ({ id }) => {
     logger.info({
       fn: 'getParticipants',
       id,
@@ -233,8 +228,9 @@ const DamlRPC = ({
       },
     }))
   }
+  const getParticipants = memoize(m_getParticipants, { maxAge: 30000, promise: true })
 
-  const getParticipantDetails = async ({
+  const m_getParticipantDetails = async ({
     id,
   }) => {
     const proxy = await DeploymentPodProxy({
@@ -274,6 +270,7 @@ const DamlRPC = ({
       },
     }))
   }
+  const getParticipantDetails = memoize(m_getParticipantDetails, { maxAge: 30000, promise: true })
 
   const registerParticipant = async ({
     id,

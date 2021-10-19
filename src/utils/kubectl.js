@@ -75,6 +75,8 @@ const Kubectl = ({
     if (!remoteCredentials.apiServer) throw new Error('apiServer required for remote credentials')
   }
 
+  const getRemoteCredentials = () => remoteCredentials
+
   /*
 
   write a YAML file
@@ -239,6 +241,7 @@ const Kubectl = ({
       },
     }
   }
+
   const setupAndRunCommand = async (cmd, options, commandType) => {
     const setupDetails = await localSetup()
     const useOptions = getOptions(options)
@@ -281,35 +284,136 @@ const Kubectl = ({
   // run a kubectl command and process stdout as JSON
   const jsonCommand = async (cmd, options = {}) => {
     const runCommand = `${cmd} --output json`
-    logger.debug({ action: 'running a kubectl command with json output', command: `${command}` })
+    logger.warn({ command: `${command}` }, 'jsonCommand is deprecated')
     const stdout = await command(runCommand, options)
     const processedOutput = JSON.parse(stdout)
     logger.debug({ message: 'kubectl command --output json success' })
     return processedOutput
   }
 
-  // apply a filename
-  const apply = (filepath) => command(`apply -f ${filepath}`)
-
-  // given some YAML content - write a tempfile then apply it
-  const applyInline = async (data) => {
-    const filepath = await tempName({
-      postfix: '.yaml',
-    })
-    await writeFile(filepath, data, 'utf8')
-    return apply(filepath)
+  const getClient = async (api = k8s.CoreV1Api) => {
+    const kc = await getConfig()
+    return kc.makeApiClient(api)
   }
 
-  // delete the resources defined in filepath
-  const del = (filepath) => command(`delete -f ${filepath}`)
-
-  // given some YAML content - write a tempfile then delete the resources defined in it
-  const deleteInline = async (data) => {
-    const filepath = await tempName({
-      postfix: '.yaml',
+  const getPods = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedPod(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfPods: body.items ? body.items.length : 0, namespace, labelSelector, fieldSelector, fn: 'getPods',
     })
-    await writeFile(filepath, data, 'utf8')
-    return del(filepath)
+    return body
+  }
+
+  const getNodes = async (options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNode(undefined, false, undefined, fieldSelector, labelSelector)
+    logger.trace({
+      numberOfNodes: body.items ? body.items.length : 0, labelSelector, fieldSelector, fn: 'getNodes',
+    })
+    return body
+  }
+
+  const getServices = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedService(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfServices: body.items ? body.items.length : 0, namespace, labelSelector, fieldSelector, fn: 'getServices',
+    })
+    return body
+  }
+
+  const getNamespaces = async (options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespace(undefined, false, undefined, fieldSelector, labelSelector)
+    logger.trace({
+      numberOfNamespaces: body.items ? body.items.length : 0, labelSelector, fieldSelector, fn: 'getNamespaces',
+    })
+    return body
+  }
+
+  const getSecrets = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedSecret(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfSecrets: body.items ? body.items.length : 0, namespace, labelSelector, fieldSelector, fn: 'getSecrets',
+    })
+    return body
+  }
+
+  const getSecretByName = async (namespace, name) => {
+    const client = await getClient()
+    const { body } = await client.readNamespacedSecret(name, namespace)
+    return body
+  }
+
+  const getPersistentVolumeClaims = async (namespace, options = {}) => {
+    const {
+      labelSelector,
+      fieldSelector,
+    } = options
+    const client = await getClient()
+    const { body } = await client.listNamespacedPersistentVolumeClaim(
+      namespace, undefined, false, undefined, fieldSelector, labelSelector,
+    )
+    logger.trace({
+      numberOfPersistentVolumeClaims: body.items ? body.items.length : 0,
+      namespace,
+      labelSelector,
+      fieldSelector,
+      fn: 'getPersistentVolumeClaims',
+    })
+    return body
+  }
+
+  const deletePod = async (namespace, name) => {
+    const client = await getClient()
+    const { body } = await client.deleteNamespacedPod(name, namespace)
+    logger.info({
+      body,
+      namespace,
+      name,
+      fn: 'deletePod',
+    })
+    return body
+  }
+
+  const deleteConfigMap = async (namespace, name) => {
+    const client = await getClient()
+    const { body } = await client.deleteNamespacedConfigMap(name, namespace)
+    logger.info({
+      body,
+      namespace,
+      name,
+      fn: 'deleteConfigMap',
+    })
+    return body
   }
 
   return {
@@ -317,11 +421,16 @@ const Kubectl = ({
     helmCommand,
     portForward,
     jsonCommand,
-    apply,
-    applyInline,
-    delete: del,
-    deleteInline,
-    remoteCredentials,
+    getRemoteCredentials,
+    getPods,
+    getNodes,
+    getServices,
+    getNamespaces,
+    getSecrets,
+    getSecretByName,
+    getPersistentVolumeClaims,
+    deletePod,
+    deleteConfigMap,
   }
 }
 

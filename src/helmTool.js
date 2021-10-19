@@ -88,39 +88,44 @@ class HelmTool {
       return JSON.parse(searchValue)[0].version
     }
 
+    const remove = async (deploymentType) => {
+      try {
+        logger.debug({
+          fn: 'storeChartsLocally.remove',
+        }, `removing /app/api/helmCharts/${deploymentType} if found`)
+        await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
+      } catch (error) {
+        logger.error({
+          fn: 'fsExtra.remove()',
+          error,
+        })
+        throw error
+      }
+    }
+
+    const pull = async (chart, exactChartVersion, deploymentType, deploymentVersion) => {
+      const cmd = `helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`
+      try {
+        logger.debug({
+          fn: 'storeChartsLocally.removeAndPull',
+        }, `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`)
+        logger.debug({ fn: 'removeAndPull', command: cmd }, 'helm pull')
+        const result = await exec(cmd)
+        logger.trace({ fn: 'removeAndPull', command: cmd, result }, 'helm pull')
+        return result
+      } catch (error) {
+        logger.error({ fn: 'removeAndPull', command: cmd, error }, 'error in helm pull')
+        throw error
+      }
+    }
+
     const removeAndPull = async (deploymentType, deploymentVersion, deploymentVersionData) => {
       const { chart, chartVersion } = deploymentVersionData
       const exactChartVersion = await getExactChartVersion(chart, chartVersion)
 
-      try {
-        logger.info({
-          action: `removing /app/api/helmCharts/${deploymentType} if found`,
-        })
-        await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
-      } catch (e) {
-        logger.error({
-          action: 'fsExtra.remove()',
-          error: e,
-        })
-        throw e
-      }
+      await remove(deploymentType)
 
-      try {
-        logger.info({
-          action: `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`,
-        })
-        const cmd = `helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`
-        logger.debug({ action: 'helm pull', command: cmd })
-        const result = await exec(cmd)
-        logger.trace({ action: 'helm pull', command: cmd, result })
-        return result
-      } catch (e) {
-        logger.error({
-          action: 'helm pull command',
-          error: e,
-        })
-        throw e
-      }
+      await pull(chart, exactChartVersion, deploymentType, deploymentVersion)
     }
 
     const deploymentTypes = Object.keys(this.chartTable)
@@ -133,11 +138,8 @@ class HelmTool {
         try {
           const deploymentVersionData = deploymentTypeData[deploymentVersion]
           await removeAndPull(deploymentType, deploymentVersion, deploymentVersionData)
-        } catch (err) {
-          logger.error({
-            action: 'remove directory then pull/untar chart',
-            error: err,
-          })
+        } catch (error) {
+          logger.error({ fn: 'removeAndPull', error }, 'error in helm pull')
           process.exit(1)
         }
       }

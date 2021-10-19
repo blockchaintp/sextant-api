@@ -45,7 +45,7 @@ const deploymentConnection = async ({
       apiServer,
       token,
       ca,
-    } = clusterKubectl.remoteCredentials
+    } = clusterKubectl.getRemoteCredentials()
     const token_dec = base64.decode(token)
     const ca_dec = base64.decode(ca)
     const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
