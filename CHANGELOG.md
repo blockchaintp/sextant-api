@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+* fix: handle not found on delete configmap, correct logs [view commit](https://github.com/catenasys/sextant-api/commit/7248866a8c41699fff77bae87aa9852758df1075)
+* build(docker): update dockerfile for latest tools [view commit](https://github.com/catenasys/sextant-api/commit/e7425b61488cb11ecc8f36850661bd80e265b105)
+* refactor: replace kubectl delete calls with api methods [view commit](https://github.com/catenasys/sextant-api/commit/ef505906d70188bd78c1a16a023e205a2be83318)
+* refactor: remove unused methods and hide remoteCredentials behind method [view commit](https://github.com/catenasys/sextant-api/commit/e2e4ad516bd69e2701be7030f57574eea0a1e4a5)
+* refactor: eliminate create ns except for old style [view commit](https://github.com/catenasys/sextant-api/commit/8f91ca997f6a3e702596ccab288d330af780e707)
+* refactor: refine logging and add deploymentReleaseFullName [view commit](https://github.com/catenasys/sextant-api/commit/25391087e9696f68514a1c7a37ee74147d72ac18)
+* perf: use k8s native apis for get operations [view commit](https://github.com/catenasys/sextant-api/commit/7eb3a34cb40c01d51b23f3fab8e6e50f37a419d7)
+* refactor: remove unused module [view commit](https://github.com/catenasys/sextant-api/commit/0be29a740b6a6b7560bcc323b3b306181e2d260f)
+* feat: use api for basic get pods and nodes [view commit](https://github.com/catenasys/sextant-api/commit/d326e2261c572750d1a2a772e2541dc03ef85e36)
+* perf: add memoization for some key heavily used methods [view commit](https://github.com/catenasys/sextant-api/commit/5f599ab49535d7c6c275bb7bacfb93199c0bed44)
+* fix(deploymenthistory-store): add before and after to get method [view commit](https://github.com/catenasys/sextant-api/commit/a1b6138cebe9a20f0dd889be8434d83d48c5b31b)
+* fix(deploymenthistory-store): make the limit arg optional and replace date with since [view commit](https://github.com/catenasys/sextant-api/commit/421c9898ef5bbb49b1522d1a75f50cf0a1eafb11)
+* feat(store): add the ability to get histories since a certain time [view commit](https://github.com/catenasys/sextant-api/commit/8d303291dac6a7dffd48e745d33abdccc039c766)
+* fix: clean up some logging and improve pod selection [view commit](https://github.com/catenasys/sextant-api/commit/bbb42be66308a3482575c31507e44b0b7604b2ae)
+* fix(damlRPC): correct ledgerId and participantId parsing [view commit](https://github.com/catenasys/sextant-api/commit/93a69bb41206f7304579c2be6186b4b5268fda4f)
+* fix(sextantKeyPair): on redeployment create sextantKeyPair if not present [view commit](https://github.com/catenasys/sextant-api/commit/af9bbd2fb316582cdb152e3029e0424445353c82)
 * fix(utils): logg the keypair that was fetched [view commit](https://github.com/catenasys/sextant-api/commit/b9459ccf2202ad99871a0538635d7313c0ebed58)
 * fix: attempt to getField only if applied_state exists [view commit](https://github.com/catenasys/sextant-api/commit/444ebc4d11c2618094f715dca1f3be23f437f3ba)
 * fix(utils): use desired_state if no other option [view commit](https://github.com/catenasys/sextant-api/commit/6351c611ea51721e254a1f2b74525ed11b238a92)
