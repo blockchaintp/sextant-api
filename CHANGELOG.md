@@ -1,7 +1,8 @@
 # CHANGELOG
 
-## Unreleased
+## v2.2.4
 
+* fix(grpcurl): correct expansion for GRPC_TOKEN [view commit](https://github.com/catenasys/sextant-api/commit/6d62d0693c7b0fbe2ed59e0c0b08d70add200dcd)
 * fix: handle not found on delete configmap, correct logs [view commit](https://github.com/catenasys/sextant-api/commit/7248866a8c41699fff77bae87aa9852758df1075)
 * build(docker): update dockerfile for latest tools [view commit](https://github.com/catenasys/sextant-api/commit/e7425b61488cb11ecc8f36850661bd80e265b105)
 * refactor: replace kubectl delete calls with api methods [view commit](https://github.com/catenasys/sextant-api/commit/ef505906d70188bd78c1a16a023e205a2be83318)
