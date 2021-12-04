@@ -84,15 +84,10 @@ const editionFileTestSuite = async (testedEdition) => {
 // iterate through every file in editions
 
 const executeTestSuite = async (editionDirectory) => {
-  try {
-    editionDirectory.forEach((edition) => {
-      editionFileTestSuite(edition)
-    })
-    return 'completed test suite.'
-  } catch (error) {
-    console.log(error)
-    return error
-  }
+  editionDirectory.forEach((edition) => {
+    editionFileTestSuite(edition)
+  })
+  return 'completed test suite.'
 }
 
 executeTestSuite(EDITION_FILES)

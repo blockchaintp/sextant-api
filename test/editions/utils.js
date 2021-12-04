@@ -12,44 +12,24 @@ const logger = require('../../src/logging').getLogger({
 const exec = Promise.promisify(childProcess.exec)
 
 const addRepo = async (helmRepos) => {
-  try {
-    const cmd = `helm repo add ${helmRepos.name} ${helmRepos.url}`
-    logger.debug({ action: 'helm', command: `${cmd}` })
-    const result = await exec(cmd)
-    logger.trace({ action: 'helm', command: `${cmd}`, result })
-    return result
-  } catch (error) {
-    return error
-  }
+  const cmd = `helm repo add ${helmRepos.name} ${helmRepos.url}`
+  logger.debug({ action: 'helm', command: `${cmd}` })
+  const result = await exec(cmd)
+  logger.trace({ action: 'helm', command: `${cmd}`, result })
+  return result
 }
 
-const getEditionFiles = async (directoryName) => {
-  try {
-    return fs.readdirSync(directoryName)
-  } catch (error) {
-    return error
-  }
-}
+const getEditionFiles = async (directoryName) => fs.readdirSync(directoryName)
 
 const removeRepo = async (helmRepos) => {
-  try {
-    const cmd = `helm repo remove ${helmRepos.name}`
-    logger.debug({ action: 'helm', command: `${cmd}` })
-    const result = await exec(cmd)
-    logger.trace({ action: 'helm', command: `${cmd}`, result })
-    return result
-  } catch (error) {
-    return error
-  }
+  const cmd = `helm repo remove ${helmRepos.name}`
+  logger.debug({ action: 'helm', command: `${cmd}` })
+  const result = await exec(cmd)
+  logger.trace({ action: 'helm', command: `${cmd}`, result })
+  return result
 }
 
-const sanitizeVersion = async (version) => {
-  try {
-    return version.match(/(\d+)\.(\d+)\.(\d+)/)
-  } catch (error) {
-    return error
-  }
-}
+const sanitizeVersion = async (version) => version.match(/(\d+)\.(\d+)\.(\d+)/)
 
 const searchRepo = async (deploymentVersionInfo) => {
   const cmd = `helm search repo ${deploymentVersionInfo.chart} --version ${deploymentVersionInfo.chartVersion} -o json`
@@ -60,7 +40,7 @@ const searchRepo = async (deploymentVersionInfo) => {
     return JSON.parse(result)
   } catch (error) {
     logger.warn({ action: 'helm', command: `${cmd}`, error })
-    return error
+    throw error
   }
 }
 
@@ -73,28 +53,18 @@ const getChartFileName = async (chartTableVersion, repoName) => {
     return `${sanitizedName}-${chartVersion}.tgz`
   } catch (error) {
     logger.error({ action: 'getChartFileName', error })
-    return error
+    throw error
   }
 }
 
-const confirmChartFileExists = async (fileName) => {
-  try {
-    return fs.existsSync(fileName)
-  } catch (error) {
-    return error
-  }
-}
+const confirmChartFileExists = async (fileName) => fs.existsSync(fileName)
 
 const pullChart = async (deploymentVersionInfo) => {
-  try {
-    const cmd = `helm pull ${deploymentVersionInfo.chart} --version ${deploymentVersionInfo.chartVersion}`
-    logger.debug({ action: 'helm', command: `${cmd}` })
-    const result = await exec(cmd)
-    logger.trace({ action: 'helm', command: `${cmd}`, result })
-    return result
-  } catch (error) {
-    return error
-  }
+  const cmd = `helm pull ${deploymentVersionInfo.chart} --version ${deploymentVersionInfo.chartVersion}`
+  logger.debug({ action: 'helm', command: `${cmd}` })
+  const result = await exec(cmd)
+  logger.trace({ action: 'helm', command: `${cmd}`, result })
+  return result
 }
 
 const removeChartFile = async (fileName) => {
