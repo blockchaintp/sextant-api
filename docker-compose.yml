@@ -1,5 +1,4 @@
-
-
+---
 version: '3'
 services:
   api-ecs-sfs-nometer:
@@ -37,6 +36,20 @@ services:
       args:
         EDITION_MODULE: enterprise.js
     image: sextant-api-enterprise:${ISOLATION_ID}
+  api-standard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: standard.js
+    image: sextant-api-standard:${ISOLATION_ID}
+  api-premium:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: premium.js
+    image: sextant-api-premium:${ISOLATION_ID}
   api:
     build:
       context: .
