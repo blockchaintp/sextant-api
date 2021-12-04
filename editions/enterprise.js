@@ -25,7 +25,7 @@ const edition = {
     sawtooth: {
       1.1: {
         chart: 'btp-stable/sawtooth',
-        chartVersion: '~0.1.27',
+        chartVersion: '~0.2.0',
         order: 2,
         extension: 'sawtooth',
       },
@@ -41,7 +41,7 @@ const edition = {
     'daml-on-sawtooth': {
       1.3: {
         chart: 'btp-stable/daml-on-sawtooth',
-        chartVersion: '~0.1.56',
+        chartVersion: '~0.2.0',
         order: 4,
         extension: 'daml',
       },
@@ -62,11 +62,19 @@ const edition = {
         extension: 'daml',
       },
     },
+    'tfs-on-sawtooth': {
+      0.1: {
+        chart: 'btp-unstable/tfs-on-sawtooth',
+        chartVersion: '~0.6.0',
+        order: 7,
+        extension: 'tfs',
+      },
+    },
     sextant: {
       2.1: {
         chart: 'btp-stable/sextant',
         chartVersion: '~2.1.8',
-        order: 7,
+        order: 8,
         extension: 'sextant',
       },
     },
@@ -74,7 +82,7 @@ const edition = {
       7.9: {
         chart: 'btp-stable/elasticsearch',
         chartVersion: '~12.6.3',
-        order: 8,
+        order: 9,
         extension: 'elasticsearch',
       },
     },
@@ -82,7 +90,7 @@ const edition = {
       1.11: {
         chart: 'btp-stable/fluentd',
         chartVersion: '~1.3.1',
-        order: 9,
+        order: 10,
         extension: 'fluentd',
       },
     },
@@ -90,7 +98,7 @@ const edition = {
       7.8: {
         chart: 'btp-stable/kibana',
         chartVersion: '~5.3.9',
-        order: 10,
+        order: 11,
         extension: 'kibana',
       },
     },
@@ -98,7 +106,7 @@ const edition = {
       1.8: {
         chart: 'btp-stable/influxdb',
         chartVersion: '~0.0.2',
-        order: 11,
+        order: 12,
         extension: 'influxdb',
       },
     },
@@ -106,7 +114,7 @@ const edition = {
       7.1: {
         chart: 'btp-stable/grafana',
         chartVersion: '~0.0.2',
-        order: 12,
+        order: 13,
         extension: 'grafana',
       },
     },
@@ -114,7 +122,7 @@ const edition = {
       11.9: {
         chart: 'btp-stable/postgresql-ha',
         chartVersion: '~0.0.1',
-        order: 13,
+        order: 14,
         extension: 'pgsql',
       },
     },
@@ -122,7 +130,7 @@ const edition = {
       1.8: {
         chart: 'btp-stable/nginx-ingress',
         chartVersion: '~0.0.1',
-        order: 14,
+        order: 15,
         extension: 'ingress',
       },
     },
@@ -130,7 +138,7 @@ const edition = {
       '2.0': {
         chart: 'btp-stable/openebs',
         chartVersion: '~2.0.2',
-        order: 15,
+        order: 16,
         extension: 'openebs',
       },
     },
@@ -138,13 +146,12 @@ const edition = {
       1.5: {
         chart: 'btp-stable/vault',
         chartVersion: '~0.0.2',
-        order: 16,
+        order: 17,
         extension: 'vault',
       },
     },
-
   },
-};
+}
 
 module.exports = {
   edition,
