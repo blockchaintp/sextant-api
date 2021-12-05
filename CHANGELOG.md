@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Unreleased
+
+* test(editions): throw exc's instead of returning [view commit](https://github.com/catenasys/sextant-api/commit/1eac8f982e07b653d22ffe9bcb5b1ed5fd24cbe4)
+* feat(editions): add standard and premium editions [view commit](https://github.com/catenasys/sextant-api/commit/6d1971ceac92650a9bfab5be3f13cb003c3bd262)
+* fix(editions): update sawtoth chart versions [view commit](https://github.com/catenasys/sextant-api/commit/d0d48b0eb7ca97101360490a8f4a56bb008c1bdc)
+
 ## v2.2.4
 
 * fix(grpcurl): correct expansion for GRPC_TOKEN [view commit](https://github.com/catenasys/sextant-api/commit/6d62d0693c7b0fbe2ed59e0c0b08d70add200dcd)
