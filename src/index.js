@@ -15,10 +15,13 @@ const TaskHandlers = require('./tasks')
 const Store = require('./store')
 const deploymentStatusPoll = require('./jobs/deploymentStatusPoll')
 
-const { Meter } = require('./metering')
-const { edition } = require('./edition')
-// Start metering
-const meter = new Meter(edition.metering)
+const Meter = require('./jobs/meter/AwsRegisterUsage')
+
+const options = {
+  productCode: 'cqcvf9f0ugw8rkbgmf1c9dxyz',
+  publicKeyVersion: 1,
+}
+const meter = new Meter('main-meter', options)
 meter.start()
 
 const pgPool = new pg.Pool(settings.postgres.connection)
