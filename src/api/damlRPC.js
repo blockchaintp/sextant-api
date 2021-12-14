@@ -476,7 +476,7 @@ const DamlRPC = ({
         fn: 'getArchives',
         error,
       })
-      return error
+      throw error
     }
   }
 
