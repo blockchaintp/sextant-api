@@ -1,7 +1,7 @@
 const Scheduler = require('node-schedule');
 
 const logger = require('../logging').getLogger({
-  name: 'job/meter/AbstractJob',
+  name: __filename,
 })
 
 class AbstractJob {

@@ -1,12 +1,13 @@
 const AbstractJob = require('../AbstractJob');
 
 const logger = require('../../logging').getLogger({
-  name: 'tasks/meter/noop',
+  name: __filename,
 })
 
 class NoopMeter extends AbstractJob {
-  constructor(name = 'NoopMeter', options = {}, schedule = '* * * * *') {
+  constructor(name = 'NoopMeter', store, options = {}, schedule = '* * * * *') {
     super(name, options, schedule);
+    this.store = store;
   }
 
   run() {

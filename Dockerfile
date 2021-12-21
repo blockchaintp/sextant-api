@@ -34,13 +34,16 @@ RUN mkdir -p /app/api/tmp && \
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
-RUN npm ci
+ARG NPM_CI_ARGS=""
+RUN npm ci ${NPM_CI_ARGS} && npm cache clean --force
 COPY . /app/api
 
 # this is the default noop metering module
 # copy in the edition module
-ARG EDITION_MODULE=dev.js
-COPY ./editions/${EDITION_MODULE} /app/api/src/edition.js
+ARG EDITION_MODULE=dev
+COPY ./editions/${EDITION_MODULE}.js /app/api/src/edition.js
 
+ARG NODE_ENV=development
+ENV NODE_ENV ${NODE_ENV}
 ENTRYPOINT ["npm"]
 CMD ["run", "serve"]

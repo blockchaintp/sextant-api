@@ -4,12 +4,13 @@ const AbstractJob = require('../AbstractJob');
 const AWS = require('../../utils/aws');
 
 const logger = require('../../logging').getLogger({
-  name: 'jobs/meter/AwsRegisterUsage',
+  name: __filename,
 })
 
 class AwsRegisterUsage extends AbstractJob {
-  constructor(name = 'AwsRegisterUsage', options = {}, schedule = '? * * * *') {
+  constructor(name = 'AwsRegisterUsage', store, options = {}, schedule = '? * * * *') {
     super(name, options, schedule);
+    this.store = store;
     this.initProductDetails(options);
   }
 
@@ -21,6 +22,7 @@ class AwsRegisterUsage extends AbstractJob {
   }
 
   start() {
+    // Run once immediately
     this.run();
     super.start();
   }
