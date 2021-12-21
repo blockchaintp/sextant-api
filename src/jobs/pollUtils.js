@@ -3,11 +3,10 @@ const Promise = require('bluebird')
 const memoize = require('memoizee');
 const deploymentNames = require('../utils/deploymentNames')
 const logger = require('../logging').getLogger({
-  name: __filename,
+  name: 'jobs/pollUtils',
 })
 
-const ClusterKubectl = require('../utils/clusterKubectl');
-const { DEPLOYMENT_STATUS } = require('../config');
+const ClusterKubectl = require('../utils/clusterKubectl')
 
 const getAllDeployments = async (store) => {
   const deployments = await store.deployment.list({
@@ -70,6 +69,9 @@ const runHelmList = async (deployment, store) => {
 const translateStatus = memoize((helmStatus) => {
   let translatedStatus
   switch (helmStatus) {
+    case undefined:
+      translatedStatus = 'deleted'
+      break
     case 'unknown':
       logger.warn({
         fn: 'translateStatus',
@@ -78,19 +80,28 @@ const translateStatus = memoize((helmStatus) => {
       translatedStatus = undefined
       break
     case 'deployed':
+      translatedStatus = 'provisioned'
+      break
+    case 'uninstalled':
+      translatedStatus = 'deleted'
+      break
     case 'superseded':
-    case 'pending-install':
-    case 'pending-upgrade':
-    case 'pending-rollback':
-      translatedStatus = DEPLOYMENT_STATUS.provisioned
+      translatedStatus = 'provisioned'
       break
     case 'failed':
-      translatedStatus = DEPLOYMENT_STATUS.error
+      translatedStatus = 'error'
       break
-    case undefined:
-    case 'uninstalled':
     case 'uninstalling':
-      translatedStatus = DEPLOYMENT_STATUS.deleted
+      translatedStatus = 'deleted'
+      break
+    case 'pending-install':
+      translatedStatus = 'provisioned'
+      break
+    case 'pending-upgrade':
+      translatedStatus = 'provisioned'
+      break
+    case 'pending-rollback':
+      translatedStatus = 'provisioned'
       break
     case 'error':
       translatedStatus = 'error'

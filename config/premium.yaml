@@ -1,0 +1,18 @@
+meter:
+  type: AwsMeterUsage
+  options:
+    productId: 1876052d-3c30-4b34-bd07-443415513c11
+    productCode: '1g4sy824h5seabejoy0jjap01'
+    publicKeyVersion: 1
+    publicKey: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAxvmvLQD1A9I046zrBzYu
+      a03Um5z0n1OTYMHQ3R2kGA0K3Cdo1iF8D1W7DIIZVEd8BowyqYB45ydmiDXj5Azl
+      aJ8tF0ttP+2otb238wSgUHwvZFnSus2hiVs4CGvUPbsBdMj/MO+slRAyXFarql3Y
+      B4fbjBF8FlVqiDhIwkz5MGPyO4sJ/oTNU9KqlGemmSJkJaMMmrF+ZrJzeidITJH2
+      oA0upqRNuAf01JyAJpVpK/XMt+xAfU1XGGzpfX38Vo4/IBRgVsU/684gSEPqs0cE
+      sfjmveEEbdA7GIMY5zeFEFCPeIivpVgy0zFYy5wVtqO91yIEciM7DH4KgEkRUhlD
+      wPLLZxHsdOvhWeRnVoFR066pJ9OQ2zTG4TE3B7q+AQ3/KDhRNyxvVDZjaxQjNzgc
+      H7s71zZec3LKrYKH8LDwEzql9YfAhZdSirpgCwngPI3Nh8jxJ2PRv7RDjKLC4cZl
+      Slcb2aURQUPNmFMIqaIDqeAfMZGc7KyVU/dLpgOjE51FAgMBAAE=
+      -----END PUBLIC KEY-----
