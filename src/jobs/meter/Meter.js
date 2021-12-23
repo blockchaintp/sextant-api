@@ -7,10 +7,10 @@ const logger = require('../../logging').getLogger({
 })
 
 class Meter {
-  constructor(name, store, options = {}) {
+  constructor(store, name, options = {}) {
     this.name = name
     this.store = store
-    this.options = 'options' in options ? options : {}
+    this.options = 'options' in options ? options.options : {}
     this.type = 'type' in options ? options.type : 'NoopMeter'
   }
 

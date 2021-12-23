@@ -1,6 +1,14 @@
 const config = require('../config')
 const DeploymentHistoryStore = require('./deploymenthistory')
 
+const currentHour = () => {
+  const now = new Date()
+  now.setMilliseconds(0)
+  now.setSeconds(0)
+  now.setMinutes(0)
+  return now
+}
+
 const DeploymentStore = (knex) => {
   const deploymentHistoryStore = DeploymentHistoryStore(knex)
   /*
@@ -210,12 +218,20 @@ const DeploymentStore = (knex) => {
   }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
+    const ts = new Date(currentHour()).toISOString().replace('T', ' ').replace('Z', '')
     const [result] = await (trx || knex)(config.TABLES.deployment)
       .where({
         id,
       })
-      .andWhere('updated_at', '<', data.updated_at)
-      .andWhereNot('status', '=', `${data.status}`)
+      .andWhere((a) => {
+        a.orWhere((b) => {
+          b.where('updated_at', '<', data.updated_at)
+            .andWhereNot('status', '=', `${data.status}`)
+        }).orWhere((c) => {
+          c.whereRaw(`updated_at < '${ts}'::timestamp`)
+            .andWhere('status', '=', `${data.status}`)
+        })
+      })
       .update(data)
       .returning('*')
     if (result) {

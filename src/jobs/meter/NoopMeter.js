@@ -5,7 +5,7 @@ const logger = require('../../logging').getLogger({
 })
 
 class NoopMeter extends AbstractJob {
-  constructor(name = 'NoopMeter', store, options = {}, schedule = '* * * * *') {
+  constructor(store, name = 'NoopMeter', options = {}, schedule = '* * * * *') {
     super(name, options, schedule);
     this.store = store;
   }

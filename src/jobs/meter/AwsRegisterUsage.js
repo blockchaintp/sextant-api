@@ -8,13 +8,13 @@ const logger = require('../../logging').getLogger({
 })
 
 class AwsRegisterUsage extends AbstractJob {
-  constructor(name = 'AwsRegisterUsage', store, options = {}, schedule = '? * * * *') {
+  constructor(store, name = 'AwsRegisterUsage', options = {}, schedule = '? * * * *') {
     super(name, options, schedule);
-    this.store = store;
+    this.store = store
     this.initProductDetails(options);
   }
 
-  async initProductDetails(options) {
+  initProductDetails(options) {
     const { productCode, publicKeyVersion } = options;
     this.productCode = productCode;
     this.publicKeyVersion = publicKeyVersion;
@@ -33,13 +33,13 @@ class AwsRegisterUsage extends AbstractJob {
       logger.info(`Using region ${this.region}`);
     }
 
-    logger.info({
+    logger.trace({
       publicKeyVersion: this.publicKeyVersion,
       productCode: this.productCode,
     }, `${this.getName()} executing`);
 
     const client = new MarketplaceMeteringClient({ region: this.region });
-    logger.info('created client');
+    logger.trace('created client');
 
     const params = {
       ProductCode: this.productCode,
@@ -47,10 +47,10 @@ class AwsRegisterUsage extends AbstractJob {
       Nonce: uuid(),
     }
     const command = new RegisterUsageCommand(params);
-    logger.info({ params }, 'created command');
+    logger.trace({ params }, 'created command');
     try {
       const data = await client.send(command);
-      logger.info({ data }, `${this.getName()} RegisterUsageCommand executed successfully`);
+      logger.debug({ data }, `${this.getName()} RegisterUsageCommand executed successfully`);
     } catch (error) {
       logger.error({ error }, `${this.getName()} failed`);
 
@@ -78,12 +78,16 @@ class AwsRegisterUsage extends AbstractJob {
           this.shutdownProcess('This container is not supported on the underlying platform.'
             + 'Currently, Amazon ECS, Amazon EKS, and AWS Fargate are supported.');
           break;
-        default:
-          logger.error({ error }, `${this.getName()} failed with unknown error`);
+        case 'AccessDeniedException':
+          this.shutdownProcess('AccessDeniedException because no identity-based policy allows'
+            + ' the aws-marketplace:RegisterUsage action')
           break;
+        default:
+          this.shutdownProcess(`${this.getName()} failed with unknown error`);
+          throw error;
       }
     } finally {
-      logger.info({
+      logger.debug({
         publicKeyVersion: this.publicKeyVersion,
         productCode: this.productCode,
       }, `${this.getName()} finished`);
@@ -98,7 +102,7 @@ class AwsRegisterUsage extends AbstractJob {
   }
 
   validateResponse(response, params) {
-    logger.info({ response, params }, `${this.getName()} validating response`);
+    logger.debug({ response, params }, `${this.getName()} validating response`);
     return true;
   }
 }
