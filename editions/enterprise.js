@@ -70,14 +70,6 @@ const edition = {
         extension: 'tfs',
       },
     },
-    sextant: {
-      2.1: {
-        chart: 'btp-stable/sextant',
-        chartVersion: '~2.1.8',
-        order: 8,
-        extension: 'sextant',
-      },
-    },
     elasticsearch: {
       7.9: {
         chart: 'btp-stable/elasticsearch',
