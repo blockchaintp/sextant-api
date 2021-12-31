@@ -1,7 +1,15 @@
 # CHANGELOG
 
-## Unreleased
+## v2.2.5
 
+* style(jobs): sonar issues [view commit](https://github.com/catenasys/sextant-api/commit/3cb853ce012d619c061ce0eee4854c448f423f77)
+* fix(docker-compose): correct standard edition module [view commit](https://github.com/catenasys/sextant-api/commit/6514b6e20f35b160ac90380b0cd5455797a2609f)
+* fix(jobs): force deploymenthistory update periodically w/o status change [view commit](https://github.com/catenasys/sextant-api/commit/e9e4cd598bac0c2168539861199b64a295b1f733)
+* fix(editions): remove sextant from enterprise edition [view commit](https://github.com/catenasys/sextant-api/commit/cf1ee6a2b18a331a2fad35aa3083b7e66ebcadea)
+* feat(jobs): add basic AwsMeterUsage [view commit](https://github.com/catenasys/sextant-api/commit/816c8d8c773f8f87431c3876be9395823d830a7d)
+* feat(jobs): add AwsRegisterUsage meter [view commit](https://github.com/catenasys/sextant-api/commit/0452b1417ee526f5eac2e70233fbab9b059ae97b)
+* feat(jobs): add meter/noop job [view commit](https://github.com/catenasys/sextant-api/commit/0dde749198c7e5e400a119b65ab394b4b6af1c98)
+* build(deps): package-lock.json update [view commit](https://github.com/catenasys/sextant-api/commit/957dc4dcfceb1a052cc22eec5818bf2780344d58)
 * fix(api-damlrpc): throws error instead of returns it in getArchives() [view commit](https://github.com/catenasys/sextant-api/commit/51d13a6d90d0d411e58193e5e2ddef11d1c28845)
 * test(editions): throw exc's instead of returning [view commit](https://github.com/catenasys/sextant-api/commit/1eac8f982e07b653d22ffe9bcb5b1ed5fd24cbe4)
 * feat(editions): add standard and premium editions [view commit](https://github.com/catenasys/sextant-api/commit/6d1971ceac92650a9bfab5be3f13cb003c3bd262)
