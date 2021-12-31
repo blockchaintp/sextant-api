@@ -3,8 +3,24 @@ const logger = require('../logging').getLogger({
 })
 
 const DeploymentHistoryStore = (knex) => {
-  const list = (trx) => (trx || knex).select('*')
-    .from('deployment_history')
+  const timeRange = (query, start, end) => {
+    let retQuery = query
+    if (start) {
+      retQuery = query.andWhere('recorded_at', '>=', start)
+    }
+    if (end) {
+      retQuery = query.andWhere('recorded_at', '<', end)
+    }
+    return retQuery
+  }
+
+  const list = ({ after, before }, trx) => {
+    let query = (trx || knex).select('*')
+      .from('deployment_history')
+
+    query = timeRange(query, after, before)
+    return query
+  }
 
   const get = ({
     deployment_id,
@@ -27,12 +43,8 @@ const DeploymentHistoryStore = (knex) => {
     if (first) {
       query = query.first()
     }
-    if (after) {
-      query = query.andWhere('recorded_at', '>=', after)
-    }
-    if (before) {
-      query = query.andWhere('recorded_at', '<', before)
-    }
+
+    query = timeRange(query, after, before)
 
     return query
   }

@@ -1,3 +1,4 @@
+const config = require('config')
 const session = require('express-session')
 const pg = require('pg')
 const Knex = require('knex')
@@ -14,12 +15,7 @@ const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
 const Store = require('./store')
 const deploymentStatusPoll = require('./jobs/deploymentStatusPoll')
-
-const { Meter } = require('./metering')
-const { edition } = require('./edition')
-// Start metering
-const meter = new Meter(edition.metering)
-meter.start()
+const Meter = require('./jobs/meter/Meter')
 
 const pgPool = new pg.Pool(settings.postgres.connection)
 const sessionStore = new PgSession({
@@ -28,6 +24,9 @@ const sessionStore = new PgSession({
 
 const knex = Knex(settings.postgres)
 const store = Store(knex)
+
+const meter = new Meter('main-meter', store, config.get('meter'))
+meter.start()
 
 deploymentStatusPoll(store)
 const deploymentStatusPollJob = schedule.scheduleJob('*/5 * * * *', () => { deploymentStatusPoll(store) })

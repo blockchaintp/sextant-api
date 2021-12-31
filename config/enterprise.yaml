@@ -1,0 +1,18 @@
+meter:
+  type: AwsRegisterUsage
+  options:
+    productId: 0cdcd00d-087b-4eb6-8f80-447c49916055
+    productCode: 'rew9m9qoautdu85ow5xd82mt'
+    publicKeyVersion: 1
+    publicKey: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA4d4sTrFazqjXKbol6SeN
+      X1kkgSU9WkYWqz8T1HLkQ6ppG8yU00pKflTgkZ5dPkfHStwA7nIY7Zxxs7Sk0Fnv
+      +5tSPmBJ6Wc2oeKeQo59pDwMrslkaf4gT8QO92BnBuPDIsj+sxtYsP5QsG4PmOzL
+      xn1qM1UuDuYZE3y217iDTcBQUCzwUf+gXjnk1utxdXWlNCSmQxhR8cWHTdOvHiEE
+      +JMWx9ME8g6VF1zxWtiRuG8US+0dp9vq9iEu6f0Fz42TdrzX0G1DguToA3QPS+UE
+      KHEsFnq+mSDs0TlfeMMtSlPurxXa4o7y0/aw3e2bXVQaR4wvi1pYbJjMwZwbrtD6
+      MaigbQCxiW8RyPAP5jnURIpqzk4vkLotbnTqdtuZBgVl7rH24W+L+KRhm24sx81V
+      4W4lwPNFSfA9tJcs1OHKo4PY6n0XFhtwhsU1vaDMNapwxJI9yScZovdi2/zGTDVY
+      XrumH6p/5ma3ZKJVilJO9VztR9X3AylWp3SLdstB2913AgMBAAE=
+      -----END PUBLIC KEY-----

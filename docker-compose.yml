@@ -1,66 +1,62 @@
 ---
 version: '3'
 services:
-  api-ecs-sfs-nometer:
+  api-sfs-nometer:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: aws_sfs_nometer.js
+        EDITION_MODULE: aws_sfs_nometer
+        NODE_ENV: development
+        NPM_CI_ARGS: "--production"
     image: sextant-api-aws-sfs-nometer:${ISOLATION_ID}
-  api-ecs-sfd-nometer:
+  api-sfd-nometer:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: aws_sfd_nometer.js
+        EDITION_MODULE: aws_sfd_nometer
+        NODE_ENV: development
+        NPM_CI_ARGS: "--production"
     image: sextant-api-aws-sfd-nometer:${ISOLATION_ID}
-  api-ecs-sfs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        EDITION_MODULE: aws_sfs.js
-    image: sextant-api-aws-sfs:${ISOLATION_ID}
-  api-ecs-sfd:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        EDITION_MODULE: aws_sfd.js
-    image: sextant-api-aws-sfd:${ISOLATION_ID}
   api-enterprise:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: enterprise.js
+        EDITION_MODULE: enterprise
+        NODE_ENV: enterprise
+        NPM_CI_ARGS: "--production"
     image: sextant-api-enterprise:${ISOLATION_ID}
   api-standard:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: standard.js
+        EDITION_MODULE: enterprise
+        NODE_ENV: standard
+        NPM_CI_ARGS: "--production"
     image: sextant-api-standard:${ISOLATION_ID}
   api-premium:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: premium.js
+        EDITION_MODULE: enterprise
+        NODE_ENV: premium
+        NPM_CI_ARGS: "--production"
     image: sextant-api-premium:${ISOLATION_ID}
   api:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        EDITION_MODULE: dev.js
     image: sextant-api:${ISOLATION_ID}
   api-sft:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: sft.js
+        EDITION_MODULE: sft
+        NODE_ENV: development
+        NPM_CI_ARGS: "--production"
     image: sextant-api-sft:${ISOLATION_ID}

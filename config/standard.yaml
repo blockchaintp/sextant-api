@@ -1,0 +1,18 @@
+meter:
+  type: AwsMeterUsage
+  options:
+    productId: 6e2f76e4-8f6c-4943-bc80-4e67acc49fd4
+    productCode: '6iu4f0jt5ixcu9w4nl476p3h0'
+    publicKeyVersion: 1
+    publicKey: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEArzIBsCFR0D5ceCPZXqzy
+      FxJzBF+MxSme9W1bFcMX4nxzpOcQc8SrhSIIijD46JG5cQB0G6gXZpvDUOLWU1VV
+      rUNYvthDGXoX2Tmw1160Fod1JB63Ht3+kPpW4jvZKN5sni0ff6RrFFub5PQHTrDp
+      f3PN9RaGr/PbSk83G+urkJTatAE3jn/mgEfxBLaThSPidEqD+lMLLBhxs/Ww7QGP
+      90b57x+8k4HbjGVU2/7gxQpwpqPCaVz/Omzids8Jvqp6gbvJaPgZjUqP2OF9tebW
+      DO5kQtN2/jmABg8GjpbNjB9Hy48XISgZbRthWurcdVbP+hFXUpOuQgqngcHSnEvY
+      skvQXROh3uEXLj5IkEGDb1aZbzppIws3ECg3TMd+GPxl73VAynb5oK5mPYhAR2hj
+      ZWf/6TE20P11Flwa1Q57AhODoHPacwD4/A8heBd/EXUq/bHkgImjzylwI2HtD/QW
+      qijW4hlWgbLEhmtdIe//EKaC1+wsW5SBcUgZb5VmB0jRAgMBAAE=
+      -----END PUBLIC KEY-----
