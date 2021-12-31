@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        EDITION_MODULE: dev
+        EDITION_MODULE: enterprise
         NODE_ENV: standard
         NPM_CI_ARGS: "--production"
     image: sextant-api-standard:${ISOLATION_ID}
