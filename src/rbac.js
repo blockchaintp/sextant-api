@@ -237,7 +237,7 @@ const RBAC = async (store, user, action) => {
     if (!Number.isInteger(userId)) return false
 
     const roleQuery = {
-      user: user.id,
+      user: userId,
       resource_type: resourceType,
       resource_id: resourceId,
     }
