@@ -232,6 +232,10 @@ const RBAC = async (store, user, action) => {
     // we need a resource_id if we are performing a minimumResourcePermission check
     if (!resourceId) return false
 
+    const userId = user.id
+
+    if (!Number.isInteger(userId)) return false
+
     const roleQuery = {
       user: user.id,
       resource_type: resourceType,
