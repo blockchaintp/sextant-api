@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Unreleased
+
+* fix(rbac): checks that user.id is a number, returns false if it's not [view commit](https://github.com/catenasys/sextant-api/commit/c0941ea5958abdf77c2854a7bf64e475e09bf739)
+* style(store-role): linting [view commit](https://github.com/catenasys/sextant-api/commit/68fbbf61642291a0d5d757b4023c7f578d2a8451)
+* build(deps): Bump shelljs from 0.8.4 to 0.8.5 [view commit](https://github.com/catenasys/sextant-api/commit/d63a956ee2c76a423d62463c6aa642fe844d7100)
+* build(deps): Bump follow-redirects from 1.14.6 to 1.14.7 [view commit](https://github.com/catenasys/sextant-api/commit/5f3eed02bdecf4a3e3efca2bef22fe0791793484)
+
 ## v2.2.5
 
 * style(jobs): sonar issues [view commit](https://github.com/catenasys/sextant-api/commit/3cb853ce012d619c061ce0eee4854c448f423f77)
