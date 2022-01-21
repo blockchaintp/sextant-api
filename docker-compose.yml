@@ -60,3 +60,12 @@ services:
         NODE_ENV: development
         NPM_CI_ARGS: "--production"
     image: sextant-api-sft:${ISOLATION_ID}
+  api-community:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EDITION_MODULE: community
+        NODE_ENV: community
+        NPM_CI_ARGS: "--production"
+    image: sextant-api-community:${ISOLATION_ID}
