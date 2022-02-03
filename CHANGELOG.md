@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* fix(rbac): checks that user.id is a number, returns false if it's not [view commit](https://github.com/catenasys/sextant-api/commit/e008bd241dff99a84ddbd9fb989a8e2b2e9a9f2b)
+
 ## v2.2.6
 
 * feat: add community edition [view commit](https://github.com/catenasys/sextant-api/commit/72372784f2942a19c11b1bad83b5e48984965101)
