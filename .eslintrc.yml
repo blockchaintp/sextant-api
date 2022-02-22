@@ -5,14 +5,19 @@ env:
   node: true
 extends:
   - airbnb-base
+  - prettier
+plugins:
+  - prettier
 parserOptions:
   ecmaVersion: 11
 rules:
   camelcase: 0
-  semi: 0
   no-underscore-dangle: 1
   no-param-reassign: 1
   global-require: 1
   max-len:
     - 2
     - code: 120
+  prettier/prettier:
+    - error
+    - semi: false
