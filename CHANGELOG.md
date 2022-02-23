@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* build(prettierignore): adds .prettierignore file ignoring all yml/yaml files [view commit](https://github.com/catenasys/sextant-api/commit/4defdfb4f2caa450b3e61bf3c75b032a1ba6fb29)
+* build(eslintrc): adds prettier, eslint-prettier-config, and eslint-plugin-prettier to eslint [view commit](https://github.com/catenasys/sextant-api/commit/49ce5b3d612645f2ff2a1b3a4cf5cf89ee885645)
+* build(packages-prettierrc): installs prettier and creates prettierrc file [view commit](https://github.com/catenasys/sextant-api/commit/97909f591d3c7b0d996444d775a5f2d276d4c20a)
 * fix(rbac): checks that user.id is a number, returns false if it's not [view commit](https://github.com/catenasys/sextant-api/commit/e008bd241dff99a84ddbd9fb989a8e2b2e9a9f2b)
 
 ## v2.2.6
