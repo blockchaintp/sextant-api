@@ -1,4 +1,4 @@
-// Edition object for enterprise editions (sawtooth+DAML)
+// Edition object for community edition (sawtooth+DAML)
 
 const edition = {
   deployment: {
@@ -30,9 +30,25 @@ const edition = {
         extension: 'sawtooth',
       },
     },
+    'daml-on-besu': {
+      1.3: {
+        chart: 'btp-stable/daml-on-besu',
+        chartVersion: '~0.0.32',
+        order: 3,
+        extension: 'daml',
+      },
+    },
+    'daml-on-sawtooth': {
+      1.3: {
+        chart: 'btp-stable/daml-on-sawtooth',
+        chartVersion: '~0.2.0',
+        order: 4,
+        extension: 'daml',
+      },
+    },
   },
 }
 
 module.exports = {
   edition,
-};
+}
