@@ -42,7 +42,7 @@
     "get-port": "^5.1.1",
     "js-yaml": "^3.14.1",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.95.11",
+    "knex": "^1.0.3",
     "memoizee": "^0.4.15",
     "minimist": "^1.2.6",
     "node-config": "0.0.2",
@@ -53,7 +53,7 @@
     "pino": "^4.17.6",
     "randomstring": "^1.2.1",
     "request": "^2.88.2",
-    "sawtooth-sdk": "^1.1.1",
+    "sawtooth-sdk": "git+https://github.com/hyperledger/sawtooth-sdk-javascript.git#5cdf299ce466",
     "split": "^1.0.1",
     "swagger-jsdoc": "^5.0.1",
     "swagger-ui-express": "^4.1.6",
@@ -72,7 +72,7 @@
     "nyc": "^15.1.0",
     "prettier": "2.5.1",
     "tap-junit": "^5.0.1",
-    "tap-spec": "^5.0.0",
+    "tap-spec": "^5.0",
     "tape": "^4.14.0",
     "widdershins": "^4.0.1"
   }
