@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v2.2.7
+## Unreleased
 
 * feat(community): add daml-on-besu and daml-on-sawtooth [view commit](https://github.com/catenasys/sextant-api/commit/021475a73735fb80ddecb36c68d1419f65fcc43a)
 * build(prettierignore): adds .prettierignore file ignoring all yml/yaml files [view commit](https://github.com/catenasys/sextant-api/commit/4defdfb4f2caa450b3e61bf3c75b032a1ba6fb29)
