@@ -3,6 +3,9 @@
 ## Unreleased
 
 * build(deps): Bump urijs from 1.19.8 to 1.19.10 [view commit](https://github.com/catenasys/sextant-api/commit/54aa295f576896b3bcfaafcb8bc723a24f6c5893)
+
+## v2.2.7
+
 * feat(community): add daml-on-besu and daml-on-sawtooth [view commit](https://github.com/catenasys/sextant-api/commit/021475a73735fb80ddecb36c68d1419f65fcc43a)
 * build(prettierignore): adds .prettierignore file ignoring all yml/yaml files [view commit](https://github.com/catenasys/sextant-api/commit/4defdfb4f2caa450b3e61bf3c75b032a1ba6fb29)
 * build(eslintrc): adds prettier, eslint-prettier-config, and eslint-plugin-prettier to eslint [view commit](https://github.com/catenasys/sextant-api/commit/49ce5b3d612645f2ff2a1b3a4cf5cf89ee885645)
