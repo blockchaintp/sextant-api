@@ -44,7 +44,7 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.11",
     "memoizee": "^0.4.15",
-    "minimist": "^1.2.5",
+    "minimist": "^1.2.6",
     "node-config": "0.0.2",
     "node-schedule": "^2.0.0",
     "openapi-types": "^9.3.0",
