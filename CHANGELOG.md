@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* build(deps): Bump minimist from 1.2.5 to 1.2.6 [view commit](https://github.com/catenasys/sextant-api/commit/c5ee69f70809dc5468f37e1a86f6031f4ac7aed2)
 * build(deps): Bump urijs from 1.19.8 to 1.19.10 [view commit](https://github.com/catenasys/sextant-api/commit/54aa295f576896b3bcfaafcb8bc723a24f6c5893)
 
 ## v2.2.7
