@@ -6,61 +6,66 @@ const logger = require('../logging').getLogger({
 })
 const deploymentHttpConnection = require('../utils/deploymentHttpConnection')
 
+/*
+  Utility func that returns a unique id to be used when retrieving a connection from the cache
+  The id will be a string with the form: deploymentId-label1-label2
+*/
+const buildConnectionCacheId = (deploymentId, labels) => {
+  const connectionCacheId = Object.keys(labels)
+    .sort()
+    .reduce((id, key) => `${id}-${key}-${labels[key]}`, deploymentId)
+  logger.trace({
+    connectionCacheId,
+  })
+  return connectionCacheId
+}
+
 const TaekionAPI = ({ store } = {}) => {
   if (!store) {
-    throw new Error('TaekionAPI requires a store');
+    throw new Error('TaekionAPI requires a store')
   }
+  const getItemConnection = async ({ deployment, kind, labels = {} }) =>
+    deploymentHttpConnection({
+      labels,
+      store,
+      connectionCacheId: buildConnectionCacheId(deployment, labels),
+      id: deployment,
+      onConnection: async (connection) => {
+        const kindUrl = `${connection.baseUrl}/${kind}`
+        logger.trace('Connecting to %s', kindUrl)
+        const res = await axios({
+          method: 'GET',
+          url: kindUrl,
+          headers: {
+            Authorization: `Bearer ${connection.token}`,
+          },
+          httpsAgent: new Agent({
+            ca: connection.ca,
+          }),
+        })
 
-  const getItemConnection = async ({
-    deployment,
-    kind,
-    labels = {},
-  }) => deploymentHttpConnection({
-    store,
-    id: deployment,
-    onConnection: async (connection) => {
-      const kindUrl = `${connection.baseUrl}/${kind}`
-      logger.trace('Connecting to %s', kindUrl)
-      const res = await axios({
-        method: 'GET',
-        url: kindUrl,
-        headers: {
-          Authorization: `Bearer ${connection.token}`,
-        },
-        httpsAgent: new Agent({
-          ca: connection.ca,
-        }),
-      })
+        let items = res.data.items || []
+        logger.debug({ providedLabels: labels }, `Selecting ${kind} items based on provided labels"`)
+        Object.keys(labels).forEach((key) => {
+          items = items.filter((p) => p.metadata && p.metadata.labels && p.metadata.labels[key] === labels[key])
+        })
+        logger.debug({ providedLabels: labels }, `Selected ${items.length} ${kind} based on provided labels"`)
 
-      let items = res.data.items || [];
-      logger.debug({ providedLabels: labels }, `Selecting ${kind} items based on provided labels"`)
-      Object.keys(labels).forEach((key) => {
-        items = items.filter((p) => p.metadata && p.metadata.labels && p.metadata.labels[key] === labels[key]);
-      })
-      logger.debug({ providedLabels: labels }, `Selected ${items.length} ${kind} based on provided labels"`)
+        if (items.length > 0) {
+          const item = items[0]
+          connection.itemName = item.metadata.name
+          connection.itemBaseUrl = `${kindUrl}/${connection.itemName}`
+        } else {
+          throw new Error(`no ${kind} was found based on provided labels for deployment ${deployment}`)
+        }
+      },
+    })
 
-      if (items.length > 0) {
-        const item = items[0];
-        connection.itemName = item.metadata.name
-        connection.itemBaseUrl = `${kindUrl}/${connection.itemName}`
-      } else {
-        throw new Error(`no ${kind} was found based on provided labels for deployment ${deployment.id}`)
-      }
-    },
-  })
-
-  const getPodConnection = async ({
-    deployment,
-    labels = {},
-  }) => getItemConnection({ deployment, kind: 'pods', labels })
+  const getPodConnection = async ({ deployment, labels = {} }) =>
+    getItemConnection({ deployment, kind: 'pods', labels })
 
   // this is for speaking to the taekion middleware
-  const tfsApiRequest = async ({
-    deployment,
-    method = 'GET',
-    path,
-    ...extra
-  }) => {
+  const tfsApiRequest = async ({ deployment, method = 'GET', path, ...extra }) => {
     const connection = await getPodConnection({
       deployment,
       labels: {
@@ -78,23 +83,18 @@ const TaekionAPI = ({ store } = {}) => {
       return res.data
     } catch (e) {
       if (!e.response) {
-        throw e;
+        throw e
       }
       const errorMessage = JSON.stringify(e.response.data, null, 4)
-      const finalError = new Error(errorMessage);
-      finalError.response = e.response;
-      finalError._code = e.response.status;
-      throw finalError;
+      const finalError = new Error(errorMessage)
+      finalError.response = e.response
+      finalError._code = e.response.status
+      throw finalError
     }
-  };
+  }
 
   // this is for speaking to the sawtooth rest api
-  const stlRequestProxy = async ({
-    deployment,
-    req,
-    res,
-    ...extra
-  }) => {
+  const stlRequestProxy = async ({ deployment, req, res, ...extra }) => {
     const connection = await getPodConnection({
       deployment,
       labels: {
@@ -105,8 +105,8 @@ const TaekionAPI = ({ store } = {}) => {
     const url = `${connection.itemBaseUrl}:8008/proxy${req.url}`
     const useHeaders = { ...req.headers }
 
-    delete (useHeaders.host)
-    delete (useHeaders.authorization)
+    delete useHeaders.host
+    delete useHeaders.authorization
 
     try {
       const upstreamRes = await connection.client({
@@ -114,11 +114,7 @@ const TaekionAPI = ({ store } = {}) => {
         url,
         headers: useHeaders,
         responseType: 'stream',
-        data:
-          req.method.toLowerCase() === 'post'
-          || req.method.toLowerCase() === 'put'
-            ? req
-            : null,
+        data: req.method.toLowerCase() === 'post' || req.method.toLowerCase() === 'put' ? req : null,
         ...extra,
       })
 
@@ -127,64 +123,48 @@ const TaekionAPI = ({ store } = {}) => {
       upstreamRes.data.pipe(res)
     } catch (e) {
       if (!e.response) {
-        logger.error(e);
-        res.status(500);
-        res.end(e.toString());
+        logger.error(e)
+        res.status(500)
+        res.end(e.toString())
       } else {
-        const errorMessage = e.response.data
-          .toString()
-          .replace(/^Error (\d+):/, (match, code) => code);
-        res.status(e.response.status);
-        res.end(errorMessage);
+        const errorMessage = e.response.data.toString().replace(/^Error (\d+):/, (match, code) => code)
+        res.status(e.response.status)
+        res.end(errorMessage)
       }
     }
-  };
+  }
 
   const listKeys = async ({ deployment }) => {
     try {
       const data = await tfsApiRequest({
         deployment,
         path: '/keystore',
-      });
+      })
       return data.payload
     } catch (e) {
-      if (
-        e.response
-        && e.response.status === 404
-        && e.response.data.indexOf('no keys present') >= 0
-      ) {
-        return [];
+      if (e.response && e.response.status === 404 && e.response.data.indexOf('no keys present') >= 0) {
+        return []
       }
-      throw e;
+      throw e
     }
-  };
+  }
 
-  const getKey = async ({
-    deployment,
-    fingerprint,
-  }) => {
+  const getKey = async ({ deployment, fingerprint }) => {
     try {
       const data = await tfsApiRequest({
         deployment,
         path: `/keystore/${fingerprint}`,
-      });
+      })
       return data.payload
     } catch (e) {
-      if (
-        e.response
-        && e.response.status === 404
-        && e.response.data.indexOf('no keys present') >= 0
-      ) {
-        return [];
+      if (e.response && e.response.status === 404 && e.response.data.indexOf('no keys present') >= 0) {
+        return []
       }
-      throw e;
+      throw e
     }
-  };
+  }
 
-  const createKey = async ({
-    deployment,
-    name,
-  }) => {
+  const createKey = async ({ deployment, name }) => {
     try {
       const data = await tfsApiRequest({
         deployment,
@@ -194,7 +174,7 @@ const TaekionAPI = ({ store } = {}) => {
           id: name,
           encryption: 'aes_gcm',
         },
-      });
+      })
 
       const result = data.payload
       const keyData = await getKey({
@@ -207,16 +187,12 @@ const TaekionAPI = ({ store } = {}) => {
         result,
       }
     } catch (e) {
-      if (
-        e.response
-        && e.response.status === 404
-        && e.response.data.indexOf('no keys present') >= 0
-      ) {
-        return [];
+      if (e.response && e.response.status === 404 && e.response.data.indexOf('no keys present') >= 0) {
+        return []
       }
-      throw e;
+      throw e
     }
-  };
+  }
 
   // curl http://localhost:8000/volume?list
   const listVolumes = async ({ deployment }) => {
@@ -224,52 +200,44 @@ const TaekionAPI = ({ store } = {}) => {
       const data = await tfsApiRequest({
         deployment,
         path: '/volume',
-      });
+      })
       return data.payload
     } catch (e) {
-      if (
-        e.response
-        && e.response.status === 404
-        && e.response.data.indexOf('no volumes present') >= 0
-      ) {
-        return [];
+      if (e.response && e.response.status === 404 && e.response.data.indexOf('no volumes present') >= 0) {
+        return []
       }
-      throw e;
+      throw e
     }
-  };
+  }
 
   // curl http://localhost:8000/volume?create=apples&compression=none&encryption=none
-  const createVolume = ({
-    deployment,
-    name,
-    compression,
-    encryption,
-    fingerprint,
-  }) => tfsApiRequest({
-    deployment,
-    method: 'post',
-    path: '/volume',
-    data: {
-      id: name,
-      compression,
-      encryption,
-      fingerprint,
-    },
-  });
+  const createVolume = ({ deployment, name, compression, encryption, fingerprint }) =>
+    tfsApiRequest({
+      deployment,
+      method: 'post',
+      path: '/volume',
+      data: {
+        id: name,
+        compression,
+        encryption,
+        fingerprint,
+      },
+    })
 
-  const updateVolume = ({ deployment, volume, name }) => tfsApiRequest({
-    deployment,
-    method: 'put',
-    path: `/volume/${volume}`,
-    data: {
-      action: 'rename',
-      id: name,
-    },
-  });
+  const updateVolume = ({ deployment, volume, name }) =>
+    tfsApiRequest({
+      deployment,
+      method: 'put',
+      path: `/volume/${volume}`,
+      data: {
+        action: 'rename',
+        id: name,
+      },
+    })
 
   const deleteVolume = async () => {
-    throw new Error('endpoint tbc');
-  };
+    throw new Error('endpoint tbc')
+  }
 
   const listSnapshots = async ({ deployment, volume }) => {
     try {
@@ -279,37 +247,32 @@ const TaekionAPI = ({ store } = {}) => {
         params: {
           volume,
         },
-      });
-      return data.payload;
+      })
+      return data.payload
     } catch (e) {
-      if (
-        e.response
-        && e.response.status === 404
-        && e.response.data.indexOf('no snapshots found') >= 0
-      ) {
-        return [];
+      if (e.response && e.response.status === 404 && e.response.data.indexOf('no snapshots found') >= 0) {
+        return []
       }
-      throw e;
+      throw e
     }
-  };
+  }
 
-  const createSnapshot = ({ deployment, volume, name }) => tfsApiRequest({
-    deployment,
-    method: 'post',
-    path: '/snapshot',
-    data: {
-      volume,
-      id: name,
-    },
-  });
+  const createSnapshot = ({ deployment, volume, name }) =>
+    tfsApiRequest({
+      deployment,
+      method: 'post',
+      path: '/snapshot',
+      data: {
+        volume,
+        id: name,
+      },
+    })
 
   const deleteSnapshot = async () => {
-    throw new Error('endpoint tbc');
-  };
+    throw new Error('endpoint tbc')
+  }
 
-  const explorerListDirectory = async ({
-    deployment, volume, inode, snapshot,
-  }) => {
+  const explorerListDirectory = async ({ deployment, volume, inode, snapshot }) => {
     const data = await tfsApiRequest({
       deployment,
       method: 'get',
@@ -318,7 +281,7 @@ const TaekionAPI = ({ store } = {}) => {
         snapshot_head: snapshot,
       },
     })
-    return data.payload;
+    return data.payload
   }
 
   const explorerDownloadFile = async ({
@@ -332,6 +295,9 @@ const TaekionAPI = ({ store } = {}) => {
   }) => {
     const connection = await getPodConnection({
       deployment,
+      labels: {
+        component: 'tfs',
+      },
     })
 
     try {
@@ -372,7 +338,7 @@ const TaekionAPI = ({ store } = {}) => {
     stlRequestProxy,
     explorerListDirectory,
     explorerDownloadFile,
-  };
-};
+  }
+}
 
-module.exports = TaekionAPI;
+module.exports = TaekionAPI

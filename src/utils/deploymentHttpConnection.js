@@ -7,16 +7,12 @@ const https = require('https')
 const axios = require('axios')
 const deploymentConnection = require('./deploymentConnection')
 
-const deploymentHttpConnection = async ({
-  store,
-  id,
-  onConnection,
-}) => {
-
+const deploymentHttpConnection = async ({ store, id, onConnection, connectionCacheId }) => {
   const connection = await deploymentConnection({
     store,
     id,
     onConnection,
+    connectionCacheId,
   })
 
   const httpsAgent = new https.Agent({
@@ -25,14 +21,12 @@ const deploymentHttpConnection = async ({
 
   const client = axios.create({
     headers: {
-      'Authorization': `Bearer ${connection.token}`,
+      Authorization: `Bearer ${connection.token}`,
     },
-    httpsAgent
+    httpsAgent,
   })
 
-  return Object.assign({}, connection, {
-    client,
-  })
+  return { ...connection, client }
 }
 
 module.exports = deploymentHttpConnection
