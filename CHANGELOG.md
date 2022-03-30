@@ -1,9 +1,13 @@
 # CHANGELOG
 
-## Unreleased
+## v2.3.0
 
+* build(dockerfile): bumps node version to 16 [view commit](https://github.com/catenasys/sextant-api/commit/7bd89619bfa671dad35b8b4d0a660e8a8795bffc)
 * build(deps): Bump minimist from 1.2.5 to 1.2.6 [view commit](https://github.com/catenasys/sextant-api/commit/c5ee69f70809dc5468f37e1a86f6031f4ac7aed2)
 * build(deps): Bump urijs from 1.19.8 to 1.19.10 [view commit](https://github.com/catenasys/sextant-api/commit/54aa295f576896b3bcfaafcb8bc723a24f6c5893)
+
+## stopBuild/-h
+
 
 ## v2.2.7
 
@@ -119,7 +123,7 @@
 * feat(taekion-snapshot-ui): forward the snapshot param to the tfs middleware [view commit](https://github.com/catenasys/sextant-api/commit/aeff8663553fe7517dc47a89dc2b0e62ee7178ba)
 * refactor(controller-deployment): removes redundant await on non-promise [view commit](https://github.com/catenasys/sextant-api/commit/0e88956d11b3469539d199ba793c860f4b5e3ca3)
 
-## stopBuild/v2.2.2
+## v2.2.2
 
 * build(deps): Bump tar from 6.1.0 to 6.1.8 [view commit](https://github.com/catenasys/sextant-api/commit/658effd923672428b5f7d7d4e6dfc463554d7ab3)
 * build(deps): Bump urijs from 1.19.6 to 1.19.7 [view commit](https://github.com/catenasys/sextant-api/commit/4c120d4cdef5124debc24f2aba3a488838ef7340)
@@ -225,7 +229,7 @@
 * fix(deployment-controller): use double equal to compare userid instead of triple [view commit](https://github.com/catenasys/sextant-api/commit/b7749395131490bccc913b1c57556778461c7dc2)
 * fix(dockerfile): bump node version to twelve [view commit](https://github.com/catenasys/sextant-api/commit/ca7b7b492e942e0e5ca2e66916687c4d91cd7dad)
 
-## stopBuild/v2.2.1
+## v2.2.1
 
 * fix(deployment-store): return deployment list orderby to previous state [view commit](https://github.com/catenasys/sextant-api/commit/661ad4b9d2bbca0bb211cc7ec94b2c08ff23d277)
 * fix(cluster-and-deployment-store): remove orderby on sql query [view commit](https://github.com/catenasys/sextant-api/commit/92c119b6ebda5e66c38c16f893a404beb489d239)
@@ -245,7 +249,7 @@
 * feat(helm-tool): use edition as the argument for the class [view commit](https://github.com/catenasys/sextant-api/commit/81b9432c56c2f9cd18ff9bc93c533751bfc6f8ac)
 * style(helmtool): linting [view commit](https://github.com/catenasys/sextant-api/commit/bf9bc70bcd36decd10673ed3864949025f4cdf2d)
 
-## stopBuild/v2.2.0
+## v2.2.0
 
 * fix(daml_routes): add daml prefix to all daml routes [view commit](https://github.com/catenasys/sextant-api/commit/255ebc791aa232a2678dc59670aa93327fe285c5)
 * fix(daml): apply a 200mb setting for the max message size which with the patched binary will apply to request as well as response messages [view commit](https://github.com/catenasys/sextant-api/commit/9de54b5252ec0aad7e6ff9d8849070dacd17d3ac)
@@ -268,14 +272,14 @@
 * feat(damljwt): generate jwt tokens based on secret loaded from k8s [view commit](https://github.com/catenasys/sextant-api/commit/16d9fe497eeb8cb0f0796c727fce25c521b307f3)
 * fix(router): add swagger-ui and initial method documentation [view commit](https://github.com/catenasys/sextant-api/commit/2811b7c9f549bc04d89614390f40bceaa9264c2b)
 
-## stopBuild/v2.1.16
+## v2.1.16
 
 * fix(editions): update deployment list with new order [view commit](https://github.com/catenasys/sextant-api/commit/623d5494f8e93dade33dcea5e1fc8c715422ceb4)
 * fix(editions): re-order deployments and remove tfs from enterprise [view commit](https://github.com/catenasys/sextant-api/commit/b60b49d170dd0a9e88fc5b1de422c4f1982f9bad)
 * fix(dev-edition): fix typo and use unstable images [view commit](https://github.com/catenasys/sextant-api/commit/a61383355d3ba10fc72a567c48b3bdb7550a63e4)
 * feat(editions): add tfs to enterprise and reorder deployments [view commit](https://github.com/catenasys/sextant-api/commit/d377b55ef803b779ab8624936337686304e50b49)
 
-## stopBuild/v2.1.15
+## v2.1.15
 
 * fix(key-manager): require pod before getting keys [view commit](https://github.com/catenasys/sextant-api/commit/a935ef62b536fad2abdc5c7dd68501d6f8b69393)
 * fix(daml-rpc): require pod before all daml-rpc actions [view commit](https://github.com/catenasys/sextant-api/commit/8aa9d6307db3bc19c0e92e35aab9f76a4e086dc9)
@@ -286,7 +290,7 @@
 * fix(pod-proxy): handle edge case when there is no pod running [view commit](https://github.com/catenasys/sextant-api/commit/68f36d43281c86e2525b13a4f30b37d2b34854c9)
 * style(pod-proxy): linting [view commit](https://github.com/catenasys/sextant-api/commit/5f1b31627b8976603cc7500e5d296c237086fe8e)
 
-## stopBuild/v2.1.14
+## v2.1.14
 
 * fix(daml-rpc): remove modules from archive upload payload [view commit](https://github.com/catenasys/sextant-api/commit/c93dd3330561594fb91b6fa0dbd137a435961923)
 * fix(package): remove extra memory allocation [view commit](https://github.com/catenasys/sextant-api/commit/eb55e1a0461cb5d8cd1c4330a795779c2dfb92cd)
@@ -310,11 +314,11 @@
 * feat(taekionkeys): implement the keystore using the taekion middleware api [view commit](https://github.com/catenasys/sextant-api/commit/02af3f65c3df2b0d06a1edc64d1a2c3f504b926d)
 * fix(deployment): add useful logging [view commit](https://github.com/catenasys/sextant-api/commit/79c4d0b14e7d53b8fc8f121576d0ff6715ec08a7)
 
-## stopBuild/v2.1.11
+## v2.1.11
 
 * fix(templateloader): require strings and arrays from yaml output [view commit](https://github.com/catenasys/sextant-api/commit/5f9f85149e8eef9872d53dd8ac1efad6278bc1be)
 
-## stopBuild/v2.1.10
+## v2.1.10
 
 * fix(delete): create helm delete for single deployed instance in namespace [view commit](https://github.com/catenasys/sextant-api/commit/630db408feb206df5139aba204b9451611c2c121)
 * style(delete): lint delete task code [view commit](https://github.com/catenasys/sextant-api/commit/16362e7aa8467942b8e46d2b907f3b2582f04d26)
@@ -323,11 +327,11 @@
 * feat(task-util): add new known error to deployment status updator [view commit](https://github.com/catenasys/sextant-api/commit/ff62f1aa4e00fe91ecc39b7402ea38358793c3d2)
 * feat(form-string-array): configure the image pull secrets to be an array of strings not an array of objects [view commit](https://github.com/catenasys/sextant-api/commit/27a6f355939166e6026091c545ab56dd0a61e471)
 
-## stopBuild/v2.1.9
+## v2.1.9
 
 * fix(editions): update to use btp-stable where appropriate [view commit](https://github.com/catenasys/sextant-api/commit/ddbb2bf375ea02a9a25b2beb4ddd70a6f4adc40a)
 
-## stopBuild/v2.1.8
+## v2.1.8
 
 * feat(edition): update classic taekion as tfs on sawtooth helm chart [view commit](https://github.com/catenasys/sextant-api/commit/1f9c71445c5d2559734d5d5d930981b1d21a0278)
 * feat(edition): pull down tfs on sawtooth helm chart via edition module [view commit](https://github.com/catenasys/sextant-api/commit/db99a36c426afbb067a62400fa5fb4844d19765d)
@@ -343,15 +347,15 @@
 * Revert "fix(editions): reorder sfs charts" [view commit](https://github.com/catenasys/sextant-api/commit/3985d42eafb778a903c75cf69e9085ed2572ced9)
 * fix(editions): reorder sfs charts [view commit](https://github.com/catenasys/sextant-api/commit/57e810e1c0482efc5c32ab41db2cd810bcd204a8)
 
-## stopBuild/v2.1.7
+## v2.1.7
 
 * fix(editions): add besu to sfs [view commit](https://github.com/catenasys/sextant-api/commit/5c6f0710b35980e3037bd3aefc875614b7936d2a)
 
-## stopBuild/v2.1.6
+## v2.1.6
 
 * fix(editions): point to btp-unstable [view commit](https://github.com/catenasys/sextant-api/commit/bcf8982ef36a41c7936c8abae2537efe86e9031b)
 
-## stopBuild/v2.1.5
+## v2.1.5
 
 * fix(editions): remove dev repository [view commit](https://github.com/catenasys/sextant-api/commit/589a2e00551b8652702550ee83d6d235442dd53b)
 * feat(editions): disable classic templates and config editions [view commit](https://github.com/catenasys/sextant-api/commit/53c72ac7893abcea26ba319352fef9502de422c9)
@@ -371,13 +375,13 @@
 * feat(editions): add daml-on-postgres [view commit](https://github.com/catenasys/sextant-api/commit/b4a14b228e2e5baa824d72bd768d9e450e43fdcc)
 * fix(editions): correct dev.js edition [view commit](https://github.com/catenasys/sextant-api/commit/27566a6630f63920518dbc6f02d368d8d1152f08)
 
-## stopBuild/v2.1.4
+## v2.1.4
 
 * fix(editions): add daml-on-sawtooth back in to dev edition [view commit](https://github.com/catenasys/sextant-api/commit/1c90724b32e5dfdf4db57829c5817595d473e106)
 * feat(editions): add besu to dev edition [view commit](https://github.com/catenasys/sextant-api/commit/d241747eddc3718113d89aaed6d0035df0bd4cd3)
 * feat(editions): add elasticsearch and kibana [view commit](https://github.com/catenasys/sextant-api/commit/d854d1c024517b04993d0e099db1323518aba3be)
 
-## stopBuild/v2.1.3
+## v2.1.3
 
 * feat(editions): add fluentd chart [view commit](https://github.com/catenasys/sextant-api/commit/150dd81c5e830617dedc41f5c34b6b10c1cc037a)
 * feat(dev): add openebs to dev edition [view commit](https://github.com/catenasys/sextant-api/commit/364a3e00d55afa2d45a206fbbcd03daad4ed6e2a)
@@ -387,7 +391,7 @@
 * fix(migrations): correct the down methods on migrations [view commit](https://github.com/catenasys/sextant-api/commit/a5e01662636ed95dfd6f1dfb3daaf59c048247d9)
 * feat(editions): add daml-on-besu to dev edition [view commit](https://github.com/catenasys/sextant-api/commit/6dd04eb6bc9da6f5f7b15ee44ca12521a9cf4c96)
 
-## stopBuild/v2.1.2
+## v2.1.2
 
 * fix(dev): redirect from nexus to official unstable repos [view commit](https://github.com/catenasys/sextant-api/commit/253a89852b773cbbece95810f3115945c934567b)
 * feat(edition): add sft edition [view commit](https://github.com/catenasys/sextant-api/commit/3eeba09478ef208da217d7cce35a135c67324658)
@@ -442,7 +446,7 @@
 * add taekion routes [view commit](https://github.com/catenasys/sextant-api/commit/7f6b817a304a0c7f855c9931bfc15969d5bb0087)
 * split daml routes/controllers from deployment and add taekion api stubs [view commit](https://github.com/catenasys/sextant-api/commit/d81e5905e32ff936d34d0dc35f9235d16e2e8d78)
 
-## stopBuild/v2.1.1
+## v2.1.1
 
 * style(linter): allow underscores in variable names [view commit](https://github.com/catenasys/sextant-api/commit/3234eeb5f90f727ecdb0a7129ee75193b2af8121)
 * build(packages): add linting package [view commit](https://github.com/catenasys/sextant-api/commit/75cf4373318e53453413c1ee159975af2ba008ca)
@@ -469,7 +473,7 @@
 * SXT-299 Handle known errors in the resource updators [view commit](https://github.com/catenasys/sextant-api/commit/800b4bbb2231f30d3d52c9dc660a01bf5fa6f99c)
 * Add probot-stale and CODEOWNERS [view commit](https://github.com/catenasys/sextant-api/commit/e6089961d4ba7218bde1f0c48dbf9a22250201c6)
 
-## stopBuild/v2.1.0
+## v2.1.0
 
 * Update non-dev edition modules for helm chart integration [view commit](https://github.com/catenasys/sextant-api/commit/5ebefa9753028122724c229b7c13fd78b28661a0)
 * HELM3 Remove sextant parent object from template loader [view commit](https://github.com/catenasys/sextant-api/commit/5bfbde6ab8c0429b90546662fbbed2dac2c623c1)
