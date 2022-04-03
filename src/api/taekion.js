@@ -127,7 +127,7 @@ const TaekionAPI = ({ store } = {}) => {
         res.status(500)
         res.end(e.toString())
       } else {
-        const errorMessage = e.response.data.toString().replace(/^Error (\d+):/, (match, code) => code)
+        const errorMessage = e.response.data.toString().replace(/^Error (\d+):/, (_match, code) => code)
         res.status(e.response.status)
         res.end(errorMessage)
       }
