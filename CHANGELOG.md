@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* fix(docs): add requirements.txt and pin mkdocs version [view commit](https://github.com/catenasys/sextant-api/commit/310400c88c90cc214ef73fe1e9f192798bf7f3f4)
+
 ## v2.3.0
 
 * build(dockerfile): bumps node version to 16 [view commit](https://github.com/catenasys/sextant-api/commit/7bd89619bfa671dad35b8b4d0a660e8a8795bffc)
