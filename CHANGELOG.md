@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* fix(taekion): intentionally pass unused argument to function [view commit](https://github.com/catenasys/sextant-api/commit/e5c08bd7a6978d6881b79a9fdbafcc540a31b065)
+* fix(taekion-api): fix cache for axios instances with authentication for a deployment namespace [view commit](https://github.com/catenasys/sextant-api/commit/9e47d5aaf10de0514d5324d0efd6524a49e870cd)
 * fix(docs): add requirements.txt and pin mkdocs version [view commit](https://github.com/catenasys/sextant-api/commit/310400c88c90cc214ef73fe1e9f192798bf7f3f4)
 
 ## v2.3.0
