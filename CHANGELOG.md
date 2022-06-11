@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* build(deps): Bump protobufjs from 6.11.2 to 6.11.3 [view commit](https://github.com/catenasys/sextant-api/commit/e12a08bc043838e511b4002318c3fcdb507aabcf)
 * build(deps): Bump urijs from 1.19.10 to 1.19.11 [view commit](https://github.com/catenasys/sextant-api/commit/4a3fbb266dd16314603e10158bb8ad7dba3b0a46)
 * fix(taekion): intentionally pass unused argument to function [view commit](https://github.com/catenasys/sextant-api/commit/e5c08bd7a6978d6881b79a9fdbafcc540a31b065)
 * fix(taekion-api): fix cache for axios instances with authentication for a deployment namespace [view commit](https://github.com/catenasys/sextant-api/commit/9e47d5aaf10de0514d5324d0efd6524a49e870cd)
