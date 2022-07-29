@@ -1,49 +1,36 @@
 // Edition object for community edition (sawtooth+DAML)
+const repositories = require('./charts/repositories')
+const STABLE_CHARTS = require('./charts/btp-stable')
+const METERING = require('./metering/metering')
+const DEPLOYMENT_SPEC = require('./deployment')
 
 const edition = {
-  deployment: {
-    classic: [],
-  },
-  metering: {
-    type: 'dev',
-  },
-  helmRepos: [
-    {
-      name: 'btp-stable',
-      url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
-    },
-  ],
+  deployment: DEPLOYMENT_SPEC.EMPTY,
+  metering: METERING.DEV,
+  helmRepos: [repositories.BTP_STABLE],
   chartTable: {
     besu: {
       1.4: {
-        chart: 'btp-stable/besu',
-        chartVersion: '~0.0.8',
+        ...STABLE_CHARTS.BESU,
         order: 1,
-        extension: 'besu',
       },
     },
     sawtooth: {
       1.1: {
-        chart: 'btp-stable/sawtooth',
-        chartVersion: '~0.2.0',
+        ...STABLE_CHARTS.SAWTOOTH,
         order: 2,
-        extension: 'sawtooth',
       },
     },
     'daml-on-besu': {
       1.3: {
-        chart: 'btp-stable/daml-on-besu',
-        chartVersion: '~0.0.32',
+        ...STABLE_CHARTS.DAML_ON_BESU,
         order: 3,
-        extension: 'daml',
       },
     },
     'daml-on-sawtooth': {
       1.3: {
-        chart: 'btp-stable/daml-on-sawtooth',
-        chartVersion: '~0.2.0',
+        ...STABLE_CHARTS.DAML_ON_SAWTOOTH,
         order: 4,
-        extension: 'daml',
       },
     },
   },

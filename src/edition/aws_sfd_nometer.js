@@ -5,75 +5,56 @@
  */
 
 // Edition object for DAML on Sawtooth
+const repositories = require('./charts/repositories')
+const STABLE_CHARTS = require('./charts/btp-stable')
+const METERING = require('./metering/metering')
+const DEPLOYMENT_SPEC = require('./deployment')
 
 const edition = {
-  deployment: {
-    classic: [],
-  },
-  metering: {
-    type: 'dev',
-  },
-  helmRepos: [
-    {
-      name: 'btp-stable',
-      url: 'https://btp-charts-stable.s3.amazonaws.com/charts',
-    },
-  ],
+  deployment: DEPLOYMENT_SPEC.EMPTY,
+  metering: METERING.DEV,
+  helmRepos: [repositories.BTP_STABLE],
   chartTable: {
     'daml-on-besu': {
       1.3: {
-        chart: 'btp-stable/daml-on-besu',
-        chartVersion: '~0.0.32',
+        ...STABLE_CHARTS.DAML_ON_BESU,
         order: 1,
-        extension: 'daml',
       },
     },
     'daml-on-postgres': {
       1.3: {
-        chart: 'btp-stable/daml-on-postgres',
-        chartVersion: '~0.1.1',
+        ...STABLE_CHARTS.DAML_ON_POSTGRES,
         order: 4,
-        extension: 'daml',
       },
     },
     'daml-on-sawtooth': {
       1.3: {
-        chart: 'btp-stable/daml-on-sawtooth',
-        chartVersion: '~0.1.56',
+        ...STABLE_CHARTS.DAML_ON_SAWTOOTH,
         order: 2,
-        extension: 'daml',
       },
     },
     'daml-on-qldb': {
       1.3: {
-        chart: 'btp-stable/daml-on-qldb',
-        chartVersion: '~0.0.9',
+        ...STABLE_CHARTS.DAML_ON_QLDB,
         order: 3,
-        extension: 'daml',
       },
     },
     openebs: {
       '2.0': {
-        chart: 'btp-stable/openebs',
-        chartVersion: '~2.0.2',
+        ...STABLE_CHARTS.OPENEBS,
         order: 7,
-        extension: 'openebs',
       },
     },
     'nginx-ingress': {
       1.8: {
-        chart: 'btp-stable/nginx-ingress',
-        chartVersion: '~0.0.1',
+        ...STABLE_CHARTS.NGINX_INGRESS,
         order: 6,
-        extension: 'ingress',
       },
     },
     'postgresql-ha': {
       11.9: {
-        chart: 'btp-stable/postgresql-ha',
-        chartVersion: '~0.0.1',
+        ...STABLE_CHARTS.POSTGRESQL_HA,
         order: 5,
-        extension: 'pgsql',
       },
     },
   },
