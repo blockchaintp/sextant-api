@@ -9,7 +9,7 @@ const deploymentNames = require('../utils/deploymentNames')
 const deploymentForms = require('../forms/deployment')
 const deploymentTemplates = require('../deployment_templates')
 const validate = require('../forms/validate')
-const { edition } = require('../edition')
+const { edition } = require('../edition/index')
 
 /*
 This function relies on the chartTable in the edition object

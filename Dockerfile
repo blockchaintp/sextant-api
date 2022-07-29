@@ -41,7 +41,7 @@ COPY . /app/api
 # this is the default noop metering module
 # copy in the edition module
 ARG EDITION_MODULE=dev
-COPY ./editions/${EDITION_MODULE}.js /app/api/src/edition.js
+ENV EDITION_MODULE ${EDITION_MODULE}
 
 ARG NODE_ENV=development
 ENV NODE_ENV ${NODE_ENV}

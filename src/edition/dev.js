@@ -1,8 +1,4 @@
 // Edition object for dev mode
-const dotenv = require('dotenv');
-
-dotenv.config();
-
 const edition = {
   deployment: {
     classic: [],
@@ -158,4 +154,4 @@ const edition = {
 
 module.exports = {
   edition,
-};
+}

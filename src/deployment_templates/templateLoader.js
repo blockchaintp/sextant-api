@@ -1,9 +1,4 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable global-require */
-/* eslint-disable max-len */
-/* eslint-disable no-undef */
 /* eslint-disable no-restricted-syntax */
-/* eslint-disable import/no-dynamic-require */
 const fs = require('fs')
 const path = require('path')
 const yaml = require('js-yaml')
@@ -11,7 +6,7 @@ const merge = require('deepmerge')
 
 const readFile = fs.readFileSync
 
-const { edition } = require('../edition')
+const { edition } = require('../edition/index')
 
 const { chartTable } = edition
 
@@ -21,6 +16,7 @@ const HELM_CHARTS_PATH = path.resolve(__dirname, './../../helmCharts')
 
 const getClassicDeploymentDetails = (deploymentTemplates) =>
   deploymentTemplates.reduce((allTemplates, type) => {
+    // eslint-disable-next-line global-require, no-param-reassign, import/no-dynamic-require
     allTemplates[type] = require(`./${type}`)
     return allTemplates
   }, {})
@@ -51,12 +47,14 @@ const structureYamlContent = (yamlContent) => {
 
   const entry = details[deploymentType]
 
+  // eslint-disable-next-line global-require, import/no-dynamic-require
   entry.forms[deploymentVersion] = require(path.resolve(
     HELM_CHARTS_PATH,
     deploymentType,
     deploymentVersion,
     sextant.form
   ))
+  // eslint-disable-next-line global-require, import/no-dynamic-require
   entry.summary[deploymentVersion] = require(path.resolve(
     HELM_CHARTS_PATH,
     deploymentType,

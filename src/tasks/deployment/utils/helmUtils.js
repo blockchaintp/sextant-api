@@ -4,7 +4,7 @@ const path = require('path')
 
 const readFile = fs.readFileSync
 
-const { edition } = require('../../../edition')
+const { edition } = require('../../../edition/index')
 
 const HELM_CHARTS_PATH = path.resolve(__dirname, '../../../../helmCharts')
 

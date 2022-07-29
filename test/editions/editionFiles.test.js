@@ -13,7 +13,7 @@ const EDITION_FILES = [
 
 const editionFileTestSuite = async (testedEdition) => {
   // eslint-disable-next-line import/no-dynamic-require, global-require
-  const currentEdition = require(`../../editions/${testedEdition}`)
+  const currentEdition = require(`../../src/edition/${testedEdition}`)
   const { edition } = currentEdition
   const helmRepos = edition.helmRepos[0]
   const { chartTable } = edition
@@ -58,7 +58,6 @@ const editionFileTestSuite = async (testedEdition) => {
         },
         async () => {
           const fileName = await utils.getChartFileName(deploymentVersion, helmRepos.name)
-          console.log(`deleting: ${fileName}`)
           utils.removeChartFile(fileName)
         }
       )

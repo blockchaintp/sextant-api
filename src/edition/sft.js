@@ -39,8 +39,8 @@ const edition = {
       },
     },
   },
-};
+}
 
 module.exports = {
   edition,
-};
+}
