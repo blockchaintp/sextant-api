@@ -21,8 +21,8 @@ switch (process.env_MODULE || 'dev') {
   case 'sft':
     module.exports = require('./sft')
     break
-  default:
   case 'dev':
+  default:
     module.exports = require('./dev')
     break
 }

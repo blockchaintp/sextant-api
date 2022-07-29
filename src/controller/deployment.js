@@ -146,6 +146,14 @@ const DeploymentController = ({ store }) => {
     return deployment
   }
 
+  const checkCreateDeploymentArgs = (user, name, deployment_type, deployment_version, desired_state) => {
+    if (!user) throw new Error('user required for controllers.deployment.create')
+    if (!name) throw new Error('data.name required for controllers.deployment.create')
+    if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create')
+    if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create')
+    if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create')
+  }
+
   /*
 
     create a new deployment
@@ -165,11 +173,7 @@ const DeploymentController = ({ store }) => {
   */
   const create = ({ user, cluster, data: { name, deployment_type, deployment_version, desired_state, custom_yaml } }) =>
     store.transaction(async (trx) => {
-      if (!user) throw new Error('user required for controllers.deployment.create')
-      if (!name) throw new Error('data.name required for controllers.deployment.create')
-      if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create')
-      if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create')
-      if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create')
+      checkCreateDeploymentArgs(user, name, deployment_type, deployment_version, desired_state)
 
       const typeForm = deploymentForms[deployment_type]
 
@@ -351,6 +355,12 @@ const DeploymentController = ({ store }) => {
     })
   }
 
+  const checkCreateRoleArgs = (id, user, username, permission) => {
+    if (!id) throw new Error('id must be given to controller.deployment.createRole')
+    if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole')
+    if (!permission) throw new Error('permission must be given to controller.deployment.createRole')
+  }
+
   /*
 
     create a role for a given deployment
@@ -365,9 +375,7 @@ const DeploymentController = ({ store }) => {
   */
   const createRole = ({ id, user, username, permission }) =>
     store.transaction(async (trx) => {
-      if (!id) throw new Error('id must be given to controller.deployment.createRole')
-      if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole')
-      if (!permission) throw new Error('permission must be given to controller.deployment.createRole')
+      checkCreateRoleArgs(id, user, username, permission)
 
       const userQuery = {}
 
