@@ -1,15 +1,15 @@
 /* eslint-disable max-len */
-const Promise = require('bluebird');
-const config = require('../config');
-const userUtils = require('../utils/user');
-const ClusterKubectl = require('../utils/clusterKubectl');
-const RBAC = require('../rbac');
+const Promise = require('bluebird')
+const config = require('../config')
+const userUtils = require('../utils/user')
+const ClusterKubectl = require('../utils/clusterKubectl')
+const RBAC = require('../rbac')
 const deploymentNames = require('../utils/deploymentNames')
 
-const deploymentForms = require('../forms/deployment');
-const deploymentTemplates = require('../deployment_templates');
-const validate = require('../forms/validate');
-const { edition } = require('../edition');
+const deploymentForms = require('../forms/deployment')
+const deploymentTemplates = require('../deployment_templates')
+const validate = require('../forms/validate')
+const { edition } = require('../edition')
 
 /*
 This function relies on the chartTable in the edition object
@@ -18,23 +18,20 @@ The template type will always default to 'classic'
 */
 
 const getDeploymentMethod = (deployment_type, deployment_version) => {
-  const { chartTable } = edition;
-  let deploymentMethod;
+  const { chartTable } = edition
+  let deploymentMethod
 
   // eslint-disable-next-line max-len
   if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
-    deploymentMethod = 'helm';
+    deploymentMethod = 'helm'
   } else {
-    deploymentMethod = 'classic';
+    deploymentMethod = 'classic'
   }
 
-  return deploymentMethod;
-};
+  return deploymentMethod
+}
 
-const {
-  DEPLOYMENT_STATUS,
-  USER_TYPES,
-} = config;
+const { DEPLOYMENT_STATUS, USER_TYPES } = config
 
 const DeploymentController = ({ store }) => {
   /*
@@ -50,36 +47,32 @@ const DeploymentController = ({ store }) => {
      * clusters
 
   */
-  const loadAdditionalDeploymentData = ({
-    deployments,
-  }) => {
-    const clusterCache = {};
+  const loadAdditionalDeploymentData = ({ deployments }) => {
+    const clusterCache = {}
 
-    const loadClusterForDeployment = async ({
-      id,
-    }) => {
-      if (clusterCache[id]) return clusterCache[id];
+    const loadClusterForDeployment = async ({ id }) => {
+      if (clusterCache[id]) return clusterCache[id]
       const cluster = await store.cluster.get({
         id,
-      });
-      clusterCache[id] = cluster;
-      return cluster;
-    };
+      })
+      clusterCache[id] = cluster
+      return cluster
+    }
 
     return Promise.map(deployments, async (deployment) => {
       const task = await store.task.mostRecentForResource({
         deployment: deployment.id,
-      });
+      })
 
       const cluster = await loadClusterForDeployment({
         id: deployment.cluster,
-      });
+      })
       const updatedDeployment = deployment
-      updatedDeployment.task = task;
-      updatedDeployment.clusterName = cluster.name;
-      return updatedDeployment;
-    });
-  };
+      updatedDeployment.task = task
+      updatedDeployment.clusterName = cluster.name
+      return updatedDeployment
+    })
+  }
   /*
 
     list deployments
@@ -96,37 +89,32 @@ const DeploymentController = ({ store }) => {
     given user
 
   */
-  const list = async ({
-    user,
-    cluster,
-    deleted,
-    withTasks,
-  }) => {
-    if (!user) throw new Error('user required for controllers.deployment.list');
-    if (!cluster) throw new Error('cluster required for controllers.deployment.list');
+  const list = async ({ user, cluster, deleted, withTasks }) => {
+    if (!user) throw new Error('user required for controllers.deployment.list')
+    if (!cluster) throw new Error('cluster required for controllers.deployment.list')
 
     const deployments = await store.deployment.list({
       cluster,
       deleted,
-    });
+    })
 
     const filteredDeployments = await Promise.filter(deployments, async (deployment) => {
       const canSeeDeployment = await RBAC(store, user, {
         resource_type: 'deployment',
         resource_id: deployment.id,
         method: 'get',
-      });
-      return canSeeDeployment;
-    });
+      })
+      return canSeeDeployment
+    })
 
     if (withTasks) {
       return loadAdditionalDeploymentData({
         deployments: filteredDeployments,
-      });
+      })
     }
 
-    return filteredDeployments;
-  };
+    return filteredDeployments
+  }
 
   /*
 
@@ -138,28 +126,25 @@ const DeploymentController = ({ store }) => {
      * withTask - should we load the latest task into the result
 
   */
-  const get = async ({
-    id,
-    withTask,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.get');
+  const get = async ({ id, withTask }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.get')
 
     const deployment = await store.deployment.get({
       id,
-    });
+    })
 
-    if (!deployment) return null;
+    if (!deployment) return null
 
     if (withTask) {
       const task = await store.task.mostRecentForResource({
         deployment: id,
-      });
+      })
 
-      deployment.task = task;
+      deployment.task = task
     }
 
-    return deployment;
-  };
+    return deployment
+  }
 
   /*
 
@@ -178,90 +163,90 @@ const DeploymentController = ({ store }) => {
     deployment on this cluster
 
   */
-  const create = ({
-    user,
-    cluster,
-    data: {
-      name,
-      deployment_type,
-      deployment_version,
-      desired_state,
-      custom_yaml,
-    },
-  }) => store.transaction(async (trx) => {
-    if (!user) throw new Error('user required for controllers.deployment.create');
-    if (!name) throw new Error('data.name required for controllers.deployment.create');
-    if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create');
-    if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create');
-    if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create');
+  const create = ({ user, cluster, data: { name, deployment_type, deployment_version, desired_state, custom_yaml } }) =>
+    store.transaction(async (trx) => {
+      if (!user) throw new Error('user required for controllers.deployment.create')
+      if (!name) throw new Error('data.name required for controllers.deployment.create')
+      if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create')
+      if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create')
+      if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create')
 
-    const typeForm = deploymentForms[deployment_type];
+      const typeForm = deploymentForms[deployment_type]
 
-    if (!typeForm) throw new Error(`unknown deployment_type: ${deployment_type}`);
+      if (!typeForm) throw new Error(`unknown deployment_type: ${deployment_type}`)
 
-    const schema = typeForm.forms[deployment_version];
+      const schema = typeForm.forms[deployment_version]
 
-    if (!schema) throw new Error(`unknown deployment_type: ${deployment_type} version ${deployment_version}`);
+      if (!schema) throw new Error(`unknown deployment_type: ${deployment_type} version ${deployment_version}`)
 
-    // validate the incoming form data
-    await validate({
-      schema,
-      data: desired_state,
-    });
+      // validate the incoming form data
+      await validate({
+        schema,
+        data: desired_state,
+      })
 
-    // check there is no cluster already with that name
-    const deployments = await store.deployment.list({
-      cluster,
-    });
-
-    const existingDeployment = deployments.find(
-      (currentDeployment) => currentDeployment.name.toLowerCase() === name.toLowerCase(),
-    );
-    if (existingDeployment) throw new Error(`there is already a deployment with the name ${name}`);
-
-    // determine if there is a helm chart for this deployment type
-    const deployment_method = getDeploymentMethod(deployment_type, deployment_version);
-
-    // create the deployment record
-    const deployment = await store.deployment.create({
-      data: {
-        name,
+      // check there is no cluster already with that name
+      const deployments = await store.deployment.list({
         cluster,
-        deployment_type,
-        deployment_version,
-        desired_state,
-        custom_yaml,
-        deployment_method,
-      },
-    }, trx);
+      })
 
-    // if the user is not a super-user - create a role for the user against the cluster
-    if (!userUtils.isSuperuser(user)) {
-      await store.role.create({
-        data: {
-          user: user.id,
-          permission: config.PERMISSION_TYPES.write,
-          resource_type: config.RESOURCE_TYPES.deployment,
-          resource_id: deployment.id,
-        },
-      }, trx);
-    }
+      const existingDeployment = deployments.find(
+        (currentDeployment) => currentDeployment.name.toLowerCase() === name.toLowerCase()
+      )
+      if (existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
 
-    return store.task.create({
-      data: {
-        user: user.id,
-        resource_type: config.RESOURCE_TYPES.deployment,
-        resource_id: deployment.id,
-        action: config.TASK_ACTION['deployment.create'],
-        restartable: true,
-        payload: {},
-        resource_status: {
-          completed: 'provisioned',
-          error: 'error',
+      // determine if there is a helm chart for this deployment type
+      const deployment_method = getDeploymentMethod(deployment_type, deployment_version)
+
+      // create the deployment record
+      const deployment = await store.deployment.create(
+        {
+          data: {
+            name,
+            cluster,
+            deployment_type,
+            deployment_version,
+            desired_state,
+            custom_yaml,
+            deployment_method,
+          },
         },
-      },
-    }, trx);
-  });
+        trx
+      )
+
+      // if the user is not a super-user - create a role for the user against the cluster
+      if (!userUtils.isSuperuser(user)) {
+        await store.role.create(
+          {
+            data: {
+              user: user.id,
+              permission: config.PERMISSION_TYPES.write,
+              resource_type: config.RESOURCE_TYPES.deployment,
+              resource_id: deployment.id,
+            },
+          },
+          trx
+        )
+      }
+
+      return store.task.create(
+        {
+          data: {
+            user: user.id,
+            resource_type: config.RESOURCE_TYPES.deployment,
+            resource_id: deployment.id,
+            action: config.TASK_ACTION['deployment.create'],
+            restartable: true,
+            payload: {},
+            resource_status: {
+              completed: 'provisioned',
+              error: 'error',
+            },
+          },
+        },
+        trx
+      )
+    })
 
   /*
 
@@ -277,58 +262,67 @@ const DeploymentController = ({ store }) => {
         * maintenance_flag
 
   */
-  const update = ({
-    id,
-    user,
-    data,
-  }) => store.transaction(async (trx) => {
-    if (!id) throw new Error('id must be given to controller.deployment.update');
-    if (!user) throw new Error('user must be given to controller.deployment.update');
-    if (!data) throw new Error('data must be given to controller.deployment.update');
+  const update = ({ id, user, data }) =>
+    store.transaction(async (trx) => {
+      if (!id) throw new Error('id must be given to controller.deployment.update')
+      if (!user) throw new Error('user must be given to controller.deployment.update')
+      if (!data) throw new Error('data must be given to controller.deployment.update')
 
-    // check to see if there are active tasks for this cluster
-    const activeTasks = await store.task.activeForResource({
-      deployment: id,
-    }, trx);
-
-    if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment');
-
-    // get the existing cluster
-    const deployment = await store.deployment.get({
-      id,
-    }, trx);
-
-    if (!deployment) throw new Error(`no deployment with that id found: ${id}`);
-
-    const schema = deploymentForms[deployment.deployment_type].forms[deployment.deployment_version];
-
-    // validate the form data
-    await validate({
-      schema,
-      data: data.desired_state,
-    });
-
-    // save the deployment
-    await store.deployment.update({
-      id,
-      data,
-    }, trx);
-
-    return store.task.create({
-      data: {
-        user: user.id,
-        resource_type: config.RESOURCE_TYPES.deployment,
-        resource_id: deployment.id,
-        action: config.TASK_ACTION['deployment.update'],
-        restartable: true,
-        payload: {},
-        resource_status: {
-          completed: 'provisioned',
-          error: 'error',
+      // check to see if there are active tasks for this cluster
+      const activeTasks = await store.task.activeForResource(
+        {
+          deployment: id,
         },
-      },
-    }, trx);
-  });
+        trx
+      )
+
+      if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment')
+
+      // get the existing cluster
+      const deployment = await store.deployment.get(
+        {
+          id,
+        },
+        trx
+      )
+
+      if (!deployment) throw new Error(`no deployment with that id found: ${id}`)
+
+      const schema = deploymentForms[deployment.deployment_type].forms[deployment.deployment_version]
+
+      // validate the form data
+      await validate({
+        schema,
+        data: data.desired_state,
+      })
+
+      // save the deployment
+      await store.deployment.update(
+        {
+          id,
+          data,
+        },
+        trx
+      )
+
+      return store.task.create(
+        {
+          data: {
+            user: user.id,
+            resource_type: config.RESOURCE_TYPES.deployment,
+            resource_id: deployment.id,
+            action: config.TASK_ACTION['deployment.update'],
+            restartable: true,
+            payload: {},
+            resource_status: {
+              completed: 'provisioned',
+              error: 'error',
+            },
+          },
+        },
+        trx
+      )
+    })
 
   /*
 
@@ -339,25 +333,23 @@ const DeploymentController = ({ store }) => {
      * id
 
   */
-  const getRoles = async ({
-    id,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.getRoles');
+  const getRoles = async ({ id }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.getRoles')
 
     const roles = await store.role.listForResource({
       resource_type: 'deployment',
       resource_id: id,
-    });
+    })
 
     return Promise.map(roles, async (role) => {
       const user = await store.user.get({
         id: role.user,
-      });
+      })
       const updatedRole = role
-      updatedRole.userRecord = userUtils.safe(user);
-      return updatedRole;
-    });
-  };
+      updatedRole.userRecord = userUtils.safe(user)
+      return updatedRole
+    })
+  }
 
   /*
 
@@ -371,44 +363,46 @@ const DeploymentController = ({ store }) => {
     * permission
 
   */
-  const createRole = ({
-    id,
-    user,
-    username,
-    permission,
-  }) => store.transaction(async (trx) => {
-    if (!id) throw new Error('id must be given to controller.deployment.createRole');
-    if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole');
-    if (!permission) throw new Error('permission must be given to controller.deployment.createRole');
+  const createRole = ({ id, user, username, permission }) =>
+    store.transaction(async (trx) => {
+      if (!id) throw new Error('id must be given to controller.deployment.createRole')
+      if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole')
+      if (!permission) throw new Error('permission must be given to controller.deployment.createRole')
 
-    const userQuery = {};
+      const userQuery = {}
 
-    if (user) userQuery.id = user;
-    else if (username) userQuery.username = username;
+      if (user) userQuery.id = user
+      else if (username) userQuery.username = username
 
-    const userRecord = await store.user.get(userQuery, trx);
+      const userRecord = await store.user.get(userQuery, trx)
 
-    if (!userRecord) throw new Error('no user found');
-    if (userRecord.permission === USER_TYPES.superuser) throw new Error('cannot create role for superuser');
+      if (!userRecord) throw new Error('no user found')
+      if (userRecord.permission === USER_TYPES.superuser) throw new Error('cannot create role for superuser')
 
-    const existingRoles = await store.role.listForResource({
-      resource_type: 'deployment',
-      resource_id: id,
-    }, trx);
+      const existingRoles = await store.role.listForResource(
+        {
+          resource_type: 'deployment',
+          resource_id: id,
+        },
+        trx
+      )
 
-    const existingRole = existingRoles.find((role) => role.user === userRecord.id);
+      const existingRole = existingRoles.find((role) => role.user === userRecord.id)
 
-    if (existingRole) throw new Error('this user already has a role for this deployment - delete it first');
+      if (existingRole) throw new Error('this user already has a role for this deployment - delete it first')
 
-    return store.role.create({
-      data: {
-        resource_type: 'deployment',
-        resource_id: id,
-        user: userRecord.id,
-        permission,
-      },
-    }, trx);
-  });
+      return store.role.create(
+        {
+          data: {
+            resource_type: 'deployment',
+            resource_id: id,
+            user: userRecord.id,
+            permission,
+          },
+        },
+        trx
+      )
+    })
 
   /*
 
@@ -420,26 +414,30 @@ const DeploymentController = ({ store }) => {
     * user
 
   */
-  const deleteRole = ({
-    id,
-    user,
-  }) => store.transaction(async (trx) => {
-    if (!id) throw new Error('id must be given to controller.deployment.createRole');
-    if (!user) throw new Error('user must be given to controller.deployment.createRole');
+  const deleteRole = ({ id, user }) =>
+    store.transaction(async (trx) => {
+      if (!id) throw new Error('id must be given to controller.deployment.createRole')
+      if (!user) throw new Error('user must be given to controller.deployment.createRole')
 
-    const roles = await store.role.listForResource({
-      resource_type: 'deployment',
-      resource_id: id,
-    }, trx);
+      const roles = await store.role.listForResource(
+        {
+          resource_type: 'deployment',
+          resource_id: id,
+        },
+        trx
+      )
 
-    // eslint-disable-next-line eqeqeq
-    const role = roles.find((oneRole) => oneRole.user == user);
-    if (!role) throw new Error(`no role for user ${user} found for deployment ${id}`);
+      // eslint-disable-next-line eqeqeq
+      const role = roles.find((oneRole) => oneRole.user == user)
+      if (!role) throw new Error(`no role for user ${user} found for deployment ${id}`)
 
-    return store.role.delete({
-      id: role.id,
-    }, trx);
-  });
+      return store.role.delete(
+        {
+          id: role.id,
+        },
+        trx
+      )
+    })
 
   /*
 
@@ -450,15 +448,13 @@ const DeploymentController = ({ store }) => {
      * id
 
   */
-  const getTasks = ({
-    id,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.getTasks');
+  const getTasks = ({ id }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.getTasks')
 
     return store.task.list({
       deployment: id,
-    });
-  };
+    })
+  }
 
   /*
 
@@ -470,36 +466,40 @@ const DeploymentController = ({ store }) => {
      * id
 
   */
-  const del = ({
-    user,
-    id,
-  }) => store.transaction(async (trx) => {
-    if (!user) throw new Error('user required for controllers.deployment.delete');
-    if (!id) throw new Error('id must be given to controller.deployment.delete');
+  const del = ({ user, id }) =>
+    store.transaction(async (trx) => {
+      if (!user) throw new Error('user required for controllers.deployment.delete')
+      if (!id) throw new Error('id must be given to controller.deployment.delete')
 
-    // check there are no active tasks for this cluster
-    const activeTasks = await store.task.activeForResource({
-      deployment: id,
-    }, trx);
-
-    if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment');
-
-    // create a delete task
-    return store.task.create({
-      data: {
-        user: user.id,
-        resource_type: config.RESOURCE_TYPES.deployment,
-        resource_id: id,
-        action: config.TASK_ACTION['deployment.delete'],
-        restartable: true,
-        payload: {},
-        resource_status: {
-          completed: 'deleted',
-          error: 'error',
+      // check there are no active tasks for this cluster
+      const activeTasks = await store.task.activeForResource(
+        {
+          deployment: id,
         },
-      },
-    }, trx);
-  });
+        trx
+      )
+
+      if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment')
+
+      // create a delete task
+      return store.task.create(
+        {
+          data: {
+            user: user.id,
+            resource_type: config.RESOURCE_TYPES.deployment,
+            resource_id: id,
+            action: config.TASK_ACTION['deployment.delete'],
+            restartable: true,
+            payload: {},
+            resource_status: {
+              completed: 'deleted',
+              error: 'error',
+            },
+          },
+        },
+        trx
+      )
+    })
 
   /*
 
@@ -512,41 +512,55 @@ const DeploymentController = ({ store }) => {
      * id
 
   */
-  const deletePermanently = ({
-    user,
-    id,
-  }) => store.transaction(async (trx) => {
-    if (!user) throw new Error('user required for controllers.deployment.delete');
-    if (!id) throw new Error('id must be given to controller.deployment.delete');
+  const deletePermanently = ({ user, id }) =>
+    store.transaction(async (trx) => {
+      if (!user) throw new Error('user required for controllers.deployment.delete')
+      if (!id) throw new Error('id must be given to controller.deployment.delete')
 
-    // check there are no active tasks for this cluster
-    const activeTasks = await store.task.activeForResource({
-      deployment: id,
-    }, trx);
+      // check there are no active tasks for this cluster
+      const activeTasks = await store.task.activeForResource(
+        {
+          deployment: id,
+        },
+        trx
+      )
 
-    if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment');
+      if (activeTasks.length > 0) throw new Error('there are active tasks for this deployment')
 
-    const deployment = await store.deployment.get({
-      id,
-    }, trx);
+      const deployment = await store.deployment.get(
+        {
+          id,
+        },
+        trx
+      )
 
-    if (deployment.status !== DEPLOYMENT_STATUS.deleted) throw new Error('a deployment must be in deleted status to be deleted permanently');
+      if (deployment.status !== DEPLOYMENT_STATUS.deleted)
+        throw new Error('a deployment must be in deleted status to be deleted permanently')
 
-    // delete the cluster tasks, roles and then the cluster
-    await store.task.deleteForResource({
-      resource_type: 'deployment',
-      resource_id: deployment.id,
-    }, trx);
-    await store.role.deleteForResource({
-      resource_type: 'deployment',
-      resource_id: deployment.id,
-    }, trx);
-    await store.deployment.delete({
-      id: deployment.id,
-    }, trx);
+      // delete the cluster tasks, roles and then the cluster
+      await store.task.deleteForResource(
+        {
+          resource_type: 'deployment',
+          resource_id: deployment.id,
+        },
+        trx
+      )
+      await store.role.deleteForResource(
+        {
+          resource_type: 'deployment',
+          resource_id: deployment.id,
+        },
+        trx
+      )
+      await store.deployment.delete(
+        {
+          id: deployment.id,
+        },
+        trx
+      )
 
-    return true;
-  });
+      return true
+    })
 
   /*
 
@@ -561,29 +575,25 @@ const DeploymentController = ({ store }) => {
      * id - the deployment id
 
   */
-  const resources = async ({
-    id,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.resources');
+  const resources = async ({ id }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.resources')
 
     const deployment = await store.deployment.get({
       id,
-    });
+    })
 
     const cluster = await store.cluster.get({
       id: deployment.cluster,
-    });
+    })
 
     const kubectl = await ClusterKubectl({
       cluster,
       store,
-    });
+    })
 
     const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-    const {
-      namespace,
-    } = modelRelease
+    const { namespace } = modelRelease
 
     const options = {}
     const podsBody = await kubectl.getPods(namespace, options)
@@ -600,8 +610,8 @@ const DeploymentController = ({ store }) => {
       nodes,
       services,
       volumes,
-    };
-  };
+    }
+  }
 
   /*
 
@@ -613,34 +623,29 @@ const DeploymentController = ({ store }) => {
    * pod - the pod name
 
 */
-  const deletePod = async ({
-    id,
-    pod,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.deletePod');
+  const deletePod = async ({ id, pod }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.deletePod')
     if (!pod) throw new Error('pod must be given to controller.deployment.deletePod')
 
     const deployment = await store.deployment.get({
       id,
-    });
+    })
 
     const cluster = await store.cluster.get({
       id: deployment.cluster,
-    });
+    })
 
     const kubectl = await ClusterKubectl({
       cluster,
       store,
-    });
+    })
 
     const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-    const {
-      namespace,
-    } = modelRelease
+    const { namespace } = modelRelease
 
     await kubectl.deletePod(namespace, pod)
-  };
+  }
 
   /*
 
@@ -651,22 +656,20 @@ const DeploymentController = ({ store }) => {
      * id - the deployment id
 
   */
-  const summary = async ({
-    id,
-  }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.summary');
+  const summary = async ({ id }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.summary')
 
     const deployment = await store.deployment.get({
       id,
-    });
+    })
 
-    const type = deploymentTemplates[deployment.deployment_type];
-    if (!type) throw new Error(`unknown deployment_type: ${deployment.deployment_type}`);
-    const summaryFunction = type.summary[deployment.deployment_version];
-    if (!summaryFunction) throw new Error(`unknown deployment_version: ${deployment.deployment_version}`);
+    const type = deploymentTemplates[deployment.deployment_type]
+    if (!type) throw new Error(`unknown deployment_type: ${deployment.deployment_type}`)
+    const summaryFunction = type.summary[deployment.deployment_version]
+    if (!summaryFunction) throw new Error(`unknown deployment_version: ${deployment.deployment_version}`)
 
-    return summaryFunction(deployment.desired_state);
-  };
+    return summaryFunction(deployment.desired_state)
+  }
 
   return {
     list,
@@ -682,7 +685,7 @@ const DeploymentController = ({ store }) => {
     getRoles,
     createRole,
     deleteRole,
-  };
-};
+  }
+}
 
-module.exports = DeploymentController;
+module.exports = DeploymentController

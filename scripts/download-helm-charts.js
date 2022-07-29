@@ -1,8 +1,8 @@
-const dotenv = require('dotenv');
+const dotenv = require('dotenv')
 const { HelmTool } = require('../src/helmTool')
 const { edition } = require('../src/edition')
 
-dotenv.config();
+dotenv.config()
 
 // eslint-disable-next-line import/order
 const logger = require('../src/logging').getLogger({

@@ -1,8 +1,10 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable global-require */
 /* eslint-disable max-len */
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable import/no-dynamic-require */
-const fs = require('fs');
+const fs = require('fs')
 const path = require('path')
 const yaml = require('js-yaml')
 const merge = require('deepmerge')
@@ -17,8 +19,8 @@ const overwriteMerge = (destinationArray, sourceArray) => sourceArray
 
 const HELM_CHARTS_PATH = path.resolve(__dirname, './../../helmCharts')
 
-const getClassicDeploymentDetails = (deploymentTemplates) => deploymentTemplates
-  .reduce((allTemplates, type) => {
+const getClassicDeploymentDetails = (deploymentTemplates) =>
+  deploymentTemplates.reduce((allTemplates, type) => {
     allTemplates[type] = require(`./${type}`)
     return allTemplates
   }, {})
@@ -49,8 +51,18 @@ const structureYamlContent = (yamlContent) => {
 
   const entry = details[deploymentType]
 
-  entry.forms[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, sextant.form))
-  entry.summary[deploymentVersion] = require(path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, sextant.summary))
+  entry.forms[deploymentVersion] = require(path.resolve(
+    HELM_CHARTS_PATH,
+    deploymentType,
+    deploymentVersion,
+    sextant.form
+  ))
+  entry.summary[deploymentVersion] = require(path.resolve(
+    HELM_CHARTS_PATH,
+    deploymentType,
+    deploymentVersion,
+    sextant.summary
+  ))
   entry.paths[deploymentVersion] = { name: sextant.namePath, namespace: sextant.namespacePath }
   entry.button.versions.push({
     title: sextant.title || '',
@@ -78,13 +90,16 @@ const getHelmDeploymentDetails = () => {
       try {
         const { chart } = chartTable[deploymentType][deploymentVersion]
         const chartName = chart.split('/')[1]
-        const yamlContent = getYaml(`${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/${chartName}/sextant/details.yaml`)
+        const yamlContent = getYaml(
+          `${HELM_CHARTS_PATH}/${deploymentType}/${deploymentVersion}/${chartName}/sextant/details.yaml`
+        )
         const next = structureYamlContent(yamlContent)
-  
+
         details = merge(details, next, { arrayMerge: overwriteMerge })
-      } catch(e) {
+      } catch (e) {
         // if chart versions have a mismatch then allow the server to boot in dev mode
-        if(!process.env.IGNORE_BROKEN_CHARTS || process.env.NODE_ENV != 'development') {
+        // eslint-disable-next-line eqeqeq
+        if (!process.env.IGNORE_BROKEN_CHARTS || process.env.NODE_ENV != 'development') {
           throw e
         }
       }
