@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "migrate": "knex migrate:latest",
+    "build": "node -c src/index.js",
     "check": "npm-check",
     "download-helm-charts": "node scripts/download-helm-charts.js",
     "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C .",
