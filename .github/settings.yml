@@ -24,7 +24,7 @@ repository:
   has_downloads: false
 
   # Updates the default branch for this repository.
-  default_branch: main
+  default_branch: master
 
   # Either `true` to allow squash-merging pull requests, or `false` to prevent
   # squash-merging.
@@ -94,7 +94,7 @@ teams:
     permission: admin
 
 branches:
-  - name: main
+  - name: master
     # https://docs.github.com/en/rest/reference/repos#update-branch-protection
     # Branch Protection settings. Set to null to disable
     protection:
