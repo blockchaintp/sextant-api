@@ -27,7 +27,7 @@ repos:
           - '^(?!((fix|feature|refactor)\/[a-zA-Z0-9\-]+)$).*'
       - id: trailing-whitespace
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.29.3
+    rev: v2.31.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
@@ -50,8 +50,6 @@ repos:
         exclude: ".*/src/test/.*"
       - id: cpd
         exclude: ".*/src/test/.*"
-      - id: pmd
-        exclude: ".*/src/test/.*"
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
     hooks:
@@ -61,8 +59,8 @@ repos:
         args:
           - -a
           - -x
-          - -e
-          - SC1072,SC1073
+          - -P
+          - SCRIPTDIR
       - id: script-must-have-extension
       - id: script-must-not-have-extension
       - id: shfmt
@@ -76,7 +74,7 @@ repos:
     hooks:
       - id: markdownlint
   - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: v8.21.0
+    rev: v8.22.0
     hooks:
       - id: eslint
   - repo: https://github.com/Lucas-C/pre-commit-hooks
@@ -107,9 +105,25 @@ repos:
         files: docker-compose.*y[a]{0,1}ml$
       - id: docker-compose-check
         files: "^docker/.*yaml$"
+      - id: hadolint
+        files: ".*.docker$"
+        args:
+          - --ignore
+          - DL3008
+          - --ignore
+          - DL3013
+      - id: hadolint
+        files: "Dockerfile.*"
+        args:
+          - --ignore
+          - DL3008
+          - --ignore
+          - DL3013
   - repo: https://gitlab.com/daverona/pre-commit/cpp
     rev: 0.8.0
     hooks:
+      - id: docker-clang-format
+      - id: cpplint
       - id: docker-cppcheck
         args:
           - --force
