@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+cd /app/api
+
+node src/download-helm-charts.js
+
+exec node src/index.js
