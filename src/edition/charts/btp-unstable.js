@@ -1,91 +1,43 @@
 const repoName = require('./repositories').BTP_UNSTABLE.name
+const STABLE_CHARTS = require('./btp-stable')
 
-const STABLE_CHARTS = {
-  DAML_ON_BESU: {
-    chart: `${repoName}/daml-on-besu`,
-    chartVersion: '~0.0.32',
-    extension: 'daml',
-  },
-  DAML_ON_SAWTOOTH: {
-    chart: `${repoName}/daml-on-sawtooth`,
-    chartVersion: '~0.2.0',
-    extension: 'daml',
-  },
-  DAML_ON_QLDB: {
-    chart: `${repoName}/daml-on-qldb`,
-    chartVersion: '~0.0.9',
-    extension: 'daml',
-  },
-  DAML_ON_POSTGRES: {
-    chart: `${repoName}/daml-on-postgres`,
-    chartVersion: '~0.1.1',
-    extension: 'daml',
-  },
-  BESU: {
-    chart: `${repoName}/besu`,
-    chartVersion: '~0.0.8',
-    extension: 'besu',
-  },
-  SAWTOOTH: {
-    chart: `${repoName}/sawtooth`,
-    chartVersion: '~0.2.0',
-    extension: 'sawtooth',
-  },
-  TFS_ON_SAWTOOTH: {
-    chart: `${repoName}/tfs-on-sawtooth`,
-    chartVersion: '~0.6.0',
-    extension: 'tfs',
-  },
-  ELASTICSEARCH: {
-    chart: `${repoName}/elasticsearch`,
-    chartVersion: '~12.6.3',
-    extension: 'elasticsearch',
-  },
-  FLUENTD: {
-    chart: `${repoName}/fluentd`,
-    chartVersion: '~1.3.1',
-    extension: 'fluentd',
-  },
-  KIBANA: {
-    chart: `${repoName}/kibana`,
-    chartVersion: '~5.3.9',
-    extension: 'kibana',
-  },
-  INFLUXDB: {
-    chart: `${repoName}/influxdb`,
-    chartVersion: '~0.0.2',
-    extension: 'influxdb',
-  },
-  GRAFANA: {
-    chart: `${repoName}/grafana`,
-    chartVersion: '~0.0.2',
-    extension: 'grafana',
-  },
-  POSTGRESQL_HA: {
-    chart: `${repoName}/postgresql-ha`,
-    chartVersion: '~0.0.1',
-    extension: 'pgsql',
-  },
-  NGINX_INGRESS: {
-    chart: `${repoName}/nginx-ingress`,
-    chartVersion: '~0.0.1',
-    extension: 'ingress',
-  },
-  OPENEBS: {
-    chart: `${repoName}/openebs`,
-    chartVersion: '~2.0.2',
-    extension: 'openebs',
-  },
-  VAULT: {
-    chart: `${repoName}/vault`,
-    chartVersion: '~0.0.2',
-    extension: 'vault',
-  },
-  SEXTANT: {
-    chart: `${repoName}/sextant`,
-    chartVersion: '~2.1.8',
-    extension: 'sextant',
-  },
+function modChart(originalChart, options) {
+  const { chart, chartVersion, extension } = options
+  return {
+    chart: chart || originalChart.chart,
+    chartVersion: chartVersion || originalChart.chartVersion,
+    extension: extension || originalChart.extension,
+  }
 }
 
-module.exports = STABLE_CHARTS
+function asUnstable(stableChart) {
+  const elems = stableChart.split('/')
+  if (elems.length > 1) {
+    elems.shift()
+  }
+  const chartName = `${repoName}/${elems.join('/')}`
+
+  return modChart(stableChart, { chart: chartName })
+}
+
+const UNSTABLE_CHARTS = {
+  DAML_ON_BESU: asUnstable(STABLE_CHARTS.DAML_ON_BESU),
+  DAML_ON_SAWTOOTH: asUnstable(STABLE_CHARTS.DAML_ON_SAWTOOTH),
+  DAML_ON_QLDB: asUnstable(STABLE_CHARTS.DAML_ON_QLDB),
+  DAML_ON_POSTGRES: asUnstable(STABLE_CHARTS.DAML_ON_POSTGRES),
+  BESU: asUnstable(STABLE_CHARTS.BESU),
+  SAWTOOTH: asUnstable(STABLE_CHARTS.SAWTOOTH),
+  TFS_ON_SAWTOOTH: asUnstable(STABLE_CHARTS.TFS_ON_SAWTOOTH),
+  ELASTICSEARCH: asUnstable(STABLE_CHARTS.ELASTICSEARCH),
+  FLUENTD: asUnstable(STABLE_CHARTS.FLUENTD),
+  KIBANA: asUnstable(STABLE_CHARTS.KIBANA),
+  INFLUXDB: asUnstable(STABLE_CHARTS.INFLUXDB),
+  GRAFANA: asUnstable(STABLE_CHARTS.GRAFANA),
+  POSTGRESQL_HA: asUnstable(STABLE_CHARTS.POSTGRESQL_HA),
+  NGINX_INGRESS: asUnstable(STABLE_CHARTS.NGINX_INGRESS),
+  OPENEBS: asUnstable(STABLE_CHARTS.OPENEBS),
+  VAULT: asUnstable(STABLE_CHARTS.VAULT),
+  SEXTANT: asUnstable(STABLE_CHARTS.SEXTANT),
+}
+
+module.exports = UNSTABLE_CHARTS
