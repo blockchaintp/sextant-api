@@ -17,12 +17,12 @@ Using the deployment type and version, determine whether or not the template typ
 The template type will always default to 'classic'
 */
 
-const getDeploymentMethod = (deployment_type, deployment_version) => {
+const getDeploymentMethod = (deploymentType, deploymentVersion) => {
   const { chartTable } = edition
   let deploymentMethod
 
   // eslint-disable-next-line max-len
-  if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
+  if (chartTable && chartTable[deploymentType] && chartTable[deploymentType][deploymentVersion]) {
     deploymentMethod = 'helm'
   } else {
     deploymentMethod = 'classic'
@@ -146,12 +146,12 @@ const DeploymentController = ({ store }) => {
     return deployment
   }
 
-  const checkCreateDeploymentArgs = (user, name, deployment_type, deployment_version, desired_state) => {
+  const checkCreateDeploymentArgs = (user, name, deploymentType, deploymentVersion, desiredState) => {
     if (!user) throw new Error('user required for controllers.deployment.create')
-    if (!name) throw new Error('data.name required for controllers.deployment.create')
-    if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create')
-    if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create')
-    if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create')
+    if (!name) throw new Error('name required for controllers.deployment.create')
+    if (!deploymentType) throw new Error('deploymentType required for controllers.deployment.create')
+    if (!deploymentVersion) throw new Error('deploymentVersion required for controllers.deployment.create')
+    if (!desiredState) throw new Error('desiredState required for controllers.deployment.create')
   }
 
   /*
@@ -171,22 +171,32 @@ const DeploymentController = ({ store }) => {
     deployment on this cluster
 
   */
-  const create = ({ user, cluster, data: { name, deployment_type, deployment_version, desired_state, custom_yaml } }) =>
+  const create = ({
+    user,
+    cluster,
+    data: {
+      name,
+      deployment_type: deploymentType,
+      deployment_version: deploymentVersion,
+      desired_state: desiredState,
+      custom_yaml: customYaml,
+    },
+  }) =>
     store.transaction(async (trx) => {
-      checkCreateDeploymentArgs(user, name, deployment_type, deployment_version, desired_state)
+      checkCreateDeploymentArgs(user, name, deploymentType, deploymentVersion, desiredState)
 
-      const typeForm = deploymentForms[deployment_type]
+      const typeForm = deploymentForms[deploymentType]
 
-      if (!typeForm) throw new Error(`unknown deployment_type: ${deployment_type}`)
+      if (!typeForm) throw new Error(`unknown deployment_type: ${deploymentType}`)
 
-      const schema = typeForm.forms[deployment_version]
+      const schema = typeForm.forms[deploymentVersion]
 
-      if (!schema) throw new Error(`unknown deployment_type: ${deployment_type} version ${deployment_version}`)
+      if (!schema) throw new Error(`unknown deployment_type: ${deploymentType} version ${deploymentVersion}`)
 
       // validate the incoming form data
       await validate({
         schema,
-        data: desired_state,
+        data: desiredState,
       })
 
       // check there is no cluster already with that name
@@ -200,7 +210,7 @@ const DeploymentController = ({ store }) => {
       if (existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
 
       // determine if there is a helm chart for this deployment type
-      const deployment_method = getDeploymentMethod(deployment_type, deployment_version)
+      const deploymentMethod = getDeploymentMethod(deploymentType, deploymentVersion)
 
       // create the deployment record
       const deployment = await store.deployment.create(
@@ -208,11 +218,11 @@ const DeploymentController = ({ store }) => {
           data: {
             name,
             cluster,
-            deployment_type,
-            deployment_version,
-            desired_state,
-            custom_yaml,
-            deployment_method,
+            deployment_type: deploymentType,
+            deployment_version: deploymentVersion,
+            desired_state: desiredState,
+            custom_yaml: customYaml,
+            deployment_method: deploymentMethod,
           },
         },
         trx
