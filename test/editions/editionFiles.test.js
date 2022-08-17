@@ -18,9 +18,6 @@ const editionFileTestSuite = (testedEdition) => {
   const helmRepos = edition.helmRepos[0]
   const { chartTable } = edition
 
-  console.log(`Testing edition ${testedEdition}`)
-  console.log(edition)
-
   asyncTest('repos exist and can be added', async (t) => {
     const response = await utils.addRepo(helmRepos)
     t.equals(

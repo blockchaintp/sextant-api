@@ -8,7 +8,7 @@
 const repositories = require('./charts/repositories')
 const DEPLOYMENT_SPEC = require('./deployment')
 
-const aws_sfd_nometer = require('./aws_sfd_nometer')
+const AWSSFDNoMeter = require('./aws_sfd_nometer')
 
 const edition = {
   deployment: DEPLOYMENT_SPEC.EMPTY,
@@ -18,7 +18,7 @@ const edition = {
     publicKeyVersion: 1,
   },
   helmRepos: [repositories.BTP_STABLE],
-  chartTable: aws_sfd_nometer.edition.chartTable,
+  chartTable: AWSSFDNoMeter.edition.chartTable,
 }
 
 module.exports = {

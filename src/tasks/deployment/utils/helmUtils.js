@@ -8,10 +8,10 @@ const { edition } = require('../../../edition/index')
 
 const HELM_CHARTS_PATH = path.resolve(__dirname, '../../../../helmCharts')
 
-const getChartInfo = (deployment_type, deployment_version) => {
+const getChartInfo = (deploymentType, deploymentVersion) => {
   const { chartTable } = edition
 
-  const chartInfo = chartTable[deployment_type][deployment_version]
+  const chartInfo = chartTable[deploymentType][deploymentVersion]
 
   return chartInfo
 }

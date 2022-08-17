@@ -11,10 +11,15 @@ extends:
 plugins:
   - prettier
   - '@typescript-eslint'
+overrides:
+  - files:
+      - '**/*.js'
+    rules:
+      '@typescript-eslint/no-var-requires': "off"
 parserOptions:
   ecmaVersion: 11
 rules:
-  camelcase: 1
+  camelcase: 1 # Snake Case is not for JS/TS
   no-underscore-dangle: 1
   no-param-reassign: 1
   global-require: 1
