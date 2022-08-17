@@ -12,7 +12,7 @@ const edition = {
     publicKeyVersion: 1,
   },
   helmRepos: [repositories.BTP_STABLE],
-  chartTable: aws_sfs_nometer.chartTable,
+  chartTable: aws_sfs_nometer.edition.chartTable,
 }
 
 module.exports = {

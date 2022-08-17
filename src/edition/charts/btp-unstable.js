@@ -11,7 +11,7 @@ function modChart(originalChart, options) {
 }
 
 function asUnstable(stableChart) {
-  const elems = stableChart.split('/')
+  const elems = stableChart.chart.split('/')
   if (elems.length > 1) {
     elems.shift()
   }
