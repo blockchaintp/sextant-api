@@ -1,13 +1,13 @@
+/* eslint-disable import/prefer-default-export */
 // Edition object for SFT editions (sawtooth+TFS)
-const repositories = require('./charts/repositories')
-const UNSTABLE_CHARTS = require('./charts/btp-unstable')
-const METERING = require('./metering/metering')
-const DEPLOYMENT_SPEC = require('./deployment')
+import { BTP_UNSTABLE, UNSTABLE_CHARTS } from './charts/repositories'
+import METERING from './metering/metering'
+import DEPLOYMENT_SPEC from './deployment'
 
-const edition = {
+export const edition = {
   deployment: DEPLOYMENT_SPEC.EMPTY,
   metering: METERING.DEV,
-  helmRepos: [repositories.BTP_UNSTABLE],
+  helmRepos: [BTP_UNSTABLE],
   chartTable: {
     sawtooth: {
       1.1: {
@@ -28,8 +28,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }

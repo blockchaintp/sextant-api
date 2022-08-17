@@ -8,6 +8,7 @@ services:
       args:
         EDITION_MODULE: aws_sfs_nometer
         NODE_ENV: development
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-aws-sfs-nometer:${ISOLATION_ID}
   api-sfd-nometer:
@@ -17,6 +18,7 @@ services:
       args:
         EDITION_MODULE: aws_sfd_nometer
         NODE_ENV: development
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-aws-sfd-nometer:${ISOLATION_ID}
   api-enterprise:
@@ -26,6 +28,7 @@ services:
       args:
         EDITION_MODULE: enterprise
         NODE_ENV: enterprise
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-enterprise:${ISOLATION_ID}
   api-standard:
@@ -35,6 +38,7 @@ services:
       args:
         EDITION_MODULE: enterprise
         NODE_ENV: standard
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-standard:${ISOLATION_ID}
   api-premium:
@@ -44,6 +48,7 @@ services:
       args:
         EDITION_MODULE: enterprise
         NODE_ENV: premium
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-premium:${ISOLATION_ID}
   api:
@@ -53,6 +58,7 @@ services:
       args:
         EDITION_MODULE: dev
         NODE_ENV: development
+        BUILD_ENV: test
         NPM_CI_ARGS: ""
     image: sextant-api:${ISOLATION_ID}
   api-sft:
@@ -62,6 +68,7 @@ services:
       args:
         EDITION_MODULE: sft
         NODE_ENV: development
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-sft:${ISOLATION_ID}
   api-community:
@@ -71,5 +78,6 @@ services:
       args:
         EDITION_MODULE: community
         NODE_ENV: community
+        BUILD_ENV: release
         NPM_CI_ARGS: "--omit=dev"
     image: sextant-api-community:${ISOLATION_ID}

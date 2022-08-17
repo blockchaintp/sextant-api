@@ -1,5 +1,5 @@
 /* eslint-disable global-require */
-switch (process.env_MODULE || 'dev') {
+switch (process.env.MODULE || 'dev') {
   case 'aws_sfd_nometer':
     module.exports = require('./aws_sfd_nometer')
     break

@@ -1,15 +1,14 @@
-// Edition object for enterprise editions (sawtooth+DAML)
-const repositories = require('./charts/repositories')
-const STABLE_CHARTS = require('./charts/btp-stable')
-const METERING = require('./metering/metering')
-const DEPLOYMENT_SPEC = require('./deployment')
+/* eslint-disable import/prefer-default-export */
+import { BTP_STABLE, STABLE_CHARTS } from './charts/repositories'
+import { edition as communityEdition } from './community'
+import DEPLOYMENT_SPEC from './deployment'
+import METERING from './metering/metering'
+import { SextantEdition } from './types'
 
-const communityEdition = require('./community')
-
-const edition = {
+export const edition: SextantEdition = {
   deployment: DEPLOYMENT_SPEC.EMPTY,
   metering: METERING.DEV,
-  helmRepos: [repositories.BTP_STABLE],
+  helmRepos: [BTP_STABLE],
   chartTable: {
     ...communityEdition.chartTable,
     'daml-on-qldb': {
@@ -85,8 +84,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }

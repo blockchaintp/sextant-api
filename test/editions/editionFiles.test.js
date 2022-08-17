@@ -2,13 +2,13 @@ const utils = require('./utils')
 const asyncTest = require('../asyncTest')
 
 const EDITION_FILES = [
-  'aws_sfd.js',
-  'aws_sfd_nometer.js',
-  'aws_sfs.js',
-  'aws_sfs_nometer.js',
-  'dev.js',
-  'enterprise.js',
-  'sft.js',
+  'aws_sfd',
+  'aws_sfd_nometer',
+  'aws_sfs',
+  'aws_sfs_nometer',
+  'dev',
+  'enterprise',
+  'sft',
 ]
 
 const editionFileTestSuite = (testedEdition) => {

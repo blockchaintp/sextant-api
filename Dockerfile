@@ -1,4 +1,5 @@
 ARG K8S_VERSION=1.20.4
+ARG BUILD_ENV=test
 FROM alpine/k8s:${K8S_VERSION} as k8s-stage
 
 FROM ubuntu:20.04 as base
@@ -52,8 +53,8 @@ COPY ./migrations /app/api/migrations
 COPY ./scripts /app/api/scripts
 COPY ./test /app/api/test
 COPY ./knexfile.js /app/api/knexfile.js
-COPY ./package.json /app/api/package.json
 COPY ./tsconfig.json /app/api/tsconfig.json
+COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
 
 # Straight npm ci since we need devDependencies at this stage
@@ -61,20 +62,30 @@ RUN npm ci \
   && npm run build \
   && npm cache clean --force
 
-FROM base as app
-COPY --from=build /app/api/dist/ /app/api
-COPY --from=build /app/api/config /app/api/config
-COPY --from=build /app/api/test/fixtures/helmCharts.tar.gz /app/api/test/fixtures/
-COPY --from=build /app/api/scripts/entrypoint /app/api/
-COPY --from=build /app/api/package.json /app/api/package.json
-COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
+FROM base as release
+ONBUILD COPY --from=build /app/api/dist/knexfile.js /app/api/knexfile.js
+ONBUILD COPY --from=build /app/api/dist/migrations /app/api/migrations
+ONBUILD COPY --from=build /app/api/dist/src /app/api/src
+ONBUILD COPY --from=build /app/api/config /app/api/config
+ONBUILD COPY --from=build /app/api/scripts/entrypoint /app/api/
+ONBUILD COPY --from=build /app/api/package.json /app/api/package.json
+ONBUILD COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
+ONBUILD RUN chmod 755 /app/api/entrypoint
 
-ARG NPM_CI_ARGS=""
+FROM release as test
+ONBUILD COPY --from=build /app/api/dist/test /app/api/test
+ONBUILD COPY --from=build /app/api/test/fixtures/helmCharts.tar.gz /app/api/test/fixtures/
+ONBUILD COPY --from=build /app/api/scripts/entrypoint /app/api/
+ONBUILD COPY --from=build /app/api/tsconfig.json /app/api/tsconfig.json
+ONBUILD COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
+
+FROM $BUILD_ENV as app
+
 # npm ci with args since maybe production build
+ARG NPM_CI_ARGS=""
 RUN npm ci ${NPM_CI_ARGS} \
   && npm cache clean --force
 
-RUN chmod 755 /app/api/entrypoint
 # this is the default noop metering module
 # copy in the edition module
 ARG EDITION_MODULE=dev

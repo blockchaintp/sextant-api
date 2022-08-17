@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 /*
  * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
  *
@@ -5,15 +6,15 @@
  */
 
 // Edition object for Sawtooth
-const repositories = require('./charts/repositories')
-const STABLE_CHARTS = require('./charts/btp-stable')
-const METERING = require('./metering/metering')
-const DEPLOYMENT_SPEC = require('./deployment')
+import { BTP_STABLE, STABLE_CHARTS } from './charts/repositories'
+import DEPLOYMENT_SPEC from './deployment'
+import METERING from './metering/metering'
+import { SextantEdition } from './types'
 
-const edition = {
+export const edition: SextantEdition = {
   deployment: DEPLOYMENT_SPEC.EMPTY,
   metering: METERING.DEV,
-  helmRepos: [repositories.BTP_STABLE],
+  helmRepos: [BTP_STABLE],
   chartTable: {
     sawtooth: {
       1.1: {
@@ -40,8 +41,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }

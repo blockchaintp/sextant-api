@@ -1,3 +1,4 @@
+---
 env:
   browser: true
   commonjs: true
@@ -11,6 +12,7 @@ extends:
 plugins:
   - prettier
   - '@typescript-eslint'
+  - 'import'
 overrides:
   - files:
       - '**/*.js'
@@ -18,8 +20,17 @@ overrides:
       '@typescript-eslint/no-var-requires': "off"
 parserOptions:
   ecmaVersion: 11
+settings:
+  import/parsers:
+    "@typescript-eslint/parser":
+      - ".ts"
+      - ".tsx"
+  import/resolver:
+    typescript:
+      alwaysTryTypes": true
 rules:
-  camelcase: 1 # Snake Case is not for JS/TS
+  # Snake Case is not for JS/TS
+  camelcase: 1
   no-underscore-dangle: 1
   no-param-reassign: 1
   global-require: 1
@@ -32,3 +43,6 @@ rules:
     - code: 120
   require-await:
     - error
+  import/extensions:
+    - error
+    - never

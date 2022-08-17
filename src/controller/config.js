@@ -1,5 +1,4 @@
 const config = require('../config')
-const packageJSON = require('../../package.json')
 
 const userForms = require('../forms/user')
 const clusterForms = require('../forms/cluster')
@@ -12,9 +11,8 @@ const forms = {
 }
 
 const ConfigBackend = () => {
-
   /*
-  
+
     return any values required by the frontend api
 
     params:
@@ -25,19 +23,16 @@ const ConfigBackend = () => {
         version (string)
 
   */
-  const values = () => {
-    return {
-      version: packageJSON.version,
-      forms,
-      userAccessLevels: config.USER_ACCESS_LEVELS,
-      roleAccessLevels: config.PERMISSION_ACCESS_LEVELS,
-    }
-  }
+  const values = () => ({
+    version: '1.0.0',
+    forms,
+    userAccessLevels: config.USER_ACCESS_LEVELS,
+    roleAccessLevels: config.PERMISSION_ACCESS_LEVELS,
+  })
 
   return {
     values,
   }
-
 }
 
 module.exports = ConfigBackend

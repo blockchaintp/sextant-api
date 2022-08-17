@@ -1,13 +1,14 @@
+/* eslint-disable import/prefer-default-export */
 // Edition object for dev mode
-const repositories = require('./charts/repositories')
-const UNSTABLE_CHARTS = require('./charts/btp-unstable')
-const METERING = require('./metering/metering')
-const DEPLOYMENT_SPEC = require('./deployment')
+import { BTP_UNSTABLE, UNSTABLE_CHARTS } from './charts/repositories'
+import DEPLOYMENT_SPEC from './deployment'
+import METERING from './metering/metering'
+import { SextantEdition } from './types'
 
-const edition = {
+export const edition: SextantEdition = {
   deployment: DEPLOYMENT_SPEC.EMPTY,
   metering: METERING.DEV,
-  helmRepos: [repositories.BTP_UNSTABLE],
+  helmRepos: [BTP_UNSTABLE],
   chartTable: {
     besu: {
       1.4: {
@@ -112,8 +113,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }
