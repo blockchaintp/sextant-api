@@ -6,13 +6,14 @@
   "main": "index.js",
   "scripts": {
     "migrate": "knex migrate:latest",
-    "build": "node -c src/index.js",
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -w -p tsconfig.json",
     "check": "npm-check",
-    "download-helm-charts": "node src/download-helm-charts.js",
+    "download-helm-charts": "node dist/src/download-helm-charts.js",
     "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C .",
     "remove-helm-fixtures": "rm -rf ./helmCharts/*",
     "preserve": "npm run download-helm-charts && npm run migrate",
-    "serve": "node src/index.js",
+    "serve": "node dist/src/index.js",
     "generate-swagger": "node src/generateSwagger.js",
     "pretest": "npm run copy-helm-fixtures",
     "test": "npm run cover:test && npm run cover:report && npm run test:report",
@@ -63,6 +64,8 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.33.1",
+    "@typescript-eslint/parser": "^5.33.1",
     "async": "^3.2.2",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
@@ -75,6 +78,7 @@
     "tap-junit": "^5.0.1",
     "tap-spec": "^5.0",
     "tape": "^4.14.0",
+    "typescript": "^4.7.4",
     "widdershins": "^4.0.1"
   }
 }
