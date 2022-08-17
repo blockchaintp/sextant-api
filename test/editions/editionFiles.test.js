@@ -11,7 +11,7 @@ const EDITION_FILES = [
   'sft.js',
 ]
 
-const editionFileTestSuite = async (testedEdition) => {
+const editionFileTestSuite = (testedEdition) => {
   // eslint-disable-next-line import/no-dynamic-require, global-require
   const currentEdition = require(`../../src/edition/${testedEdition}`)
   const { edition } = currentEdition
@@ -92,7 +92,7 @@ const editionFileTestSuite = async (testedEdition) => {
 
 // iterate through every file in editions
 
-const executeTestSuite = async (editionDirectory) => {
+const executeTestSuite = (editionDirectory) => {
   editionDirectory.forEach((edition) => {
     editionFileTestSuite(edition)
   })
