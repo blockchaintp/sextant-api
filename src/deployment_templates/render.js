@@ -155,8 +155,8 @@ const getTemplates = async ({ deployment_type, deployment_version }) => {
 
 */
 
-const cleanUp = async (filePath) => {
-  await fs.unlink(filePath, (err) => {
+const cleanUp = (filePath) => {
+  fs.unlink(filePath, (err) => {
     logger.info({
       action: 'unlinkFile',
       filepath: filePath,

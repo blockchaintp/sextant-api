@@ -17,10 +17,3 @@ export const settings = (path: string) => {
 }
 
 export const allowedKeys = () => settings('sawtooth.identity.allowed_keys')
-
-// const address = {
-//   settings,
-//   allowedKeys,
-// }
-
-// module.exports = address
