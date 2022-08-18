@@ -63,21 +63,21 @@ RUN npm ci \
   && npm cache clean --force
 
 FROM base as release
-ONBUILD COPY --from=build /app/api/dist/knexfile.js /app/api/knexfile.js
-ONBUILD COPY --from=build /app/api/dist/migrations /app/api/migrations
-ONBUILD COPY --from=build /app/api/dist/src /app/api/src
-ONBUILD COPY --from=build /app/api/config /app/api/config
-ONBUILD COPY --from=build /app/api/scripts/entrypoint /app/api/
-ONBUILD COPY --from=build /app/api/package.json /app/api/package.json
-ONBUILD COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
-ONBUILD RUN chmod 755 /app/api/entrypoint
+COPY --from=build /app/api/dist/knexfile.js /app/api/knexfile.js
+COPY --from=build /app/api/dist/migrations /app/api/migrations
+COPY --from=build /app/api/dist/src /app/api/src
+COPY --from=build /app/api/config /app/api/config
+COPY --from=build /app/api/scripts/entrypoint /app/api/
+COPY --from=build /app/api/package.json /app/api/package.json
+COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
+RUN chmod 755 /app/api/entrypoint
 
 FROM release as test
-ONBUILD COPY --from=build /app/api/dist/test /app/api/test
-ONBUILD COPY --from=build /app/api/test/fixtures/helmCharts.tar.gz /app/api/test/fixtures/
-ONBUILD COPY --from=build /app/api/scripts/entrypoint /app/api/
-ONBUILD COPY --from=build /app/api/tsconfig.json /app/api/tsconfig.json
-ONBUILD COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
+COPY --from=build /app/api/dist/test /app/api/test
+COPY --from=build /app/api/test/fixtures/helmCharts.tar.gz /app/api/test/fixtures/
+COPY --from=build /app/api/scripts/entrypoint /app/api/
+COPY --from=build /app/api/tsconfig.json /app/api/tsconfig.json
+COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
 
 FROM $BUILD_ENV as app
 

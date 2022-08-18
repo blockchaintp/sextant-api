@@ -9,7 +9,7 @@ test: $(MARKERS)/test_npm
 
 analyze: analyze_fossa analyze_sonar_js
 
-clean: clean_container
+clean: clean_container clean_tsc
 
 distclean: clean_docker clean_npm
 
@@ -33,6 +33,10 @@ clean_docker:
 .PHONY: clean_npm
 clean_npm:
 	rm -rf node_modules
+
+.PHONY: clean_tsc
+clean_tsc:
+	rm -rf dist
 
 $(MARKERS)/test_npm:
 	docker-compose -f docker-compose.test.yml up -d
