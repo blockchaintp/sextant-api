@@ -1,3 +1,3 @@
-const { mergedDeploymentDetails} = require('./templateLoader')
+const { mergedDeploymentDetails } = require('./templateLoader')
 
 module.exports = mergedDeploymentDetails()

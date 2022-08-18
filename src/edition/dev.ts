@@ -1,12 +1,12 @@
 /* eslint-disable import/prefer-default-export */
 // Edition object for dev mode
 import { BTP_UNSTABLE, UNSTABLE_CHARTS } from './charts/repositories'
-import DEPLOYMENT_SPEC from './deployment'
+import { EMPTY } from './deployment'
 import METERING from './metering/metering'
 import { SextantEdition } from './types'
 
 export const edition: SextantEdition = {
-  deployment: DEPLOYMENT_SPEC.EMPTY,
+  deployment: EMPTY,
   metering: METERING.DEV,
   helmRepos: [BTP_UNSTABLE],
   chartTable: {

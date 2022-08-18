@@ -6,11 +6,11 @@
  */
 
 import { edition as AWSSFDNoMeter } from './aws_sfd_nometer'
-import DEPLOYMENT_SPEC from './deployment'
+import { EMPTY } from './deployment'
 import { SextantEdition } from './types'
 
 export const edition: SextantEdition = {
-  deployment: DEPLOYMENT_SPEC.EMPTY,
+  deployment: EMPTY,
   metering: {
     type: 'aws',
     productCode: '53zb45lxmkh0qyk0skmuipl9a',

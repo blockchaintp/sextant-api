@@ -1,13 +1,7 @@
-type DeploymentSpec = {
+export type DeploymentSpec = {
   classic: []
 }
 
-const DEPLOYMENT_SPEC: {
-  EMPTY: DeploymentSpec
-} = {
-  EMPTY: {
-    classic: [],
-  },
+export const EMPTY: DeploymentSpec = {
+  classic: [],
 }
-
-export default DEPLOYMENT_SPEC

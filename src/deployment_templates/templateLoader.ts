@@ -1,39 +1,29 @@
 /* eslint-disable no-restricted-syntax */
-const fs = require('fs')
-const path = require('path')
-const yaml = require('js-yaml')
-const merge = require('deepmerge')
-
-const readFile = fs.readFileSync
-
-const { edition } = require('../edition/index')
+import merge from 'deepmerge'
+import { resolve } from 'path'
+import { edition } from '../edition/index'
+import { getYaml } from '../utils/yaml'
 
 const { chartTable } = edition
 
-const overwriteMerge = (destinationArray, sourceArray) => sourceArray
+const overwriteDestination = (_destination: never, source: any) => source
 
-const HELM_CHARTS_PATH = path.resolve(__dirname, './../../helmCharts')
+const HELM_CHARTS_PATH = resolve(__dirname, './../../helmCharts')
 
-const getClassicDeploymentDetails = (deploymentTemplates) =>
+const getClassicDeploymentDetails = (deploymentTemplates: any[]) =>
   deploymentTemplates.reduce((allTemplates, type) => {
     // eslint-disable-next-line global-require, no-param-reassign, import/no-dynamic-require
     allTemplates[type] = require(`./${type}`)
     return allTemplates
   }, {})
 
-// reads and loads yaml from a file
-const getYaml = (filepath) => {
-  const yamlContent = readFile(filepath, 'utf8')
-  return yaml.safeLoad(yamlContent, { schema: yaml.FAILSAFE_SCHEMA })
-}
-
 // pulls values from details.yaml to build an object with the same structure as the index files
-const structureYamlContent = (yamlContent) => {
+const structureYamlContent = (yamlContent: any) => {
   const sextant = yamlContent
   const deploymentType = sextant.deploymentType || ''
   const deploymentVersion = sextant.deploymentVersion || ''
   const chartInfo = chartTable[deploymentType][deploymentVersion]
-  const details = {}
+  const details: { forms: any; summary: any; paths: any; button: { versions: any[] }; order?: number }[] = []
 
   // define a basic schema
   details[deploymentType] = {
@@ -48,14 +38,9 @@ const structureYamlContent = (yamlContent) => {
   const entry = details[deploymentType]
 
   // eslint-disable-next-line global-require, import/no-dynamic-require
-  entry.forms[deploymentVersion] = require(path.resolve(
-    HELM_CHARTS_PATH,
-    deploymentType,
-    deploymentVersion,
-    sextant.form
-  ))
+  entry.forms[deploymentVersion] = require(resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, sextant.form))
   // eslint-disable-next-line global-require, import/no-dynamic-require
-  entry.summary[deploymentVersion] = require(path.resolve(
+  entry.summary[deploymentVersion] = require(resolve(
     HELM_CHARTS_PATH,
     deploymentType,
     deploymentVersion,
@@ -77,7 +62,7 @@ const structureYamlContent = (yamlContent) => {
 
 // iterates over all of the charts in the helmCharts directory,
 // re-structures and merges the deployment details together
-const getHelmDeploymentDetails = () => {
+export const getHelmDeploymentDetails = () => {
   let details = {}
   const deploymentTypes = Object.keys(chartTable)
 
@@ -93,7 +78,7 @@ const getHelmDeploymentDetails = () => {
         )
         const next = structureYamlContent(yamlContent)
 
-        details = merge(details, next, { arrayMerge: overwriteMerge })
+        details = merge(details, next, { arrayMerge: overwriteDestination })
       } catch (e) {
         // if chart versions have a mismatch then allow the server to boot in dev mode
         // eslint-disable-next-line eqeqeq
@@ -108,13 +93,9 @@ const getHelmDeploymentDetails = () => {
 }
 
 // merges the classic deployment details with the helm chart details
-const mergedDeploymentDetails = () => {
+export const mergedDeploymentDetails = () => {
   const classicDeployments = getClassicDeploymentDetails(edition.deployment.classic)
   const helmDeployments = getHelmDeploymentDetails()
-  const merged = merge(classicDeployments, helmDeployments, { arrayMerge: overwriteMerge })
+  const merged = merge(classicDeployments, helmDeployments, { arrayMerge: overwriteDestination })
   return merged
-}
-
-module.exports = {
-  mergedDeploymentDetails,
 }

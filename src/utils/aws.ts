@@ -1,11 +1,13 @@
-const axios = require('axios');
-const logger = require('../logging').getLogger({
+import axios from 'axios'
+import * as Logging from '../logging'
+
+const logger = Logging.getLogger({
   name: __filename,
 })
 
 const INSTANCE_METADATA_BASE_URL = 'http://169.254.169.254/latest/dynamic'
 
-class AWS {
+export default class AWS {
   static async getRegion() {
     try {
       const client = axios.create({
@@ -13,7 +15,7 @@ class AWS {
         timeout: 1000,
       })
       const url = '/instance-identity/document'
-      logger.info('Getting AWS region');
+      logger.info('Getting AWS region')
       const response = await client.get(url)
       logger.info({ region: response.data.region, fn: 'getRegion' }, 'getRegion')
       return response.data.region
@@ -23,5 +25,3 @@ class AWS {
     }
   }
 }
-
-module.exports = AWS

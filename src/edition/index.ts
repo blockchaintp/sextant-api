@@ -1,28 +1,27 @@
+import { SextantEdition } from './types'
+
 /* eslint-disable global-require */
-switch (process.env.MODULE || 'dev') {
-  case 'aws_sfd_nometer':
-    module.exports = require('./aws_sfd_nometer')
-    break
-  case 'aws_sfd':
-    module.exports = require('./aws_sfd')
-    break
-  case 'aws_sfs_nometer':
-    module.exports = require('./aws_sfs_nometer')
-    break
-  case 'aws_sfs':
-    module.exports = require('./aws_sfs')
-    break
-  case 'community':
-    module.exports = require('./community')
-    break
-  case 'enterprise':
-    module.exports = require('./enterprise')
-    break
-  case 'sft':
-    module.exports = require('./sft')
-    break
-  case 'dev':
-  default:
-    module.exports = require('./dev')
-    break
+function getEdition(): { edition: SextantEdition } {
+  switch (process.env.MODULE || 'dev') {
+    case 'aws_sfd_nometer':
+      return require('./aws_sfd_nometer')
+    case 'aws_sfd':
+      return require('./aws_sfd')
+    case 'aws_sfs_nometer':
+      return require('./aws_sfs_nometer')
+    case 'aws_sfs':
+      return require('./aws_sfs')
+    case 'community':
+      return require('./community')
+    case 'enterprise':
+      return require('./enterprise')
+    case 'sft':
+      return require('./sft')
+    case 'dev':
+    default:
+      return require('./dev')
+  }
 }
+
+// eslint-disable-next-line import/prefer-default-export
+export const { edition } = getEdition()

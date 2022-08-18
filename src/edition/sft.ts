@@ -1,11 +1,11 @@
 /* eslint-disable import/prefer-default-export */
 // Edition object for SFT editions (sawtooth+TFS)
 import { BTP_UNSTABLE, UNSTABLE_CHARTS } from './charts/repositories'
+import { EMPTY } from './deployment'
 import METERING from './metering/metering'
-import DEPLOYMENT_SPEC from './deployment'
 
 export const edition = {
-  deployment: DEPLOYMENT_SPEC.EMPTY,
+  deployment: EMPTY,
   metering: METERING.DEV,
   helmRepos: [BTP_UNSTABLE],
   chartTable: {

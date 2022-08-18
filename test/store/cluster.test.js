@@ -4,14 +4,10 @@ const tools = require('../tools')
 
 const asyncTest = require('../asyncTest')
 
-const ClusterStore = require('../../src/store/cluster')
+const ClusterStore = require('../../src/store/cluster').default
 const config = require('../../src/config')
 
-const {
-  CLUSTER_STATUS,
-  CLUSTER_PROVISION_TYPE,
-  CLUSTER_STATUS_DEFAULT,
-} = config
+const { CLUSTER_STATUS, CLUSTER_PROVISION_TYPE, CLUSTER_STATUS_DEFAULT } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let testCluster = null
@@ -77,7 +73,11 @@ database.testSuiteWithDatabase((getConnection) => {
     expectedOrder.sort()
     const clusters = await store.list({})
     t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
-    t.deepEqual(clusters.map((cluster) => cluster.name), expectedOrder, 'the clusters were in the correct order')
+    t.deepEqual(
+      clusters.map((cluster) => cluster.name),
+      expectedOrder,
+      'the clusters were in the correct order'
+    )
   })
 
   asyncTest('cluster store -> get', async (t) => {

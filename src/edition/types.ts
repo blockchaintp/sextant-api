@@ -5,15 +5,15 @@ type DeploymentSpec = {
   classic: []
 }
 
-type ChartTableEntry = HelmChart & {
+export type ChartTableEntry = HelmChart & {
   order: number
 }
 
-type ChartVersionGroup = {
+export type ChartVersionGroup = {
   [key: string]: ChartTableEntry
 }
 
-type ChartTable = {
+export type ChartTable = {
   [key: string]: ChartVersionGroup
 }
 

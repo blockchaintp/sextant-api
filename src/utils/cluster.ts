@@ -11,10 +11,11 @@
     * secrets - an object of name onto an object with either base64Data or rawData
 
 */
-const extractClusterSecrets = ({
-  desired_state,
-}) => {
-  const secrets = {}
+
+// eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-explicit-any
+export const extractClusterSecrets = ({ desired_state }: { desired_state: any }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const secrets: any = {}
 
   if (!desired_state) {
     return {
@@ -29,22 +30,18 @@ const extractClusterSecrets = ({
     secrets.token = {
       rawData: returnDesiredState.token,
     }
-    delete (returnDesiredState.token)
+    delete returnDesiredState.token
   }
 
   if (returnDesiredState.ca) {
     secrets.ca = {
       rawData: returnDesiredState.ca,
     }
-    delete (returnDesiredState.ca)
+    delete returnDesiredState.ca
   }
 
   return {
     desired_state: returnDesiredState,
     secrets,
   }
-}
-
-module.exports = {
-  extractClusterSecrets,
 }

@@ -5,8 +5,8 @@ const merge = require('deepmerge')
 const yaml = require('js-yaml')
 const tmp = require('tmp')
 const childProcess = require('child_process')
+const { getYaml, writeYaml } = require('../utils/yaml')
 
-const readFile = Promise.promisify(fs.readFile)
 const readdir = Promise.promisify(fs.readdir)
 const writeFile = Promise.promisify(fs.writeFile)
 const tempName = Promise.promisify(tmp.tmpName)
@@ -24,47 +24,26 @@ const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
 
 /*
 
-  load a YAML file
-
-*/
-const getYaml = async (filepath) => {
-  const yamlContent = await readFile(filepath, 'utf8')
-  return yaml.safeLoad(yamlContent)
-}
-
-/*
-
-  write a YAML file
-
-*/
-const writeYaml = async (filepath, data) => {
-  const yamlText = yaml.safeDump(data)
-  return writeFile(filepath, yamlText, 'utf8')
-}
-
-/*
-
   for a template type and version - return the folder
   in which the templates live
 
 */
-const getTemplateFolder = ({
-  deployment_type,
-  deployment_version,
-}) => path.resolve(__dirname, deployment_type, deployment_version)
+const getTemplateFolder = ({ deployment_type, deployment_version }) =>
+  path.resolve(__dirname, deployment_type, deployment_version)
 
 /*
 
   get the path to the defaults file for a template
 
 */
-const getDefaultsFile = ({
-  deployment_type,
-  deployment_version,
-}) => path.resolve(getTemplateFolder({
-  deployment_type,
-  deployment_version,
-}), DEFAULTS_FILE)
+const getDefaultsFile = ({ deployment_type, deployment_version }) =>
+  path.resolve(
+    getTemplateFolder({
+      deployment_type,
+      deployment_version,
+    }),
+    DEFAULTS_FILE
+  )
 
 /*
 
@@ -72,10 +51,7 @@ const getDefaultsFile = ({
   given type and version
 
 */
-const getTemplateDefaults = ({
-  deployment_type,
-  deployment_version,
-}) => {
+const getTemplateDefaults = ({ deployment_type, deployment_version }) => {
   const filepath = getDefaultsFile({
     deployment_type,
     deployment_version,
@@ -89,11 +65,7 @@ const getTemplateDefaults = ({
   data to get deployable values
 
 */
-const getTemplateData = async ({
-  deployment_type,
-  deployment_version,
-  desired_state,
-}) => {
+const getTemplateData = async ({ deployment_type, deployment_version, desired_state }) => {
   const defaults = await getTemplateDefaults({
     deployment_type,
     deployment_version,
@@ -126,12 +98,7 @@ const getTemplateData = async ({
 
 */
 // TODO  - error handling for custom yaml
-const writeTemplateValues = async ({
-  deployment_type,
-  deployment_version,
-  desired_state,
-  custom_yaml,
-}) => {
+const writeTemplateValues = async ({ deployment_type, deployment_version, desired_state, custom_yaml }) => {
   const valuesPath = await tempName({
     postfix: '.yaml',
   })
@@ -153,7 +120,7 @@ const writeTemplateValues = async ({
     mergedYamlData = templateData
   }
 
-  await writeYaml(valuesPath, mergedYamlData)
+  writeYaml(valuesPath, mergedYamlData)
 
   return valuesPath
 }
@@ -165,22 +132,21 @@ const writeTemplateValues = async ({
   exclude `defaults.yaml`
 
 */
-const getTemplates = async ({
-  deployment_type,
-  deployment_version,
-}) => {
+const getTemplates = async ({ deployment_type, deployment_version }) => {
   const templateFolder = getTemplateFolder({
     deployment_type,
     deployment_version,
   })
   const files = await readdir(templateFolder)
 
-  return files.filter((filename) => {
-    if (!filename.match(/\.yaml$/)) return false
-    // eslint-disable-next-line eqeqeq
-    if (filename == DEFAULTS_FILE) return false
-    return true
-  }).sort()
+  return files
+    .filter((filename) => {
+      if (!filename.match(/\.yaml$/)) return false
+      // eslint-disable-next-line eqeqeq
+      if (filename == DEFAULTS_FILE) return false
+      return true
+    })
+    .sort()
 }
 
 /*
@@ -199,24 +165,19 @@ const cleanUp = async (filePath) => {
   })
 }
 
-const renderTemplate = async ({
-  templateName,
-  valuesPath,
-  inputDirectory,
-  outputDirectory,
-}) => {
+const renderTemplate = async ({ templateName, valuesPath, inputDirectory, outputDirectory }) => {
   const inputTemplatePath = path.resolve(inputDirectory, templateName)
   const outputTemplatePath = path.resolve(outputDirectory, templateName)
   const runCommand = `kubetpl render -i ${valuesPath} ${inputTemplatePath}`
   logger.debug({ action: 'renderTemplate', command: runCommand })
-  const stdout = await exec(runCommand)
-    .catch((err) => {
-      // make the kubetpl error message nicely readable
-      const message = err
-        .toString()
-        .split('\n')
-        .filter((line) => (line.indexOf('Error: ') !== 0))
-        .map((line) => line
+  const stdout = await exec(runCommand).catch((err) => {
+    // make the kubetpl error message nicely readable
+    const message = err
+      .toString()
+      .split('\n')
+      .filter((line) => line.indexOf('Error: ') !== 0)
+      .map((line) =>
+        line
           .split(/\s+/)
           .filter((part) => {
             if (part.indexOf('.yaml') >= 0 && part.indexOf(':') < 0) return false
@@ -228,10 +189,12 @@ const renderTemplate = async ({
               return pathParts[pathParts.length - 1]
             }
             return part
-          }).join(' '))
-        .join('\n')
-      throw new Error(message, { cause: err })
-    })
+          })
+          .join(' ')
+      )
+      .join('\n')
+    throw new Error(message, { cause: err })
+  })
   logger.trace({ action: 'renderTemplate', command: runCommand, stdout })
   return writeFile(outputTemplatePath, stdout, 'utf8')
 }
@@ -247,12 +210,7 @@ const renderTemplate = async ({
    * for each template - render it and write to the temp directory
 
 */
-const renderDeployment = async ({
-  deployment_type,
-  deployment_version,
-  desired_state,
-  custom_yaml,
-}) => {
+const renderDeployment = async ({ deployment_type, deployment_version, desired_state, custom_yaml }) => {
   const outputDirectory = await tmpDir()
   const inputDirectory = getTemplateFolder({
     deployment_type,
@@ -269,12 +227,14 @@ const renderDeployment = async ({
     deployment_version,
   })
 
-  await Promise.each(templates, (templateName) => renderTemplate({
-    templateName,
-    valuesPath,
-    inputDirectory,
-    outputDirectory,
-  })).then(() => {
+  await Promise.each(templates, (templateName) =>
+    renderTemplate({
+      templateName,
+      valuesPath,
+      inputDirectory,
+      outputDirectory,
+    })
+  ).then(() => {
     cleanUp(valuesPath)
   })
 

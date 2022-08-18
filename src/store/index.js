@@ -1,6 +1,6 @@
 const UserStore = require('./user')
 const RoleStore = require('./role')
-const ClusterStore = require('./cluster')
+const ClusterStore = require('./cluster').default
 const ClusterFileStore = require('./clusterfile')
 const ClusterSecretStore = require('./clustersecret')
 const DeploymentStore = require('./deployment')
