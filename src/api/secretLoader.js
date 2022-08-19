@@ -3,7 +3,7 @@
  *
  * License: Product
  */
-const ClusterKubectl = require('../utils/clusterKubectl')
+const ClusterKubectl = require('../utils/clusterKubectl').default
 const deploymentNames = require('../utils/deploymentNames')
 
 const SecretLoader = async ({ store, id }) => {

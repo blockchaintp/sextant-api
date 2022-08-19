@@ -36,7 +36,7 @@ const DeploymentSecretStore = (knex: Knex) => {
       * deployment
 
   */
-  const list = ({ deployment }: DeploymentSecretListRequest, trx: Knex.Transaction) => {
+  const list = ({ deployment }: DeploymentSecretListRequest, trx?: Knex.Transaction) => {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.list`)
 
     const orderBy = ORDER_BY_FIELDS
@@ -60,7 +60,7 @@ const DeploymentSecretStore = (knex: Knex) => {
       * id or name
 
   */
-  const get = ({ deployment, id, name }: DeploymentSecretGetRequest, trx: Knex.Transaction) => {
+  const get = ({ deployment, id, name }: DeploymentSecretGetRequest, trx?: Knex.Transaction) => {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.get`)
     if (!id && !name) throw new Error(`id or name must be given to store.deploymentsecret.get`)
 
@@ -92,7 +92,7 @@ const DeploymentSecretStore = (knex: Knex) => {
   */
   const create = async (
     { data: { deployment, name, rawData, base64data } }: DeploymentSecretCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!deployment) throw new Error(`data.deployment param must be given to store.deploymentsecret.create`)
     if (!name) throw new Error(`data.name param must be given to store.deploymentsecret.create`)
@@ -129,7 +129,7 @@ const DeploymentSecretStore = (knex: Knex) => {
   */
   const update = async (
     { deployment, id, name, data: { rawData, base64data } }: DeploymentSecretUpdateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.update`)
     if (!id && !name) throw new Error(`id or name must be given to store.deploymentsecret.update`)
@@ -171,7 +171,7 @@ const DeploymentSecretStore = (knex: Knex) => {
       * id or name
 
   */
-  const del = async ({ deployment, id, name }: DeploymentSecretDeleteRequest, trx: Knex.Transaction) => {
+  const del = async ({ deployment, id, name }: DeploymentSecretDeleteRequest, trx?: Knex.Transaction) => {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.del`)
     if (!id && !name) throw new Error(`id or name must be given to store.deploymentsecret.del`)
 
@@ -205,7 +205,7 @@ const DeploymentSecretStore = (knex: Knex) => {
   */
   const replace = async (
     { data: { deployment, name, rawData, base64data } }: DeploymentSecretReplaceRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     await del(
       {
@@ -239,7 +239,7 @@ const DeploymentSecretStore = (knex: Knex) => {
   */
   const deleteForDeployment = async (
     { deployment }: DeploymentSecretDeleteForDeploymentRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.deleteForDeployment`)
     const [result] = await (trx || knex)<DeploymentSecretEntity>(TABLE)

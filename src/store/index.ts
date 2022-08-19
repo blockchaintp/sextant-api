@@ -22,7 +22,7 @@ const Store = (knex: Knex) => {
   const settings = SettingsStore(knex)
   const deploymenthistory = DeploymentHistoryStore(knex)
 
-  const transaction = <T>(handler: (trx: Knex.Transaction) => Promise<T> | void) => knex.transaction(handler)
+  const transaction = <T>(handler: (trx?: Knex.Transaction) => Promise<T> | void) => knex.transaction(handler)
 
   return {
     knex,
@@ -39,5 +39,6 @@ const Store = (knex: Knex) => {
     deploymenthistory,
   }
 }
+export type StoreType = ReturnType<typeof Store>
 
 export default Store

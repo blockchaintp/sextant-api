@@ -24,7 +24,7 @@ const SettingsStore = (knex: Knex) => {
 
   */
   // eslint-disable-next-line no-empty-pattern
-  const list = (trx: Knex.Transaction) => (trx || knex).select('*').from<SettingsEntity>(TABLE)
+  const list = (trx?: Knex.Transaction) => (trx || knex).select('*').from<SettingsEntity>(TABLE)
 
   /*
 
@@ -35,7 +35,7 @@ const SettingsStore = (knex: Knex) => {
       * id or key
 
   */
-  const get = ({ id, key }: SettingsGetRequest, trx: Knex.Transaction) => {
+  const get = ({ id, key }: SettingsGetRequest, trx?: Knex.Transaction) => {
     if (!id && !key) throw new Error('id or key must be given to store.settings.get')
 
     const queryParams: {
@@ -61,7 +61,7 @@ const SettingsStore = (knex: Knex) => {
         * value
 
   */
-  const create = async ({ data: { key, value } }: SettingsCreateRequest, trx: Knex.Transaction) => {
+  const create = async ({ data: { key, value } }: SettingsCreateRequest, trx?: Knex.Transaction) => {
     if (!key) throw new Error('data.key param must be given to store.settings.create')
     if (!value) throw new Error('data.value param must be given to store.settings.create')
 
@@ -83,7 +83,7 @@ const SettingsStore = (knex: Knex) => {
       * key, value
 
   */
-  const update = async ({ key, data: { value } }: SettingsUpdateRequest, trx: Knex.Transaction) => {
+  const update = async ({ key, data: { value } }: SettingsUpdateRequest, trx?: Knex.Transaction) => {
     if (!key) throw new Error('key must be given to store.settings.update')
     if (!value) throw new Error('data.value param must be given to store.settings.update')
 
@@ -111,7 +111,7 @@ const SettingsStore = (knex: Knex) => {
       * id or key
 
   */
-  const del = async ({ id, key }: SettingsDeleteRequest, trx: Knex.Transaction) => {
+  const del = async ({ id, key }: SettingsDeleteRequest, trx?: Knex.Transaction) => {
     if (!id && !key) throw new Error('id or key must be given to store.settings.del')
 
     const queryParams: SettingsDeleteRequest = {}

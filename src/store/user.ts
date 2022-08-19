@@ -19,7 +19,7 @@ const UserStore = (knex: Knex) => {
 
   */
   // eslint-disable-next-line no-empty-pattern
-  const list = (trx: Knex.Transaction) => {
+  const list = (trx?: Knex.Transaction) => {
     const orderBy = ORDER_BY_FIELDS
 
     return (trx || knex).select('*').from(TABLE).orderBy(orderBy.field, orderBy.direction)
@@ -38,7 +38,7 @@ const UserStore = (knex: Knex) => {
     one of id or username must be given
 
   */
-  const get = ({ id, username }: UserGetRequest, trx: Knex.Transaction) => {
+  const get = ({ id, username }: UserGetRequest, trx?: Knex.Transaction) => {
     if (!id && !username) throw new Error('one of id or username must be given to store.user.get')
 
     const query: {
@@ -67,7 +67,7 @@ const UserStore = (knex: Knex) => {
   */
   const create = async (
     { data: { username, hashed_password, server_side_key, permission, meta } }: UserCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!username) throw new Error('data.username param must be given to store.user.create')
     if (!hashed_password) throw new Error('data.hashed_password param must be given to store.user.create')
@@ -103,7 +103,7 @@ const UserStore = (knex: Knex) => {
     one of id or username must be given
 
   */
-  const update = async ({ id, data }: UserUpdateRequest, trx: Knex.Transaction) => {
+  const update = async ({ id, data }: UserUpdateRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.user.update')
     if (!data) throw new Error('data param must be given to store.user.update')
 
@@ -125,7 +125,7 @@ const UserStore = (knex: Knex) => {
       * id
 
   */
-  const del = async ({ id }: UserDeleteRequest, trx: Knex.Transaction) => {
+  const del = async ({ id }: UserDeleteRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.user.delete')
 
     const [result] = await (trx || knex)<UserEntity>(TABLE)

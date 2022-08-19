@@ -38,7 +38,7 @@ const DeploymentStore = (knex: Knex) => {
       * cluster
 
   */
-  const list = ({ cluster, deleted }: DeploymentListRequest, trx: Knex.Transaction) => {
+  const list = ({ cluster, deleted }: DeploymentListRequest, trx?: Knex.Transaction) => {
     const orderBy = ORDER_BY_FIELDS
 
     if (!cluster) throw new Error('cluster must be given to store.deployment.list')
@@ -71,7 +71,7 @@ const DeploymentStore = (knex: Knex) => {
       * id
 
   */
-  const get = ({ id }: DeploymentGetRequest, trx: Knex.Transaction) => {
+  const get = ({ id }: DeploymentGetRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.deployment.get')
 
     return (trx || knex)
@@ -102,7 +102,7 @@ const DeploymentStore = (knex: Knex) => {
     {
       data: { cluster, name, deployment_type, deployment_version, desired_state, custom_yaml, deployment_method },
     }: DeploymentCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!cluster) throw new Error('data.cluster param must be given to store.deployment.create')
     if (!name) throw new Error('data.name param must be given to store.deployment.create')
@@ -155,7 +155,7 @@ const DeploymentStore = (knex: Knex) => {
         * maintenance_flag
 
   */
-  const update = async ({ id, data }: DeploymentUpdateRequest, trx: Knex.Transaction) => {
+  const update = async ({ id, data }: DeploymentUpdateRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
     const [previousRecord] = await deploymentHistoryStore.get(
@@ -201,7 +201,7 @@ const DeploymentStore = (knex: Knex) => {
       * id
 
   */
-  const del = async ({ id }: DeploymentDeleteRequest, trx: Knex.Transaction) => {
+  const del = async ({ id }: DeploymentDeleteRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.deployment.delete')
 
     const [result] = await (trx || knex)<DeploymentEntity>(TABLE)
@@ -230,7 +230,7 @@ const DeploymentStore = (knex: Knex) => {
     return result
   }
 
-  const updateStatus = async ({ id, helm_response, data }: DeploymentUpdateStatusRequest, trx: Knex.Transaction) => {
+  const updateStatus = async ({ id, helm_response, data }: DeploymentUpdateStatusRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
     const ts = new Date(currentHour()).toISOString().replace('T', ' ').replace('Z', '')

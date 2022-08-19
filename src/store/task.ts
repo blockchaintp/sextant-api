@@ -37,7 +37,7 @@ const TaskStore = (knex: Knex) => {
     all the above are optional - if nothing is defined we list all tasks across the system
 
   */
-  const list = ({ cluster, deployment, user, status, limit }: TaskListRequest, trx: Knex.Transaction) => {
+  const list = ({ cluster, deployment, user, status, limit }: TaskListRequest, trx?: Knex.Transaction) => {
     const query: {
       resource_type?: string
       resource_id?: DatabaseIdentifier
@@ -97,7 +97,7 @@ const TaskStore = (knex: Knex) => {
      * deployment - we want active tasks for a deployment
 
   */
-  const activeForResource = ({ cluster, deployment }: TaskListActiveForResourceRequest, trx: Knex.Transaction) => {
+  const activeForResource = ({ cluster, deployment }: TaskListActiveForResourceRequest, trx?: Knex.Transaction) => {
     if (!cluster && !deployment) throw new Error('cluster or deployment required for controller.task.activeForResource')
 
     const query: {
@@ -126,7 +126,7 @@ const TaskStore = (knex: Knex) => {
      * deployment - we want active tasks for a deployment
 
   */
-  const mostRecentForResource = ({ cluster, deployment }: TaskListRecentForResourceRequest, trx: Knex.Transaction) => {
+  const mostRecentForResource = ({ cluster, deployment }: TaskListRecentForResourceRequest, trx?: Knex.Transaction) => {
     if (!cluster && !deployment) throw new Error('cluster or deployment required for controller.task.activeForResource')
 
     const query: {
@@ -152,7 +152,7 @@ const TaskStore = (knex: Knex) => {
       * id
 
   */
-  const get = ({ id }: TaskGetRequest, trx: Knex.Transaction) => {
+  const get = ({ id }: TaskGetRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.task.get')
 
     return (trx || knex)
@@ -182,7 +182,7 @@ const TaskStore = (knex: Knex) => {
   */
   const create = async (
     { data: { user, resource_type, resource_id, action, restartable, payload, resource_status } }: TaskCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!user) throw new Error('data.user param must be given to store.task.create')
     if (!resource_type) throw new Error('data.resource_type param must be given to store.task.create')
@@ -221,7 +221,7 @@ const TaskStore = (knex: Knex) => {
   */
   const update = async (
     { id, data: { status, error, started_at, ended_at } }: TaskUpdateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!id) throw new Error('id must be given to store.task.update')
     if (!status) throw new Error('data.status param must be given to store.task.update')
@@ -259,7 +259,7 @@ const TaskStore = (knex: Knex) => {
      * id
 
   */
-  const deleteForResource = ({ resource_type, resource_id }: TaskDeleteForResourceRequest, trx: Knex.Transaction) => {
+  const deleteForResource = ({ resource_type, resource_id }: TaskDeleteForResourceRequest, trx?: Knex.Transaction) => {
     if (!resource_type) throw new Error('resource_type must be given to store.task.deleteForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.task.deleteForResource')
     return (trx || knex)<TaskEntity>(TABLE)

@@ -28,7 +28,7 @@ const ClusterFileStore = (knex: Knex) => {
       * cluster
 
   */
-  const list = ({ cluster }: ClusterFileListRequest, trx: Knex.Transaction) => {
+  const list = ({ cluster }: ClusterFileListRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.list`)
 
     const orderBy = ORDER_BY_FIELDS
@@ -52,7 +52,7 @@ const ClusterFileStore = (knex: Knex) => {
       * id or name
 
   */
-  const get = ({ cluster, id, name }: ClusterFileGetRequest, trx: Knex.Transaction) => {
+  const get = ({ cluster, id, name }: ClusterFileGetRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.get`)
     if (!id && !name) throw new Error(`id or name must be given to store.clusterfile.get`)
 
@@ -85,7 +85,7 @@ const ClusterFileStore = (knex: Knex) => {
   */
   const create = async (
     { data: { cluster, name, rawData, base64data } }: ClusterFileCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!cluster) throw new Error(`data.cluster param must be given to store.clusterfile.create`)
     if (!name) throw new Error(`data.name param must be given to store.clusterfile.create`)
@@ -121,7 +121,7 @@ const ClusterFileStore = (knex: Knex) => {
   */
   const update = async (
     { cluster, id, name, data: { rawData, base64data } }: ClusterFileUpdateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.update`)
     if (!id && !name) throw new Error(`id or name must be given to store.clusterfile.update`)
@@ -164,7 +164,7 @@ const ClusterFileStore = (knex: Knex) => {
       * id or name
 
   */
-  const del = async ({ cluster, id, name }: ClusterFileDeleteRequest, trx: Knex.Transaction) => {
+  const del = async ({ cluster, id, name }: ClusterFileDeleteRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.get`)
     if (!id && !name) throw new Error(`id or name must be given to store.clusterfile.get`)
 
@@ -192,7 +192,7 @@ const ClusterFileStore = (knex: Knex) => {
       * cluster
 
   */
-  const deleteForCluster = async ({ cluster }: ClusterFileDeleteForClusterRequest, trx: Knex.Transaction) => {
+  const deleteForCluster = async ({ cluster }: ClusterFileDeleteForClusterRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.del`)
     const result = await (trx || knex)<ClusterFileEntity>(TABLE)
       .where({

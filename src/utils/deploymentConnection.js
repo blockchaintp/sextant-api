@@ -4,7 +4,7 @@
  * License: Product
  */
 const deploymentNames = require('./deploymentNames')
-const ClusterKubectl = require('./clusterKubectl')
+const ClusterKubectl = require('./clusterKubectl').default
 const base64 = require('./base64')
 
 const cachedConnections = {}
@@ -22,7 +22,7 @@ const deploymentConnection = async ({ store, id, onConnection, connectionCacheId
       id: deployment.cluster,
     })
 
-    const { applied_state } = deployment
+    const { applied_state: appliedState } = deployment
 
     const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
@@ -35,17 +35,17 @@ const deploymentConnection = async ({ store, id, onConnection, connectionCacheId
 
     const { apiServer, token, ca } = clusterKubectl.getRemoteCredentials()
 
-    const token_dec = base64.decode(token)
-    const ca_dec = base64.decode(ca)
+    const tokenDecoded = base64.decode(token)
+    const caDecoded = base64.decode(ca)
     const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
 
     cachedConnections[connectionCacheId] = {
-      token: token_dec,
+      token: tokenDecoded,
       apiServer,
       baseUrl,
-      ca: ca_dec,
+      ca: caDecoded,
       namespace,
-      applied_state,
+      applied_state: appliedState,
     }
     connection = cachedConnections[connectionCacheId]
 

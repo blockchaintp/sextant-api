@@ -27,14 +27,14 @@ const DeploymentHistoryStore = (knex: Knex) => {
     return retQuery
   }
 
-  const list = ({ after, before }: TimeRange, trx: Knex.Transaction) => {
+  const list = ({ after, before }: TimeRange, trx?: Knex.Transaction) => {
     let query = (trx || knex).select('*').from<DeploymentHistoryEntity>(TABLE)
 
     query = timeRange(query, after, before)
     return query
   }
 
-  const get = ({ deployment_id, limit, after, before }: DeploymentHistoryGetRequest, trx: Knex.Transaction) => {
+  const get = ({ deployment_id, limit, after, before }: DeploymentHistoryGetRequest, trx?: Knex.Transaction) => {
     if (!deployment_id) throw new Error('id must be given to store.deploymentresult.get')
     let query = (trx || knex).select('*').from<DeploymentHistoryEntity>(TABLE).where({ deployment_id })
 
@@ -53,7 +53,7 @@ const DeploymentHistoryStore = (knex: Knex) => {
     {
       data: { cluster_id, deployment_id, name, deployment_type, deployment_version, status, helm_response },
     }: DeploymentHistoryCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!name) throw new Error('data.name param must be given to store.deploymentresult.create')
     if (!status) throw new Error('data.status param must be given to store.deploymentresult.create')

@@ -2,7 +2,7 @@
 const Promise = require('bluebird')
 const config = require('../config')
 const userUtils = require('../utils/user')
-const ClusterKubectl = require('../utils/clusterKubectl')
+const ClusterKubectl = require('../utils/clusterKubectl').default
 const RBAC = require('../rbac')
 const deploymentNames = require('../utils/deploymentNames')
 

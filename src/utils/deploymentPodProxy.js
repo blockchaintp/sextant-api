@@ -8,15 +8,9 @@ const logger = require('../logging').getLogger({
   name: 'utils/deploymentPodProxy',
 })
 const deploymentNames = require('./deploymentNames')
-const ClusterKubectl = require('./clusterKubectl')
+const ClusterKubectl = require('./clusterKubectl').default
 
-const ProxyRequest = async ({
-  kubectl,
-  namespace,
-  pod,
-  port,
-  handler,
-}) => {
+const ProxyRequest = async ({ kubectl, namespace, pod, port, handler }) => {
   if (!pod) throw new Error('A running pod is required for a proxy request.')
   const portForward = await kubectl.portForward({
     namespace,
@@ -47,11 +41,7 @@ const ProxyRequest = async ({
   }
 }
 
-const DeploymentPodProxy = async ({
-  store,
-  id,
-  labelPattern = 'app.kubernetes.io/instance=<name>',
-}) => {
+const DeploymentPodProxy = async ({ store, id, labelPattern = 'app.kubernetes.io/instance=<name>' }) => {
   const deployment = await store.deployment.get({
     id,
   })
@@ -62,10 +52,7 @@ const DeploymentPodProxy = async ({
 
   const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const {
-    name,
-    namespace,
-  } = modelRelease
+  const { name, namespace } = modelRelease
 
   const clusterKubectl = await ClusterKubectl({
     cluster,
@@ -74,9 +61,8 @@ const DeploymentPodProxy = async ({
 
   const useLabel = labelPattern.replace('<name>', name)
 
-  const getPods = () => clusterKubectl
-    .getPods(namespace, { labelSelector: useLabel })
-    .then((data) => {
+  const getPods = () =>
+    clusterKubectl.getPods(namespace, { labelSelector: useLabel }).then((data) => {
       const allPods = data.items
       return allPods.filter((pod) => {
         const readyConditions = pod.status.conditions.filter((item) => item.type === 'Ready')
@@ -89,17 +75,14 @@ const DeploymentPodProxy = async ({
 
   return {
     getPods,
-    request: ({
-      pod,
-      port,
-      handler,
-    }) => ProxyRequest({
-      kubectl: clusterKubectl,
-      namespace,
-      pod,
-      port,
-      handler,
-    }),
+    request: ({ pod, port, handler }) =>
+      ProxyRequest({
+        kubectl: clusterKubectl,
+        namespace,
+        pod,
+        port,
+        handler,
+      }),
   }
 }
 

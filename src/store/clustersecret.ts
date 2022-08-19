@@ -35,7 +35,7 @@ const ClusterSecretStore = (knex: Knex) => {
       * cluster
 
   */
-  const list = ({ cluster }: ClusterSecretListRequest, trx: Knex.Transaction) => {
+  const list = ({ cluster }: ClusterSecretListRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clustersecret.list`)
 
     const orderBy = ORDER_BY_FIELDS
@@ -59,7 +59,7 @@ const ClusterSecretStore = (knex: Knex) => {
       * id or name
 
   */
-  const get = ({ cluster, id, name }: ClusterSecretGetRequest, trx: Knex.Transaction) => {
+  const get = ({ cluster, id, name }: ClusterSecretGetRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clustersecret.get`)
     if (!id && !name) throw new Error(`id or name must be given to store.clustersecret.get`)
 
@@ -91,7 +91,7 @@ const ClusterSecretStore = (knex: Knex) => {
   */
   const create = async (
     { data: { cluster, name, rawData, base64data } }: ClusterSecretCreateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!cluster) throw new Error(`data.cluster param must be given to store.clustersecret.create`)
     if (!name) throw new Error(`data.name param must be given to store.clustersecret.create`)
@@ -128,7 +128,7 @@ const ClusterSecretStore = (knex: Knex) => {
   */
   const update = async (
     { cluster, id, name, data: { rawData, base64data } }: ClusterSecretUpdateRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     if (!cluster) throw new Error(`cluster must be given to store.clustersecret.update`)
     if (!id && !name) throw new Error(`id or name must be given to store.clustersecret.update`)
@@ -171,7 +171,7 @@ const ClusterSecretStore = (knex: Knex) => {
       * id or name
 
   */
-  const del = async ({ cluster, id, name }: ClusterSecretDeleteRequest, trx: Knex.Transaction) => {
+  const del = async ({ cluster, id, name }: ClusterSecretDeleteRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clustersecret.del`)
     if (!id && !name) throw new Error(`id or name must be given to store.clustersecret.del`)
 
@@ -206,7 +206,7 @@ const ClusterSecretStore = (knex: Knex) => {
   */
   const replace = async (
     { data: { cluster, name, rawData, base64data } }: ClusterSecretReplaceRequest,
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) => {
     await del(
       {
@@ -238,7 +238,7 @@ const ClusterSecretStore = (knex: Knex) => {
       * cluster
 
   */
-  const deleteForCluster = async ({ cluster }: ClusterSecretDeleteForClusterRequest, trx: Knex.Transaction) => {
+  const deleteForCluster = async ({ cluster }: ClusterSecretDeleteForClusterRequest, trx?: Knex.Transaction) => {
     if (!cluster) throw new Error(`cluster must be given to store.clustersecret.deleteForCluster`)
     const [result] = await (trx || knex)<ClusterSecretEntity>(TABLE)
       .where({

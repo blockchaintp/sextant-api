@@ -1,12 +1,12 @@
 /* eslint-disable max-len */
 const Promise = require('bluebird')
-const memoize = require('memoizee');
+const memoize = require('memoizee')
 const deploymentNames = require('../utils/deploymentNames')
 const logger = require('../logging').getLogger({
   name: 'jobs/pollUtils',
 })
 
-const ClusterKubectl = require('../utils/clusterKubectl')
+const ClusterKubectl = require('../utils/clusterKubectl').default
 
 const getAllDeployments = async (store) => {
   const deployments = await store.deployment.list({
@@ -46,9 +46,7 @@ const executeHelmCommand = async (configuredClusterKubectl, command) => {
 const runHelmList = async (deployment, store) => {
   const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const {
-    namespace,
-  } = modelRelease
+  const { namespace } = modelRelease
 
   const cluster = await store.cluster.get({
     id: deployment.cluster,
@@ -142,15 +140,14 @@ const processHelmResponse = (helmResponse, deployment) => {
 
 // Updates the deployment status in the DB, if the status is more recent AND new
 const updateStatus = async (processedHelmResponse, store) => {
-  const databaseResponse = await store.deployment
-    .updateStatus({
-      id: processedHelmResponse.deployment_id,
-      helm_response: processedHelmResponse.helm_response,
-      data: {
-        status: processedHelmResponse.status,
-        updated_at: processedHelmResponse.updated_at,
-      },
-    })
+  const databaseResponse = await store.deployment.updateStatus({
+    id: processedHelmResponse.deployment_id,
+    helm_response: processedHelmResponse.helm_response,
+    data: {
+      status: processedHelmResponse.status,
+      updated_at: processedHelmResponse.updated_at,
+    },
+  })
   logger.debug({
     fn: 'updateStatus',
     deployment: processedHelmResponse.name,
