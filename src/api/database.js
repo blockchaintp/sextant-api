@@ -1,4 +1,3 @@
-const random = require('../utils/random')
 const secp256k1 = require('../utils/secp256k1')
 
 const getKey = () => secp256k1.binaryToHex(secp256k1.createKeyPair()).publicKey

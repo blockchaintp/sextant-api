@@ -3,13 +3,10 @@
  *
  * License: Product
  */
-const ClusterKubectl = require('./clusterKubectl')
-const deploymentNames = require('./deploymentNames')
+const ClusterKubectl = require('../utils/clusterKubectl')
+const deploymentNames = require('../utils/deploymentNames')
 
-const SecretLoader = async ({
-  store,
-  id,
-}) => {
+const SecretLoader = async ({ store, id }) => {
   const deployment = await store.deployment.get({
     id,
   })
@@ -20,16 +17,14 @@ const SecretLoader = async ({
 
   const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const {
-    namespace,
-  } = modelRelease
+  const { namespace } = modelRelease
 
   const clusterKubectl = await ClusterKubectl({
     cluster,
     store,
   })
 
-  const getSecret = async (name) => clusterKubectl.getSecretByName(namespace, name)
+  const getSecret = (name) => clusterKubectl.getSecretByName(namespace, name)
 
   return {
     getSecret,
