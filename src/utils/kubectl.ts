@@ -25,7 +25,7 @@ import { tmpName } from 'tmp-promise'
 import Logging from '../logging'
 import { ProvisionType } from '../store/domain-types'
 import { decode } from './base64'
-import { writeYaml } from './yaml'
+import { writeTempYaml, writeYaml } from './yaml'
 
 const logger = Logging.getLogger({
   name: 'utils/kubectl',
@@ -69,7 +69,7 @@ type KubectlConstructParams = {
 type SetupDetails = { kubeConfigPath: string; connectionArguments: string[] }
 type Options = any
 
-const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
+const constructValid = ({ mode, remoteCredentials }: KubectlConstructParams) => {
   if (!mode) throw new Error('mode required for Kubectl')
   if (MODES.indexOf(mode) < 0) throw new Error(`unknown mode for Kubectl: ${mode}`)
 
@@ -79,20 +79,30 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
     if (!remoteCredentials.token) throw new Error('token required for remote credentials')
     if (!remoteCredentials.apiServer) throw new Error('apiServer required for remote credentials')
   }
+}
+
+// trashes the tmp file if there is a kubeconfigPath in the setupDetails
+const localTeardown = (setupDetails: SetupDetails) => {
+  if (existsSync(setupDetails.kubeConfigPath)) {
+    unlinkSync(setupDetails.kubeConfigPath)
+  }
+}
+
+const getOptions = (options: Options) => {
+  const useOptions = {
+    ...options,
+    // allow 5MB back on stdout
+    // (which should not happen but some logs might be longer than 200kb which is the default)
+    maxBuffer: 1024 * 1024 * 5,
+  }
+  useOptions.env = { ...process.env, ...options.env }
+  return useOptions
+}
+
+const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
+  constructValid({ mode, remoteCredentials })
 
   const getRemoteCredentials = () => remoteCredentials
-
-  /*
-
-  write a YAML file
-
-  */
-  const writeTempYaml = async (data: any) => {
-    const tmpPath = await tmpName({ postfix: '.yaml' })
-    writeYaml(tmpPath, data)
-    logger.debug({ message: `Wrote - ${tmpPath}` })
-    return tmpPath
-  }
 
   const createRemoteConfig = (): KubeConfig => {
     const cluster: Cluster = {
@@ -178,24 +188,6 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
     return { kubeConfigPath, connectionArguments }
   }
 
-  // trashes the tmp file if there is a kubeconfigPath in the setupDetails
-  const localTeardown = (setupDetails: SetupDetails) => {
-    if (setupDetails.kubeConfigPath && existsSync(setupDetails.kubeConfigPath)) {
-      unlinkSync(setupDetails.kubeConfigPath)
-    }
-  }
-
-  const getOptions = (options: Options) => {
-    const useOptions = {
-      ...options,
-      // allow 5MB back on stdout
-      // (which should not happen but some logs might be longer than 200kb which is the default)
-      maxBuffer: 1024 * 1024 * 5,
-    }
-    useOptions.env = { ...process.env, ...options.env }
-    return useOptions
-  }
-
   const apiPortForward = ({
     namespace,
     pod,
@@ -231,7 +223,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
     if (!pod) throw new Error('A running pod is required for port forwarding')
     const localPort = await getPort()
 
-    const server = await apiPortForward({
+    const server = apiPortForward({
       namespace,
       pod,
       port,
@@ -287,7 +279,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
         err.message = okErrorParts.join('\n')
         throw err
       })
-    await localTeardown(setupDetails)
+    localTeardown(setupDetails)
     logger.trace({ action: commandType, command: `${cmd}`, result: result.stdout })
     logger.debug({ action: commandType, message: 'command success' })
     return result.stdout.toString()
@@ -315,14 +307,14 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
     return processedOutput
   }
 
-  const getClient = async (api = CoreV1Api) => {
-    const kc = await getConfig()
+  const getClient = (api = CoreV1Api) => {
+    const kc = getConfig()
     return kc.makeApiClient(api)
   }
 
   const getPods = async (namespace: string, options: Options = {}) => {
     const { labelSelector, fieldSelector } = options
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.listNamespacedPod(
       namespace,
       undefined,
@@ -343,7 +335,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
 
   const getNodes = async (options: Options = {}) => {
     const { labelSelector, fieldSelector } = options
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.listNode(undefined, false, undefined, fieldSelector, labelSelector)
     logger.trace({
       numberOfNodes: body.items ? body.items.length : 0,
@@ -356,7 +348,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
 
   const getServices = async (namespace: string, options: Options = {}) => {
     const { labelSelector, fieldSelector } = options
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.listNamespacedService(
       namespace,
       undefined,
@@ -377,7 +369,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
 
   const getNamespaces = async (options: Options = {}) => {
     const { labelSelector, fieldSelector } = options
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.listNamespace(undefined, false, undefined, fieldSelector, labelSelector)
     logger.trace({
       numberOfNamespaces: body.items ? body.items.length : 0,
@@ -390,7 +382,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
 
   const getSecrets = async (namespace: string, options: Options = {}) => {
     const { labelSelector, fieldSelector } = options
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.listNamespacedSecret(
       namespace,
       undefined,
@@ -410,14 +402,14 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
   }
 
   const getSecretByName = async (namespace: string, name: string) => {
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.readNamespacedSecret(name, namespace)
     return body
   }
 
   const getPersistentVolumeClaims = async (namespace: string, options: Options = {}) => {
     const { labelSelector, fieldSelector } = options
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.listNamespacedPersistentVolumeClaim(
       namespace,
       undefined,
@@ -437,7 +429,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
   }
 
   const deletePod = async (namespace: string, name: string) => {
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.deleteNamespacedPod(name, namespace)
     logger.info({
       body,
@@ -449,7 +441,7 @@ const Kubectl = ({ mode, remoteCredentials }: KubectlConstructParams) => {
   }
 
   const deleteConfigMap = async (namespace: string, name: string) => {
-    const client = await getClient()
+    const client = getClient()
     const { body } = await client.deleteNamespacedConfigMap(name, namespace)
     logger.info({
       body,
