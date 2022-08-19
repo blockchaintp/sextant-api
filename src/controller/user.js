@@ -1,6 +1,6 @@
 /* eslint-disable no-shadow */
 const config = require('../config')
-const utils = require('../utils/user')
+const utils = require('../utils/user').default
 
 const userForms = require('../forms/user')
 const validate = require('../forms/validate')
@@ -28,9 +28,7 @@ const UserController = ({ store, settings }) => {
     add other users
 
   */
-  const search = async ({
-    searchParams,
-  }) => {
+  const search = async ({ searchParams }) => {
     if (!searchParams) return []
     const users = await store.user.list()
     return users
@@ -67,10 +65,7 @@ const UserController = ({ store, settings }) => {
     one of username of id must be given
 
   */
-  const get = ({
-    id,
-    username,
-  }) => {
+  const get = ({ id, username }) => {
     if (!id && !username) throw new Error('id or username required for controller.user.get')
     return store.user.get({
       username,
@@ -88,10 +83,7 @@ const UserController = ({ store, settings }) => {
      * password - string
 
   */
-  const checkPassword = async ({
-    username,
-    password,
-  }) => {
+  const checkPassword = async ({ username, password }) => {
     if (!username) throw new Error('username required for controller.user.checkPassword')
     if (!password) throw new Error('password required for controller.user.checkPassword')
     const user = await get({
@@ -113,11 +105,7 @@ const UserController = ({ store, settings }) => {
      * permission - enumerations.USER_TYPES
 
   */
-  const create = async ({
-    username,
-    password,
-    permission,
-  }) => {
+  const create = async ({ username, password, permission }) => {
     if (!username) throw new Error('username required for controller.user.create')
     if (!password) throw new Error('password required for controller.user.create')
     if (!permission) throw new Error('permission required for controller.user.create')
@@ -135,13 +123,13 @@ const UserController = ({ store, settings }) => {
       data: formData,
     })
 
-    const hashed_password = await utils.getPasswordHash(password)
+    const hashedPassword = await utils.getPasswordHash(password)
 
     return store.user.create({
       data: {
         username,
         permission: formData.permission,
-        hashed_password,
+        hashed_password: hashedPassword,
         server_side_key: utils.getTokenServerSideKey(),
       },
     })
@@ -161,10 +149,7 @@ const UserController = ({ store, settings }) => {
         * meta
 
   */
-  const update = async ({
-    id,
-    data,
-  }) => {
+  const update = async ({ id, data }) => {
     if (!id) throw new Error('id must be given to controller.user.update')
     if (!data) throw new Error('data param must be given to controller.user.update')
 
@@ -177,9 +162,11 @@ const UserController = ({ store, settings }) => {
     })
 
     if (data.password) {
-      const hashed_password = await utils.getPasswordHash(data.password)
-      data = { ...data, hashed_password }
-      delete (data.password)
+      const hashedPassword = await utils.getPasswordHash(data.password)
+      // eslint-disable-next-line no-param-reassign
+      data = { ...data, hashed_password: hashedPassword }
+      // eslint-disable-next-line no-param-reassign
+      delete data.password
     }
 
     return store.user.update({
@@ -197,9 +184,7 @@ const UserController = ({ store, settings }) => {
       * id
 
   */
-  const getToken = async ({
-    id,
-  }) => {
+  const getToken = async ({ id }) => {
     if (!id) throw new Error('id must be given to controller.user.getToken')
 
     const user = await get({
@@ -218,9 +203,7 @@ const UserController = ({ store, settings }) => {
       * id
 
   */
-  const getRoles = ({
-    id,
-  }) => {
+  const getRoles = ({ id }) => {
     if (!id) throw new Error('id must be given to controller.user.getRoles')
 
     return store.role.listForUser({
@@ -237,9 +220,7 @@ const UserController = ({ store, settings }) => {
       * id
 
   */
-  const updateToken = async ({
-    id,
-  }) => {
+  const updateToken = async ({ id }) => {
     if (!id) throw new Error('id must be given to controller.user.updateToken')
 
     await store.user.update({
@@ -263,9 +244,7 @@ const UserController = ({ store, settings }) => {
      * id
 
   */
-  const del = ({
-    id,
-  }) => {
+  const del = ({ id }) => {
     if (!id) throw new Error('id must be given to controller.user.delete')
     return store.user.delete({
       id,

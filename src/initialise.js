@@ -4,23 +4,21 @@ const logger = require('./logging').getLogger({
   name: 'initialise',
 })
 const settings = require('./settings')
-const userUtils = require('./utils/user')
+const userUtils = require('./utils/user').default
 const config = require('./config')
 
-const createInitialUser = async ({
-  store,
-}) => {
+const createInitialUser = async ({ store }) => {
   // check to see if we have been given an initial user and password
   // to create
   if (settings.initialUser && settings.initialPassword) {
     const users = await store.user.list()
     if (users.length <= 0) {
-      const hashed_password = await userUtils.getPasswordHash(settings.initialPassword)
+      const hashedPassword = await userUtils.getPasswordHash(settings.initialPassword)
       await store.user.create({
         data: {
           username: settings.initialUser,
           permission: config.USER_TYPES.superuser,
-          hashed_password,
+          hashed_password: hashedPassword,
           server_side_key: userUtils.getTokenServerSideKey(),
         },
       })
@@ -67,9 +65,7 @@ const handleTokenSecret = async ({ store }) => {
 }
 
 // code we run before the app is booted and starts serving
-const Initialise = async ({
-  store,
-}) => {
+const Initialise = async ({ store }) => {
   try {
     await createInitialUser({
       store,

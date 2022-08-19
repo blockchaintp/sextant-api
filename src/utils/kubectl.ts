@@ -21,11 +21,10 @@ import { exec } from 'child-process-promise'
 import { existsSync, unlinkSync } from 'fs'
 import getPort from 'get-port'
 import { createServer } from 'net'
-import { tmpName } from 'tmp-promise'
 import Logging from '../logging'
 import { ProvisionType } from '../store/domain-types'
 import { decode } from './base64'
-import { writeTempYaml, writeYaml } from './yaml'
+import { writeTempYaml } from './yaml'
 
 const logger = Logging.getLogger({
   name: 'utils/kubectl',

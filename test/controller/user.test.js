@@ -2,7 +2,7 @@ const asyncTest = require('../asyncTest')
 const database = require('../database')
 const UserController = require('../../src/controller/user')
 const Store = require('../../src/store').default
-const userUtils = require('../../src/utils/user')
+const userUtils = require('../../src/utils/user').default
 const config = require('../../src/config')
 
 const { USER_TYPES } = config

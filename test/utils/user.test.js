@@ -1,6 +1,4 @@
-'use strict'
-
-const userUtils = require('../../src/utils/user')
+const userUtils = require('../../src/utils/user').default
 const asyncTest = require('../asyncTest')
 
 asyncTest('user utils -> get and compare hash (correct)', async (t) => {
@@ -18,7 +16,6 @@ asyncTest('user utils -> get and compare hash (incorrect)', async (t) => {
 })
 
 asyncTest('user utils -> get and compare token (correct)', async (t) => {
-
   const ID = 10
   const SECRET = 'oranges'
   const KEY = userUtils.getTokenServerSideKey()
@@ -32,7 +29,6 @@ asyncTest('user utils -> get and compare token (correct)', async (t) => {
 })
 
 asyncTest('user utils -> get and compare token no secret', async (t) => {
-
   const ID = 10
   const SECRET = ''
   const KEY = userUtils.getTokenServerSideKey()
@@ -43,7 +39,7 @@ asyncTest('user utils -> get and compare token no secret', async (t) => {
   try {
     const token = await userUtils.getToken(ID, KEY, SECRET)
     decoded = await userUtils.decodeToken(token, SECRET)
-  } catch(err) {
+  } catch (err) {
     error = err
   }
 
@@ -52,7 +48,6 @@ asyncTest('user utils -> get and compare token no secret', async (t) => {
 })
 
 asyncTest('user utils -> get and compare token (incorrect secret)', async (t) => {
-
   const ID = 10
   const SECRET = 'oranges'
   const KEY = userUtils.getTokenServerSideKey()
@@ -62,8 +57,8 @@ asyncTest('user utils -> get and compare token (incorrect secret)', async (t) =>
 
   try {
     const token = await userUtils.getToken(ID, KEY, SECRET)
-    decoded = await userUtils.decodeToken(token, SECRET + 'bad')
-  } catch(err) {
+    decoded = await userUtils.decodeToken(token, `${SECRET}bad`)
+  } catch (err) {
     error = err
   }
 
@@ -72,7 +67,6 @@ asyncTest('user utils -> get and compare token (incorrect secret)', async (t) =>
 })
 
 asyncTest('user utils -> get and compare token (incorrect token)', async (t) => {
-
   const ID = 10
   const SECRET = 'oranges'
   const KEY = userUtils.getTokenServerSideKey()
@@ -82,8 +76,8 @@ asyncTest('user utils -> get and compare token (incorrect token)', async (t) => 
 
   try {
     const token = await userUtils.getToken(ID, KEY, SECRET)
-    decoded = await userUtils.decodeToken(token + 'bad', SECRET)
-  } catch(err) {
+    decoded = await userUtils.decodeToken(`${token}bad`, SECRET)
+  } catch (err) {
     error = err
   }
 
@@ -92,7 +86,6 @@ asyncTest('user utils -> get and compare token (incorrect token)', async (t) => 
 })
 
 asyncTest('user utils -> check tokens are generated the same way twice', async (t) => {
-
   const ID = 10
   const SECRET = 'oranges'
   const KEY = userUtils.getTokenServerSideKey()

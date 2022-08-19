@@ -7,7 +7,7 @@ const logger = require('./logging').getLogger({
   name: 'passport',
 })
 
-const userUtils = require('./utils/user')
+const userUtils = require('./utils/user').default
 
 // eslint-disable-next-line consistent-return
 const getRequestAccessToken = (req, res) => {
@@ -28,12 +28,7 @@ const getRequestAccessToken = (req, res) => {
   }
 }
 
-const PassportHandlers = ({
-  app,
-  settings,
-  sessionStore,
-  controllers,
-}) => {
+const PassportHandlers = ({ app, settings, sessionStore, controllers }) => {
   if (!app) {
     throw new Error('app required')
   }
@@ -49,18 +44,20 @@ const PassportHandlers = ({
   const passport = new Passport()
 
   app.use(cookieParser())
-  app.use(session({
-    secret: settings.sessionSecret,
-    resave: false,
-    saveUninitialized: true,
-    rolling: false,
+  app.use(
+    session({
+      secret: settings.sessionSecret,
+      resave: false,
+      saveUninitialized: true,
+      rolling: false,
 
-    // in production this will be the postgres session store
-    // otherwise default in the in-memory store for testing
-    store: sessionStore,
-    // 1 hour
-    cookie: { maxAge: 1 * 60 * 60 * 1000 },
-  }))
+      // in production this will be the postgres session store
+      // otherwise default in the in-memory store for testing
+      store: sessionStore,
+      // 1 hour
+      cookie: { maxAge: 1 * 60 * 60 * 1000 },
+    })
+  )
   app.use(passport.initialize())
   app.use(passport.session())
 

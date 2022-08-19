@@ -52,14 +52,9 @@
 */
 
 const config = require('./config')
-const userUtils = require('./utils/user')
+const userUtils = require('./utils/user').default
 
-const {
-  RESOURCE_TYPES,
-  USER_TYPES,
-  PERMISSION_TYPES,
-  PERMISSION_ACCESS_LEVELS,
-} = config
+const { RESOURCE_TYPES, USER_TYPES, PERMISSION_TYPES, PERMISSION_ACCESS_LEVELS } = config
 
 // Here we rename variables for readability and clarity in the rbac definition.
 // Eventually the config variables will be refactored, but until then we will rename them as needed
@@ -68,10 +63,9 @@ const {
 // const PERMISSION_ACCESS_LEVELS = PERMISSION_ACCESS_LEVELS
 
 const HELPERS = {
-
   // allow a logged in user to read or update it's own record
   // this is so a user can read itself or update their password etc
-  allowUserAccessToOwnRecord: (opts) => async (store, user, action) => {
+  allowUserAccessToOwnRecord: (opts) => (store, user, action) => {
     // requires a user
     if (!user) return false
 
@@ -185,24 +179,19 @@ const METHOD_CONFIG = {
 }
 
 const RBAC = async (store, user, action) => {
-  const {
-    resource_type,
-    resource_id,
-    method,
-    cluster_id,
-  } = action
+  const { resource_type: resourceType, resource_id: resourceId, method, cluster_id: clusterId } = action
 
-  if (!resource_type) throw new Error('resource_type required')
+  if (!resourceType) throw new Error('resource_type required')
   if (!method) throw new Error('method required')
 
-  const group = METHOD_CONFIG[resource_type]
-  if (!group) throw new Error(`unknown resource_type ${resource_type}`)
+  const group = METHOD_CONFIG[resourceType]
+  if (!group) throw new Error(`unknown resource_type ${resourceType}`)
 
   const methodConfig = group[method]
   if (!methodConfig) throw new Error(`unknown method ${method}`)
 
   // if the method handler is a function - it looks after itself
-  if (typeof (methodConfig) === 'function') {
+  if (typeof methodConfig === 'function') {
     const result = await methodConfig(store, user, action)
     return result
   }
@@ -216,21 +205,22 @@ const RBAC = async (store, user, action) => {
   if (methodConfig.superuser && !userUtils.isSuperuser(user)) return false
 
   // require at least X user permission - deny
-  if (methodConfig.minimumUserType
-    && !userUtils.hasMinimumUserType(user, methodConfig.minimumUserType)) return false
+  if (methodConfig.minimumUserType && !userUtils.hasMinimumUserType(user, methodConfig.minimumUserType)) return false
 
   // require a resource role with the given permission
   if (methodConfig.minimumResourcePermission) {
     // if the method config is asking for another type of resource type use it
     //  - otherwise default to the action type
-    const resourceType = methodConfig.resourcePermissionForType || resource_type
+    const finalResourceType = methodConfig.resourcePermissionForType || resourceType
 
     // if the resourceType is cluster, use the cluster_id for the resourceId
-    let resourceId = resource_id
-    if (methodConfig.resourcePermissionForType === 'cluster') { resourceId = cluster_id }
+    let finalResourceId = resourceId
+    if (methodConfig.resourcePermissionForType === 'cluster') {
+      finalResourceId = clusterId
+    }
 
     // we need a resource_id if we are performing a minimumResourcePermission check
-    if (!resourceId) return false
+    if (!finalResourceId) return false
 
     const userId = user.id
 
@@ -238,8 +228,8 @@ const RBAC = async (store, user, action) => {
 
     const roleQuery = {
       user: userId,
-      resource_type: resourceType,
-      resource_id: resourceId,
+      resource_type: finalResourceType,
+      resource_id: finalResourceId,
     }
 
     // load the role and check it
@@ -252,8 +242,8 @@ const RBAC = async (store, user, action) => {
     if (!PERMISSION_ACCESS_LEVELS[role.permission]) return false
 
     // check the granted role is at least the required type
-    if (PERMISSION_ACCESS_LEVELS[role.permission]
-      < PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission]) return false
+    if (PERMISSION_ACCESS_LEVELS[role.permission] < PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission])
+      return false
 
     // ok - we are allowed
     return true

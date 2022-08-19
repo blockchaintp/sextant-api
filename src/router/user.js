@@ -1,11 +1,10 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
-const userUtils = require('../utils/user')
+const userUtils = require('../utils/user').default
 
 const UserRoutes = (controllers) => {
   const status = async (req, res) => {
-    const result = req.user
-      ? userUtils.safe(req.user)
-      : null
+    const result = req.user ? userUtils.safe(req.user) : null
 
     if (result) {
       const roles = await controllers.user.getRoles({
@@ -15,16 +14,12 @@ const UserRoutes = (controllers) => {
       result.roles = roles
     }
 
-    res
-      .status(200)
-      .json(result)
+    res.status(200).json(result)
   }
 
   const hasInitialUser = async (req, res) => {
     const userCount = await controllers.user.count({})
-    res
-      .status(200)
-      .json(userCount > 0)
+    res.status(200).json(userCount > 0)
   }
 
   const login = async (req, res) => {
@@ -61,36 +56,28 @@ const UserRoutes = (controllers) => {
 
   const logout = (req, res) => {
     req.logout()
-    res
-      .status(200)
-      .json({
-        ok: true,
-      })
+    res.status(200).json({
+      ok: true,
+    })
   }
 
   const list = async (req, res) => {
     const users = await controllers.user.list()
-    res
-      .status(200)
-      .json(users.map(userUtils.safe))
+    res.status(200).json(users.map(userUtils.safe))
   }
 
   const search = async (req, res) => {
     const users = await controllers.user.search({
       search: req.query.search,
     })
-    res
-      .status(200)
-      .json(users)
+    res.status(200).json(users)
   }
 
   const get = async (req, res) => {
     const user = await controllers.user.get({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json(userUtils.safe(user))
+    res.status(200).json(userUtils.safe(user))
   }
 
   const update = async (req, res, next) => {
@@ -118,38 +105,30 @@ const UserRoutes = (controllers) => {
       data: req.body,
     })
 
-    res
-      .status(200)
-      .json(userUtils.safe(user))
+    res.status(200).json(userUtils.safe(user))
   }
 
   const getToken = async (req, res) => {
     const token = await controllers.user.getToken({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json({
-        token,
-      })
+    res.status(200).json({
+      token,
+    })
   }
 
   const updateToken = async (req, res) => {
     await controllers.user.updateToken({
       id: req.params.id,
     })
-    res
-      .status(201)
-      .json({
-        ok: true,
-      })
+    res.status(201).json({
+      ok: true,
+    })
   }
 
   const create = async (req, res) => {
     const user = await controllers.user.create(req.body)
-    res
-      .status(201)
-      .json(userUtils.safe(user))
+    res.status(201).json(userUtils.safe(user))
   }
 
   const del = async (req, res, next) => {
@@ -164,11 +143,9 @@ const UserRoutes = (controllers) => {
       id: req.params.id,
     })
 
-    res
-      .status(200)
-      .json({
-        ok: true,
-      })
+    res.status(200).json({
+      ok: true,
+    })
   }
 
   return {

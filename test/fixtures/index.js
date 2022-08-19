@@ -1,9 +1,9 @@
 const Promise = require('bluebird')
 const config = require('../../src/config')
-const userUtils = require('../../src/utils/user')
+const userUtils = require('../../src/utils/user').default
 const UserStore = require('../../src/store/user').default
 const ClusterStore = require('../../src/store/cluster').default
-const DeployentStore = require('../../src/store/deployment').default
+const DeploymentStore = require('../../src/store/deployment').default
 const RoleStore = require('../../src/store/role').default
 const TaskStore = require('../../src/store/task').default
 
@@ -166,7 +166,7 @@ const insertTestDeployments = async (databaseConnection, cluster, data) => {
   // eslint-disable-next-line no-param-reassign
   data = data || SIMPLE_DEPLOYMENT_DATA
 
-  const store = DeployentStore(databaseConnection)
+  const store = DeploymentStore(databaseConnection)
 
   // map of cluster names onto database records
   const deploymentMap = {}
