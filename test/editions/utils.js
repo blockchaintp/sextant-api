@@ -13,7 +13,7 @@ const addRepo = async (helmRepos) => {
   logger.debug({ action: 'helm', command: `${cmd}` })
   const result = await exec(cmd)
   logger.trace({ action: 'helm', command: `${cmd}`, result })
-  return result
+  return result.stdout
 }
 
 const getEditionFiles = (directoryName) => fs.readdirSync(directoryName)
@@ -23,7 +23,7 @@ const removeRepo = async (helmRepos) => {
   logger.debug({ action: 'helm', command: `${cmd}` })
   const result = await exec(cmd)
   logger.trace({ action: 'helm', command: `${cmd}`, result })
-  return result
+  return result.stdout
 }
 
 const sanitizeVersion = (version) => version.match(/(\d+)\.(\d+)\.(\d+)/)
@@ -34,7 +34,7 @@ const searchRepo = async (deploymentVersionInfo) => {
     logger.debug({ action: 'helm', command: `${cmd}` })
     const result = await exec(cmd)
     logger.debug({ action: 'helm', command: `${cmd}`, result })
-    return JSON.parse(result)
+    return JSON.parse(result.stdout)
   } catch (error) {
     logger.warn({ action: 'helm', command: `${cmd}`, error })
     throw error
@@ -61,7 +61,7 @@ const pullChart = async (deploymentVersionInfo) => {
   logger.debug({ action: 'helm', command: `${cmd}` })
   const result = await exec(cmd)
   logger.trace({ action: 'helm', command: `${cmd}`, result })
-  return result
+  return result.stdout
 }
 
 const removeChartFile = (fileName) => {

@@ -57,7 +57,7 @@ COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
 
 # Straight npm ci since we need devDependencies at this stage
-RUN npm ci \
+RUN npm ci --no-audit \
   && npm run build \
   && npm cache clean --force
 
@@ -82,7 +82,7 @@ FROM $BUILD_ENV as app
 
 # npm ci with args since maybe production build
 ARG NPM_CI_ARGS=""
-RUN npm ci ${NPM_CI_ARGS} \
+RUN npm ci ${NPM_CI_ARGS} --no-audit \
   && npm cache clean --force
 
 # this is the default noop metering module

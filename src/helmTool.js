@@ -43,7 +43,7 @@ class HelmTool {
       logger.debug({ action: 'helm add', command: helmCommand })
       const result = await exec(helmCommand)
       logger.trace({ action: 'helm add', command: helmCommand, result })
-      return result
+      return result.stdout
     }
     for (const repo of this.helmRepos) {
       try {
@@ -82,7 +82,7 @@ class HelmTool {
       logger.debug({ action: 'getExactChartVersion', command: cmd })
       const searchValue = await exec(cmd)
       logger.trace({ action: 'getExactChartVersion', command: cmd, result: searchValue })
-      return JSON.parse(searchValue)[0].version
+      return JSON.parse(searchValue.stdout)[0].version
     }
 
     const remove = async (deploymentType) => {
@@ -115,7 +115,7 @@ class HelmTool {
         logger.debug({ fn: 'removeAndPull', command: cmd }, 'helm pull')
         const result = await exec(cmd)
         logger.trace({ fn: 'removeAndPull', command: cmd, result }, 'helm pull')
-        return result
+        return result.stdout
       } catch (error) {
         logger.error({ fn: 'removeAndPull', command: cmd, error }, 'error in helm pull')
         throw error

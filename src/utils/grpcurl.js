@@ -70,7 +70,7 @@ const Grpcurl = ({ token, port, prefix = '', hostname = DEFAULT_HOSTNAME } = {})
         dataLength: data ? data.length : undefined,
       })
       const result = await exec(runCommand, commandOptions)
-      const parsedResult = result ? JSON.parse(result) : {}
+      const parsedResult = result ? JSON.parse(result.stdout) : {}
       logger.trace({
         action: 'grpcurl',
         service,
