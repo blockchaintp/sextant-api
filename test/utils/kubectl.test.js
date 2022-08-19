@@ -1,4 +1,4 @@
-const Kubectl = require('../../src/utils/kubectl')
+const Kubectl = require('../../src/utils/kubectl').default
 const asyncTest = require('../asyncTest')
 const asyncTestError = require('../asyncTestError')
 

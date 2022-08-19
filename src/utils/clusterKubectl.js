@@ -6,12 +6,9 @@
 
 */
 
-const Kubectl = require('./kubectl')
+const Kubectl = require('./kubectl').default
 
-const ClusterKubectl = async ({
-  cluster,
-  store,
-}) => {
+const ClusterKubectl = async ({ cluster, store }) => {
   if (!cluster) throw new Error('cluster required for ClusterKubectl')
   if (!store) throw new Error('store required for ClusterKubectl')
 
