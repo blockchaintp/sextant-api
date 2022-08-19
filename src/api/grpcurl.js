@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable no-unneeded-ternary */
-const { tmpName: tempName } = require('tmp-promise')
-const fs = require('promise-fs')
-const { exec } = require('child-process-promise')
+import { tmpName as tempName } from 'tmp-promise'
+import fs from 'promise-fs'
+import { exec } from 'child-process-promise'
 
 const { writeFile, unlink: deleteFile } = fs
 const logger = require('../logging').getLogger({
@@ -87,4 +87,4 @@ const Grpcurl = ({ token, port, prefix = '', hostname = DEFAULT_HOSTNAME } = {})
   }
 }
 
-module.exports = Grpcurl
+export default Grpcurl

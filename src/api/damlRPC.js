@@ -17,7 +17,7 @@ const deploymentNames = require('../utils/deploymentNames')
 
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const SecretLoader = require('./secretLoader')
-const Grpcurl = require('../utils/grpcurl')
+const Grpcurl = require('./grpcurl').default
 
 const DAML_GRPC_METHOD_PREFIX = 'com.daml.ledger.api.v1.'
 const DAML_RPC_PORT = 39000
