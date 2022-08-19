@@ -104,9 +104,10 @@ const App = ({ knex, store, controllers, settings, sessionStore, taskHandlers })
     res.json({ error: err.toString() })
   })
 
-  app.taskProcessor = taskProcessor
-
-  return app
+  return {
+    app,
+    taskProcessor,
+  }
 }
 
 module.exports = App
