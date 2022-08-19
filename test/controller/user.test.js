@@ -1,25 +1,20 @@
-'use strict'
-
 const asyncTest = require('../asyncTest')
 const database = require('../database')
 const UserController = require('../../src/controller/user')
-const Store = require('../../src/store')
+const Store = require('../../src/store').default
 const userUtils = require('../../src/utils/user')
 const config = require('../../src/config')
 
-const {
-  USER_TYPES,
-} = config
+const { USER_TYPES } = config
 
-database.testSuiteWithDatabase(getConnection => {
-
+database.testSuiteWithDatabase((getConnection) => {
   const getController = () => {
     const store = Store(getConnection())
     return UserController({
       store,
       settings: {
         tokenSecret: config.tokenSecret,
-      }
+      },
     })
   }
 
@@ -32,15 +27,13 @@ database.testSuiteWithDatabase(getConnection => {
   let TEST_USER_RECORD = null
 
   asyncTest('user controller -> list no data', async (t) => {
-
     const controller = getController()
-    
+
     const users = await controller.list({})
-    t.equal(users.length, 0, `there were no users`)    
+    t.equal(users.length, 0, `there were no users`)
   })
 
   asyncTest('user controller -> count no data', async (t) => {
-
     const controller = getController()
 
     const count = await controller.count({})
@@ -48,9 +41,8 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> create', async (t) => {
-  
     const controller = getController()
-  
+
     const user = await controller.create(TEST_USER)
     t.equal(user.username, TEST_USER.username)
 
@@ -61,10 +53,8 @@ database.testSuiteWithDatabase(getConnection => {
 
     TEST_USER_RECORD = user
   })
-  
-  
-  asyncTest('user controller -> check password (correct)', async (t) => {
 
+  asyncTest('user controller -> check password (correct)', async (t) => {
     const controller = getController()
 
     const result = await controller.checkPassword({
@@ -75,7 +65,6 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> check password (wrong user)', async (t) => {
-
     const controller = getController()
 
     const result = await controller.checkPassword({
@@ -86,7 +75,6 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> check password (incorrect)', async (t) => {
-
     const controller = getController()
 
     const result = await controller.checkPassword({
@@ -97,7 +85,6 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> get', async (t) => {
-
     const controller = getController()
 
     const user = await controller.get({
@@ -106,11 +93,9 @@ database.testSuiteWithDatabase(getConnection => {
     t.equal(user.username, TEST_USER.username, `the result was correct`)
     t.equal(user.hashed_password, TEST_USER_RECORD.hashed_password, 'there is a hashed password')
     t.equal(user.server_side_key, TEST_USER_RECORD.server_side_key, 'there is a server_side_key')
-
   })
 
   asyncTest('user controller -> update meta', async (t) => {
-
     const controller = getController()
 
     const updateMeta = {
@@ -121,7 +106,7 @@ database.testSuiteWithDatabase(getConnection => {
       id: TEST_USER_RECORD.id,
       data: {
         meta: updateMeta,
-      }
+      },
     })
 
     const user = await controller.get({
@@ -132,14 +117,13 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> update password', async (t) => {
-
     const controller = getController()
 
     await controller.update({
       id: TEST_USER_RECORD.id,
       data: {
         password: 'newpassword',
-      }
+      },
     })
 
     const result = await controller.checkPassword({
@@ -151,7 +135,6 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> attempt update token via normal update handler', async (t) => {
-
     const controller = getController()
 
     let error = null
@@ -161,9 +144,9 @@ database.testSuiteWithDatabase(getConnection => {
         id: TEST_USER_RECORD.id,
         data: {
           server_side_key: 'notallowed',
-        }
+        },
       })
-    } catch(err) {
+    } catch (err) {
       error = err
     }
     t.ok(error, `there was an error`)
@@ -171,7 +154,6 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> get token', async (t) => {
-
     const controller = getController()
 
     const token = await controller.getToken({
@@ -189,7 +171,6 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> update token', async (t) => {
-
     const controller = getController()
 
     await controller.updateToken({
@@ -204,15 +185,13 @@ database.testSuiteWithDatabase(getConnection => {
   })
 
   asyncTest('user controller -> delete', async (t) => {
-
     const controller = getController()
 
     await controller.delete({
       id: TEST_USER_RECORD.id,
     })
 
-    const count = await controller.count({})  
+    const count = await controller.count({})
     t.equal(count, 0, `there were no users`)
   })
-  
 })

@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { edition } from '../../../edition/index'
+import { edition } from '../../../edition'
 import { ChartTableEntry } from '../../../edition/types'
 import { getYaml } from '../../../utils/yaml'
 

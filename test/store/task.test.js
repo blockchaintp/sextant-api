@@ -3,14 +3,10 @@ const fixtures = require('../fixtures')
 const tools = require('../tools')
 const asyncTest = require('../asyncTest')
 
-const TaskStore = require('../../src/store/task')
+const TaskStore = require('../../src/store/task').default
 const config = require('../../src/config')
 
-const {
-  RESOURCE_TYPES,
-  USER_TYPES,
-  TASK_STATUS,
-} = config
+const { RESOURCE_TYPES, USER_TYPES, TASK_STATUS } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let taskMap = {}
@@ -95,7 +91,11 @@ database.testSuiteWithDatabase((getConnection) => {
       user: userId,
     })
     t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
-    t.deepEqual(tasks.map((task) => task.user), [userId, userId], 'the user ids are correct')
+    t.deepEqual(
+      tasks.map((task) => task.user),
+      [userId, userId],
+      'the user ids are correct'
+    )
   })
 
   asyncTest('task store -> get', async (t) => {
@@ -158,9 +158,21 @@ database.testSuiteWithDatabase((getConnection) => {
     })
 
     t.equal(tasks.length, 1, 'there was 1 task')
-    t.deepEqual(tasks.map((task) => task.resource_type), [RESOURCE_TYPES.cluster], 'the resource_types are correct')
-    t.deepEqual(tasks.map((task) => task.id), [ids[0]], 'the resource_ids are correct')
-    t.deepEqual(tasks.map((task) => task.resource_id), [10], 'the resource_ids are correct')
+    t.deepEqual(
+      tasks.map((task) => task.resource_type),
+      [RESOURCE_TYPES.cluster],
+      'the resource_types are correct'
+    )
+    t.deepEqual(
+      tasks.map((task) => task.id),
+      [ids[0]],
+      'the resource_ids are correct'
+    )
+    t.deepEqual(
+      tasks.map((task) => task.resource_id),
+      [10],
+      'the resource_ids are correct'
+    )
   })
 
   asyncTest('task store -> load with status', async (t) => {

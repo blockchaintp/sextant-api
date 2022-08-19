@@ -8,7 +8,7 @@
   will return an object with these props:
 
     * desired_state - the desired_state with the secrets extracted
-    * secrets - an object of name onto an object with either base64Data or rawData
+    * secrets - an object of name onto an object with either base64data or rawData
 
 */
 

@@ -7,29 +7,24 @@ const logger = require('./logging').getLogger({
 })
 const Passport = require('./passport')
 
-const Store = require('./store')
+const Store = require('./store').default
 const Controller = require('./controller')
 const Router = require('./router')
 const TaskProcessor = require('./taskprocessor')
 
-const App = ({
-  knex,
-  store,
-  controllers,
-  settings,
-  sessionStore,
-  taskHandlers,
-}) => {
+const App = ({ knex, store, controllers, settings, sessionStore, taskHandlers }) => {
   // eslint-disable-next-line no-param-reassign
   knex = knex || Knex(settings.postgres)
   // eslint-disable-next-line no-param-reassign
   store = store || Store(knex)
 
   // eslint-disable-next-line no-param-reassign
-  controllers = controllers || Controller({
-    store,
-    settings,
-  })
+  controllers =
+    controllers ||
+    Controller({
+      store,
+      settings,
+    })
 
   // the HTTP server
   const app = express()
@@ -70,7 +65,7 @@ const App = ({
 
   */
   // The `next` here is required for some reason
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   app.use((req, res, next) => {
     const error = `url ${req.url} not found`
     if (settings.logging) {
@@ -91,7 +86,7 @@ const App = ({
 
   */
   // The `next` here is required for some reason
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
   app.use((err, req, res, next) => {
     if (settings.logging) {
       logger.error({

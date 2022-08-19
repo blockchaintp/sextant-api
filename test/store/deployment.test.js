@@ -5,13 +5,10 @@ const tools = require('../tools')
 
 const asyncTest = require('../asyncTest')
 
-const DeploymentStore = require('../../src/store/deployment')
+const DeploymentStore = require('../../src/store/deployment').default
 const config = require('../../src/config')
 
-const {
-  DEPLOYMENT_STATUS,
-  DEPLOYMENT_STATUS_DEFAULT,
-} = config
+const { DEPLOYMENT_STATUS, DEPLOYMENT_STATUS_DEFAULT } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let testCluster = null
@@ -79,7 +76,11 @@ database.testSuiteWithDatabase((getConnection) => {
       cluster: testCluster.id,
     })
     t.equal(deployments.length, expectedCount, `there were ${expectedCount} deployments`)
-    t.deepEqual(deployments.map((deployment) => deployment.name), expectedOrder, 'the deployments were in the correct order')
+    t.deepEqual(
+      deployments.map((deployment) => deployment.name),
+      expectedOrder,
+      'the deployments were in the correct order'
+    )
   })
 
   asyncTest('deployment store -> get', async (t) => {

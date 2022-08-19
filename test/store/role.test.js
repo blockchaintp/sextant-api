@@ -4,14 +4,10 @@ const database = require('../database')
 const fixtures = require('../fixtures')
 const asyncTest = require('../asyncTest')
 
-const RoleStore = require('../../src/store/role')
+const RoleStore = require('../../src/store/role').default
 const config = require('../../src/config')
 
-const {
-  RESOURCE_TYPES,
-  USER_TYPES,
-  PERMISSION_TYPES,
-} = config
+const { RESOURCE_TYPES, USER_TYPES, PERMISSION_TYPES } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   // eslint-disable-next-line no-unused-vars
@@ -27,7 +23,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const store = RoleStore(getConnection())
     let error = null
     try {
-      store.listForUser({})
+      await store.listForUser({})
     } catch (err) {
       error = err
     }
@@ -91,6 +87,7 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(roles.length, expectedCount, `there were ${expectedCount} roles`)
 
     const loadedRoleMap = roles.reduce((all, role) => {
+      // eslint-disable-next-line no-param-reassign
       all[role.resource_type] = role
       return all
     }, {})
@@ -116,12 +113,12 @@ database.testSuiteWithDatabase((getConnection) => {
       resource_id: 10,
     }
 
-    Promise.each(Object.keys(baseObject), async (field) => {
+    await Promise.each(Object.keys(baseObject), async (field) => {
       const query = { ...baseObject }
-      delete (query[field])
+      delete query[field]
       let error = null
       try {
-        store.get(query)
+        await store.get(query)
       } catch (err) {
         error = err
       }

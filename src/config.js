@@ -4,51 +4,6 @@
 
 */
 
-// we don't use these in migration files
-// because they should be immutable
-// these values are used by the rest of the codebase as the 'current' table names
-const TABLES = {
-  user: 'useraccount',
-  cluster: 'cluster',
-  deployment: 'deployment',
-  role: 'role',
-  task: 'task',
-  clusterfile: 'clusterfile',
-  clustersecret: 'clustersecret',
-  deploymentsecret: 'deploymentsecret',
-}
-
-const LIST_ORDER_BY_FIELDS = {
-  cluster: {
-    field: 'status',
-    direction: 'desc',
-  },
-  clusterfile: {
-    field: 'name',
-    direction: 'asc',
-  },
-  clustersecret: {
-    field: 'name',
-    direction: 'asc',
-  },
-  deployment: {
-    field: 'name',
-    direction: 'asc',
-  },
-  deploymentsecret: {
-    field: 'name',
-    direction: 'asc',
-  },
-  task: {
-    field: 'created_at',
-    direction: 'desc',
-  },
-  user: {
-    field: 'username',
-    direction: 'asc',
-  },
-}
-
 /*
 
   resources
@@ -102,11 +57,7 @@ const TASK_STATUS = {
 
 const TASK_STATUS_DEFAULT = TASK_STATUS.created
 
-const TASK_ACTIVE_STATUSES = [
-  TASK_STATUS.created,
-  TASK_STATUS.running,
-  TASK_STATUS.cancelling,
-]
+const TASK_ACTIVE_STATUSES = [TASK_STATUS.created, TASK_STATUS.running, TASK_STATUS.cancelling]
 
 const TASK_ACTION = {
   'cluster.create': 'cluster.create',
@@ -173,8 +124,6 @@ const config = {
   baseUrl: '/api/v1',
   sessionSecret: 'sextant-blockchain',
   tokenSecret: 'sextant-blockchain',
-  TABLES,
-  LIST_ORDER_BY_FIELDS,
   RESOURCE_TYPES,
   CLUSTER_PROVISION_TYPE,
   CLUSTER_STATUS,

@@ -1,15 +1,16 @@
-const UserStore = require('./user')
-const RoleStore = require('./role')
-const ClusterStore = require('./cluster').default
-const ClusterFileStore = require('./clusterfile')
-const ClusterSecretStore = require('./clustersecret')
-const DeploymentStore = require('./deployment')
-const DeploymentSecretStore = require('./deploymentsecret')
-const TaskStore = require('./task')
-const SettingsStore = require('./settings')
-const DeploymentHistoryStore = require('./deploymenthistory')
+import { Knex } from 'knex'
+import ClusterStore from './cluster'
+import ClusterFileStore from './clusterfile'
+import ClusterSecretStore from './clustersecret'
+import DeploymentStore from './deployment'
+import DeploymentHistoryStore from './deploymenthistory'
+import DeploymentSecretStore from './deploymentsecret'
+import RoleStore from './role'
+import SettingsStore from './settings'
+import TaskStore from './task'
+import UserStore from './user'
 
-const Store = (knex) => {
+const Store = (knex: Knex) => {
   const user = UserStore(knex)
   const role = RoleStore(knex)
   const cluster = ClusterStore(knex)
@@ -21,7 +22,7 @@ const Store = (knex) => {
   const settings = SettingsStore(knex)
   const deploymenthistory = DeploymentHistoryStore(knex)
 
-  const transaction = (handler) => knex.transaction(handler)
+  const transaction = <T>(handler: (trx: Knex.Transaction) => Promise<T> | void) => knex.transaction(handler)
 
   return {
     knex,
@@ -39,4 +40,4 @@ const Store = (knex) => {
   }
 }
 
-module.exports = Store
+export default Store

@@ -7,7 +7,7 @@ const fixtures = require('../fixtures')
 const config = require('../../src/config')
 const enumerations = require('../../src/enumerations')
 
-const UserStore = require('../../src/store/user')
+const UserStore = require('../../src/store/user').default
 
 database.testSuiteWithDatabase((getConnection) => {
   let userMap = {}
@@ -64,7 +64,11 @@ database.testSuiteWithDatabase((getConnection) => {
 
     const users = await store.list()
     t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
-    t.deepEqual(users.map((user) => user.username), correctOrder, 'the users were in the correct order')
+    t.deepEqual(
+      users.map((user) => user.username),
+      correctOrder,
+      'the users were in the correct order'
+    )
   })
 
   asyncTest('user store -> get from username then id', async (t) => {

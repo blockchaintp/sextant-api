@@ -6,18 +6,13 @@ const fixtures = require('../fixtures')
 const asyncTest = require('../asyncTest')
 
 const ClusterController = require('../../src/controller/cluster')
-const Store = require('../../src/store')
+const Store = require('../../src/store').default
 const TaskProcessor = require('../../src/taskprocessor')
 const Tasks = require('../../src/tasks')
 
 const config = require('../../src/config')
 
-const {
-  CLUSTER_STATUS,
-  USER_TYPES,
-  TASK_ACTION,
-  TASK_CONTROLLER_LOOP_DELAY,
-} = config
+const { CLUSTER_STATUS, USER_TYPES, TASK_ACTION, TASK_CONTROLLER_LOOP_DELAY } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   const getController = () => {
@@ -70,7 +65,11 @@ database.testSuiteWithDatabase((getConnection) => {
       id: testClusters.admin.id,
     })
 
-    t.deepEqual(updatedCluster.desired_state, testClusters.admin.desired_state, 'the applied_state has been updated to the desired_state')
+    t.deepEqual(
+      updatedCluster.desired_state,
+      testClusters.admin.desired_state,
+      'the applied_state has been updated to the desired_state'
+    )
     t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, 'the cluster status is provisioned')
 
     await taskProcessor.stop()

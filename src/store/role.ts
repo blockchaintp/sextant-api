@@ -1,6 +1,17 @@
-const config = require('../config')
+import { Knex } from 'knex'
+import { RoleEntity } from './entity-types'
+import {
+  RoleCreateRequest,
+  RoleDeleteForResourceRequest,
+  RoleDeleteRequest,
+  RoleGetRequest,
+  RoleListForResourceRequest,
+  RoleListForUserRequest,
+} from './request-types'
 
-const RoleStore = (knex) => {
+export const TABLE = 'role'
+
+const RoleStore = (knex: Knex) => {
   /*
 
     list all roles for a given user
@@ -11,16 +22,12 @@ const RoleStore = (knex) => {
 
   */
 
-  const listForUser = ({
-    user,
-  }, trx) => {
+  const listForUser = ({ user }: RoleListForUserRequest, trx: Knex.Transaction) => {
     if (!user) throw new Error('user must be given to store.role.listForUser')
 
-    return (trx || knex).select('*')
-      .from(config.TABLES.role)
-      .where({
-        user,
-      })
+    return (trx || knex).select('*').from<RoleEntity>(TABLE).where({
+      user,
+    })
   }
 
   /*
@@ -34,19 +41,14 @@ const RoleStore = (knex) => {
 
   */
 
-  const listForResource = ({
-    resource_type,
-    resource_id,
-  }, trx) => {
+  const listForResource = ({ resource_type, resource_id }: RoleListForResourceRequest, trx: Knex.Transaction) => {
     if (!resource_type) throw new Error('resource_type must be given to store.role.listForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.role.listForResource')
 
-    return (trx || knex).select('*')
-      .from(config.TABLES.role)
-      .where({
-        resource_type,
-        resource_id,
-      })
+    return (trx || knex).select('*').from<RoleEntity>(TABLE).where({
+      resource_type,
+      resource_id,
+    })
   }
 
   /*
@@ -61,17 +63,14 @@ const RoleStore = (knex) => {
 
   */
 
-  const get = ({
-    user,
-    resource_type,
-    resource_id,
-  }, trx) => {
-    if (!user) throw new Error('user must be given to store.role.listForUser')
-    if (!resource_type) throw new Error('resource_type must be given to store.role.listForUser')
-    if (!resource_id) throw new Error('resource_id must be given to store.role.listForUser')
+  const get = ({ user, resource_type, resource_id }: RoleGetRequest, trx: Knex.Transaction) => {
+    if (!user) throw new Error('user must be given to store.role.get')
+    if (!resource_type) throw new Error('resource_type must be given to store.role.get')
+    if (!resource_id) throw new Error('resource_id must be given to store.role.get')
 
-    return (trx || knex).select('*')
-      .from(config.TABLES.role)
+    return (trx || knex)
+      .select('*')
+      .from<RoleEntity>(TABLE)
       .where({
         user,
         resource_type,
@@ -93,20 +92,16 @@ const RoleStore = (knex) => {
         * resource_id
 
   */
-  const create = async ({
-    data: {
-      user,
-      permission,
-      resource_type,
-      resource_id,
-    },
-  }, trx) => {
+  const create = async (
+    { data: { user, permission, resource_type, resource_id } }: RoleCreateRequest,
+    trx: Knex.Transaction
+  ) => {
     if (!user) throw new Error('data.user param must be given to store.role.create')
     if (!permission) throw new Error('data.permission param must be given to store.role.create')
     if (!resource_type) throw new Error('data.resource_type param must be given to store.role.create')
     if (!resource_id) throw new Error('data.resource_id param must be given to store.role.create')
 
-    const [result] = await (trx || knex)(config.TABLES.role)
+    const [result] = await (trx || knex)<RoleEntity>(TABLE)
       .insert({
         user,
         permission,
@@ -126,11 +121,9 @@ const RoleStore = (knex) => {
      * id
 
   */
-  const del = async ({
-    id,
-  }, trx) => {
+  const del = async ({ id }: RoleDeleteRequest, trx: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.role.delete')
-    const [result] = await (trx || knex)(config.TABLES.role)
+    const [result] = await (trx || knex)<RoleEntity>(TABLE)
       .where({
         id,
       })
@@ -148,13 +141,10 @@ const RoleStore = (knex) => {
      * id
 
   */
-  const deleteForResource = ({
-    resource_type,
-    resource_id,
-  }, trx) => {
+  const deleteForResource = ({ resource_type, resource_id }: RoleDeleteForResourceRequest, trx: Knex.Transaction) => {
     if (!resource_type) throw new Error('resource_type must be given to store.role.deleteForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.role.deleteForResource')
-    return (trx || knex)(config.TABLES.role)
+    return (trx || knex)<RoleEntity>(TABLE)
       .where({
         resource_type,
         resource_id,
@@ -173,4 +163,4 @@ const RoleStore = (knex) => {
   }
 }
 
-module.exports = RoleStore
+export default RoleStore

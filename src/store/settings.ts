@@ -5,15 +5,26 @@
 
 */
 
-const SettingsStore = (knex) => {
+import { Knex } from 'knex'
+import { DatabaseIdentifier } from './domain-types'
+import { SettingsEntity } from './entity-types'
+import {
+  SettingsCreateRequest,
+  SettingsDeleteRequest,
+  SettingsGetRequest,
+  SettingsUpdateRequest,
+} from './request-types'
+
+export const TABLE = 'settings'
+
+const SettingsStore = (knex: Knex) => {
   /*
 
     list all settings for sextant
 
   */
   // eslint-disable-next-line no-empty-pattern
-  const list = (trx) => (trx || knex).select('*')
-    .from('settings')
+  const list = (trx: Knex.Transaction) => (trx || knex).select('*').from<SettingsEntity>(TABLE)
 
   /*
 
@@ -24,21 +35,18 @@ const SettingsStore = (knex) => {
       * id or key
 
   */
-  const get = ({
-    id,
-    key,
-  }, trx) => {
+  const get = ({ id, key }: SettingsGetRequest, trx: Knex.Transaction) => {
     if (!id && !key) throw new Error('id or key must be given to store.settings.get')
 
-    const queryParams = {}
+    const queryParams: {
+      id?: DatabaseIdentifier
+      key?: string
+    } = {}
 
     if (id) queryParams.id = id
     if (key) queryParams.key = key
 
-    return (trx || knex).select('*')
-      .from('settings')
-      .where(queryParams)
-      .first()
+    return (trx || knex).select('*').from<SettingsEntity>(TABLE).where(queryParams).first()
   }
 
   /*
@@ -50,15 +58,10 @@ const SettingsStore = (knex) => {
       * data
         * deployment
         * key
-        * value || base64Data
+        * value
 
   */
-  const create = async ({
-    data: {
-      key,
-      value,
-    },
-  }, trx) => {
+  const create = async ({ data: { key, value } }: SettingsCreateRequest, trx: Knex.Transaction) => {
     if (!key) throw new Error('data.key param must be given to store.settings.create')
     if (!value) throw new Error('data.value param must be given to store.settings.create')
 
@@ -67,9 +70,7 @@ const SettingsStore = (knex) => {
       value,
     }
 
-    const [result] = await (trx || knex)('settings')
-      .insert(insertData)
-      .returning('*')
+    const [result] = await (trx || knex)<SettingsEntity>(TABLE).insert(insertData).returning('*')
     return result
   }
 
@@ -82,12 +83,7 @@ const SettingsStore = (knex) => {
       * key, value
 
   */
-  const update = async ({
-    key,
-    data: {
-      value,
-    },
-  }, trx) => {
+  const update = async ({ key, data: { value } }: SettingsUpdateRequest, trx: Knex.Transaction) => {
     if (!key) throw new Error('key must be given to store.settings.update')
     if (!value) throw new Error('data.value param must be given to store.settings.update')
 
@@ -97,7 +93,7 @@ const SettingsStore = (knex) => {
 
     if (key) queryParams.key = key
 
-    const [result] = await (trx || knex)('settings')
+    const [result] = await (trx || knex)<SettingsEntity>(TABLE)
       .where(queryParams)
       .update({
         value,
@@ -115,22 +111,15 @@ const SettingsStore = (knex) => {
       * id or key
 
   */
-  const del = async ({
-    id,
-    key,
-  }, trx) => {
+  const del = async ({ id, key }: SettingsDeleteRequest, trx: Knex.Transaction) => {
     if (!id && !key) throw new Error('id or key must be given to store.settings.del')
 
-    const queryParams = {
-    }
+    const queryParams: SettingsDeleteRequest = {}
 
     if (id) queryParams.id = id
     if (key) queryParams.key = key
 
-    const [result] = await (trx || knex)('settings')
-      .where(queryParams)
-      .del()
-      .returning('*')
+    const [result] = await (trx || knex)<SettingsEntity>(TABLE).where(queryParams).del().returning('*')
     return result
   }
 
@@ -143,4 +132,4 @@ const SettingsStore = (knex) => {
   }
 }
 
-module.exports = SettingsStore
+export default SettingsStore

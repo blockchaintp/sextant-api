@@ -1,11 +1,11 @@
 const Promise = require('bluebird')
 const config = require('../../src/config')
 const userUtils = require('../../src/utils/user')
-const UserStore = require('../../src/store/user')
+const UserStore = require('../../src/store/user').default
 const ClusterStore = require('../../src/store/cluster').default
-const DeployentStore = require('../../src/store/deployment')
-const RoleStore = require('../../src/store/role')
-const TaskStore = require('../../src/store/task')
+const DeployentStore = require('../../src/store/deployment').default
+const RoleStore = require('../../src/store/role').default
+const TaskStore = require('../../src/store/task').default
 
 const { USER_TYPES, CLUSTER_PROVISION_TYPE, PERMISSION_TYPES, RESOURCE_TYPES, TASK_ACTION } = config
 
@@ -109,17 +109,18 @@ const SIMPLE_TASK_DATA = [
 ]
 
 const getTestUserData = async (data) => {
-  const hashed_password = await userUtils.getPasswordHash(data.password)
+  const hashedPassword = await userUtils.getPasswordHash(data.password)
 
   return {
     username: data.username,
     permission: data.permission,
-    hashed_password,
+    hashed_password: hashedPassword,
     server_side_key: userUtils.getTokenServerSideKey(),
   }
 }
 
 const insertTestUsers = async (databaseConnection, data) => {
+  // eslint-disable-next-line no-param-reassign
   data = data || SIMPLE_USER_DATA
 
   const store = UserStore(databaseConnection)
@@ -140,6 +141,7 @@ const insertTestUsers = async (databaseConnection, data) => {
 }
 
 const insertTestClusters = async (databaseConnection, data) => {
+  // eslint-disable-next-line no-param-reassign
   data = data || SIMPLE_CLUSTER_DATA
 
   const store = ClusterStore(databaseConnection)
@@ -161,6 +163,7 @@ const insertTestClusters = async (databaseConnection, data) => {
 }
 
 const insertTestDeployments = async (databaseConnection, cluster, data) => {
+  // eslint-disable-next-line no-param-reassign
   data = data || SIMPLE_DEPLOYMENT_DATA
 
   const store = DeployentStore(databaseConnection)
@@ -184,6 +187,7 @@ const insertTestDeployments = async (databaseConnection, cluster, data) => {
 }
 
 const insertTestRoles = async (databaseConnection, user, data) => {
+  // eslint-disable-next-line no-param-reassign
   data = data || SIMPLE_ROLE_DATA
 
   const store = RoleStore(databaseConnection)
@@ -207,6 +211,7 @@ const insertTestRoles = async (databaseConnection, user, data) => {
 }
 
 const insertTestTasks = async (databaseConnection, user, data) => {
+  // eslint-disable-next-line no-param-reassign
   data = data || SIMPLE_TASK_DATA
 
   const store = TaskStore(databaseConnection)

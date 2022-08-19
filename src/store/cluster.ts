@@ -1,6 +1,10 @@
 import { Knex } from 'knex'
-import { TABLES, CLUSTER_STATUS } from '../config'
-import { ClusterCreateRequest, ClusterStoreOptions, ClusterUpdateRequest, IDBasedRequest } from './types'
+import { CLUSTER_STATUS } from '../config'
+import { TABLE as DEPLOYMENT_TABLE } from './deployment'
+import { ClusterEntity } from './entity-types'
+import { ClusterCreateRequest, ClusterListRequest, ClusterUpdateRequest, IDBasedRequest } from './request-types'
+
+export const TABLE = 'cluster'
 
 const ClusterStore = (knex: Knex) => {
   /*
@@ -10,19 +14,17 @@ const ClusterStore = (knex: Knex) => {
     params:
 
   */
-  const list = ({ deleted }: ClusterStoreOptions, trx: Knex | Knex.Transaction) => {
-    const sqlQuery = (trx || knex)(TABLES.cluster)
-      .select(`${TABLES.cluster}.*`)
-      .count(`${TABLES.deployment}.id as active_deployments`)
-      .leftOuterJoin(TABLES.deployment, function () {
-        this.on(`${TABLES.cluster}.id`, '=', `${TABLES.deployment}.cluster`).onNotIn(`${TABLES.deployment}.status`, [
-          'deleted',
-        ])
+  const list = ({ deleted }: ClusterListRequest, trx: Knex | Knex.Transaction) => {
+    const sqlQuery = (trx || knex)(TABLE)
+      .select(`${TABLE}.*`)
+      .count(`${DEPLOYMENT_TABLE}.id as active_deployments`)
+      .leftOuterJoin(DEPLOYMENT_TABLE, function () {
+        this.on(`${TABLE}.id`, '=', `${DEPLOYMENT_TABLE}.cluster`).onNotIn(`${DEPLOYMENT_TABLE}.status`, ['deleted'])
       })
-      .groupBy(`${TABLES.cluster}.id`)
+      .groupBy(`${TABLE}.id`)
 
     if (!deleted) {
-      sqlQuery.whereNot(`${TABLES.cluster}.status`, CLUSTER_STATUS.deleted)
+      sqlQuery.whereNot(`${TABLE}.status`, CLUSTER_STATUS.deleted)
     }
 
     return sqlQuery
@@ -37,16 +39,15 @@ const ClusterStore = (knex: Knex) => {
   */
   const get = ({ id }: IDBasedRequest, trx: Knex | Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.cluster.get')
-    return (trx || knex)(TABLES.cluster)
-      .where(`${TABLES.cluster}.id`, id)
-      .select(`${TABLES.cluster}.*`)
-      .count(`${TABLES.deployment}.id as active_deployments`)
-      .leftOuterJoin(TABLES.deployment, function () {
-        this.on(`${TABLES.cluster}.id`, '=', `${TABLES.deployment}.cluster`).onNotIn(`${TABLES.deployment}.status`, [
-          'deleted',
-        ])
+
+    return (trx || knex)(TABLE)
+      .where(`${TABLE}.id`, id)
+      .select(`${TABLE}.*`)
+      .count(`${DEPLOYMENT_TABLE}.id as active_deployments`)
+      .leftOuterJoin(DEPLOYMENT_TABLE, function () {
+        this.on(`${TABLE}.id`, '=', `${DEPLOYMENT_TABLE}.cluster`).onNotIn(`${DEPLOYMENT_TABLE}.status`, ['deleted'])
       })
-      .groupBy(`${TABLES.cluster}.id`)
+      .groupBy(`${TABLE}.id`)
       .first()
   }
 
@@ -71,7 +72,7 @@ const ClusterStore = (knex: Knex) => {
     if (!provision_type) throw new Error('data.provision_type param must be given to store.cluster.create')
     if (!desired_state) throw new Error('data.desired_state param must be given to store.cluster.create')
 
-    const [result] = await (trx || knex)(TABLES.cluster)
+    const [result] = await (trx || knex)<ClusterEntity>(TABLE)
       .insert({
         name,
         provision_type,
@@ -103,7 +104,7 @@ const ClusterStore = (knex: Knex) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
 
-    const [result] = await (trx || knex)(TABLES.cluster)
+    const [result] = await (trx || knex)<ClusterEntity>(TABLE)
       .where({
         id,
       })
@@ -126,7 +127,7 @@ const ClusterStore = (knex: Knex) => {
   const del = async ({ id }: IDBasedRequest, trx: Knex | Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.cluster.delete')
 
-    const [result] = await (trx || knex)(TABLES.cluster)
+    const [result] = await (trx || knex)<ClusterEntity>(TABLE)
       .where({
         id,
       })
@@ -140,7 +141,7 @@ const ClusterStore = (knex: Knex) => {
   const deletePermanently = async ({ id }: IDBasedRequest, trx: Knex | Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.cluster.deletePermanently')
 
-    const [result] = await (trx || knex)(TABLES.cluster)
+    const [result] = await (trx || knex)<ClusterEntity>(TABLE)
       .where({
         id,
       })

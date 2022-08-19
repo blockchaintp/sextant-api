@@ -1,6 +1,6 @@
 const dotenv = require('dotenv')
 const { HelmTool } = require('./helmTool')
-const { edition } = require('./edition/index')
+const { edition } = require('./edition')
 
 dotenv.config()
 

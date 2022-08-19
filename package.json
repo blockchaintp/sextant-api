@@ -64,6 +64,8 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@types/config": "^3.3.0",
+    "@types/express-session": "^1.17.5",
     "@types/memoizee": "^0.4.8",
     "@types/node": "^18.7.6",
     "@types/tape": "^4.13.2",

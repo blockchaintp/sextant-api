@@ -1,7 +1,5 @@
-'use strict'
-
 const FileSecretStoreTest = require('./file_secret_store_test')
-const ClusterFileStore = require('../../src/store/clusterfile')
+const ClusterFileStore = require('../../src/store/clusterfile').default
 
 FileSecretStoreTest({
   GetStore: ClusterFileStore,

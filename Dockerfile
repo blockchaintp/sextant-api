@@ -48,11 +48,10 @@ WORKDIR /app/api
 FROM base as build
 
 COPY ./src /app/api/src
-COPY ./config /app/api/config
 COPY ./migrations /app/api/migrations
-COPY ./scripts /app/api/scripts
 COPY ./test /app/api/test
 COPY ./knexfile.js /app/api/knexfile.js
+COPY ./scripts /app/api/scripts
 COPY ./tsconfig.json /app/api/tsconfig.json
 COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
@@ -61,6 +60,8 @@ COPY ./package-lock.json /app/api/package-lock.json
 RUN npm ci \
   && npm run build \
   && npm cache clean --force
+
+COPY ./config /app/api/config
 
 FROM base as release
 COPY --from=build /app/api/dist/knexfile.js /app/api/knexfile.js
@@ -75,9 +76,7 @@ RUN chmod 755 /app/api/entrypoint
 FROM release as test
 COPY --from=build /app/api/dist/test /app/api/test
 COPY --from=build /app/api/test/fixtures/helmCharts.tar.gz /app/api/test/fixtures/
-COPY --from=build /app/api/scripts/entrypoint /app/api/
 COPY --from=build /app/api/tsconfig.json /app/api/tsconfig.json
-COPY --from=build /app/api/package-lock.json /app/api/package-lock.json
 
 FROM $BUILD_ENV as app
 

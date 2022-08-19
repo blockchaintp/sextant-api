@@ -1,6 +1,16 @@
-const config = require('../config')
+import { Knex } from 'knex'
+import { DatabaseIdentifier, UserName } from './domain-types'
+import { UserEntity } from './entity-types'
+import { UserCreateRequest, UserDeleteRequest, UserGetRequest, UserUpdateRequest } from './request-types'
 
-const UserStore = (knex) => {
+export const TABLE = 'useraccount'
+
+const ORDER_BY_FIELDS = {
+  field: 'username',
+  direction: 'asc',
+}
+
+const UserStore = (knex: Knex) => {
   /*
 
     list all users
@@ -9,12 +19,10 @@ const UserStore = (knex) => {
 
   */
   // eslint-disable-next-line no-empty-pattern
-  const list = (trx) => {
-    const orderBy = config.LIST_ORDER_BY_FIELDS.user
+  const list = (trx: Knex.Transaction) => {
+    const orderBy = ORDER_BY_FIELDS
 
-    return (trx || knex).select('*')
-      .from(config.TABLES.user)
-      .orderBy(orderBy.field, orderBy.direction)
+    return (trx || knex).select('*').from(TABLE).orderBy(orderBy.field, orderBy.direction)
   }
 
   /*
@@ -30,20 +38,17 @@ const UserStore = (knex) => {
     one of id or username must be given
 
   */
-  const get = ({
-    id,
-    username,
-  }, trx) => {
+  const get = ({ id, username }: UserGetRequest, trx: Knex.Transaction) => {
     if (!id && !username) throw new Error('one of id or username must be given to store.user.get')
 
-    const query = {}
+    const query: {
+      id?: DatabaseIdentifier
+      username?: UserName
+    } = {}
     if (id) query.id = id
     if (username) query.username = username
 
-    return (trx || knex).select('*')
-      .from(config.TABLES.user)
-      .where(query)
-      .first()
+    return (trx || knex).select('*').from<UserEntity>(TABLE).where(query).first()
   }
 
   /*
@@ -60,21 +65,16 @@ const UserStore = (knex) => {
         * meta
 
   */
-  const create = async ({
-    data: {
-      username,
-      hashed_password,
-      server_side_key,
-      permission,
-      meta,
-    },
-  }, trx) => {
+  const create = async (
+    { data: { username, hashed_password, server_side_key, permission, meta } }: UserCreateRequest,
+    trx: Knex.Transaction
+  ) => {
     if (!username) throw new Error('data.username param must be given to store.user.create')
     if (!hashed_password) throw new Error('data.hashed_password param must be given to store.user.create')
     if (!server_side_key) throw new Error('data.server_side_key param must be given to store.user.create')
     if (!permission) throw new Error('data.permission param must be given to store.user.create')
 
-    const [result] = await (trx || knex)(config.TABLES.user)
+    const [result] = await (trx || knex)<UserEntity>(TABLE)
       .insert({
         username,
         hashed_password,
@@ -103,14 +103,11 @@ const UserStore = (knex) => {
     one of id or username must be given
 
   */
-  const update = async ({
-    id,
-    data,
-  }, trx) => {
+  const update = async ({ id, data }: UserUpdateRequest, trx: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.user.update')
     if (!data) throw new Error('data param must be given to store.user.update')
 
-    const [result] = await (trx || knex)(config.TABLES.user)
+    const [result] = await (trx || knex)<UserEntity>(TABLE)
       .where({
         id,
       })
@@ -128,12 +125,10 @@ const UserStore = (knex) => {
       * id
 
   */
-  const del = async ({
-    id,
-  }, trx) => {
+  const del = async ({ id }: UserDeleteRequest, trx: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.user.delete')
 
-    const [result] = await (trx || knex)(config.TABLES.user)
+    const [result] = await (trx || knex)<UserEntity>(TABLE)
       .where({
         id,
       })
@@ -151,4 +146,4 @@ const UserStore = (knex) => {
   }
 }
 
-module.exports = UserStore
+export default UserStore

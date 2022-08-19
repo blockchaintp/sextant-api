@@ -2,21 +2,14 @@
 /* eslint-disable no-shadow */
 const Promise = require('bluebird')
 const asyncTest = require('./asyncTest')
-const Store = require('../src/store')
+const Store = require('../src/store').default
 const TaskProcessor = require('../src/taskprocessor')
 const config = require('../src/config')
-
+const TASK_TABLE = require('../src/store/task').TABLE
 const database = require('./database')
 const fixtures = require('./fixtures')
 
-const {
-  USER_TYPES,
-  RESOURCE_TYPES,
-  TASK_ACTION,
-  TASK_STATUS,
-  TABLES,
-  CLUSTER_PROVISION_TYPE,
-} = config
+const { USER_TYPES, RESOURCE_TYPES, TASK_ACTION, TASK_STATUS, CLUSTER_PROVISION_TYPE } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let userMap = {}
@@ -54,15 +47,9 @@ database.testSuiteWithDatabase((getConnection) => {
   let store = null
 
   // clean up all tasks from the database after each test
-  const cleanUp = () => store.knex(TABLES.task)
-    .del()
-    .returning('*')
+  const cleanUp = () => store.knex(TASK_TABLE).del().returning('*')
 
-  const runTaskProcessor = async ({
-    store,
-    taskData,
-    handlers,
-  }) => {
+  const runTaskProcessor = async ({ store, taskData, handlers }) => {
     const taskProcessor = TaskProcessor({
       store,
       handlers,
@@ -81,7 +68,7 @@ database.testSuiteWithDatabase((getConnection) => {
     return createdTask
   }
 
-  asyncTest('make store', async () => {
+  asyncTest('make store', () => {
     store = Store(getConnection())
   })
 
@@ -91,6 +78,7 @@ database.testSuiteWithDatabase((getConnection) => {
     let handlerParams = null
 
     const handlers = {
+      // eslint-disable-next-line func-names
       [TASK_ACTION['cluster.create']]: function* (params) {
         handlerParams = params
         yield undefined
@@ -109,124 +97,143 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(handlerParams.task.id, createdTask.id, 'the created task id is the same')
   })
 
-  asyncTest('task processor -> error task handler', async (t) => {
-    const ERROR_TEXT = 'this is a test error'
+  asyncTest(
+    'task processor -> error task handler',
+    async (t) => {
+      const ERROR_TEXT = 'this is a test error'
 
-    const taskData = getTaskFixture()
+      const taskData = getTaskFixture()
 
-    const handlers = {
-      [TASK_ACTION['cluster.create']]: function* () {
-        yield Promise.delay(1000)
-        throw new Error(ERROR_TEXT)
-      },
-    }
-
-    const createdTask = await runTaskProcessor({
-      store,
-      taskData,
-      handlers,
-    })
-
-    const finalTask = await store.task.get({
-      id: createdTask.id,
-    })
-
-    t.equal(finalTask.status, TASK_STATUS.error, 'the task was errored')
-    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, 'the error message was correct')
-  }, cleanUp)
-
-  asyncTest('cancel a task halfway through', async (t) => {
-    const taskData = getTaskFixture()
-
-    let sawStep = false
-
-    const handlers = {
-      [TASK_ACTION['cluster.create']]: function* (params) {
-        yield store.task.update({
-          id: params.task.id,
-          data: {
-            status: TASK_STATUS.cancelling,
-          },
-        })
-        yield Promise.resolve(true)
-        sawStep = true
-      },
-    }
-
-    const createdTask = await runTaskProcessor({
-      store,
-      taskData,
-      handlers,
-    })
-
-    const finalTask = await store.task.get({
-      id: createdTask.id,
-    })
-
-    t.equal(sawStep, false, 'we never got to the step after the cancel')
-    t.equal(finalTask.status, TASK_STATUS.cancelled, 'the task was cancelled')
-  }, cleanUp)
-
-  asyncTest('check the transaction rollback is working', async (t) => {
-    const taskData = getTaskFixture()
-
-    const ORIGINAL_NAME = 'testcluster'
-    const NEW_NAME = 'new name'
-    const ERROR_TEXT = 'test error'
-
-    const cluster = await store.cluster.create({
-      data: {
-        name: ORIGINAL_NAME,
-        provision_type: CLUSTER_PROVISION_TYPE.local,
-        desired_state: {
-          apples: 10,
+      const handlers = {
+        // eslint-disable-next-line func-names
+        [TASK_ACTION['cluster.create']]: function* () {
+          yield Promise.delay(1000)
+          throw new Error(ERROR_TEXT)
         },
-        capabilities: {
-          funkyFeature: true,
+      }
+
+      const createdTask = await runTaskProcessor({
+        store,
+        taskData,
+        handlers,
+      })
+
+      const finalTask = await store.task.get({
+        id: createdTask.id,
+      })
+
+      t.equal(finalTask.status, TASK_STATUS.error, 'the task was errored')
+      t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, 'the error message was correct')
+    },
+    cleanUp
+  )
+
+  asyncTest(
+    'cancel a task halfway through',
+    async (t) => {
+      const taskData = getTaskFixture()
+
+      let sawStep = false
+
+      const handlers = {
+        // eslint-disable-next-line func-names
+        [TASK_ACTION['cluster.create']]: function* (params) {
+          yield store.task.update({
+            id: params.task.id,
+            data: {
+              status: TASK_STATUS.cancelling,
+            },
+          })
+          yield Promise.resolve(true)
+          sawStep = true
         },
-      },
-    })
+      }
 
-    let updatedCluster = null
+      const createdTask = await runTaskProcessor({
+        store,
+        taskData,
+        handlers,
+      })
 
-    const handlers = {
-      [TASK_ACTION['cluster.create']]: function* (params) {
-        const {
-          trx,
-        } = params
+      const finalTask = await store.task.get({
+        id: createdTask.id,
+      })
 
-        yield store.cluster.update({
-          id: cluster.id,
-          data: {
-            name: NEW_NAME,
+      t.equal(sawStep, false, 'we never got to the step after the cancel')
+      t.equal(finalTask.status, TASK_STATUS.cancelled, 'the task was cancelled')
+    },
+    cleanUp
+  )
+
+  asyncTest(
+    'check the transaction rollback is working',
+    async (t) => {
+      const taskData = getTaskFixture()
+
+      const ORIGINAL_NAME = 'testcluster'
+      const NEW_NAME = 'new name'
+      const ERROR_TEXT = 'test error'
+
+      const cluster = await store.cluster.create({
+        data: {
+          name: ORIGINAL_NAME,
+          provision_type: CLUSTER_PROVISION_TYPE.local,
+          desired_state: {
+            apples: 10,
           },
-        }, trx)
+          capabilities: {
+            funkyFeature: true,
+          },
+        },
+      })
 
-        updatedCluster = yield store.cluster.get({
-          id: cluster.id,
-        }, trx)
+      let updatedCluster = null
 
-        throw new Error(ERROR_TEXT)
-      },
-    }
+      const handlers = {
+        // eslint-disable-next-line func-names
+        [TASK_ACTION['cluster.create']]: function* (params) {
+          const { trx } = params
 
-    const createdTask = await runTaskProcessor({
-      store,
-      taskData,
-      handlers,
-    })
+          yield store.cluster.update(
+            {
+              id: cluster.id,
+              data: {
+                name: NEW_NAME,
+              },
+            },
+            trx
+          )
 
-    const finalTask = await store.task.get({
-      id: createdTask.id,
-    })
+          updatedCluster = yield store.cluster.get(
+            {
+              id: cluster.id,
+            },
+            trx
+          )
 
-    const finalCluster = await store.cluster.get({
-      id: cluster.id,
-    })
+          throw new Error(ERROR_TEXT)
+        },
+      }
 
-    t.equal(updatedCluster.name, NEW_NAME, 'the name was updated inside the handler')
-    t.equal(finalCluster.name, ORIGINAL_NAME, 'the name was rolled back with the transaction')
-    t.equal(finalTask.status, TASK_STATUS.error, 'the task was errored')
-    t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, 'the error message was correct')
-  }, cleanUp)
+      const createdTask = await runTaskProcessor({
+        store,
+        taskData,
+        handlers,
+      })
+
+      const finalTask = await store.task.get({
+        id: createdTask.id,
+      })
+
+      const finalCluster = await store.cluster.get({
+        id: cluster.id,
+      })
+
+      t.equal(updatedCluster.name, NEW_NAME, 'the name was updated inside the handler')
+      t.equal(finalCluster.name, ORIGINAL_NAME, 'the name was rolled back with the transaction')
+      t.equal(finalTask.status, TASK_STATUS.error, 'the task was errored')
+      t.equal(finalTask.error, `Error: ${ERROR_TEXT}`, 'the error message was correct')
+    },
+    cleanUp
+  )
 })

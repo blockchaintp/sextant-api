@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import merge from 'deepmerge'
 import { resolve } from 'path'
-import { edition } from '../edition/index'
+import { edition } from '../edition'
 import { getYaml } from '../utils/yaml'
 
 const { chartTable } = edition

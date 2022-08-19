@@ -5,7 +5,7 @@ const asyncTestError = require('../asyncTestError')
 const database = require('../database')
 const fixtures = require('../fixtures')
 const ClusterController = require('../../src/controller/cluster')
-const Store = require('../../src/store')
+const Store = require('../../src/store').default
 const base64 = require('../../src/utils/base64')
 
 const TaskProcessor = require('../../src/taskprocessor')
@@ -29,10 +29,10 @@ const {
 // this is so we can compare two values (ignoring the ca and token)
 const cleanDesiredState = (state) => {
   const ret = { ...state }
-  delete (ret.ca)
-  delete (ret.token)
-  delete (ret.ca_id)
-  delete (ret.token_id)
+  delete ret.ca
+  delete ret.token
+  delete ret.ca_id
+  delete ret.token_id
   return ret
 }
 
@@ -57,10 +57,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const testUser = userMap[USER_TYPES.admin]
 
     await Promise.each(Object.keys(errorClusters), async (type) => {
-      const {
-        values,
-        error,
-      } = errorClusters[type]
+      const { values, error } = errorClusters[type]
 
       let checkError = null
 
@@ -107,7 +104,11 @@ database.testSuiteWithDatabase((getConnection) => {
     const task = tasks[0]
 
     t.equal(cluster.name, clusterData.name, 'the cluster name is correct')
-    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), 'the cluster desired_state is correct')
+    t.deepEqual(
+      cleanDesiredState(cluster.desired_state),
+      cleanDesiredState(clusterData.desired_state),
+      'the cluster desired_state is correct'
+    )
 
     t.equal(role.user, testUser.id, 'the role user id is correct')
     t.equal(role.resource_type, RESOURCE_TYPES.cluster, 'the role resource_type is correct')
@@ -191,8 +192,8 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest('cluster controller -> cannot update a cluster with a running task', async (t) => {
     const controller = getController()
 
-    const desired_state = { ...fixtures.SIMPLE_CLUSTER_DATA[0] }
-    desired_state.oranges = 11
+    const desiredState = { ...fixtures.SIMPLE_CLUSTER_DATA[0] }
+    desiredState.oranges = 11
 
     let error = null
 
@@ -201,7 +202,7 @@ database.testSuiteWithDatabase((getConnection) => {
         user: userMap[USER_TYPES.admin],
         id: testClusters[USER_TYPES.admin].id,
         data: {
-          desired_state,
+          desired_state: desiredState,
         },
       })
     } catch (err) {
@@ -231,7 +232,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const controller = getController()
     const store = Store(getConnection())
 
-    const desired_state = { ...fixtures.SIMPLE_CLUSTER_DATA[0].desired_state, oranges: 11 }
+    const desiredState = { ...fixtures.SIMPLE_CLUSTER_DATA[0].desired_state, oranges: 11 }
 
     const testCluster = testClusters[USER_TYPES.admin]
     const testUser = userMap[USER_TYPES.admin]
@@ -240,7 +241,7 @@ database.testSuiteWithDatabase((getConnection) => {
       user: testUser,
       id: testCluster.id,
       data: {
-        desired_state,
+        desired_state: desiredState,
         shouldNotBeInserted: true,
       },
     })
@@ -249,7 +250,11 @@ database.testSuiteWithDatabase((getConnection) => {
       id: testCluster.id,
     })
 
-    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(desired_state), 'the desired_state is correct')
+    t.deepEqual(
+      cleanDesiredState(cluster.desired_state),
+      cleanDesiredState(desiredState),
+      'the desired_state is correct'
+    )
     t.notok(cluster.shouldNotBeInserted, 'there was no extra value inserted')
 
     const tasks = await store.task.list({
@@ -257,7 +262,11 @@ database.testSuiteWithDatabase((getConnection) => {
     })
 
     t.equal(tasks.length, 2, 'there are 2 tasks')
-    t.deepEqual(tasks.map((task) => task.status), [TASK_STATUS.created, TASK_STATUS.finished], 'the tasks are correct')
+    t.deepEqual(
+      tasks.map((task) => task.status),
+      [TASK_STATUS.created, TASK_STATUS.finished],
+      'the tasks are correct'
+    )
     t.equal(tasks[0].action, TASK_ACTION['cluster.update'], 'the new task has the correct type')
   })
   asyncTest('cluster controller -> create cluster for superuser user', async (t) => {
@@ -275,7 +284,11 @@ database.testSuiteWithDatabase((getConnection) => {
       id: createTask.resource_id,
     })
     t.equal(cluster.name, clusterData.name, 'the cluster name is correct')
-    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(clusterData.desired_state), 'the cluster desired_state is correct')
+    t.deepEqual(
+      cleanDesiredState(cluster.desired_state),
+      cleanDesiredState(clusterData.desired_state),
+      'the cluster desired_state is correct'
+    )
     testClusters[USER_TYPES.superuser] = cluster
   })
 
@@ -288,7 +301,11 @@ database.testSuiteWithDatabase((getConnection) => {
       id: testCluster.id,
     })
     t.equal(cluster.name, testCluster.name, 'the cluster name is correct')
-    t.deepEqual(cleanDesiredState(cluster.desired_state), cleanDesiredState(testCluster.desired_state), 'the cluster desired_state is correct')
+    t.deepEqual(
+      cleanDesiredState(cluster.desired_state),
+      cleanDesiredState(testCluster.desired_state),
+      'the cluster desired_state is correct'
+    )
   })
 
   asyncTest('cluster controller -> get cluster with task', async (t) => {
@@ -301,7 +318,7 @@ database.testSuiteWithDatabase((getConnection) => {
       withTask: true,
     })
 
-    t.equal(typeof (cluster.task), 'object', 'the task was returned with the cluster')
+    t.equal(typeof cluster.task, 'object', 'the task was returned with the cluster')
   })
 
   asyncTest('cluster controller -> list clusters for superuser user', async (t) => {
@@ -360,7 +377,7 @@ database.testSuiteWithDatabase((getConnection) => {
       withTasks: true,
     })
 
-    t.equal(typeof (clusters[0].task), 'object', 'there is a task returned with the cluster')
+    t.equal(typeof clusters[0].task, 'object', 'there is a task returned with the cluster')
   })
 
   asyncTest('cluster controller -> cannot delete a cluster with a running task', async (t) => {
@@ -411,11 +428,11 @@ database.testSuiteWithDatabase((getConnection) => {
     const taskProcessor = TaskProcessor({
       store,
       handlers: {
-        // eslint-disable-next-line no-empty-function
-        * [TASK_ACTION['cluster.create']]() {},
-        // eslint-disable-next-line no-empty-function
-        * [TASK_ACTION['cluster.update']]() {},
-        * [TASK_ACTION['cluster.delete']](params) {
+        // eslint-disable-next-line no-empty-function, @typescript-eslint/no-empty-function
+        *[TASK_ACTION['cluster.create']]() {},
+        // eslint-disable-next-line no-empty-function, @typescript-eslint/no-empty-function
+        *[TASK_ACTION['cluster.update']]() {},
+        *[TASK_ACTION['cluster.delete']](params) {
           yield store.cluster.update({
             id: params.task.resource_id,
             data: {
@@ -452,16 +469,16 @@ database.testSuiteWithDatabase((getConnection) => {
     })
 
     t.equal(tasks.length, 3, 'there are 3 tasks')
-    t.deepEqual(tasks.map((task) => task.status), [
-      TASK_STATUS.finished,
-      TASK_STATUS.finished,
-      TASK_STATUS.finished,
-    ], 'the task statuses are correct')
-    t.deepEqual(tasks.map((task) => task.action), [
-      TASK_ACTION['cluster.delete'],
-      TASK_ACTION['cluster.update'],
-      TASK_ACTION['cluster.create'],
-    ], 'the task actions are correct')
+    t.deepEqual(
+      tasks.map((task) => task.status),
+      [TASK_STATUS.finished, TASK_STATUS.finished, TASK_STATUS.finished],
+      'the task statuses are correct'
+    )
+    t.deepEqual(
+      tasks.map((task) => task.action),
+      [TASK_ACTION['cluster.delete'], TASK_ACTION['cluster.update'], TASK_ACTION['cluster.create']],
+      'the task actions are correct'
+    )
 
     await taskProcessor.stop()
   })
@@ -527,21 +544,19 @@ database.testSuiteWithDatabase((getConnection) => {
 
     testClusters.withSecrets = cluster
 
-    const {
-      token_id,
-      ca_id,
-    } = cluster.desired_state
+    // eslint-disable-next-line camelcase
+    const { token_id: tokenId, ca_id: caId } = cluster.desired_state
 
     t.equal(cluster.name, clusterData.name, 'the cluster name is correct')
 
     const token = await store.clustersecret.get({
       cluster: cluster.id,
-      id: token_id,
+      id: tokenId,
     })
 
     const ca = await store.clustersecret.get({
       cluster: cluster.id,
-      id: ca_id,
+      id: caId,
     })
 
     t.equal(token.name, 'token', 'the token secret name is correct')
@@ -565,10 +580,14 @@ database.testSuiteWithDatabase((getConnection) => {
       id: cluster.id,
     })
 
-    t.equal(updatedNameCluster.desired_state.apiServer, cluster.desired_state.apiServer, 'the cluster api server is the same')
+    t.equal(
+      updatedNameCluster.desired_state.apiServer,
+      cluster.desired_state.apiServer,
+      'the cluster api server is the same'
+    )
     t.equal(updatedNameCluster.name, 'my new name', 'the cluster name is correct')
-    t.equal(updatedNameCluster.desired_state.token_id, token_id, 'the desired_state token id is the same')
-    t.equal(updatedNameCluster.desired_state.ca_id, ca_id, 'the desired_state ca id is the same')
+    t.equal(updatedNameCluster.desired_state.token_id, tokenId, 'the desired_state token id is the same')
+    t.equal(updatedNameCluster.desired_state.ca_id, caId, 'the desired_state ca id is the same')
 
     await controller.update({
       id: cluster.id,
@@ -588,17 +607,17 @@ database.testSuiteWithDatabase((getConnection) => {
       id: cluster.id,
     })
 
-    const token_id2 = updatedSecretsCluster.desired_state.token_id
-    const ca_id2 = updatedSecretsCluster.desired_state.ca_id
+    const tokenId2 = updatedSecretsCluster.desired_state.token_id
+    const caId2 = updatedSecretsCluster.desired_state.ca_id
 
     const token2 = await store.clustersecret.get({
       cluster: cluster.id,
-      id: token_id2,
+      id: tokenId2,
     })
 
     const ca2 = await store.clustersecret.get({
       cluster: cluster.id,
-      id: ca_id2,
+      id: caId2,
     })
 
     t.equal(token2.name, 'token', 'the token secret name is correct')
@@ -623,13 +642,13 @@ database.testSuiteWithDatabase((getConnection) => {
     })
 
     t.equal(updatedNameCluster2.name, 'my new name2', 'the cluster name is correct')
-    t.equal(updatedNameCluster2.desired_state.token_id, token_id2, 'the desired_state token id is the same')
-    t.equal(updatedNameCluster2.desired_state.ca_id, ca_id2, 'the desired_state ca id is the same')
+    t.equal(updatedNameCluster2.desired_state.token_id, tokenId2, 'the desired_state token id is the same')
+    t.equal(updatedNameCluster2.desired_state.ca_id, caId2, 'the desired_state ca id is the same')
 
     await taskProcessor.stop()
   })
 
-  asyncTestError('cluster controller -> fail to delete the cluster permenantly', async () => {
+  asyncTestError('cluster controller -> fail to delete the cluster permanently', async () => {
     const controller = getController()
 
     const testUser = userMap[USER_TYPES.admin]
@@ -642,15 +661,15 @@ database.testSuiteWithDatabase((getConnection) => {
     })
   })
 
-  asyncTest('cluster controller -> delete the cluster permenantly', async (t) => {
+  asyncTest('cluster controller -> delete the cluster permanently', async (t) => {
     const controller = getController()
     const store = Store(getConnection())
 
     const taskProcessor = TaskProcessor({
       store,
       handlers: {
-        // eslint-disable-next-line no-empty-function
-        * [TASK_ACTION['cluster.delete']]() {},
+        // eslint-disable-next-line no-empty-function, @typescript-eslint/no-empty-function
+        *[TASK_ACTION['cluster.delete']]() {},
       },
     })
 
