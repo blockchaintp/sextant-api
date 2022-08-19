@@ -242,11 +242,7 @@ const RBAC = async (store, user, action) => {
     if (!PERMISSION_ACCESS_LEVELS[role.permission]) return false
 
     // check the granted role is at least the required type
-    if (PERMISSION_ACCESS_LEVELS[role.permission] < PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission])
-      return false
-
-    // ok - we are allowed
-    return true
+    return PERMISSION_ACCESS_LEVELS[role.permission] >= PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission]
   }
 
   // we assume that there are no checks to perform for this method so allow
