@@ -56,13 +56,15 @@ const LOCAL_API_SERVER = 'https://kubernetes.default.svc'
 
 */
 
+export type KubectlRemoteCredentials = {
+  ca: string
+  token: string
+  apiServer: string
+}
+
 type KubectlConstructParams = {
   mode: ProvisionType
-  remoteCredentials: {
-    ca: string
-    token: string
-    apiServer: string
-  }
+  remoteCredentials: KubectlRemoteCredentials
 }
 
 type SetupDetails = { kubeConfigPath: string; connectionArguments: string[] }

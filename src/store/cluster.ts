@@ -37,7 +37,7 @@ const ClusterStore = (knex: Knex) => {
     params:
 
   */
-  const get = ({ id }: IDBasedRequest, trx: Knex | Knex.Transaction) => {
+  const get = ({ id }: IDBasedRequest, trx?: Knex.Transaction) => {
     if (!id) throw new Error('id must be given to store.cluster.get')
 
     return (trx || knex)(TABLE)
@@ -51,6 +51,11 @@ const ClusterStore = (knex: Knex) => {
       .first()
   }
 
+  const getNatural = ({ id }: IDBasedRequest, trx?: Knex.Transaction) => {
+    if (!id) throw new Error('id must be given to store.cluster.get')
+
+    return (trx || knex)<ClusterEntity>(TABLE).where({ id }).select('*').first()
+  }
   /*
 
     insert a new cluster
@@ -153,6 +158,7 @@ const ClusterStore = (knex: Knex) => {
   return {
     list,
     get,
+    getNatural,
     create,
     update,
     delete: del,

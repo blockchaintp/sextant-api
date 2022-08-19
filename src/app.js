@@ -8,7 +8,7 @@ const logger = require('./logging').getLogger({
 const Passport = require('./passport')
 
 const Store = require('./store').default
-const Controller = require('./controller')
+const Controller = require('./controller').default
 const Router = require('./router')
 const TaskProcessor = require('./taskprocessor')
 

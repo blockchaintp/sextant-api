@@ -108,8 +108,11 @@ const helmReleaseToDeployment = memoize(
  * __resembles__ a helm release status object.
  * @param {*} deployment a sextant deployment object
  */
+type MinimalDeploymentToReleaseArgs = Pick<Deployment, 'deployment_type' | 'deployment_version'> &
+  Omit<Partial<Deployment>, 'deployment_type' | 'deployment_version'>
+
 const deploymentToHelmRelease = memoize(
-  (deployment: Deployment): HelmRelease => {
+  (deployment: MinimalDeploymentToReleaseArgs): HelmRelease => {
     const { deployment_type: deploymentType, deployment_version: deploymentVersion, name } = deployment
     const chartInfo = getChartInfo(deploymentType, deploymentVersion)
     const chartVersion = getChartVersion(deploymentType, deploymentVersion)

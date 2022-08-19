@@ -3,24 +3,46 @@
  *
  * License: Product
  */
-const deploymentNames = require('./deploymentNames')
-const ClusterKubectl = require('./clusterKubectl').default
-const base64 = require('./base64')
+import { StoreType } from '../store'
+import { AppliedState, DatabaseIdentifier } from '../store/domain-types'
+import { decode } from './base64'
+import ClusterKubectl from './clusterKubectl'
+import deploymentNames from './deploymentNames'
+import { KubectlRemoteCredentials } from './kubectl'
 
-const cachedConnections = {}
+export type DeploymentConnection = KubectlRemoteCredentials & {
+  baseUrl: string
+  namespace: string
+  appliedState: AppliedState
+}
 
+const cachedConnections: {
+  [key in string]: DeploymentConnection
+} = {}
+
+export type DeploymentConnectionArgs = {
+  store: StoreType
+  id: DatabaseIdentifier
+  connectionCacheId: string
+}
 // an axios instance with authentication and pointing to the deployment namespace
-const deploymentConnection = async ({ store, id, onConnection, connectionCacheId }) => {
+const deploymentConnection = async ({ store, id, connectionCacheId }: DeploymentConnectionArgs) => {
   let connection = cachedConnections[connectionCacheId]
 
   if (!connection) {
     const deployment = await store.deployment.get({
       id,
     })
+    if (!deployment) {
+      throw new Error(`Deployment not found: ${id}`)
+    }
 
-    const cluster = await store.cluster.get({
+    const cluster = await store.cluster.getNatural({
       id: deployment.cluster,
     })
+    if (!cluster) {
+      throw new Error(`Cluster not found: ${deployment.cluster}`)
+    }
 
     const { applied_state: appliedState } = deployment
 
@@ -35,23 +57,19 @@ const deploymentConnection = async ({ store, id, onConnection, connectionCacheId
 
     const { apiServer, token, ca } = clusterKubectl.getRemoteCredentials()
 
-    const tokenDecoded = base64.decode(token)
-    const caDecoded = base64.decode(ca)
+    const tokenDecoded = decode(token).toString()
+    const caDecoded = decode(ca)
     const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
 
     cachedConnections[connectionCacheId] = {
       token: tokenDecoded,
       apiServer,
       baseUrl,
-      ca: caDecoded,
+      ca: caDecoded.toString(),
       namespace,
-      applied_state: appliedState,
+      appliedState,
     }
     connection = cachedConnections[connectionCacheId]
-
-    if (onConnection) {
-      await onConnection(connection)
-    }
 
     // keep cached connections for 5 mins
     // this is to avoid doing multiple database + kubectl for each request
@@ -63,4 +81,4 @@ const deploymentConnection = async ({ store, id, onConnection, connectionCacheId
   return connection
 }
 
-module.exports = deploymentConnection
+export default deploymentConnection
