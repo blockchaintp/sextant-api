@@ -2,10 +2,9 @@ const fs = require('promise-fs')
 const path = require('path')
 const Promise = require('bluebird')
 const merge = require('deepmerge')
-const yaml = require('js-yaml')
 const { tempName, tmpDir } = require('tmp-promise')
 const { exec } = require('child-process-promise')
-const { getYaml, writeYaml } = require('../utils/yaml')
+const { getYaml, writeYaml, safeLoad } = require('../utils/yaml')
 
 const { readdir, writeFile } = fs
 
@@ -116,7 +115,7 @@ const writeTemplateValues = async ({
   let mergedYamlData
 
   // parse string into yaml object
-  const parsedYaml = yaml.safeLoad(customYaml)
+  const parsedYaml = safeLoad(customYaml)
 
   if (parsedYaml) {
     // merge yaml from the form input with custom yaml input

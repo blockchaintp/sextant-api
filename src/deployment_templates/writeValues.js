@@ -1,7 +1,6 @@
 const merge = require('deepmerge')
-const yaml = require('js-yaml')
 const tmpName = require('tmp-promise')
-const { writeYaml } = require('../utils/yaml')
+const { writeYaml, safeLoad } = require('../utils/yaml')
 
 // eslint-disable-next-line no-unused-vars
 const overwriteMerge = (destinationArray, sourceArray) => sourceArray
@@ -44,7 +43,7 @@ const writeValues = async ({ desired_state: desiredState, custom_yaml: customYam
   let finalValuesYaml = data
 
   // parse string into yaml object
-  const parsedYaml = yaml.safeLoad(customYaml)
+  const parsedYaml = safeLoad(customYaml)
 
   if (parsedYaml) {
     // merge yaml from the form input with custom yaml input

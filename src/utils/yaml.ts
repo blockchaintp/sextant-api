@@ -1,13 +1,20 @@
 import yaml from 'js-yaml'
 import { readFileSync, writeFileSync } from 'fs'
 
-// eslint-disable-next-line import/prefer-default-export
-export const getYaml = (filepath: string): any => {
-  const yamlContent = readFileSync(filepath, 'utf8')
+export function safeLoad(yamlContent: string) {
   return yaml.load(yamlContent, { schema: yaml.FAILSAFE_SCHEMA })
 }
 
+export function safeDump(data: any) {
+  return yaml.dump(data, { schema: yaml.FAILSAFE_SCHEMA })
+}
+
+export const getYaml = (filepath: string): any => {
+  const yamlContent = readFileSync(filepath, 'utf8')
+  return safeLoad(yamlContent)
+}
+
 export const writeYaml = (filepath: string, data: any) => {
-  const yamlText = yaml.dump(data, { schema: yaml.FAILSAFE_SCHEMA })
+  const yamlText = safeDump(data)
   return writeFileSync(filepath, yamlText, 'utf8')
 }
