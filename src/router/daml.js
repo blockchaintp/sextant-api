@@ -1,122 +1,98 @@
 /* eslint-disable no-unused-vars */
 const fs = require('fs')
 const Promise = require('bluebird')
-const tmp = require('tmp')
-
-const tempFile = Promise.promisify(tmp.file)
+const { file: tempFile } = require('tmp-promise')
 
 const DamlRoutes = (controllers) => {
-  const getKeyManagerKeys = async (req, res, next) => {
+  const getKeyManagerKeys = async (req, res) => {
     const data = await controllers.daml.getKeyManagerKeys({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const getEnrolledKeys = async (req, res, next) => {
+  const getEnrolledKeys = async (req, res) => {
     const data = await controllers.daml.getEnrolledKeys({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const addEnrolledKey = async (req, res, next) => {
+  const addEnrolledKey = async (req, res) => {
     const data = await controllers.daml.addEnrolledKey({
       id: req.params.id,
       publicKey: req.body.publicKey,
     })
-    res
-      .status(201)
-      .json(data)
+    res.status(201).json(data)
   }
 
-  const getParticipants = async (req, res, next) => {
+  const getParticipants = async (req, res) => {
     const data = await controllers.daml.getParticipants({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const registerParticipant = async (req, res, next) => {
+  const registerParticipant = async (req, res) => {
     const data = await controllers.daml.registerParticipant({
       id: req.params.id,
       publicKey: req.body.publicKey,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const rotateParticipantKey = async (req, res, next) => {
+  const rotateParticipantKey = async (req, res) => {
     const data = await controllers.daml.rotateParticipantKey({
       id: req.params.id,
       publicKey: req.body.publicKey,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const addParty = async (req, res, next) => {
+  const addParty = async (req, res) => {
     const data = await controllers.daml.addParty({
       id: req.params.id,
       publicKey: req.body.publicKey,
       partyName: req.body.partyName,
       partyIdHint: req.body.partyIdHint,
     })
-    res
-      .status(201)
-      .json(data)
+    res.status(201).json(data)
   }
 
-  const generatePartyToken = async (req, res, next) => {
+  const generatePartyToken = async (req, res) => {
     const data = await controllers.daml.generatePartyToken({
       id: req.params.id,
       applicationId: req.body.applicationId,
       readAs: req.body.readAs,
       actAs: req.body.actAs,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const generateAdminToken = async (req, res, next) => {
+  const generateAdminToken = async (req, res) => {
     const data = await controllers.daml.generateAdminToken({
       id: req.params.id,
       applicationId: req.body.applicationId,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const getArchives = async (req, res, next) => {
+  const getArchives = async (req, res) => {
     const data = await controllers.daml.getArchives({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
-  const uploadArchive = async (req, res, next) => {
-    const {
-      name,
-      type,
-      size,
-    } = req.query
+  const uploadArchive = async (req, res) => {
+    const { name, type, size } = req.query
 
     const localFilepath = await tempFile()
 
     const removeFile = () => {
-      fs.unlink(localFilepath, () => {})
+      fs.unlink(localFilepath, () => {
+        // do nothing
+      })
     }
 
     try {
@@ -138,22 +114,18 @@ const DamlRoutes = (controllers) => {
 
       removeFile()
 
-      res
-        .status(201)
-        .json(data)
+      res.status(201).json(data)
     } catch (e) {
       removeFile()
       throw e
     }
   }
 
-  const getTimeServiceInfo = async (req, res, next) => {
+  const getTimeServiceInfo = async (req, res) => {
     const data = await controllers.daml.getTimeServiceInfo({
       id: req.params.id,
     })
-    res
-      .status(200)
-      .json(data)
+    res.status(200).json(data)
   }
 
   return {
@@ -173,7 +145,6 @@ const DamlRoutes = (controllers) => {
     uploadArchive,
 
     getTimeServiceInfo,
-
   }
 }
 

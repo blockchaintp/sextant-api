@@ -1,16 +1,13 @@
-const Promise = require('bluebird')
 const merge = require('deepmerge')
 const yaml = require('js-yaml')
-const tmp = require('tmp')
+const tmpName = require('tmp-promise')
 const { writeYaml } = require('../utils/yaml')
 
-const tempName = Promise.promisify(tmp.tmpName)
-
 // eslint-disable-next-line no-unused-vars
-const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
+const overwriteMerge = (destinationArray, sourceArray) => sourceArray
 
-const formatData = ({ desired_state }) => {
-  const initialData = desired_state
+const formatData = ({ desired_state: desiredState }) => {
+  const initialData = desiredState
 
   if (initialData.sawtooth && initialData.sawtooth.customTPs) {
     const initialCustomTPs = initialData.sawtooth.customTPs
@@ -35,23 +32,23 @@ const formatData = ({ desired_state }) => {
   return the filepath to the new values.yaml
 */
 
-const writeValues = async ({ desired_state, custom_yaml }) => {
-  const valuesPath = await tempName({
+const writeValues = async ({ desired_state: desiredState, custom_yaml: customYaml }) => {
+  const valuesPath = await tmpName({
     postfix: '.yaml',
   })
 
   const data = await formatData({
-    desired_state,
+    desired_state: desiredState,
   })
 
   let finalValuesYaml = data
 
   // parse string into yaml object
-  const customYaml = yaml.safeLoad(custom_yaml)
+  const parsedYaml = yaml.safeLoad(customYaml)
 
-  if (customYaml) {
+  if (parsedYaml) {
     // merge yaml from the form input with custom yaml input
-    finalValuesYaml = merge(data, customYaml, { arrayMerge: overwriteMerge })
+    finalValuesYaml = merge(data, parsedYaml, { arrayMerge: overwriteMerge })
   }
 
   writeYaml(valuesPath, finalValuesYaml)

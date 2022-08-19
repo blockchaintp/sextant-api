@@ -1,17 +1,13 @@
-const fs = require('fs')
+const fs = require('promise-fs')
 const path = require('path')
 const Promise = require('bluebird')
 const merge = require('deepmerge')
 const yaml = require('js-yaml')
-const tmp = require('tmp')
-const childProcess = require('child_process')
+const { tempName, tmpDir } = require('tmp-promise')
+const { exec } = require('child-process-promise')
 const { getYaml, writeYaml } = require('../utils/yaml')
 
-const readdir = Promise.promisify(fs.readdir)
-const writeFile = Promise.promisify(fs.writeFile)
-const tempName = Promise.promisify(tmp.tmpName)
-const tmpDir = Promise.promisify(tmp.dir)
-const exec = Promise.promisify(childProcess.exec)
+const { readdir, writeFile } = fs
 
 const logger = require('../logging').getLogger({
   name: 'deployment_templates/render',
@@ -20,7 +16,7 @@ const logger = require('../logging').getLogger({
 const DEFAULTS_FILE = 'defaults.yaml'
 
 // eslint-disable-next-line no-unused-vars
-const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
+const overwriteMerge = (destinationArray, sourceArray) => sourceArray
 
 /*
 
@@ -28,19 +24,19 @@ const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
   in which the templates live
 
 */
-const getTemplateFolder = ({ deployment_type, deployment_version }) =>
-  path.resolve(__dirname, deployment_type, deployment_version)
+const getTemplateFolder = ({ deployment_type: deploymentType, deployment_version: deploymentVersion }) =>
+  path.resolve(__dirname, deploymentType, deploymentVersion)
 
 /*
 
   get the path to the defaults file for a template
 
 */
-const getDefaultsFile = ({ deployment_type, deployment_version }) =>
+const getDefaultsFile = ({ deployment_type: deploymentType, deployment_version: deploymentVersion }) =>
   path.resolve(
     getTemplateFolder({
-      deployment_type,
-      deployment_version,
+      deployment_type: deploymentType,
+      deployment_version: deploymentVersion,
     }),
     DEFAULTS_FILE
   )
@@ -51,10 +47,10 @@ const getDefaultsFile = ({ deployment_type, deployment_version }) =>
   given type and version
 
 */
-const getTemplateDefaults = ({ deployment_type, deployment_version }) => {
+const getTemplateDefaults = ({ deployment_type: deploymentType, deployment_version: deploymentVersion }) => {
   const filepath = getDefaultsFile({
-    deployment_type,
-    deployment_version,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
   })
   return getYaml(filepath)
 }
@@ -65,12 +61,16 @@ const getTemplateDefaults = ({ deployment_type, deployment_version }) => {
   data to get deployable values
 
 */
-const getTemplateData = async ({ deployment_type, deployment_version, desired_state }) => {
+const getTemplateData = async ({
+  deployment_type: deploymentType,
+  deployment_version: deploymentVersion,
+  desired_state: desiredState,
+}) => {
   const defaults = await getTemplateDefaults({
-    deployment_type,
-    deployment_version,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
   })
-  const initialData = merge(defaults, desired_state, { arrayMerge: overwriteMerge })
+  const initialData = merge(defaults, desiredState, { arrayMerge: overwriteMerge })
 
   if (initialData.sawtooth && initialData.sawtooth.customTPs) {
     const initialCustomTPs = initialData.sawtooth.customTPs
@@ -98,24 +98,29 @@ const getTemplateData = async ({ deployment_type, deployment_version, desired_st
 
 */
 // TODO  - error handling for custom yaml
-const writeTemplateValues = async ({ deployment_type, deployment_version, desired_state, custom_yaml }) => {
+const writeTemplateValues = async ({
+  deployment_type: deploymentType,
+  deployment_version: deploymentVersion,
+  desired_state: desiredState,
+  custom_yaml: customYaml,
+}) => {
   const valuesPath = await tempName({
     postfix: '.yaml',
   })
 
   const templateData = await getTemplateData({
-    deployment_type,
-    deployment_version,
-    desired_state,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
+    desired_state: desiredState,
   })
   let mergedYamlData
 
   // parse string into yaml object
-  const customYaml = yaml.safeLoad(custom_yaml)
+  const parsedYaml = yaml.safeLoad(customYaml)
 
-  if (customYaml) {
+  if (parsedYaml) {
     // merge yaml from the form input with custom yaml input
-    mergedYamlData = merge(templateData, customYaml, { arrayMerge: overwriteMerge })
+    mergedYamlData = merge(templateData, parsedYaml, { arrayMerge: overwriteMerge })
   } else {
     mergedYamlData = templateData
   }
@@ -132,10 +137,10 @@ const writeTemplateValues = async ({ deployment_type, deployment_version, desire
   exclude `defaults.yaml`
 
 */
-const getTemplates = async ({ deployment_type, deployment_version }) => {
+const getTemplates = async ({ deployment_type: deploymentType, deployment_version: deploymentVersion }) => {
   const templateFolder = getTemplateFolder({
-    deployment_type,
-    deployment_version,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
   })
   const files = await readdir(templateFolder)
 
@@ -210,21 +215,26 @@ const renderTemplate = async ({ templateName, valuesPath, inputDirectory, output
    * for each template - render it and write to the temp directory
 
 */
-const renderDeployment = async ({ deployment_type, deployment_version, desired_state, custom_yaml }) => {
+const renderDeployment = async ({
+  deployment_type: deploymentType,
+  deployment_version: deploymentVersion,
+  desired_state: desiredState,
+  custom_yaml: customYaml,
+}) => {
   const outputDirectory = await tmpDir()
   const inputDirectory = getTemplateFolder({
-    deployment_type,
-    deployment_version,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
   })
   const valuesPath = await writeTemplateValues({
-    deployment_type,
-    deployment_version,
-    desired_state,
-    custom_yaml,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
+    desired_state: desiredState,
+    custom_yaml: customYaml,
   })
   const templates = await getTemplates({
-    deployment_type,
-    deployment_version,
+    deployment_type: deploymentType,
+    deployment_version: deploymentVersion,
   })
 
   await Promise.each(templates, (templateName) =>

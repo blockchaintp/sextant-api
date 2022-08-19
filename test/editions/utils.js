@@ -2,14 +2,11 @@
 
 const fs = require('fs')
 
-const childProcess = require('child_process')
-const Promise = require('bluebird')
+const { exec } = require('child-process-promise')
 
 const logger = require('../../src/logging').getLogger({
   name: 'utils',
 })
-
-const exec = Promise.promisify(childProcess.exec)
 
 const addRepo = async (helmRepos) => {
   const cmd = `helm repo add ${helmRepos.name} ${helmRepos.url}`
@@ -19,7 +16,7 @@ const addRepo = async (helmRepos) => {
   return result
 }
 
-const getEditionFiles = async (directoryName) => fs.readdirSync(directoryName)
+const getEditionFiles = (directoryName) => fs.readdirSync(directoryName)
 
 const removeRepo = async (helmRepos) => {
   const cmd = `helm repo remove ${helmRepos.name}`
@@ -29,7 +26,7 @@ const removeRepo = async (helmRepos) => {
   return result
 }
 
-const sanitizeVersion = async (version) => version.match(/(\d+)\.(\d+)\.(\d+)/)
+const sanitizeVersion = (version) => version.match(/(\d+)\.(\d+)\.(\d+)/)
 
 const searchRepo = async (deploymentVersionInfo) => {
   const cmd = `helm search repo ${deploymentVersionInfo.chart} --version ${deploymentVersionInfo.chartVersion} -o json`
@@ -57,7 +54,7 @@ const getChartFileName = async (chartTableVersion, repoName) => {
   }
 }
 
-const confirmChartFileExists = async (fileName) => fs.existsSync(fileName)
+const confirmChartFileExists = (fileName) => fs.existsSync(fileName)
 
 const pullChart = async (deploymentVersionInfo) => {
   const cmd = `helm pull ${deploymentVersionInfo.chart} --version ${deploymentVersionInfo.chartVersion}`
@@ -67,11 +64,11 @@ const pullChart = async (deploymentVersionInfo) => {
   return result
 }
 
-const removeChartFile = async (fileName) => {
+const removeChartFile = (fileName) => {
   fs.unlinkSync(fileName)
 }
 
-const confirmChartsExist = async (chartTable) => {
+const confirmChartsExist = (chartTable) => {
   Object.keys(chartTable).forEach((deploymentType) => {
     Object.keys(chartTable[deploymentType]).forEach((deploymentVersion) => {
       const deploymentVersionInfo = chartTable[deploymentType][deploymentVersion]

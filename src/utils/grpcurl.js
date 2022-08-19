@@ -1,19 +1,14 @@
 /* eslint-disable max-len */
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable no-unneeded-ternary */
-const Promise = require('bluebird')
-const tmp = require('tmp')
-const fs = require('fs')
-const childProcess = require('child_process')
+const { tmpName: tempName } = require('tmp-promise')
+const fs = require('promise-fs')
+const { exec } = require('child-process-promise')
 
+const { writeFile, unlink: deleteFile } = fs
 const logger = require('../logging').getLogger({
   name: 'utils/grpcurl',
 })
-
-const exec = Promise.promisify(childProcess.exec)
-const tempName = Promise.promisify(tmp.tmpName)
-const writeFile = Promise.promisify(fs.writeFile)
-const deleteFile = Promise.promisify(fs.unlink)
 
 // we are relying on the pod proxy
 const DEFAULT_HOSTNAME = 'localhost'
@@ -32,20 +27,10 @@ const getOptions = (options) => {
   return useOptions
 }
 
-const Grpcurl = ({
-  token,
-  port,
-  prefix = '',
-  hostname = DEFAULT_HOSTNAME,
-} = {}) => {
+const Grpcurl = ({ token, port, prefix = '', hostname = DEFAULT_HOSTNAME } = {}) => {
   if (!token) throw new Error('token required for grpcurl')
   if (!port) throw new Error('port required for grpcurl')
-  return async ({
-    service,
-    method,
-    data,
-    options = {},
-  } = {}) => {
+  return async ({ service, method, data, options = {} } = {}) => {
     if (!service) throw new Error('service required for grpcurl')
     if (!method) throw new Error('method required for grpcurl')
 
@@ -78,7 +63,11 @@ const Grpcurl = ({
       const runCommand = `${dataSource} grpcurl -expand-headers -plaintext -max-msg-sz ${MAX_MESSAGE_SIZE} -H 'Authorization: Bearer \${GRPC_TOKEN}' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
 
       logger.debug({
-        action: 'grpcurl', command: runCommand, service, method, dataLength: data ? data.length : undefined,
+        action: 'grpcurl',
+        command: runCommand,
+        service,
+        method,
+        dataLength: data ? data.length : undefined,
       })
       const result = await exec(runCommand, commandOptions)
       const parsedResult = result ? JSON.parse(result) : {}

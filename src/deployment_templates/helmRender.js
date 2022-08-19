@@ -1,17 +1,10 @@
-const fs = require('fs')
+const { readdir } = require('promise-fs')
 const path = require('path')
-const Promise = require('bluebird')
-const merge = require('deepmerge')
-const yaml = require('js-yaml')
-const tmp = require('tmp')
-const childProcess = require('child_process')
+const Logging = require('../logging')
 
-const readFile = Promise.promisify(fs.readFile)
-const readdir = Promise.promisify(fs.readdir)
-const writeFile = Promise.promisify(fs.writeFile)
-const tempFile = Promise.promisify(tmp.file)
-const tmpDir = Promise.promisify(tmp.dir)
-const exec = Promise.promisify(childProcess.exec)
+const logger = Logging.getLogger({
+  name: 'deployment_templates/helmRender',
+})
 
 /*
 
@@ -19,34 +12,26 @@ const exec = Promise.promisify(childProcess.exec)
   in which the helm charts live
 
 */
-const getChartsFolder = ({
-  deployment_type,
-  deployment_version,
-}) => path.resolve(__dirname, deployment_type, deployment_version, 'charts')
-
+const getChartsFolder = ({ deployment_type: deploymentType, deployment_version: deploymentVersion }) =>
+  path.resolve(__dirname, deploymentType, deploymentVersion, 'charts')
 
 // get all of the files in the helm charts directory
 
-const getCharts = async ({
-  deployment_type,
-  deployment_version,
-}) => {
+const getCharts = async ({ deployment_type: deploymentType, deployment_version: deploymentVersion }) => {
   try {
     const chartsFolder = getChartsFolder({
-      deployment_type,
-      deployment_version,
+      deployment_type: deploymentType,
+      deployment_version: deploymentVersion,
     })
     const files = await readdir(chartsFolder)
     return files
   } catch (err) {
-    console.log("---- calling getChartsFolder() returned an error ------");
-    console.log(err);
-    console.log("----- There is probably not a charts directory -----");
+    logger.warn(err)
   }
+  return []
 }
-
 
 module.exports = {
   getChartsFolder,
-  getCharts
+  getCharts,
 }

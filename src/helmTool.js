@@ -2,11 +2,8 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable class-methods-use-this */
-const childProcess = require('child_process')
-// use bluebird to turn the exec function into function that returns promise
-const Promise = require('bluebird')
 
-const exec = Promise.promisify(childProcess.exec)
+const { exec } = require('child-process-promise')
 const fsExtra = require('fs-extra')
 
 const logger = require('./logging').getLogger({
@@ -90,9 +87,12 @@ class HelmTool {
 
     const remove = async (deploymentType) => {
       try {
-        logger.debug({
-          fn: 'storeChartsLocally.remove',
-        }, `removing /app/api/helmCharts/${deploymentType} if found`)
+        logger.debug(
+          {
+            fn: 'storeChartsLocally.remove',
+          },
+          `removing /app/api/helmCharts/${deploymentType} if found`
+        )
         await fsExtra.remove(`/app/api/helmCharts/${deploymentType}`)
       } catch (error) {
         logger.error({
@@ -106,9 +106,12 @@ class HelmTool {
     const pull = async (chart, exactChartVersion, deploymentType, deploymentVersion) => {
       const cmd = `helm pull ${chart} --version ${exactChartVersion} --untar -d /app/api/helmCharts/${deploymentType}/${deploymentVersion}`
       try {
-        logger.debug({
-          fn: 'storeChartsLocally.removeAndPull',
-        }, `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`)
+        logger.debug(
+          {
+            fn: 'storeChartsLocally.removeAndPull',
+          },
+          `untaring the chart into /app/api/helmCharts/${deploymentType}/${deploymentVersion}`
+        )
         logger.debug({ fn: 'removeAndPull', command: cmd }, 'helm pull')
         const result = await exec(cmd)
         logger.trace({ fn: 'removeAndPull', command: cmd, result }, 'helm pull')
