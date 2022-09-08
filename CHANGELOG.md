@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v2.3.1
 
 * build(deps): Bump trim-newlines and npm-check [view commit](https://github.com/catenasys/sextant-api/commit/bb42b764131abc9ecdd0518dd8964583cd07201f)
 * build(deps): Bump protobufjs from 6.11.2 to 6.11.3 [view commit](https://github.com/catenasys/sextant-api/commit/e12a08bc043838e511b4002318c3fcdb507aabcf)
