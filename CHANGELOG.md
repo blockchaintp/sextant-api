@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+* build(deps): Bump jose from 2.0.5 to 2.0.6 [view commit](https://github.com/catenasys/sextant-api/commit/8164ace47f4ea21a1db02016d150b342584ab9d0)
+
 ## v2.3.1
 
 * build(deps): Bump trim-newlines and npm-check [view commit](https://github.com/catenasys/sextant-api/commit/bb42b764131abc9ecdd0518dd8964583cd07201f)
