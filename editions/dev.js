@@ -1,7 +1,7 @@
 // Edition object for dev mode
-const dotenv = require('dotenv');
+const dotenv = require('dotenv')
 
-dotenv.config();
+dotenv.config()
 
 const edition = {
   deployment: {
@@ -17,11 +17,19 @@ const edition = {
     },
   ],
   chartTable: {
+    'chronicle-on-sawtooth': {
+      1.3: {
+        chart: 'btp-unstable/chronicle-on-sawtooth',
+        chartVersion: '~0.1.1',
+        order: 1,
+        extension: 'chronicle',
+      },
+    },
     besu: {
       1.4: {
         chart: 'btp-unstable/besu',
         chartVersion: '~0.0.8',
-        order: 1,
+        order: 2,
         extension: 'besu',
       },
     },
@@ -29,7 +37,7 @@ const edition = {
       1.1: {
         chart: 'btp-unstable/sawtooth',
         chartVersion: '~0.2.0',
-        order: 2,
+        order: 3,
         extension: 'sawtooth',
       },
     },
@@ -37,7 +45,7 @@ const edition = {
       1.3: {
         chart: 'btp-unstable/daml-on-besu',
         chartVersion: '~0.0.32',
-        order: 3,
+        order: 4,
         extension: 'daml',
       },
     },
@@ -45,7 +53,7 @@ const edition = {
       1.3: {
         chart: 'btp-unstable/daml-on-sawtooth',
         chartVersion: '~0.2.0',
-        order: 4,
+        order: 5,
         extension: 'daml',
       },
     },
@@ -53,7 +61,7 @@ const edition = {
       1.3: {
         chart: 'btp-unstable/daml-on-qldb',
         chartVersion: '~0.0.9',
-        order: 5,
+        order: 6,
         extension: 'daml',
       },
     },
@@ -61,7 +69,7 @@ const edition = {
       1.3: {
         chart: 'btp-unstable/daml-on-postgres',
         chartVersion: '~0.1.1',
-        order: 6,
+        order: 7,
         extension: 'daml',
       },
     },
@@ -69,7 +77,7 @@ const edition = {
       0.1: {
         chart: 'btp-unstable/tfs-on-sawtooth',
         chartVersion: '~0.6.0',
-        order: 7,
+        order: 8,
         extension: 'tfs',
       },
     },
@@ -77,7 +85,7 @@ const edition = {
       2.1: {
         chart: 'btp-unstable/sextant',
         chartVersion: '~2.1.8',
-        order: 8,
+        order: 9,
         extension: 'sextant',
       },
     },
@@ -85,7 +93,7 @@ const edition = {
       7.9: {
         chart: 'btp-unstable/elasticsearch',
         chartVersion: '~12.6.3',
-        order: 9,
+        order: 10,
         extension: 'elasticsearch',
       },
     },
@@ -93,7 +101,7 @@ const edition = {
       1.11: {
         chart: 'btp-unstable/fluentd',
         chartVersion: '~1.3.1',
-        order: 10,
+        order: 11,
         extension: 'fluentd',
       },
     },
@@ -101,7 +109,7 @@ const edition = {
       7.8: {
         chart: 'btp-unstable/kibana',
         chartVersion: '~5.3.9',
-        order: 11,
+        order: 12,
         extension: 'kibana',
       },
     },
@@ -109,7 +117,7 @@ const edition = {
       1.8: {
         chart: 'btp-unstable/influxdb',
         chartVersion: '~0.0.2',
-        order: 12,
+        order: 13,
         extension: 'influxdb',
       },
     },
@@ -117,7 +125,7 @@ const edition = {
       7.1: {
         chart: 'btp-unstable/grafana',
         chartVersion: '~0.0.2',
-        order: 13,
+        order: 14,
         extension: 'grafana',
       },
     },
@@ -125,7 +133,7 @@ const edition = {
       11.9: {
         chart: 'btp-unstable/postgresql-ha',
         chartVersion: '~0.0.1',
-        order: 14,
+        order: 15,
         extension: 'pgsql',
       },
     },
@@ -133,7 +141,7 @@ const edition = {
       1.8: {
         chart: 'btp-unstable/nginx-ingress',
         chartVersion: '~0.0.1',
-        order: 15,
+        order: 16,
         extension: 'ingress',
       },
     },
@@ -141,7 +149,7 @@ const edition = {
       '2.0': {
         chart: 'btp-unstable/openebs',
         chartVersion: '~2.0.2',
-        order: 16,
+        order: 17,
         extension: 'openebs',
       },
     },
@@ -149,7 +157,7 @@ const edition = {
       1.5: {
         chart: 'btp-unstable/vault',
         chartVersion: '~0.0.2',
-        order: 17,
+        order: 18,
         extension: 'vault',
       },
     },
@@ -158,4 +166,4 @@ const edition = {
 
 module.exports = {
   edition,
-};
+}

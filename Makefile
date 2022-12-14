@@ -52,3 +52,12 @@ docs:
 		sextant-api:$(ISOLATION_ID) run generate-swagger
 	$(BUSYBOX) find /project -type d -exec chown -R $(UID):$(GID) {} \;
 	find docs/api -type f -exec sed -i 's/[ \t]*$$//' {} \;
+
+update-helm-fixtures: build
+	docker run -it --rm --entrypoint bash -w /app/api \
+		-v $(PWD)/test/fixtures:/app/api/test/fixtures \
+		sextant-api:$(ISOLATION_ID) -c " \
+			npm run download-helm-charts && \
+			tar -cvzf /tmp/helmCharts.tar.gz helmCharts && \
+			cp /tmp/helmCharts.tar.gz /app/api/test/fixtures/helmCharts.tar.gz \
+		"
