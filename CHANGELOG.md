@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* feat(editions): add chronicle to dev.js [view commit](https://github.com/catenasys/sextant-api/commit/8400bafd065f106af37bf70810d8a44322444a8b)
+* test(fixtures): update helmCharts.tar.gz [view commit](https://github.com/catenasys/sextant-api/commit/274a94c749cbec35b99c6b334461dc642aba5678)
+* style(eslint): remove typescript rules [view commit](https://github.com/catenasys/sextant-api/commit/19a0a027bcd3379ababecb60a4ac52ae0f950bd1)
 * build(deps): Bump jose from 2.0.5 to 2.0.6 [view commit](https://github.com/catenasys/sextant-api/commit/8164ace47f4ea21a1db02016d150b342584ab9d0)
 
 ## v2.3.1
