@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* docs(api): update swagger generated openapi.md [view commit](https://github.com/catenasys/sextant-api/commit/827e57a09e8989faa0454c4f9b286fd0daf1cf58)
+* build(pre-commmit): exclude swagger generated markdown from linting [view commit](https://github.com/catenasys/sextant-api/commit/3fd461444060c696c72342a444052a608a95a145)
+* docs(generateSwagger): set option to ommit header in markdown output and update output dir [view commit](https://github.com/catenasys/sextant-api/commit/bcf9aafeb825d59c8947ac0c384bd2acd3d7b40b)
 * build(mkdocs): rename requirments.txt to versions.txt [view commit](https://github.com/catenasys/sextant-api/commit/c79565059508eaafa36b0eb9318efecdf2db023b)
 * feat(editions): add chronicle to dev.js [view commit](https://github.com/catenasys/sextant-api/commit/8400bafd065f106af37bf70810d8a44322444a8b)
 * test(fixtures): update helmCharts.tar.gz [view commit](https://github.com/catenasys/sextant-api/commit/274a94c749cbec35b99c6b334461dc642aba5678)
