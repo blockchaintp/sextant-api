@@ -14,6 +14,14 @@ const edition = {
     },
   ],
   chartTable: {
+    'chronicle-on-sawtooth': {
+      1.3: {
+        chart: 'btp-stable/chronicle-on-sawtooth',
+        chartVersion: '~0.1.1',
+        order: 1,
+        extension: 'chronicle',
+      },
+    },
     besu: {
       1.4: {
         chart: 'btp-stable/besu',
