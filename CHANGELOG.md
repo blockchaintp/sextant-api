@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v2.3.2
+## Unreleased
 
 * feat(editions): add chronicle to community and enterprise editions [view commit](https://github.com/catenasys/sextant-api/commit/22d34fa4975595754cc98f04e477b4fc84cd75ad)
 * docs(api): update swagger generated openapi.md [view commit](https://github.com/catenasys/sextant-api/commit/827e57a09e8989faa0454c4f9b286fd0daf1cf58)
