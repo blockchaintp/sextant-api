@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Unreleased
+## v2.3.2
 
 * docs(api): update swagger generated openapi.md [view commit](https://github.com/catenasys/sextant-api/commit/827e57a09e8989faa0454c4f9b286fd0daf1cf58)
 * build(pre-commmit): exclude swagger generated markdown from linting [view commit](https://github.com/catenasys/sextant-api/commit/3fd461444060c696c72342a444052a608a95a145)
