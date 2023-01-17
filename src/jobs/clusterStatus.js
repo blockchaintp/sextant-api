@@ -1,6 +1,6 @@
 const Scheduler = require('node-schedule')
 const logger = require('../logging').getLogger({
-  name: 'jobs/clusterStatus',
+  name: 'jobs/ClusterStatus',
 })
 
 const { CLUSTER_STATUS } = require('../config')
