@@ -84,9 +84,9 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest(
-    "inquire() should not update a provisioned cluster's status if Kubernetes returns a list of namespaces",
+    "ping() should not update a provisioned cluster's status if Kubernetes returns a list of namespaces",
     async (test) => {
-      await clusterStatus.inquire(PG_CLUSTER_DATA[0], MockKubectl)
+      await clusterStatus.ping(PG_CLUSTER_DATA[0], MockKubectl)
       const cluster1 = await store.getClusterByName('cluster1')
       test.deepEqual(cluster1.status, CLUSTER_STATUS.provisioned)
     }
@@ -104,7 +104,7 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest(
     "inquire() should update an error cluster's status to provisioned if Kubernetes returns a list of namespaces",
     async (test) => {
-      await clusterStatus.inquire(PG_CLUSTER_DATA[2], MockKubectl)
+      await clusterStatus.ping(PG_CLUSTER_DATA[2], MockKubectl)
       const cluster3 = await store.getClusterByName('cluster3')
       test.deepEqual(cluster3.status, CLUSTER_STATUS.provisioned)
     }

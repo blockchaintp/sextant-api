@@ -38,7 +38,7 @@ class ClusterStatus {
     return updatedCluster
   }
 
-  async inquire(cluster) {
+  async ping(cluster) {
     let clusterKubectl
 
     if (this.test === true) {
@@ -63,7 +63,7 @@ class ClusterStatus {
 
   async run() {
     const clusters = await this.getAllClusters(this.store)
-    await clusters.forEach(this.inquire.bind(this))
+    await clusters.forEach(this.ping.bind(this))
   }
 
   start() {
