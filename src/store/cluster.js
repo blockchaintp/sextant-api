@@ -8,22 +8,20 @@ const ClusterStore = (knex) => {
     params:
 
   */
-  const list = ({
-    deleted,
-  }, trx) => {
+  const list = ({ deleted }, trx) => {
     const sqlQuery = (trx || knex)(config.TABLES.cluster)
       .select(`${config.TABLES.cluster}.*`)
       .count(`${config.TABLES.deployment}.id as active_deployments`)
       .leftOuterJoin(config.TABLES.deployment, function () {
-        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`)
-          .onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
+        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(
+          `${config.TABLES.deployment}.status`,
+          ['deleted']
+        )
       })
       .groupBy(`${config.TABLES.cluster}.id`)
 
     if (!deleted) {
-      sqlQuery.whereNot(
-        `${config.TABLES.cluster}.status`, config.CLUSTER_STATUS.deleted,
-      )
+      sqlQuery.whereNot(`${config.TABLES.cluster}.status`, config.CLUSTER_STATUS.deleted)
     }
 
     return sqlQuery
@@ -36,17 +34,17 @@ const ClusterStore = (knex) => {
     params:
 
   */
-  const get = ({
-    id,
-  }, trx) => {
+  const get = ({ id }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.get')
-    return (trx || knex)(config.TABLES.cluster).where(
-      `${config.TABLES.cluster}.id`, id,
-    ).select(`${config.TABLES.cluster}.*`)
+    return (trx || knex)(config.TABLES.cluster)
+      .where(`${config.TABLES.cluster}.id`, id)
+      .select(`${config.TABLES.cluster}.*`)
       .count(`${config.TABLES.deployment}.id as active_deployments`)
       .leftOuterJoin(config.TABLES.deployment, function () {
-        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`)
-          .onNotIn(`${config.TABLES.deployment}.status`, ['deleted'])
+        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(
+          `${config.TABLES.deployment}.status`,
+          ['deleted']
+        )
       })
       .groupBy(`${config.TABLES.cluster}.id`)
       .first()
@@ -65,14 +63,7 @@ const ClusterStore = (knex) => {
         * desired_state
 
   */
-  const create = async ({
-    data: {
-      name,
-      provision_type,
-      capabilities,
-      desired_state,
-    },
-  }, trx) => {
+  const create = async ({ data: { name, provision_type, capabilities, desired_state } }, trx) => {
     if (!name) throw new Error('data.name param must be given to store.cluster.create')
     if (!provision_type) throw new Error('data.provision_type param must be given to store.cluster.create')
     if (!desired_state) throw new Error('data.desired_state param must be given to store.cluster.create')
@@ -105,10 +96,7 @@ const ClusterStore = (knex) => {
         * maintenance_flag
 
   */
-  const update = async ({
-    id,
-    data,
-  }, trx) => {
+  const update = async ({ id, data }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
 
@@ -132,9 +120,7 @@ const ClusterStore = (knex) => {
       * id
 
   */
-  const del = async ({
-    id,
-  }, trx) => {
+  const del = async ({ id }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.delete')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
@@ -148,9 +134,7 @@ const ClusterStore = (knex) => {
     return result
   }
 
-  const deletePermanently = async ({
-    id,
-  }, trx) => {
+  const deletePermanently = async ({ id }, trx) => {
     if (!id) throw new Error('id must be given to store.cluster.deletePermanently')
 
     const [result] = await (trx || knex)(config.TABLES.cluster)
