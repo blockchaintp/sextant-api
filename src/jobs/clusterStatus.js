@@ -1,35 +1,35 @@
 const Scheduler = require('node-schedule')
+const { date } = require('yup')
 const logger = require('../logging').getLogger({
   name: 'jobs/ClusterStatus',
 })
 
 const { CLUSTER_STATUS } = require('../config')
-const ClusterKubectl = require('../utils/clusterKubectl')
+const ProductionClusterKubectl = require('../utils/clusterKubectl')
 
 class ClusterStatus {
-  constructor(store, Kubectl = ClusterKubectl, test = false) {
-    this.store = store
-    this.Kubectl = Kubectl
+  constructor(clusterStore, ClusterKubectl = ProductionClusterKubectl, test = false) {
+    this.clusterStore = clusterStore
+    this.ClusterKubectl = ClusterKubectl
     this.test = test
   }
 
   async getAllClusters() {
     // get a list of all of the clusters in the database
-    const clusters = await this.store.cluster.list({
+    const clusters = await this.clusterStore.list({
       deleted: false,
     })
     logger.debug({
       fn: 'getAllClusters',
-      clusters,
+      clusters: clusters.map((cluster) => cluster.name),
     })
     return clusters
   }
 
   async updateClusterStatus(cluster, status) {
-    // set the cluster as inactive (deleted?)
-    const updatedCluster = await this.store.cluster.update({
+    const updatedCluster = await this.clusterStore.update({
       id: cluster.id,
-      status,
+      data: { status },
     })
     logger.debug({
       fn: 'updateClusterStatus',
@@ -38,25 +38,78 @@ class ClusterStatus {
     return updatedCluster
   }
 
+  async defineClusterKubectl(cluster, store) {
+    if (this.test === true) {
+      const testVersion = new this.ClusterKubectl(cluster)
+      return testVersion
+    }
+    const defaultVersion = await this.ClusterKubectl({ cluster, store })
+    return defaultVersion
+  }
+
   async ping(cluster) {
     let clusterKubectl
 
     if (this.test === true) {
-      clusterKubectl = new this.Kubectl(cluster)
+      clusterKubectl = new this.ClusterKubectl(cluster)
     } else {
-      clusterKubectl = await this.Kubectl({ cluster, store: this.store })
+      clusterKubectl = await this.clusterKubectl({ cluster, store: this.store })
     }
 
     try {
-      await clusterKubectl.getNamespaces()
-      // if the status is good - update the cluster status to active
-      if (cluster.status === CLUSTER_STATUS.error) {
-        await this.updateClusterStatus(cluster, CLUSTER_STATUS.provisioned)
+      const namespaces = await clusterKubectl.getNamespaces()
+      if (namespaces && cluster.satus === CLUSTER_STATUS.provisioned) {
+        logger.info({
+          fn: 'ping',
+          cluster: cluster.name,
+          namespaces: namespaces.length,
+          currentStatus: CLUSTER_STATUS.provisioned,
+          timestamp: date.now(),
+          note: 'Cluster status is provisioned, no need to update.',
+        })
       }
-    } catch (e) {
-      // if the status is bad - update the cluster status to inactive
-      if (cluster.status === CLUSTER_STATUS.provisioned) {
+
+      if (namespaces && cluster.status !== CLUSTER_STATUS.provisioned) {
+        await this.updateClusterStatus(cluster, CLUSTER_STATUS.provisioned)
+        logger.info({
+          fn: 'ping',
+          cluster: cluster.name,
+          namespaces: namespaces.length,
+          currentStatus: CLUSTER_STATUS.provisioned,
+        })
+      }
+
+      if (!namespaces && cluster.status === CLUSTER_STATUS.provisioned) {
         await this.updateClusterStatus(cluster, CLUSTER_STATUS.error)
+        logger.info({
+          fn: 'ping',
+          cluster: cluster.name,
+          namespaces: namespaces.length,
+          currentStatus: CLUSTER_STATUS.error,
+        })
+      } else if (!namespaces) {
+        logger.info({
+          fn: 'ping',
+          cluster: cluster.name,
+          namespaces: namespaces.length,
+          currentStatus: CLUSTER_STATUS.error,
+        })
+        throw new Error('Cluster is not provisioned')
+      }
+    } catch (error) {
+      logger.error({
+        fn: 'ping',
+        cluster: cluster.name,
+        error,
+      })
+      if (cluster.status !== CLUSTER_STATUS.error) {
+        await this.updateClusterStatus(cluster, CLUSTER_STATUS.error)
+        logger.info({
+          fn: 'ping',
+          cluster: cluster.name,
+          currentStatus: CLUSTER_STATUS.error,
+          namespaces: 0,
+        })
       }
     }
   }
