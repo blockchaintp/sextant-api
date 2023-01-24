@@ -174,13 +174,7 @@ class ClusterStatusTracker {
   }
 
   async ping(cluster) {
-    let clusterKubectl
-
-    if (this.test === true) {
-      clusterKubectl = new this.ClusterKubectl(cluster)
-    } else {
-      clusterKubectl = await this.clusterKubectl({ cluster, store: this.store })
-    }
+    const clusterKubectl = await this.defineClusterKubectl(cluster, this.store)
 
     try {
       const namespaces = await clusterKubectl.getNamespaces()
@@ -189,19 +183,19 @@ class ClusterStatusTracker {
           fn: 'ping',
           cluster: cluster.name,
           namespaces: namespaces.length,
-          currentStatus: CLUSTER_STATUS.provisioned,
+          updatedStatus: CLUSTER_STATUS.provisioned,
           timestamp: date.now(),
           note: 'Cluster status is provisioned, no need to update.',
         })
       }
 
-      if (namespaces && cluster.status !== CLUSTER_STATUS.provisioned) {
+      if (namespaces && cluster.status === CLUSTER_STATUS.error) {
         await this.updateClusterStatus(cluster, CLUSTER_STATUS.provisioned)
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
           namespaces: namespaces.length,
-          currentStatus: CLUSTER_STATUS.provisioned,
+          updatedStatus: CLUSTER_STATUS.provisioned,
         })
       }
 
@@ -211,14 +205,14 @@ class ClusterStatusTracker {
           fn: 'ping',
           cluster: cluster.name,
           namespaces: namespaces.length,
-          currentStatus: CLUSTER_STATUS.error,
+          updatedStatus: CLUSTER_STATUS.error,
         })
       } else if (!namespaces) {
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
           namespaces: namespaces.length,
-          currentStatus: CLUSTER_STATUS.error,
+          updatedStatus: CLUSTER_STATUS.error,
         })
         throw new Error('Cluster is not provisioned')
       }
@@ -233,7 +227,7 @@ class ClusterStatusTracker {
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
-          currentStatus: CLUSTER_STATUS.error,
+          updatedStatus: CLUSTER_STATUS.error,
           namespaces: 0,
         })
       }
