@@ -63,7 +63,7 @@ const ClusterStore = (knex) => {
         * desired_state
 
   */
-  const create = async ({ data: { name, provision_type, capabilities, desired_state } }, trx) => {
+  const create = async ({ data: { name, provision_type, capabilities, desired_state, status } }, trx) => {
     if (!name) throw new Error('data.name param must be given to store.cluster.create')
     if (!provision_type) throw new Error('data.provision_type param must be given to store.cluster.create')
     if (!desired_state) throw new Error('data.desired_state param must be given to store.cluster.create')
@@ -74,6 +74,7 @@ const ClusterStore = (knex) => {
         provision_type,
         capabilities,
         desired_state,
+        status,
       })
       .returning('*')
 
