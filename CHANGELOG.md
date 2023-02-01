@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## Unreleased
+
+* build(deps): Bump knex from 1.0.4 to 2.4.0 [view commit](https://github.com/catenasys/sextant-api/commit/7388e04aff4c9ae48773ae7451781bed36a16ac3)
+* build(deps): Bump luxon from 1.28.0 to 1.28.1 [view commit](https://github.com/catenasys/sextant-api/commit/7b04255b0be5239943b0d77f7d2ef0b48e2298ce)
+* build(deps): Bump jsonwebtoken from 8.5.1 to 9.0.0 [view commit](https://github.com/catenasys/sextant-api/commit/91264d942c82c596349e3d9e28359536894b874e)
+* build(deps): Bump json5 from 1.0.1 to 1.0.2 [view commit](https://github.com/catenasys/sextant-api/commit/fd93c3a338ac51ae3f61839072d30d5d0ea081c8)
+
 ## v2.3.3
 
 * feat(editions): add chronicle to community and enterprise editions [view commit](https://github.com/catenasys/sextant-api/commit/22d34fa4975595754cc98f04e477b4fc84cd75ad)
