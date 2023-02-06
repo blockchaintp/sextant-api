@@ -109,7 +109,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const store = Store(getConnection())
     const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
-    const cluster = await store.get({ id: 4 })
+    const cluster = await store.cluster.get({ id: 4 })
     const updatedCluster = await clusterStatusTracker.updateClusterStatus(cluster, CLUSTER_STATUS.error)
     test.deepEqual(updatedCluster.status, CLUSTER_STATUS.error)
   })
@@ -121,7 +121,7 @@ database.testSuiteWithDatabase((getConnection) => {
       const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
       await clusterStatusTracker.ping(PG_CLUSTER_DATA[0])
-      const cluster1 = await store.get({ id: 1 })
+      const cluster1 = await store.cluster.get({ id: 1 })
       test.deepEqual(cluster1.status, CLUSTER_STATUS.provisioned)
     }
   )
@@ -133,7 +133,7 @@ database.testSuiteWithDatabase((getConnection) => {
       const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
       await clusterStatusTracker.ping(PG_CLUSTER_DATA[1], MockKubectl)
-      const cluster2 = await store.get({ id: 2 })
+      const cluster2 = await store.cluster.get({ id: 2 })
       test.deepEqual(cluster2.status, CLUSTER_STATUS.error)
     }
   )
@@ -145,7 +145,7 @@ database.testSuiteWithDatabase((getConnection) => {
       const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
       await clusterStatusTracker.ping(PG_CLUSTER_DATA[2], MockKubectl)
-      const cluster3 = await store.get({ id: 3 })
+      const cluster3 = await store.cluster.get({ id: 3 })
       test.deepEqual(cluster3.status, CLUSTER_STATUS.provisioned)
     }
   )
