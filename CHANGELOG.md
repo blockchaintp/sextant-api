@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+* test(clsuter-status-traker-tests): replace generic store with store.cluster [view commit](https://github.com/catenasys/sextant-api/commit/0145d082ea9f8b65c9c531807e8a7ada137cc75c)
+* fix(clsuter-status-tracker-test): use store instead of clusterStore [view commit](https://github.com/catenasys/sextant-api/commit/2dd4925c474f97094db81103f543db1aa668d8cb)
+* fix(clsuterStatusTracker): schedule the clusterStatusTracker to run half as much as the deployment status job [view commit](https://github.com/catenasys/sextant-api/commit/3c9a233e16e9967eb058eed8ce4e8c8e5d094295)
+* style(linting): remove commented out code in clusterStatusTracker [view commit](https://github.com/catenasys/sextant-api/commit/3d0ba54b9526e1c11fb0fbb5aa001e42e51ec6da)
+* fix(store): add status as a data property for creating a cluster [view commit](https://github.com/catenasys/sextant-api/commit/c0064be770e6b4d5439e971b97454531f6ba3b71)
+* fix(cluster-status-tracker): use setClusterKubectl in ping function [view commit](https://github.com/catenasys/sextant-api/commit/c3f673f6fe521b22f2d2f028f9cfda5f0e863751)
+* fix(clusterStatus): rename CLusterStatus to ClusterStatusTracker [view commit](https://github.com/catenasys/sextant-api/commit/0764905f02a283f4a936627633763909663b63b4)
+* fix(clusterStatus-job): allow clusterKubectl to be set to a mock for tests [view commit](https://github.com/catenasys/sextant-api/commit/7f7562cebf43f4e180ef0532b6e34acd8b470ce0)
+* fix(add-cluster): the create cluster method now allows for a status to be set [view commit](https://github.com/catenasys/sextant-api/commit/71d0db57ed52c1653173e1116bda8d357c231ce6)
+* fix(ClusterStatus): repalce clusterStatus with ClusterStatus and update tests [view commit](https://github.com/catenasys/sextant-api/commit/c0abb40f74958051e6347d58a1e82c737b7ec12f)
+* style(ClusterStatus): rename clusterStatus to ClusterStatus [view commit](https://github.com/catenasys/sextant-api/commit/8b1e6b52c42dd9b9c7fcd58b5dc1066bb7279c00)
+* test(ClusterStatus): add tests for ClusterStatus [view commit](https://github.com/catenasys/sextant-api/commit/6e6636f1f5e7865f49e7b3e1cea942e7ca65a098)
+* fix(clusterStatus-job): updated to allow kubectl to be set as a mock during testing [view commit](https://github.com/catenasys/sextant-api/commit/67fcc69816b1818e69497b0998234f2d8f1f1c27)
+* feat(ClusterInquiry): pings for each cluster in the db and updates its status when needed [view commit](https://github.com/catenasys/sextant-api/commit/6319e35fbcd5926438821da5bcf81218992da60c)
+* feat(background-polls): add initial definition for cluster status poll [view commit](https://github.com/catenasys/sextant-api/commit/88203f1e52f29b5d912b472484ee0f69a7889c41)
 * build(deps): Bump knex from 1.0.4 to 2.4.0 [view commit](https://github.com/catenasys/sextant-api/commit/7388e04aff4c9ae48773ae7451781bed36a16ac3)
 * build(deps): Bump luxon from 1.28.0 to 1.28.1 [view commit](https://github.com/catenasys/sextant-api/commit/7b04255b0be5239943b0d77f7d2ef0b48e2298ce)
 * build(deps): Bump jsonwebtoken from 8.5.1 to 9.0.0 [view commit](https://github.com/catenasys/sextant-api/commit/91264d942c82c596349e3d9e28359536894b874e)
