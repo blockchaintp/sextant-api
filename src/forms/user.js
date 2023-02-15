@@ -35,43 +35,38 @@ const fields = {
 
     validate: {
       type: 'string',
-      methods: [
-        validators.noSpaces,
-        validators.min(3),
-      ],
+      methods: [validators.noSpaces, validators.min(3)],
     },
   },
-  password: {
-    id: 'password',
-    title: 'Password',
-    helperText: 'Enter your password',
-    component: 'text',
-    inputProps: {
-      type: 'password',
+  changePassword: {
+    id: 'changePassword',
+    title: 'Change Password',
+    component: 'formdialog',
+    password: {
+      id: 'password',
+      title: 'Password',
+      helperText: 'Enter your password',
+      component: 'text',
+      inputProps: {
+        type: 'password',
+      },
+      validate: {
+        type: 'string',
+        methods: [validators.noSpaces, validators.min(6)],
+      },
     },
-    validate: {
-      type: 'string',
-      methods: [
-        validators.noSpaces,
-        validators.min(6),
-      ],
-    },
-  },
-  confirmPassword: {
-    id: 'confirmPassword',
-    title: 'Confirm Password',
-    helperText: 'Confirm your password',
-    component: 'text',
-    inputProps: {
-      type: 'password',
-    },
-    validate: {
-      type: 'string',
-      methods: [
-        validators.noSpaces,
-        validators.min(6),
-        validators.sameAs('password'),
-      ],
+    confirmPassword: {
+      id: 'confirmPassword',
+      title: 'Confirm Password',
+      helperText: 'Confirm your password',
+      component: 'text',
+      inputProps: {
+        type: 'password',
+      },
+      validate: {
+        type: 'string',
+        methods: [validators.noSpaces, validators.min(6), validators.sameAs('password')],
+      },
     },
   },
   permission: {
@@ -79,72 +74,54 @@ const fields = {
     title: 'Access Level',
     helperText: 'Choose the access level for this user',
     component: 'select',
-    options: [{
-      title: 'Superuser',
-      value: 'superuser',
-    }, {
-      title: 'Admin',
-      value: 'admin',
-    }, {
-      title: 'User',
-      value: 'user',
-    }],
+    options: [
+      {
+        title: 'Superuser',
+        value: 'superuser',
+      },
+      {
+        title: 'Admin',
+        value: 'admin',
+      },
+      {
+        title: 'User',
+        value: 'user',
+      },
+    ],
   },
 }
 
 const formRequired = {
   browser: {
-    add: [
-      'username',
-      'permission',
-      'password',
-      'confirmPassword',
-    ],
-    edit: [
-      'username',
-      'permission',
-    ],
+    add: ['username', 'permission', 'password', 'confirmPassword'],
+    edit: ['username', 'permission'],
   },
   server: {
-    add: [
-      'username',
-      'permission',
-      'password',
-    ],
+    add: ['username', 'permission', 'password'],
     edit: [],
   },
 }
 
 const formSchema = {
-  browser: [
-    'username',
-    'permission',
-    'password',
-    'confirmPassword',
-  ],
-  server: [
-    'username',
-    'permission',
-    'password',
-  ],
+  browser: ['username', 'permission', 'password', 'confirmPassword', 'changePassword'],
+  server: ['username', 'permission', 'password'],
 }
 
-const getUserForm = ({
-  usernameDisabled,
-  permissionDisabled,
-  schema,
-  required,
-}) => builder({
-  fields,
-  schema,
-  required,
-  mapField: (field) => ((field.id === 'permission' && permissionDisabled) || (field.id === 'username' && usernameDisabled) ? ({
-    ...field,
-    extraProps: {
-      disabled: true,
-    },
-  }) : field),
-})
+const getUserForm = ({ usernameDisabled, permissionDisabled, schema, required }) =>
+  builder({
+    fields,
+    schema,
+    required,
+    mapField: (field) =>
+      (field.id === 'permission' && permissionDisabled) || (field.id === 'username' && usernameDisabled)
+        ? {
+            ...field,
+            extraProps: {
+              disabled: true,
+            },
+          }
+        : field,
+  })
 
 const forms = {
   browser: {
