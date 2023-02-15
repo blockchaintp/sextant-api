@@ -4,8 +4,11 @@ const validators = {
   url: [
     'matches',
     // eslint-disable-next-line max-len
-    ['^(?:([a-z0-9+.-]+):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$', 'i'],
-    'Must be a valid url - e.g. http://apiserver.com',
+    [
+      '^(?:([a-z0-9+.-]+):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$ +(?<!/)$',
+      'i',
+    ],
+    'Must be a valid url with no trailing slash - e.g. http://apiserver.com',
   ],
   ca: [
     'matches',
@@ -35,9 +38,7 @@ const fields = {
     component: 'text',
     validate: {
       type: 'string',
-      methods: [
-        validators.url,
-      ],
+      methods: [validators.url],
     },
   },
   token: {
@@ -59,71 +60,45 @@ const fields = {
     rows: 5,
     validate: {
       type: 'string',
-      methods: [
-        validators.ca,
-      ],
+      methods: [validators.ca],
     },
   },
 }
 
-const getLocalForm = (required) => builder({
-  fields,
-  schema: [
-    'name',
-  ],
-  required,
-})
+const getLocalForm = (required) =>
+  builder({
+    fields,
+    schema: ['name'],
+    required,
+  })
 
-const getRemoteForm = (required) => builder({
-  fields,
-  schema: [
-    'name',
-    'apiServer',
-    'token',
-    'ca',
-  ],
-  required,
-})
+const getRemoteForm = (required) =>
+  builder({
+    fields,
+    schema: ['name', 'apiServer', 'token', 'ca'],
+    required,
+  })
 
 const forms = {
   validators,
   fields,
   browser: {
     local: {
-      add: getLocalForm([
-        'name',
-      ]),
-      edit: getLocalForm([
-        'name',
-      ]),
+      add: getLocalForm(['name']),
+      edit: getLocalForm(['name']),
     },
     remote: {
-      add: getRemoteForm([
-        'name',
-        'apiServer',
-        'token',
-        'ca',
-      ]),
-      edit: getRemoteForm([
-        'name',
-        'apiServer',
-      ]),
+      add: getRemoteForm(['name', 'apiServer', 'token', 'ca']),
+      edit: getRemoteForm(['name', 'apiServer']),
     },
   },
   server: {
     local: {
-      add: getLocalForm([
-        'name',
-      ]),
+      add: getLocalForm(['name']),
       edit: getLocalForm([]),
     },
     remote: {
-      add: getRemoteForm([
-        'name',
-        'apiServer',
-        'token',
-        'ca',
-      ]),
+      add: getRemoteForm(['name', 'apiServer', 'token', 'ca']),
       edit: getRemoteForm([]),
     },
   },
