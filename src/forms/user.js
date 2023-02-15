@@ -38,6 +38,32 @@ const fields = {
       methods: [validators.noSpaces, validators.min(3)],
     },
   },
+  password: {
+    id: 'password',
+    title: 'Password',
+    helperText: 'Enter your password',
+    component: 'text',
+    inputProps: {
+      type: 'password',
+    },
+    validate: {
+      type: 'string',
+      methods: [validators.noSpaces, validators.min(6)],
+    },
+  },
+  confirmPassword: {
+    id: 'confirmPassword',
+    title: 'Confirm Password',
+    helperText: 'Confirm your password',
+    component: 'text',
+    inputProps: {
+      type: 'password',
+    },
+    validate: {
+      type: 'string',
+      methods: [validators.noSpaces, validators.min(6), validators.sameAs('password')],
+    },
+  },
   changePassword: {
     id: 'changePassword',
     title: 'Change Password',
