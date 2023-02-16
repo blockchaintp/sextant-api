@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* build(deps): Bump http-cache-semantics from 4.1.0 to 4.1.1 [view commit](https://github.com/catenasys/sextant-api/commit/a4ded4fecf38500f0232e98b5f5978097ac969e0)
 * test(clsuter-status-traker-tests): replace generic store with store.cluster [view commit](https://github.com/catenasys/sextant-api/commit/0145d082ea9f8b65c9c531807e8a7ada137cc75c)
 * fix(clsuter-status-tracker-test): use store instead of clusterStore [view commit](https://github.com/catenasys/sextant-api/commit/2dd4925c474f97094db81103f543db1aa668d8cb)
 * fix(clsuterStatusTracker): schedule the clusterStatusTracker to run half as much as the deployment status job [view commit](https://github.com/catenasys/sextant-api/commit/3c9a233e16e9967eb058eed8ce4e8c8e5d094295)
