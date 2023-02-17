@@ -63,8 +63,10 @@ const errorClusters = {
         apiServer: 'apples',
       },
     },
-    error: 'desired_state.apiserver validation error: must be a valid url - e.g. http://apiserver.com',
-  }
+    error:
+      // eslint-disable-next-line max-len
+      'desired_state.apiserver validation error: must be a valid url with no trailing slash - e.g. http://apiserver.com',
+  },
 }
 
 module.exports = errorClusters

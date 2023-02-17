@@ -1,55 +1,51 @@
-'use strict'
-
-const asyncTest = require('../asyncTest')
+/* eslint-disable no-unused-vars */
+// eslint-disable-next-line no-unused-vars
 const tape = require('tape')
-
+const asyncTest = require('../asyncTest')
 const validate = require('../../src/forms/validate')
 
 const forms = {
-  basic: [{
-    id: 'name',
-    title: `Name`,
-    helperText: 'Enter the name of the cluster',
-    component: 'text',
-    validate: {
-      type: 'string',
-      methods: [
-        ['required', 'The name is required'],
-      ],
-    }
-  }],
-  validateNoRequired: [{
-    id: 'url',
-    title: `Url`,
-    helperText: 'Enter the url of the cluster',
-    component: 'text',
-    validate: {
-      type: 'string',
-      methods: [
-        ['url', 'Must be a valid url - e.g. http://apiserver.com'],
-      ],
-    }
-  }],
-  ca: [{
-    id: 'ca',
-    title: `Ca`,
-    helperText: 'Enter the ca of the cluster',
-    component: 'text',
-    validate: {
-      type: 'string',
-      methods: [
-        [
-          'matches', 
-          ['^-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----$', 's'],
-          'Must be a valid certificate'
-        ]
-      ],
-    }
-  }]
+  basic: [
+    {
+      id: 'name',
+      title: `Name`,
+      helperText: 'Enter the name of the cluster',
+      component: 'text',
+      validate: {
+        type: 'string',
+        methods: [['required', 'The name is required']],
+      },
+    },
+  ],
+  validateNoRequired: [
+    {
+      id: 'url',
+      title: `Url`,
+      helperText: 'Enter the url of the cluster',
+      component: 'text',
+      validate: {
+        type: 'string',
+        methods: [['url', 'Must be a valid url with no trailing slash - e.g. http://apiserver.com']],
+      },
+    },
+  ],
+  ca: [
+    {
+      id: 'ca',
+      title: `Ca`,
+      helperText: 'Enter the ca of the cluster',
+      component: 'text',
+      validate: {
+        type: 'string',
+        methods: [
+          ['matches', ['^-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----$', 's'], 'Must be a valid certificate'],
+        ],
+      },
+    },
+  ],
 }
 
 asyncTest('test basic validation fails', async (t) => {
-  
   let error = null
 
   try {
@@ -59,7 +55,7 @@ asyncTest('test basic validation fails', async (t) => {
         name: '',
       },
     })
-  } catch(err) {
+  } catch (err) {
     error = err
   }
 
@@ -76,7 +72,6 @@ asyncTest('test basic validation passes', async (t) => {
   })
 })
 
-
 asyncTest('test validator without required - no value', async (t) => {
   await validate({
     schema: forms.validateNoRequired,
@@ -87,7 +82,6 @@ asyncTest('test validator without required - no value', async (t) => {
 })
 
 asyncTest('test validator without required - bad value', async (t) => {
-  
   let error = null
 
   try {
@@ -97,7 +91,7 @@ asyncTest('test validator without required - bad value', async (t) => {
         url: 'apples',
       },
     })
-  } catch(err) {
+  } catch (err) {
     error = err
   }
 
@@ -108,7 +102,7 @@ asyncTest('test validator with multiline value', async (t) => {
   await validate({
     schema: forms.ca,
     data: {
-      ca: "-----BEGIN CERTIFICATE-----\n\n\n-----END CERTIFICATE-----",
+      ca: '-----BEGIN CERTIFICATE-----\n\n\n-----END CERTIFICATE-----',
     },
   })
 })
