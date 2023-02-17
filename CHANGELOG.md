@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* fix: passport logout requires a passed function [view commit](https://github.com/catenasys/sextant-api/commit/8bffdc1d5a49e164776b9d1b5164c77a915a96cb)
+* build(deps): Bump passport from 0.4.1 to 0.6.0 [view commit](https://github.com/catenasys/sextant-api/commit/18a9db1422c630f93f5ea8ad77c1f8ecac08bcd5)
+* build(deps): Bump http-cache-semantics from 4.1.0 to 4.1.1 [view commit](https://github.com/catenasys/sextant-api/commit/a4ded4fecf38500f0232e98b5f5978097ac969e0)
 * test(clsuter-status-traker-tests): replace generic store with store.cluster [view commit](https://github.com/catenasys/sextant-api/commit/0145d082ea9f8b65c9c531807e8a7ada137cc75c)
 * fix(clsuter-status-tracker-test): use store instead of clusterStore [view commit](https://github.com/catenasys/sextant-api/commit/2dd4925c474f97094db81103f543db1aa668d8cb)
 * fix(clsuterStatusTracker): schedule the clusterStatusTracker to run half as much as the deployment status job [view commit](https://github.com/catenasys/sextant-api/commit/3c9a233e16e9967eb058eed8ce4e8c8e5d094295)

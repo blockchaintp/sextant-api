@@ -12,24 +12,19 @@ const Controller = require('./controller')
 const Router = require('./router')
 const TaskProcessor = require('./taskprocessor')
 
-const App = ({
-  knex,
-  store,
-  controllers,
-  settings,
-  sessionStore,
-  taskHandlers,
-}) => {
+const App = ({ knex, store, controllers, settings, sessionStore, taskHandlers }) => {
   // eslint-disable-next-line no-param-reassign
   knex = knex || Knex(settings.postgres)
   // eslint-disable-next-line no-param-reassign
   store = store || Store(knex)
 
   // eslint-disable-next-line no-param-reassign
-  controllers = controllers || Controller({
-    store,
-    settings,
-  })
+  controllers =
+    controllers ||
+    Controller({
+      store,
+      settings,
+    })
 
   // the HTTP server
   const app = express()
@@ -103,10 +98,14 @@ const App = ({
     }
     // if the error was with the deserializer then logout to clear the cookie
     if (err.type === 'deserializeUser') {
-      req.logout()
+      req.logout((e) => {
+        res.status(err._code || res._code || 500)
+        res.json({ error: err, logoutError: e })
+      })
+    } else {
+      res.status(err._code || res._code || 500)
+      res.json({ error: err.toString() })
     }
-    res.status(err._code || res._code || 500)
-    res.json({ error: err.toString() })
   })
 
   app.taskProcessor = taskProcessor
