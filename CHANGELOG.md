@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+* fix(linting-changes-to-pass-precommit): changes to cluster js and relevant test files to match error messages and linting for precommit [view commit](https://github.com/catenasys/sextant-api/commit/c2015d7a6bd8a0295eeade96ab0ea2864c29c1bf)
 * fix: passport logout requires a passed function [view commit](https://github.com/catenasys/sextant-api/commit/8bffdc1d5a49e164776b9d1b5164c77a915a96cb)
 * build(deps): Bump passport from 0.4.1 to 0.6.0 [view commit](https://github.com/catenasys/sextant-api/commit/18a9db1422c630f93f5ea8ad77c1f8ecac08bcd5)
+* fix(change-for-cluster-form-js): change to regex to chack agaisnt trailing slash [view commit](https://github.com/catenasys/sextant-api/commit/d11881113761793089d7dedc2bedba2d83d5bcf8)
+* fix(change-to-cluster-js): addition of negitive lookbehing regex to prevent trailing slash from being added [view commit](https://github.com/catenasys/sextant-api/commit/1e73d6cce9deccde54356dc2a731e50127cb2440)
 * build(deps): Bump http-cache-semantics from 4.1.0 to 4.1.1 [view commit](https://github.com/catenasys/sextant-api/commit/a4ded4fecf38500f0232e98b5f5978097ac969e0)
 * test(clsuter-status-traker-tests): replace generic store with store.cluster [view commit](https://github.com/catenasys/sextant-api/commit/0145d082ea9f8b65c9c531807e8a7ada137cc75c)
 * fix(clsuter-status-tracker-test): use store instead of clusterStore [view commit](https://github.com/catenasys/sextant-api/commit/2dd4925c474f97094db81103f543db1aa668d8cb)
