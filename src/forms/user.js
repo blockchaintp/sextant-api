@@ -67,33 +67,36 @@ const fields = {
   changePassword: {
     id: 'changePassword',
     title: 'Change Password',
+    helperText: 'Enter your new password.',
     component: 'formdialog',
-    password: {
-      id: 'password',
-      title: 'Password',
-      helperText: 'Enter your password',
-      component: 'text',
-      inputProps: {
-        type: 'password',
+    options: [
+      {
+        id: 'password',
+        title: 'Password',
+        helperText: 'Enter your password',
+        component: 'text',
+        inputProps: {
+          type: 'password',
+        },
+        validate: {
+          type: 'string',
+          methods: [validators.noSpaces, validators.min(6)],
+        },
       },
-      validate: {
-        type: 'string',
-        methods: [validators.noSpaces, validators.min(6)],
+      {
+        id: 'confirmPassword',
+        title: 'Confirm Password',
+        helperText: 'Confirm your password',
+        component: 'text',
+        inputProps: {
+          type: 'password',
+        },
+        validate: {
+          type: 'string',
+          methods: [validators.noSpaces, validators.min(6), validators.sameAs('password')],
+        },
       },
-    },
-    confirmPassword: {
-      id: 'confirmPassword',
-      title: 'Confirm Password',
-      helperText: 'Confirm your password',
-      component: 'text',
-      inputProps: {
-        type: 'password',
-      },
-      validate: {
-        type: 'string',
-        methods: [validators.noSpaces, validators.min(6), validators.sameAs('password')],
-      },
-    },
+    ],
   },
   permission: {
     id: 'permission',
@@ -129,7 +132,7 @@ const formRequired = {
 }
 
 const formSchema = {
-  browser: ['username', 'permission', 'password', 'confirmPassword', 'changePassword'],
+  browser: ['username', 'permission', 'changePassword'],
   server: ['username', 'permission', 'password'],
 }
 
