@@ -1,7 +1,7 @@
 ARG K8S_VERSION=1.20.4
 FROM alpine/k8s:${K8S_VERSION} as k8s-stage
 
-FROM ubuntu:20.04
+FROM ubuntu:20.04 as base
 ARG NODEJS_MAJOR_VERSION=16
 ARG KUBETPL_VERSION=0.9.0
 ARG GRPCURL_VERSION=1.8.5
@@ -31,12 +31,27 @@ RUN mkdir -p /app/api/tmp && \
     chmod +x /usr/local/bin/grpcurl
 
 # install api server
+FROM base AS compile
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
-ARG NPM_CI_ARGS=""
-RUN npm ci ${NPM_CI_ARGS} && npm cache clean --force
+RUN npm ci
 COPY . /app/api
+RUN npm run compile
+
+FROM base AS javascript
+WORKDIR /app/api
+COPY --from=compile /app/api/dist/src /app/api/src
+COPY --from=compile /app/api/dist/scripts /app/api/scripts
+COPY ./package.json /app/api/package.json
+COPY ./package-lock.json /app/api/package-lock.json
+COPY ./knexfile.js /app/api/knexfile.js
+COPY ./config /app/api/config
+COPY ./test /app/api/test
+COPY ./editions /app/api/editions
+COPY ./migrations /app/api/migrations
+
+RUN npm ci ${NPM_CI_ARGS} && npm cache clean --force
 
 # this is the default noop metering module
 # copy in the edition module
