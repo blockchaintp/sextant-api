@@ -1,0 +1,39 @@
+export type MeteringType = 'dev'
+
+export type HelmRepository = {
+  name: string
+  url: string
+}
+
+export type ChartBundleName = string
+
+export type ChartVersion = string
+
+export type ChartTable = {
+  [key: ChartBundleName]: ChartBundle
+}
+
+export type Chart = {
+  chart: string
+  chartVersion: string
+  extension: string
+  order: number
+}
+
+export type ChartBundle = {
+  [key: ChartVersion]: Chart
+}
+/**
+ * The Edition type is used to define the structure of the edition file.
+ *
+ **/
+export type Edition = {
+  chartTable: ChartTable
+  deployment: {
+    classic: []
+  }
+  helmRepos: HelmRepository[]
+  metering: {
+    type: MeteringType
+  }
+}

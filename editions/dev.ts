@@ -1,9 +1,10 @@
 // Edition object for dev mode
+import { Edition } from './edition-type'
 const dotenv = require('dotenv')
 
 dotenv.config()
 
-const edition = {
+const edition: Edition = {
   deployment: {
     classic: [],
   },
