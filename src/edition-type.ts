@@ -1,4 +1,4 @@
-export type MeteringType = 'dev'
+export type MeteringType = 'dev' | 'aws'
 
 export type HelmRepository = {
   name: string
@@ -34,6 +34,8 @@ export type Edition = {
   }
   helmRepos: HelmRepository[]
   metering: {
+    productCode?: string
+    publicKeyVersion?: number
     type: MeteringType
   }
 }

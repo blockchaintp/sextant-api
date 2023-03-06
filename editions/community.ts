@@ -1,6 +1,7 @@
 // Edition object for community edition (sawtooth+DAML)
+import { Edition } from './edition-type'
 
-const edition = {
+export const edition: Edition = {
   deployment: {
     classic: [],
   },
@@ -55,8 +56,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }

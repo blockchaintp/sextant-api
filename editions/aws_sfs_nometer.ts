@@ -5,8 +5,9 @@
  */
 
 // Edition object for Sawtooth
+import { Edition } from './edition-type'
 
-const edition = {
+export const edition: Edition = {
   deployment: {
     classic: [],
   },
@@ -53,8 +54,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }

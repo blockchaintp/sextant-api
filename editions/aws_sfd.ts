@@ -5,13 +5,16 @@
  */
 
 // Edition object for DAML on Sawtooth
+import { Edition } from './edition-type'
 
-const edition = {
+export const edition: Edition = {
   deployment: {
     classic: [],
   },
   metering: {
-    type: 'dev',
+    type: 'aws',
+    productCode: '53zb45lxmkh0qyk0skmuipl9a',
+    publicKeyVersion: 1,
   },
   helmRepos: [
     {
@@ -77,8 +80,4 @@ const edition = {
       },
     },
   },
-}
-
-module.exports = {
-  edition,
 }
