@@ -3,12 +3,12 @@
   schema
 
 */
-const API_VERSION = '1.0.0'
+export const API_VERSION = '1.0.0'
 
 // we don't use these in migration files
 // because they should be immutable
 // these values are used by the rest of the codebase as the 'current' table names
-const TABLES = {
+export const TABLES = {
   user: 'useraccount',
   cluster: 'cluster',
   deployment: 'deployment',
@@ -19,7 +19,7 @@ const TABLES = {
   deploymentsecret: 'deploymentsecret',
 }
 
-const LIST_ORDER_BY_FIELDS = {
+export const LIST_ORDER_BY_FIELDS = {
   cluster: {
     field: 'status',
     direction: 'desc',
@@ -56,43 +56,43 @@ const LIST_ORDER_BY_FIELDS = {
 
 */
 
-const RESOURCE_TYPES = {
+export const RESOURCE_TYPES = {
   cluster: 'cluster',
   deployment: 'deployment',
   user: 'user',
 }
 
-const CLUSTER_PROVISION_TYPE = {
+export const CLUSTER_PROVISION_TYPE = {
   remote: 'remote',
   local: 'local',
 }
 
-const CLUSTER_STATUS = {
+export const CLUSTER_STATUS = {
   created: 'created',
   provisioned: 'provisioned',
   error: 'error',
   deleted: 'deleted',
 }
 
-const CLUSTER_STATUS_DEFAULT = CLUSTER_STATUS.created
+export const CLUSTER_STATUS_DEFAULT = CLUSTER_STATUS.created
 
-const DEPLOYMENT_TYPE = {
+export const DEPLOYMENT_TYPE = {
   sawtooth: 'sawtooth',
   ethereum: 'ethereum',
   daml: 'daml',
   taekion: 'taekion',
 }
 
-const DEPLOYMENT_STATUS = {
+export const DEPLOYMENT_STATUS = {
   created: 'created',
   provisioned: 'provisioned',
   error: 'error',
   deleted: 'deleted',
 }
 
-const DEPLOYMENT_STATUS_DEFAULT = DEPLOYMENT_STATUS.created
+export const DEPLOYMENT_STATUS_DEFAULT = DEPLOYMENT_STATUS.created
 
-const TASK_STATUS = {
+export const TASK_STATUS = {
   created: 'created',
   running: 'running',
   finished: 'finished',
@@ -101,11 +101,11 @@ const TASK_STATUS = {
   error: 'error',
 }
 
-const TASK_STATUS_DEFAULT = TASK_STATUS.created
+export const TASK_STATUS_DEFAULT = TASK_STATUS.created
 
-const TASK_ACTIVE_STATUSES = [TASK_STATUS.created, TASK_STATUS.running, TASK_STATUS.cancelling]
+export const TASK_ACTIVE_STATUSES = [TASK_STATUS.created, TASK_STATUS.running, TASK_STATUS.cancelling]
 
-const TASK_ACTION = {
+export const TASK_ACTION = {
   'cluster.create': 'cluster.create',
   'cluster.update': 'cluster.update',
   'cluster.delete': 'cluster.delete',
@@ -116,7 +116,7 @@ const TASK_ACTION = {
 
 // what status we should write to the resources
 // if the task completes successfully
-const TASK_RESOURCE_COMPLETE_STATUS = {
+export const TASK_RESOURCE_COMPLETE_STATUS = {
   'cluster.create': CLUSTER_STATUS.provisioned,
   'cluster.update': CLUSTER_STATUS.provisioned,
   'cluster.delete': CLUSTER_STATUS.deleted,
@@ -128,7 +128,7 @@ const TASK_RESOURCE_COMPLETE_STATUS = {
 }
 
 // how much time to wait between checking for new tasks
-const TASK_CONTROLLER_LOOP_DELAY = 500
+export const TASK_CONTROLLER_LOOP_DELAY = 500
 
 /*
 
@@ -137,26 +137,26 @@ const TASK_CONTROLLER_LOOP_DELAY = 500
 */
 
 // Maps to USER_TYPES = USER_TYPES in rbac definition
-const USER_TYPES = {
+export const USER_TYPES = {
   superuser: 'superuser', // can do anything
   admin: 'admin', // can create clusters
   user: 'user', // requires role to do things
 }
 
-const USER_ACCESS_LEVELS = {
+export const USER_ACCESS_LEVELS = {
   [USER_TYPES.superuser]: 3,
   [USER_TYPES.admin]: 2,
   [USER_TYPES.user]: 1,
 }
 
 // Maps to PERMISSION = PERMISSION_TYPES in rbac definition
-const PERMISSION_TYPES = {
+export const PERMISSION_TYPES = {
   read: 'read',
   write: 'write',
 }
 
 // Maps to PERMISSION_ACCESS_LEVELS = PERMISSION_ACCESS_LEVELS in rbac definition
-const PERMISSION_ACCESS_LEVELS = {
+export const PERMISSION_ACCESS_LEVELS = {
   [PERMISSION_TYPES.read]: 1,
   [PERMISSION_TYPES.write]: 2,
 }
@@ -166,30 +166,8 @@ const PERMISSION_ACCESS_LEVELS = {
   base config
 
 */
-const config = {
-  baseUrl: '/api/v1',
-  sessionSecret: 'sextant-blockchain',
-  tokenSecret: 'sextant-blockchain',
-  TABLES,
-  LIST_ORDER_BY_FIELDS,
-  RESOURCE_TYPES,
-  CLUSTER_PROVISION_TYPE,
-  CLUSTER_STATUS,
-  CLUSTER_STATUS_DEFAULT,
-  DEPLOYMENT_TYPE,
-  DEPLOYMENT_STATUS,
-  DEPLOYMENT_STATUS_DEFAULT,
-  TASK_STATUS,
-  TASK_ACTION,
-  TASK_ACTIVE_STATUSES,
-  TASK_STATUS_DEFAULT,
-  TASK_RESOURCE_COMPLETE_STATUS,
-  TASK_CONTROLLER_LOOP_DELAY,
-  USER_TYPES,
-  USER_ACCESS_LEVELS,
-  API_VERSION,
-  PERMISSION_TYPES,
-  PERMISSION_ACCESS_LEVELS,
-}
 
-module.exports = config
+export const baseUrl = '/api/v1'
+
+export const sessionSecret = 'sextant-blockchain'
+export const tokenSecret = 'sextant-blockchain'
