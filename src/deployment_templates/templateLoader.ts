@@ -3,11 +3,10 @@ import * as path from 'path'
 import { edition } from '../edition'
 import { ChartBundleName, ChartVersion } from '../edition-type'
 import { HELM_CHARTS_PATH } from '../tasks/deployment/utils/helmUtils'
+import { overwriteMerge } from '../utils/overwrite-merge'
 import { getYaml } from '../utils/yaml'
 
 const { chartTable } = edition
-
-const overwriteMerge = (destinationArray: any[], sourceArray: any[]): any[] => sourceArray
 
 type ChartParsedDetails = {
   button: {
@@ -126,6 +125,7 @@ const getHelmDeploymentDetails = () => {
         ) as ChartDetails
         const theseDetails = structureYamlContent(yamlContent)
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         allDetails = merge(allDetails, theseDetails, { arrayMerge: overwriteMerge })
       } catch (e) {
         // if chart versions have a mismatch then allow the server to boot in dev mode
