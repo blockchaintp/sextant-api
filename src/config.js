@@ -3,6 +3,7 @@
   schema
 
 */
+const API_VERSION = '1.0.0'
 
 // we don't use these in migration files
 // because they should be immutable
@@ -102,11 +103,7 @@ const TASK_STATUS = {
 
 const TASK_STATUS_DEFAULT = TASK_STATUS.created
 
-const TASK_ACTIVE_STATUSES = [
-  TASK_STATUS.created,
-  TASK_STATUS.running,
-  TASK_STATUS.cancelling,
-]
+const TASK_ACTIVE_STATUSES = [TASK_STATUS.created, TASK_STATUS.running, TASK_STATUS.cancelling]
 
 const TASK_ACTION = {
   'cluster.create': 'cluster.create',
@@ -190,6 +187,7 @@ const config = {
   TASK_CONTROLLER_LOOP_DELAY,
   USER_TYPES,
   USER_ACCESS_LEVELS,
+  API_VERSION,
   PERMISSION_TYPES,
   PERMISSION_ACCESS_LEVELS,
 }
