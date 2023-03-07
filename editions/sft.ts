@@ -1,6 +1,7 @@
 // Edition object for SFT editions (sawtooth+TFS)
+import { Edition } from './edition-type'
 
-const edition = {
+export const edition: Edition = {
   deployment: {
     classic: [],
   },
@@ -39,8 +40,4 @@ const edition = {
       },
     },
   },
-};
-
-module.exports = {
-  edition,
-};
+}

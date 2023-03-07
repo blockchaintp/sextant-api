@@ -41,6 +41,7 @@ RUN npm run compile
 
 FROM base AS javascript
 WORKDIR /app/api
+COPY --from=compile /app/api/dist/editions /app/api/editions
 COPY --from=compile /app/api/dist/src /app/api/src
 COPY --from=compile /app/api/dist/scripts /app/api/scripts
 COPY ./package.json /app/api/package.json
@@ -48,7 +49,6 @@ COPY ./package-lock.json /app/api/package-lock.json
 COPY ./knexfile.js /app/api/knexfile.js
 COPY ./config /app/api/config
 COPY ./test /app/api/test
-COPY ./editions /app/api/editions
 COPY ./migrations /app/api/migrations
 
 RUN npm ci ${NPM_CI_ARGS} && npm cache clean --force
@@ -56,7 +56,7 @@ RUN npm ci ${NPM_CI_ARGS} && npm cache clean --force
 # this is the default noop metering module
 # copy in the edition module
 ARG EDITION_MODULE=dev
-COPY ./editions/${EDITION_MODULE}.js /app/api/src/edition.js
+COPY --from=compile /app/api/dist/editions/${EDITION_MODULE}.js /app/api/src/edition.js
 
 ARG NODE_ENV=development
 ENV NODE_ENV ${NODE_ENV}
