@@ -3,8 +3,9 @@
     "outDir": "./dist",
     "allowJs": true,
     "target": "es6",
-    "module": "commonjs"
+    "module": "commonjs",
+    "inlineSourceMap": true
   },
   "rootDir": ".",
-  "include": ["./editions/*", "./src/**/*", "./scripts/**/*"]
+  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*"]
 }

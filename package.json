@@ -17,12 +17,13 @@
     "pretest": "npm run copy-helm-fixtures",
     "test": "npm run cover:test && npm run cover:report && npm run test:report",
     "posttest": "npm run remove-helm-fixtures",
-    "test:tape": "tape {src,test}/**/*.test.js > /tmp/test.out",
+    "test:tape": "ts-node node_modules/tape/bin/tape {src,test}/**/*.test.js > /tmp/test.out",
     "test:report": "cat /tmp/test.out | tap-spec && cat /tmp/test.out | tap-junit > /tmp/junit.xml",
     "cover:test": "nyc --silent npm run test:tape",
     "cover:report": "nyc report --report-dir /tmp --reporter=text --reporter=lcov",
     "start": "npm run download-helm-charts && npm run serve",
-    "compile": "tsc"
+    "compile": "tsc",
+    "watch": "tsc -w"
   },
   "dependencies": {
     "@aws-sdk/client-marketplace-metering": "^3.43.0",
@@ -64,7 +65,9 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/express": "^4.17.17",
+    "@types/tape": "^4.13.2",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
     "@typescript-eslint/parser": "^5.54.1",
     "async": "^3.2.2",
@@ -76,9 +79,11 @@
     "npm-check": "^6.0.1",
     "nyc": "^15.1.0",
     "prettier": "2.5.1",
+    "source-map-support": "^0.5.21",
     "tap-junit": "^5.0.1",
     "tap-spec": "^5.0",
-    "tape": "^4.14.0",
+    "tape": "^4.16.2",
+    "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
     "widdershins": "^4.0.1"
   }
