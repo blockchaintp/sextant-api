@@ -1,17 +1,20 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 const Promise = require('bluebird')
 const tools = require('../tools')
 const database = require('../database')
 const fixtures = require('../fixtures')
 const asyncTest = require('../asyncTest')
 
-const RoleStore = require('../../src/store/role')
+const { RoleStore } = require('../../src/store/role')
 const config = require('../../src/config')
 
-const {
-  RESOURCE_TYPES,
-  USER_TYPES,
-  PERMISSION_TYPES,
-} = config
+const { RESOURCE_TYPES, USER_TYPES, PERMISSION_TYPES } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   // eslint-disable-next-line no-unused-vars
@@ -24,10 +27,10 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> list with no user', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     let error = null
     try {
-      store.listForUser({})
+      await store.listForUser({})
     } catch (err) {
       error = err
     }
@@ -35,7 +38,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> list no data', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     const roles = await store.listForUser({
       user: testUser.id,
     })
@@ -43,7 +46,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> create with missing values', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
 
     await tools.insertWithMissingValues(t, store, {
       user: testUser.id,
@@ -54,7 +57,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> create with bad resource type', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     let error = null
     try {
       await store.create({
@@ -83,7 +86,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> list for user', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length
     const roles = await store.listForUser({
       user: testUser.id,
@@ -99,7 +102,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> list for resource', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     const role = fixtures.SIMPLE_ROLE_DATA[0]
     const roles = await store.listForResource({
       resource_type: role.resource_type,
@@ -108,8 +111,8 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(roles.length, 1, 'there were 1 role')
   })
 
-  asyncTest('role store -> get with missing values', async (t) => {
-    const store = RoleStore(getConnection())
+  asyncTest('role store -> get with missing values', (t) => {
+    const store = new RoleStore(getConnection())
     const baseObject = {
       user: testUser.id,
       resource_type: RESOURCE_TYPES.cluster,
@@ -118,10 +121,10 @@ database.testSuiteWithDatabase((getConnection) => {
 
     Promise.each(Object.keys(baseObject), async (field) => {
       const query = { ...baseObject }
-      delete (query[field])
+      delete query[field]
       let error = null
       try {
-        store.get(query)
+        await store.get(query)
       } catch (err) {
         error = err
       }
@@ -130,7 +133,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> get for cluster', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     const role = await store.get({
       user: testUser.id,
       resource_type: RESOURCE_TYPES.cluster,
@@ -140,7 +143,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> get for deployment', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
 
     const role = await store.get({
       user: testUser.id,
@@ -151,7 +154,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('role store -> delete', async (t) => {
-    const store = RoleStore(getConnection())
+    const store = new RoleStore(getConnection())
     const expectedCount = fixtures.SIMPLE_ROLE_DATA.length - 1
 
     await store.delete({
