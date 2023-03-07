@@ -1,4 +1,10 @@
-const UserStore = require('./user')
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-var-requires */
+const { UserStore } = require('./user')
 const { RoleStore } = require('./role')
 const ClusterStore = require('./cluster')
 const ClusterFileStore = require('./clusterfile')
@@ -10,7 +16,7 @@ const { SettingsStore } = require('./settings')
 const DeploymentHistoryStore = require('./deploymenthistory')
 
 const Store = (knex) => {
-  const user = UserStore(knex)
+  const user = new UserStore(knex)
   const role = new RoleStore(knex)
   const cluster = ClusterStore(knex)
   const clusterfile = ClusterFileStore(knex)

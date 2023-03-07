@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const tools = require('../tools')
 const asyncTest = require('../asyncTest')
 
@@ -7,20 +13,20 @@ const fixtures = require('../fixtures')
 const config = require('../../src/config')
 const enumerations = require('../../src/enumerations')
 
-const UserStore = require('../../src/store/user')
+const { UserStore } = require('../../src/store/user')
 
 database.testSuiteWithDatabase((getConnection) => {
   let userMap = {}
 
   asyncTest('user store -> list no data', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     const users = await store.list()
     t.equal(users.length, 0, 'there were no users')
   })
 
   asyncTest('user store -> create with missing values', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     await tools.insertWithMissingValues(t, store, {
       username: 'apples',
@@ -31,7 +37,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('user store -> create with bad role', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     let error = null
 
@@ -57,18 +63,22 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('user store -> list with ordered data', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     const correctOrder = [].concat(enumerations.USER_TYPES)
     correctOrder.sort()
 
     const users = await store.list()
     t.equal(users.length, fixtures.SIMPLE_USER_DATA.length, `there were ${fixtures.SIMPLE_USER_DATA.length} users`)
-    t.deepEqual(users.map((user) => user.username), correctOrder, 'the users were in the correct order')
+    t.deepEqual(
+      users.map((user) => user.username),
+      correctOrder,
+      'the users were in the correct order'
+    )
   })
 
   asyncTest('user store -> get from username then id', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     const usernameUser = await store.get({
       username: config.USER_TYPES.admin,
@@ -83,7 +93,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('user store -> update user', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     const updateUser = await store.update({
       id: userMap[config.USER_TYPES.admin].id,
@@ -101,7 +111,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('user store -> delete user', async (t) => {
-    const store = UserStore(getConnection())
+    const store = new UserStore(getConnection())
 
     await store.delete({
       id: userMap[config.USER_TYPES.admin].id,
