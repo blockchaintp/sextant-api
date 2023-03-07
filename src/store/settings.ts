@@ -6,6 +6,7 @@
 */
 
 import { Knex } from 'knex'
+import { Setting } from './model/model-types'
 
 export class SettingsStore {
   private knex: Knex
@@ -19,9 +20,9 @@ export class SettingsStore {
       * data
         * deployment
         * key
-        * value || base64Data
+        * value || base64data
   */
-  public async create({ data: { key, value } }, trx: Knex.Transaction) {
+  public async create({ data: { key, value } }: { data: Pick<Setting, 'key' | 'value'> }, trx?: Knex.Transaction) {
     if (!key) throw new Error('data.key param must be given to store.settings.create')
     if (!value) throw new Error('data.value param must be given to store.settings.create')
 
@@ -30,7 +31,7 @@ export class SettingsStore {
       value,
     }
 
-    const [result] = await (trx || this.knex)('settings').insert(insertData).returning('*')
+    const [result] = await (trx || this.knex)<Setting>('settings').insert(insertData).returning('*')
     return result
   }
 
@@ -39,7 +40,7 @@ export class SettingsStore {
     params:
       * id or key
   */
-  public async delete({ id, key }: { id: number | undefined; key: string | undefined }, trx: Knex.Transaction) {
+  public async delete({ id, key }: { id?: number; key?: string }, trx?: Knex.Transaction) {
     if (!id && !key) throw new Error('id or key must be given to store.settings.del')
 
     const queryParams: {
@@ -50,7 +51,7 @@ export class SettingsStore {
     if (id) queryParams.id = id
     if (key) queryParams.key = key
 
-    const [result] = await (trx || this.knex)('settings').where(queryParams).del().returning('*')
+    const [result] = await (trx || this.knex)<Setting>('settings').where(queryParams).del().returning('*')
     return result
   }
 
@@ -59,7 +60,7 @@ export class SettingsStore {
     params:
       * id or key
   */
-  public get({ id, key }: { id: number | undefined; key: string | undefined }, trx: Knex.Transaction) {
+  public get({ id, key }: { id?: number; key?: string }, trx?: Knex.Transaction) {
     if (!id && !key) throw new Error('id or key must be given to store.settings.get')
 
     const queryParams: {
@@ -70,15 +71,15 @@ export class SettingsStore {
     if (id) queryParams.id = id
     if (key) queryParams.key = key
 
-    return (trx || this.knex).select('*').from('settings').where(queryParams).first()
+    return (trx || this.knex).select<Setting>('*').from('settings').where(queryParams).first<Setting>()
   }
 
   /*
     list all settings for sextant
   */
   // eslint-disable-next-line no-empty-pattern
-  public list(trx: Knex.Transaction) {
-    return (trx || this.knex).select('*').from('settings')
+  public list(trx?: Knex.Transaction) {
+    return (trx || this.knex).select<Setting>('*').from('settings')
   }
 
   /*
@@ -86,7 +87,16 @@ export class SettingsStore {
     params:
       * key, value
   */
-  public async update({ key, data: { value } }, trx: Knex.Transaction) {
+  public async update(
+    {
+      key,
+      data: { value },
+    }: {
+      data: Pick<Setting, 'value'>
+      key: string
+    },
+    trx?: Knex.Transaction
+  ) {
     if (!key) throw new Error('key must be given to store.settings.update')
     if (!value) throw new Error('data.value param must be given to store.settings.update')
 
@@ -96,7 +106,7 @@ export class SettingsStore {
 
     if (key) queryParams.key = key
 
-    const [result] = await (trx || this.knex)('settings')
+    const [result] = await (trx || this.knex)<Setting>('settings')
       .where(queryParams)
       .update({
         value,

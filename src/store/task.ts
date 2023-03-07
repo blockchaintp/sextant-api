@@ -1,7 +1,10 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-shadow */
 import { Knex } from 'knex'
 import * as config from '../config'
 import * as enumerations from '../enumerations'
+import { ResourceInfo, Task } from './model/model-types'
+import { DatabaseIdentifier } from './model/scalar-types'
 
 export class TaskStore {
   private knex: Knex
@@ -24,7 +27,7 @@ export class TaskStore {
       cluster?: number
       deployment?: number
     },
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) {
     if (!cluster && !deployment) throw new Error('cluster or deployment required for controller.task.activeForResource')
 
@@ -57,8 +60,13 @@ export class TaskStore {
         * status
   */
   public async create(
-    { data: { user, resource_type, resource_id, action, restartable, payload, resource_status } },
-    trx: Knex.Transaction
+    {
+      data: { user, resource_type, resource_id, action, restartable, payload, resource_status },
+    }: {
+      data: Pick<Task, 'user' | 'resource_type' | 'resource_id' | 'payload' | 'restartable' | 'action'> &
+        Partial<Pick<Task, 'resource_status'>>
+    },
+    trx?: Knex.Transaction
   ) {
     if (!user) throw new Error('data.user param must be given to store.task.create')
     if (!resource_type) throw new Error('data.resource_type param must be given to store.task.create')
@@ -67,7 +75,7 @@ export class TaskStore {
     if (typeof restartable !== 'boolean') throw new Error('data.restartable param must be given to store.task.create')
     if (!payload) throw new Error('data.payload param must be given to store.task.create')
 
-    const [result] = await (trx || this.knex)(config.TABLES.task)
+    const [result] = await (trx || this.knex)<Task>(config.TABLES.task)
       .insert({
         user,
         resource_type,
@@ -86,16 +94,16 @@ export class TaskStore {
     params:
      * id
   */
-  public deleteForResource({ resource_type, resource_id }, trx) {
+  public deleteForResource({ resource_type, resource_id }: ResourceInfo, trx?: Knex.Transaction) {
     if (!resource_type) throw new Error('resource_type must be given to store.task.deleteForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.task.deleteForResource')
-    return (trx || this.knex)(config.TABLES.task)
+    return (trx || this.knex)<Task>(config.TABLES.task)
       .where({
         resource_type,
         resource_id,
       })
       .del()
-      .returning('*')
+      .returning<Task>('*')
   }
 
   /*
@@ -103,16 +111,16 @@ export class TaskStore {
     params:
       * id
   */
-  public get({ id }, trx: Knex.Transaction) {
+  public get({ id }: { id: DatabaseIdentifier }, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.task.get')
 
     return (trx || this.knex)
-      .select('*')
+      .select<Task>('*')
       .from(config.TABLES.task)
       .where({
         id,
       })
-      .first()
+      .first<Task>()
   }
 
   /*
@@ -134,17 +142,17 @@ export class TaskStore {
       user,
       status,
     }: {
-      cluster?: number
-      deployment?: number
-      status?: string | string[]
-      user?: number
+      cluster?: DatabaseIdentifier
+      deployment?: DatabaseIdentifier
       limit?: number
+      status?: string | string[]
+      user?: DatabaseIdentifier
     },
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) {
     const query: {
-      resource_type?: string
       resource_id?: number
+      resource_type?: string
       user?: number
     } = {}
 
@@ -160,7 +168,7 @@ export class TaskStore {
 
     if (user) query.user = user
 
-    let queryStatus = []
+    let queryStatus: string[] = []
 
     if (status) {
       queryStatus = typeof status === 'string' ? [status] : status
@@ -174,18 +182,21 @@ export class TaskStore {
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.task
 
-    const sqlQuery = (trx || this.knex).select('*').from(config.TABLES.task).orderBy(orderBy.field, orderBy.direction)
+    let sqlQuery = (trx || this.knex)
+      .select<Task>('*')
+      .from(config.TABLES.task)
+      .orderBy(orderBy.field, orderBy.direction)
 
     if (Object.keys(query).length > 0 && queryStatus.length > 0) {
-      sqlQuery.whereIn('status', queryStatus).andWhere(query)
+      sqlQuery = sqlQuery.whereIn('status', queryStatus).andWhere(query)
     } else if (Object.keys(query).length > 0) {
-      sqlQuery.where(query)
+      sqlQuery = sqlQuery.where(query)
     } else if (queryStatus.length > 0) {
-      sqlQuery.whereIn('status', queryStatus)
+      sqlQuery = sqlQuery.whereIn('status', queryStatus)
     }
 
     if (limit) {
-      sqlQuery.limit(limit)
+      sqlQuery = sqlQuery.limit(limit)
     }
 
     return sqlQuery
@@ -197,7 +208,16 @@ export class TaskStore {
      * cluster - we want active tasks for a cluster
      * deployment - we want active tasks for a deployment
   */
-  public mostRecentForResource({ cluster, deployment }, trx: Knex.Transaction) {
+  public mostRecentForResource(
+    {
+      cluster,
+      deployment,
+    }: {
+      cluster: DatabaseIdentifier
+      deployment: DatabaseIdentifier
+    },
+    trx?: Knex.Transaction
+  ) {
     if (!cluster && !deployment) throw new Error('cluster or deployment required for controller.task.activeForResource')
 
     const query: {
@@ -211,7 +231,7 @@ export class TaskStore {
     if (cluster) query.cluster = cluster
     if (deployment) query.deployment = deployment
 
-    return this.list(query, trx).first()
+    return this.list(query, trx).first<Task>()
   }
 
   /*
@@ -224,7 +244,16 @@ export class TaskStore {
         * started_at
         * ended_at
   */
-  public async update({ id, data: { status, error, started_at, ended_at } }, trx: Knex.Transaction) {
+  public async update(
+    {
+      id,
+      data: { status, error, started_at, ended_at },
+    }: {
+      data: Pick<Task, 'ended_at' | 'error' | 'started_at' | 'status'>
+      id: DatabaseIdentifier
+    },
+    trx?: Knex.Transaction
+  ) {
     if (!id) throw new Error('id must be given to store.task.update')
     if (!status) throw new Error('data.status param must be given to store.task.update')
 
@@ -232,7 +261,7 @@ export class TaskStore {
 
     const updateData: {
       ended_at?: Date
-      error?: any
+      error?: string
       started_at?: Date
       status: string
     } = {
@@ -243,7 +272,7 @@ export class TaskStore {
     if (started_at) updateData.started_at = started_at
     if (ended_at) updateData.ended_at = ended_at
 
-    const [result] = await (trx || this.knex)(config.TABLES.task)
+    const [result] = await (trx || this.knex)<Task>(config.TABLES.task)
       .where({
         id,
       })
