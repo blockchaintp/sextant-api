@@ -10,7 +10,7 @@ const Promise = require('bluebird')
 const config = require('../../src/config')
 const userUtils = require('../../src/utils/user')
 const { UserStore } = require('../../src/store/user')
-const ClusterStore = require('../../src/store/cluster')
+const { ClusterStore } = require('../../src/store/cluster')
 const { DeploymentStore } = require('../../src/store/deployment')
 const { RoleStore } = require('../../src/store/role')
 const { TaskStore } = require('../../src/store/task')
@@ -150,7 +150,7 @@ const insertTestUsers = async (databaseConnection, data) => {
 const insertTestClusters = async (databaseConnection, data) => {
   data = data || SIMPLE_CLUSTER_DATA
 
-  const store = ClusterStore(databaseConnection)
+  const store = new ClusterStore(databaseConnection)
 
   // map of cluster names onto database records
   const clusterMap = {}

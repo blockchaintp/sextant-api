@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-underscore-dangle */
 const express = require('express')
 const Knex = require('knex')
@@ -7,7 +12,7 @@ const logger = require('./logging').getLogger({
 })
 const Passport = require('./passport')
 
-const Store = require('./store')
+const { Store } = require('./store')
 const Controller = require('./controller')
 const Router = require('./router')
 const TaskProcessor = require('./taskprocessor')
@@ -16,7 +21,7 @@ const App = ({ knex, store, controllers, settings, sessionStore, taskHandlers })
   // eslint-disable-next-line no-param-reassign
   knex = knex || Knex(settings.postgres)
   // eslint-disable-next-line no-param-reassign
-  store = store || Store(knex)
+  store = store || new Store(knex)
 
   // eslint-disable-next-line no-param-reassign
   controllers =

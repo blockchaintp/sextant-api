@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 const config = require('config')
 const session = require('express-session')
 const pg = require('pg')
@@ -13,7 +19,7 @@ const settings = require('./settings')
 const App = require('./app')
 const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
-const Store = require('./store')
+const { Store } = require('./store')
 const deploymentStatusPoll = require('./jobs/deploymentStatusPoll')
 const Meter = require('./jobs/meter/Meter')
 const { ClusterStatusTracker } = require('./jobs/ClusterStatusTracker')
@@ -24,19 +30,23 @@ const sessionStore = new PgSession({
 })
 
 const knex = Knex(settings.postgres)
-const store = Store(knex)
+const store = new Store(knex)
 
 const meter = new Meter('main-meter', store, config.get('meter'))
 meter.start()
 
 const clusterStatusTracker = new ClusterStatusTracker(store)
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 clusterStatusTracker.run()
 const clusterStatusTrackerJob = schedule.scheduleJob('*/10 * * * *', () => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   clusterStatusTracker.run()
 })
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 deploymentStatusPoll(store)
 const deploymentStatusPollJob = schedule.scheduleJob('*/5 * * * *', () => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   deploymentStatusPoll(store)
 })
 
@@ -73,6 +83,7 @@ const boot = async () => {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 boot()
 
 module.exports = { deploymentStatusPollJob, clusterStatusTrackerJob }
