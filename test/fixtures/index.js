@@ -13,7 +13,7 @@ const { UserStore } = require('../../src/store/user')
 const ClusterStore = require('../../src/store/cluster')
 const { DeploymentStore } = require('../../src/store/deployment')
 const { RoleStore } = require('../../src/store/role')
-const TaskStore = require('../../src/store/task')
+const { TaskStore } = require('../../src/store/task')
 
 const { USER_TYPES, CLUSTER_PROVISION_TYPE, PERMISSION_TYPES, RESOURCE_TYPES, TASK_ACTION } = config
 
@@ -221,7 +221,7 @@ const insertTestRoles = async (databaseConnection, user, data) => {
 const insertTestTasks = async (databaseConnection, user, data) => {
   data = data || SIMPLE_TASK_DATA
 
-  const store = TaskStore(databaseConnection)
+  const store = new TaskStore(databaseConnection)
 
   // map of resource types onto database records
   const taskMap = {}

@@ -1,16 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const database = require('../database')
 const fixtures = require('../fixtures')
 const tools = require('../tools')
 const asyncTest = require('../asyncTest')
 
-const TaskStore = require('../../src/store/task')
+const { TaskStore } = require('../../src/store/task')
 const config = require('../../src/config')
 
-const {
-  RESOURCE_TYPES,
-  USER_TYPES,
-  TASK_STATUS,
-} = config
+const { RESOURCE_TYPES, USER_TYPES, TASK_STATUS } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let taskMap = {}
@@ -22,13 +24,13 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> list no data', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
     const tasks = await store.list({})
     t.equal(tasks.length, 0, 'there were no tasks')
   })
 
   asyncTest('task store -> create with missing values', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     await tools.insertWithMissingValues(t, store, {
       user: userMap[USER_TYPES.admin].id,
@@ -55,7 +57,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> list all', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     // we inserted each set of tasks for 2 users
     const expectedCount = fixtures.SIMPLE_TASK_DATA.length * 2
@@ -65,7 +67,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> list by cluster', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const tasks = await store.list({
       cluster: 10,
@@ -75,7 +77,7 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(tasks[0].resource_id, 10, 'the resource_id is correct')
   })
   asyncTest('task store -> list by deployment', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const tasks = await store.list({
       deployment: 11,
@@ -86,7 +88,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> list by user', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_TASK_DATA.length
     const userId = userMap[USER_TYPES.admin].id
@@ -95,11 +97,15 @@ database.testSuiteWithDatabase((getConnection) => {
       user: userId,
     })
     t.equal(tasks.length, expectedCount, `there were ${expectedCount} tasks`)
-    t.deepEqual(tasks.map((task) => task.user), [userId, userId], 'the user ids are correct')
+    t.deepEqual(
+      tasks.map((task) => task.user),
+      [userId, userId],
+      'the user ids are correct'
+    )
   })
 
   asyncTest('task store -> get', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const ids = Object.keys(taskMap)
 
@@ -110,7 +116,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> update bad status', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const ids = Object.keys(taskMap)
 
@@ -131,7 +137,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> update status', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const ids = Object.keys(taskMap)
 
@@ -149,7 +155,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('task store -> activeForResource', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const ids = Object.keys(taskMap).map((i) => parseInt(i, 10))
 
@@ -158,13 +164,25 @@ database.testSuiteWithDatabase((getConnection) => {
     })
 
     t.equal(tasks.length, 1, 'there was 1 task')
-    t.deepEqual(tasks.map((task) => task.resource_type), [RESOURCE_TYPES.cluster], 'the resource_types are correct')
-    t.deepEqual(tasks.map((task) => task.id), [ids[0]], 'the resource_ids are correct')
-    t.deepEqual(tasks.map((task) => task.resource_id), [10], 'the resource_ids are correct')
+    t.deepEqual(
+      tasks.map((task) => task.resource_type),
+      [RESOURCE_TYPES.cluster],
+      'the resource_types are correct'
+    )
+    t.deepEqual(
+      tasks.map((task) => task.id),
+      [ids[0]],
+      'the resource_ids are correct'
+    )
+    t.deepEqual(
+      tasks.map((task) => task.resource_id),
+      [10],
+      'the resource_ids are correct'
+    )
   })
 
   asyncTest('task store -> load with status', async (t) => {
-    const store = TaskStore(getConnection())
+    const store = new TaskStore(getConnection())
 
     const tasks = await store.list({
       status: TASK_STATUS.running,

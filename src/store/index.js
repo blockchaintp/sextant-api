@@ -11,7 +11,7 @@ const { ClusterFileStore } = require('./clusterfile')
 const { ClusterSecretStore } = require('./clustersecret')
 const { DeploymentStore } = require('./deployment')
 const { DeploymentSecretStore } = require('./deploymentsecret')
-const TaskStore = require('./task')
+const { TaskStore } = require('./task')
 const { SettingsStore } = require('./settings')
 const { DeploymentHistoryStore } = require('./deploymenthistory')
 
@@ -23,7 +23,7 @@ const Store = (knex) => {
   const clustersecret = new ClusterSecretStore(knex)
   const deployment = new DeploymentStore(knex)
   const deploymentsecret = new DeploymentSecretStore(knex)
-  const task = TaskStore(knex)
+  const task = new TaskStore(knex)
   const settings = new SettingsStore(knex)
   const deploymenthistory = new DeploymentHistoryStore(knex)
 
