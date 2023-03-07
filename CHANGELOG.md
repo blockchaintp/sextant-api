@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+* refactor: factor out overwriteMerge [view commit](https://github.com/catenasys/sextant-api/commit/a8bc8a06e8180131cee6e0d1c89e43672a5ec48c)
+* refactor(deployment_templates): refactor templateLoader to TS [view commit](https://github.com/catenasys/sextant-api/commit/4c324ba37d9ef2a07b3165bca006edafb06d2c34)
+* refactor: refactor helmUtils to TS [view commit](https://github.com/catenasys/sextant-api/commit/99fe66ded9a4e47fa6f10e7b9419019155e76f0f)
+* refactor(editions): refactor all editions to TS [view commit](https://github.com/catenasys/sextant-api/commit/ef8b68a3f1ca562fee6573df6833a3f0ba3f7c6c)
+* refactor(editions): add edition-types and apply to dev.ts [view commit](https://github.com/catenasys/sextant-api/commit/e86f3578f5ad0e53b51f3b503e22011904706420)
+* fix: editions should be compiled and copied in [view commit](https://github.com/catenasys/sextant-api/commit/38caa480cc1e7a78ec589768d21dfc67d2f851ff)
+* refactor(enumerations): convert to ts [view commit](https://github.com/catenasys/sextant-api/commit/0475203a93f43ef2eedff3132c9b1eea27b085f4)
+* refactor(config): convert to ts [view commit](https://github.com/catenasys/sextant-api/commit/935cbda2a0733f36478c733b3445a419feb9b6bb)
+* build(eslint): add eslint configuration for TS [view commit](https://github.com/catenasys/sextant-api/commit/d9eab0b278d4c69811244c4d5265dbca9ceb2449)
+* refactor: remove unused src/address.js [view commit](https://github.com/catenasys/sextant-api/commit/3a1bca7f6332fdb55191d62794c0740f60618515)
+* refactor(logging): migrate to ts [view commit](https://github.com/catenasys/sextant-api/commit/5858ccb38fbf6a08e7e2c196e1728ba5d7a32809)
+* build(Dockerfile): update Dockerfile to use tsc compiled javascript [view commit](https://github.com/catenasys/sextant-api/commit/989096f42fe9d23af17c37bfdca0ea3bc439454c)
+* build(package.json): add typescript to dev dependencies [view commit](https://github.com/catenasys/sextant-api/commit/51b593dfedf2ee52dad33f702f6ccfdb3ef8c75a)
+* build(typescript): add a tsconfig that allows incrimental migration from JS [view commit](https://github.com/catenasys/sextant-api/commit/b5c54103a862245681623bcb5e859f93b56ea2fc)
+* fix(config): remove direct references to package.json from src [view commit](https://github.com/catenasys/sextant-api/commit/90a1047568d30ed027bb75831590a2d08706fde1)
 * fix(linting-changes-to-pass-precommit): changes to cluster js and relevant test files to match error messages and linting for precommit [view commit](https://github.com/catenasys/sextant-api/commit/c2015d7a6bd8a0295eeade96ab0ea2864c29c1bf)
 * fix: passport logout requires a passed function [view commit](https://github.com/catenasys/sextant-api/commit/8bffdc1d5a49e164776b9d1b5164c77a915a96cb)
 * build(deps): Bump passport from 0.4.1 to 0.6.0 [view commit](https://github.com/catenasys/sextant-api/commit/18a9db1422c630f93f5ea8ad77c1f8ecac08bcd5)
