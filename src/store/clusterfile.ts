@@ -3,9 +3,18 @@ import * as config from '../config'
 import * as base64 from '../utils/base64'
 
 export class ClusterFileStore {
-  private knex: Knex
-  constructor(knex: Knex) {
+  protected knex: Knex
+  protected orderBy: { direction: string; field: string }
+  protected table: string
+
+  constructor(
+    knex: Knex,
+    table: string = config.TABLES.clusterfile,
+    orderBy: { direction: string; field: string } = config.LIST_ORDER_BY_FIELDS.clusterfile
+  ) {
     this.knex = knex
+    this.table = table
+    this.orderBy = orderBy
   }
 
   /*
@@ -18,10 +27,9 @@ export class ClusterFileStore {
         * base64Data
   */
   public async create({ data: { cluster, name, rawData, base64Data } }, trx: Knex.Transaction) {
-    if (!cluster) throw new Error(`data.cluster param must be given to store.clusterfile.create`)
-    if (!name) throw new Error(`data.name param must be given to store.clusterfile.create`)
-    if (!rawData && !base64Data)
-      throw new Error(`data.rawData or data.base64Data param must be given to store.clusterfile.create`)
+    if (!cluster) throw new Error(`data.cluster param must be given to create`)
+    if (!name) throw new Error(`data.name param must be given to create`)
+    if (!rawData && !base64Data) throw new Error(`data.rawData or data.base64Data param must be given to create`)
 
     const insertData = {
       cluster,
@@ -29,7 +37,7 @@ export class ClusterFileStore {
       base64data: base64Data || base64.encode(rawData),
     }
 
-    const [result] = await (trx || this.knex)(config.TABLES.clusterfile).insert(insertData).returning('*')
+    const [result] = await (trx || this.knex)(this.table).insert(insertData).returning('*')
     return result
   }
 
@@ -40,8 +48,8 @@ export class ClusterFileStore {
       * id or name
   */
   public async delete({ cluster, id, name }: { cluster: number; id?: number; name?: string }, trx: Knex.Transaction) {
-    if (!cluster) throw new Error(`cluster must be given to store.clusterfile.get`)
-    if (!id && !name) throw new Error(`id or name must be given to store.clusterfile.get`)
+    if (!cluster) throw new Error(`cluster must be given to delete`)
+    if (!id && !name) throw new Error(`id or name must be given to delete`)
 
     const queryParams: { cluster: number; id?: number; name?: string } = {
       cluster,
@@ -50,7 +58,7 @@ export class ClusterFileStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    const [result] = await (trx || this.knex)(config.TABLES.clusterfile).where(queryParams).del().returning('*')
+    const [result] = await (trx || this.knex)(this.table).where(queryParams).del().returning('*')
     return result
   }
 
@@ -59,9 +67,9 @@ export class ClusterFileStore {
     params:
       * cluster
   */
-  public async deleteForCluster({ cluster }, trx: Knex.Transaction) {
+  public async deleteForCluster({ cluster }: { cluster: number }, trx: Knex.Transaction) {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.del`)
-    const [result] = await (trx || this.knex)(config.TABLES.clusterfile)
+    const [result] = await (trx || this.knex)(this.table)
       .where({
         cluster,
       })
@@ -77,8 +85,8 @@ export class ClusterFileStore {
       * id or name
   */
   public get({ cluster, id, name }: { cluster: number; id?: number; name?: string }, trx: Knex.Transaction) {
-    if (!cluster) throw new Error(`cluster must be given to store.clusterfile.get`)
-    if (!id && !name) throw new Error(`id or name must be given to store.clusterfile.get`)
+    if (!cluster) throw new Error(`cluster must be given to get`)
+    if (!id && !name) throw new Error(`id or name must be given to get`)
 
     const queryParams: { cluster: number; id?: number; name?: string } = {
       cluster,
@@ -87,7 +95,7 @@ export class ClusterFileStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    return (trx || this.knex).select('*').from(config.TABLES.clusterfile).where(queryParams).first()
+    return (trx || this.knex).select('*').from(this.table).where(queryParams).first()
   }
 
   /*
@@ -95,18 +103,47 @@ export class ClusterFileStore {
     params:
       * cluster
   */
-  public list({ cluster }, trx: Knex.Transaction) {
-    if (!cluster) throw new Error(`cluster must be given to store.clusterfile.list`)
-
-    const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
+  public list({ cluster }: { cluster: number }, trx: Knex.Transaction) {
+    if (!cluster) throw new Error(`cluster must be given to list`)
 
     return (trx || this.knex)
       .select('*')
-      .from(config.TABLES.clusterfile)
+      .from(this.table)
       .where({
         cluster,
       })
-      .orderBy(orderBy.field, orderBy.direction)
+      .orderBy(this.orderBy.field, this.orderBy.direction)
+  }
+
+  /*
+    replace a single clustersecret
+    i.e. one of create or update
+    params:
+      * data
+        * cluster
+        * name
+        * rawData || base64Data
+  */
+  public async replace({ data: { cluster, name, rawData, base64Data } }, trx: Knex.Transaction) {
+    await this.delete(
+      {
+        cluster,
+        name,
+      },
+      trx
+    )
+
+    return this.create(
+      {
+        data: {
+          cluster,
+          name,
+          rawData,
+          base64Data,
+        },
+      },
+      trx
+    )
   }
 
   /*
@@ -126,10 +163,9 @@ export class ClusterFileStore {
     }: { cluster: number; data: { base64Data?: string; rawData?: string }; id?: number; name?: string },
     trx: Knex.Transaction
   ) {
-    if (!cluster) throw new Error(`cluster must be given to store.clusterfile.update`)
-    if (!id && !name) throw new Error(`id or name must be given to store.clusterfile.update`)
-    if (!rawData && !base64Data)
-      throw new Error(`data.rawData or data.base64Data param must be given to store.clusterfile.update`)
+    if (!cluster) throw new Error(`cluster must be given to update`)
+    if (!id && !name) throw new Error(`id or name must be given to update`)
+    if (!rawData && !base64Data) throw new Error(`data.rawData or data.base64Data param must be given to update`)
 
     const queryParams: { cluster: number; id?: number; name?: string } = {
       cluster,
@@ -138,7 +174,7 @@ export class ClusterFileStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    const [result] = await (trx || this.knex)(config.TABLES.clusterfile)
+    const [result] = await (trx || this.knex)(this.table)
       .where(queryParams)
       .update({
         base64data: base64Data || base64.encode(rawData),
