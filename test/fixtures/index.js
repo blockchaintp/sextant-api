@@ -11,7 +11,7 @@ const config = require('../../src/config')
 const userUtils = require('../../src/utils/user')
 const { UserStore } = require('../../src/store/user')
 const ClusterStore = require('../../src/store/cluster')
-const DeploymentStore = require('../../src/store/deployment')
+const { DeploymentStore } = require('../../src/store/deployment')
 const { RoleStore } = require('../../src/store/role')
 const TaskStore = require('../../src/store/task')
 
@@ -171,7 +171,7 @@ const insertTestClusters = async (databaseConnection, data) => {
 const insertTestDeployments = async (databaseConnection, cluster, data) => {
   data = data || SIMPLE_DEPLOYMENT_DATA
 
-  const store = DeploymentStore(databaseConnection)
+  const store = new DeploymentStore(databaseConnection)
 
   // map of cluster names onto database records
   const deploymentMap = {}
