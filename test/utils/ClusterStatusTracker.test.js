@@ -1,9 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const asyncTest = require('../asyncTest')
 const { CLUSTER_STATUS, CLUSTER_PROVISION_TYPE } = require('../../src/config')
 const database = require('../database')
 const fixtures = require('../fixtures')
 const { ClusterStatusTracker } = require('../../src/jobs/ClusterStatusTracker')
-const Store = require('../../src/store')
+const { Store } = require('../../src/store')
 
 const PG_CLUSTER_DATA = [
   {
@@ -96,7 +102,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('getAllClusters -> should return a list of the clusters that were just added', async (test) => {
-    const store = Store(getConnection())
+    const store = new Store(getConnection())
     const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
     const clusters = await clusterStatusTracker.getAllClusters()
@@ -106,7 +112,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('updateCluster -> should update a cluster status', async (test) => {
-    const store = Store(getConnection())
+    const store = new Store(getConnection())
     const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
     const cluster = await store.cluster.get({ id: 4 })
@@ -117,7 +123,7 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest(
     "ping() should not update a provisioned cluster's status if Kubernetes returns a list of namespaces",
     async (test) => {
-      const store = Store(getConnection())
+      const store = new Store(getConnection())
       const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
       await clusterStatusTracker.ping(PG_CLUSTER_DATA[0])
@@ -129,7 +135,7 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest(
     "ping() should update a provisioned cluster's status to error if Kubernetes returns an empty list of namespaces",
     async (test) => {
-      const store = Store(getConnection())
+      const store = new Store(getConnection())
       const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
       await clusterStatusTracker.ping(PG_CLUSTER_DATA[1], MockKubectl)
@@ -141,7 +147,7 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest(
     "ping() should update an error cluster's status to provisioned if Kubernetes returns a list of namespaces",
     async (test) => {
-      const store = Store(getConnection())
+      const store = new Store(getConnection())
       const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
 
       await clusterStatusTracker.ping(PG_CLUSTER_DATA[2], MockKubectl)

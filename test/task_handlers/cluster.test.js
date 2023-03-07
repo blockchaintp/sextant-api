@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable max-len */
 const Promise = require('bluebird')
 const database = require('../database')
@@ -6,29 +11,24 @@ const fixtures = require('../fixtures')
 const asyncTest = require('../asyncTest')
 
 const ClusterController = require('../../src/controller/cluster')
-const Store = require('../../src/store')
+const { Store } = require('../../src/store')
 const TaskProcessor = require('../../src/taskprocessor')
 const Tasks = require('../../src/tasks')
 
 const config = require('../../src/config')
 
-const {
-  CLUSTER_STATUS,
-  USER_TYPES,
-  TASK_ACTION,
-  TASK_CONTROLLER_LOOP_DELAY,
-} = config
+const { CLUSTER_STATUS, USER_TYPES, TASK_ACTION, TASK_CONTROLLER_LOOP_DELAY } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   const getController = () => {
-    const store = Store(getConnection())
+    const store = new Store(getConnection())
     return ClusterController({
       store,
     })
   }
 
   const getTaskProcessor = (handlers) => {
-    const store = Store(getConnection())
+    const store = new Store(getConnection())
     return TaskProcessor({
       store,
       handlers,
@@ -43,7 +43,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('cluster task_handlers -> create cluster', async (t) => {
-    const store = Store(getConnection())
+    const store = new Store(getConnection())
 
     const handlers = Tasks({
       testMode: true,
@@ -70,7 +70,11 @@ database.testSuiteWithDatabase((getConnection) => {
       id: testClusters.admin.id,
     })
 
-    t.deepEqual(updatedCluster.desired_state, testClusters.admin.desired_state, 'the applied_state has been updated to the desired_state')
+    t.deepEqual(
+      updatedCluster.desired_state,
+      testClusters.admin.desired_state,
+      'the applied_state has been updated to the desired_state'
+    )
     t.equal(updatedCluster.status, CLUSTER_STATUS.provisioned, 'the cluster status is provisioned')
 
     await taskProcessor.stop()

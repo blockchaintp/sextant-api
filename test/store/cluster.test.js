@@ -1,29 +1,31 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const database = require('../database')
 const fixtures = require('../fixtures')
 const tools = require('../tools')
 
 const asyncTest = require('../asyncTest')
 
-const ClusterStore = require('../../src/store/cluster')
+const { ClusterStore } = require('../../src/store/cluster')
 const config = require('../../src/config')
 
-const {
-  CLUSTER_STATUS,
-  CLUSTER_PROVISION_TYPE,
-  CLUSTER_STATUS_DEFAULT,
-} = config
+const { CLUSTER_STATUS, CLUSTER_PROVISION_TYPE, CLUSTER_STATUS_DEFAULT } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let testCluster = null
 
   asyncTest('cluster store -> list no data', async (t) => {
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
     const clusters = await store.list({})
     t.equal(clusters.length, 0, 'there were no clusters')
   })
 
   asyncTest('cluster store -> create with missing values', async (t) => {
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
 
     await tools.insertWithMissingValues(t, store, {
       name: 'testcluster',
@@ -35,7 +37,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('cluster store -> create with bad provision_type', async (t) => {
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
     let error = null
 
     try {
@@ -70,14 +72,18 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('cluster store -> list with ordered data', async (t) => {
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
 
     const expectedCount = fixtures.SIMPLE_CLUSTER_DATA.length
     const expectedOrder = fixtures.SIMPLE_CLUSTER_DATA.map((d) => d.name)
     expectedOrder.sort()
     const clusters = await store.list({})
     t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
-    t.deepEqual(clusters.map((cluster) => cluster.name), expectedOrder, 'the clusters were in the correct order')
+    t.deepEqual(
+      clusters.map((cluster) => cluster.name),
+      expectedOrder,
+      'the clusters were in the correct order'
+    )
   })
 
   asyncTest('cluster store -> get', async (t) => {
@@ -89,7 +95,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const joinedCluster = clusters[compareCluster.name]
     joinedCluster.active_deployments = '0'
 
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
     const cluster = await store.get({
       id: joinedCluster.id,
     })
@@ -97,7 +103,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('cluster store -> update with bad status', async (t) => {
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
     let error = null
     try {
       await store.update({
@@ -113,7 +119,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   asyncTest('cluster store -> update', async (t) => {
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
 
     const insertedCluster = await store.update({
       id: testCluster.id,
@@ -133,7 +139,7 @@ database.testSuiteWithDatabase((getConnection) => {
 
   asyncTest('cluster store -> delete', async (t) => {
     const allClusterDataLength = fixtures.SIMPLE_CLUSTER_DATA.length + fixtures.GET_CLUSTER_DATA.length
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
 
     await store.delete({
       id: testCluster.id,
@@ -146,7 +152,7 @@ database.testSuiteWithDatabase((getConnection) => {
   asyncTest('cluster store -> list with deleted', async (t) => {
     const allClusterDataLength = fixtures.SIMPLE_CLUSTER_DATA.length + fixtures.GET_CLUSTER_DATA.length
 
-    const store = ClusterStore(getConnection())
+    const store = new ClusterStore(getConnection())
 
     const expectedCount = allClusterDataLength
     const clusters = await store.list({
