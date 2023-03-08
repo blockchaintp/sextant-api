@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /*
 
   extract the cluster secrets from the desired state
@@ -11,10 +12,16 @@
     * secrets - an object of name onto an object with either base64Data or rawData
 
 */
-const extractClusterSecrets = ({
+export function extractClusterSecrets({
   desired_state,
-}) => {
-  const secrets = {}
+}: {
+  desired_state: {
+    [key: string]: unknown
+  }
+}) {
+  const secrets: {
+    [key: string]: unknown
+  } = {}
 
   if (!desired_state) {
     return {
@@ -29,22 +36,18 @@ const extractClusterSecrets = ({
     secrets.token = {
       rawData: returnDesiredState.token,
     }
-    delete (returnDesiredState.token)
+    delete returnDesiredState.token
   }
 
   if (returnDesiredState.ca) {
     secrets.ca = {
       rawData: returnDesiredState.ca,
     }
-    delete (returnDesiredState.ca)
+    delete returnDesiredState.ca
   }
 
   return {
     desired_state: returnDesiredState,
     secrets,
   }
-}
-
-module.exports = {
-  extractClusterSecrets,
 }
