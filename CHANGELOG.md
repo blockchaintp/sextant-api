@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* refactor(store): convert Store and ClusterStore to ts [view commit](https://github.com/catenasys/sextant-api/commit/f66aa9ab1620e5f5f638229dcea9d83143aec552)
+* refactor(store): convert task to ts [view commit](https://github.com/catenasys/sextant-api/commit/2b57da4f953777118f98f583bef3e4264eec19e5)
+* refactor(store): convert deployment related [view commit](https://github.com/catenasys/sextant-api/commit/446fe14b4a070b5e0f66f2d235827a6aedad86a1)
+* refactor(store): clusterfile and clustersecret remove duplications [view commit](https://github.com/catenasys/sextant-api/commit/394bf8d2ac98815457f6f28e971e7eee436facc8)
+* refactor(store): covert clusterfilestore to ts [view commit](https://github.com/catenasys/sextant-api/commit/f168b2f0b88d3c5086f8a0c575de238be321b91a)
+* refactor(store): convert clustersecretstore to ts [view commit](https://github.com/catenasys/sextant-api/commit/f0df6b2b9f224ebd576fea9eb5583700acb2753a)
+* refactor(store): convert DeploymentSecret to ts [view commit](https://github.com/catenasys/sextant-api/commit/6e04f15dc5e1b4c71bca74a75b95f1ffbf169923)
+* refactor(store): refactor UserStore [view commit](https://github.com/catenasys/sextant-api/commit/6c034b8f370a53829508e41ea4bb5cdaadae9896)
+* refactor(store): refactor settings to ts [view commit](https://github.com/catenasys/sextant-api/commit/9cee18aea3a1313996742f1f5ad1bbae5ba46c5d)
+* refactor(store): refactor role to ts [view commit](https://github.com/catenasys/sextant-api/commit/354aac032ae1e199ebc09302c88b450b12970fb3)
+* build(tsconfig): include test dir [view commit](https://github.com/catenasys/sextant-api/commit/483c4c2441e57a821a29d876339315c795eb0f49)
 * refactor: factor out overwriteMerge [view commit](https://github.com/catenasys/sextant-api/commit/a8bc8a06e8180131cee6e0d1c89e43672a5ec48c)
 * refactor(deployment_templates): refactor templateLoader to TS [view commit](https://github.com/catenasys/sextant-api/commit/4c324ba37d9ef2a07b3165bca006edafb06d2c34)
 * refactor: refactor helmUtils to TS [view commit](https://github.com/catenasys/sextant-api/commit/99fe66ded9a4e47fa6f10e7b9419019155e76f0f)
