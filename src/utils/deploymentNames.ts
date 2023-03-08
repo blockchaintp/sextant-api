@@ -34,7 +34,7 @@ export const getBestNamespace = memoize(
       const desired_state = deployment.desired_state as object
       if (hasProperty(desired_state, 'namespace')) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return deployment.desired_state['namespace']
+        return deployment.desired_state.namespace as string
       }
     }
     const { deployment_type, deployment_version, applied_state, desired_state } = deployment

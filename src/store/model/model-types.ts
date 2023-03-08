@@ -2,8 +2,8 @@
 import { DatabaseIdentifier } from './scalar-types'
 
 type StateApplicationInfo = {
-  applied_state: unknown
-  desired_state: unknown
+  applied_state: { [key: string]: unknown }
+  desired_state: { [key: string]: unknown }
 }
 
 export type Cluster = StateApplicationInfo & {
