@@ -1,8 +1,10 @@
+/* eslint-disable camelcase */
 import { Knex } from 'knex'
 import * as config from '../config'
-import { ChartBundleName, ChartVersion } from '../edition-type'
-import { DeploymentHistoryStore } from './deploymenthistory'
 import { getLogger } from '../logging'
+import { DeploymentHistoryStore } from './deploymenthistory'
+import { Deployment, DeploymentHistory } from './model/model-types'
+import { DatabaseIdentifier } from './model/scalar-types'
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
   name: 'DeploymentStore',
@@ -15,6 +17,8 @@ const currentHour = () => {
   now.setMinutes(0)
   return now
 }
+
+export type DeploymentIdentifying = { id: DatabaseIdentifier }
 
 export class DeploymentStore {
   private deploymentHistoryStore: DeploymentHistoryStore
@@ -39,17 +43,10 @@ export class DeploymentStore {
     {
       data: { cluster, name, deployment_type, deployment_version, desired_state, custom_yaml, deployment_method },
     }: {
-      data: {
-        cluster: number
-        custom_yaml: any
-        deployment_type: ChartBundleName
-        deployment_version: ChartVersion
-        desired_state: any
-        deployment_method: string
-        name: string
-      }
+      data: Pick<Deployment, 'cluster' | 'deployment_type' | 'name' | 'deployment_version' | 'desired_state'> &
+        Partial<Pick<Deployment, 'custom_yaml' | 'deployment_method'>>
     },
-    trx: Knex.Transaction
+    trx?: Knex.Transaction
   ) {
     if (!cluster) throw new Error('data.cluster param must be given to store.deployment.create')
     if (!name) throw new Error('data.name param must be given to store.deployment.create')
@@ -57,7 +54,7 @@ export class DeploymentStore {
     if (!deployment_version) throw new Error('data.deployment_version param must be given to store.deployment.create')
     if (!desired_state) throw new Error('data.desired_state param must be given to store.deployment.create')
 
-    const [result] = await (trx || this.knex)(config.TABLES.deployment)
+    const [result] = await (trx || this.knex)<Deployment>(config.TABLES.deployment)
       .insert({
         cluster,
         name,
@@ -92,11 +89,11 @@ export class DeploymentStore {
     params:
       * id
   */
-  public async delete({ id }: { id: number }, trx: Knex.Transaction) {
+  public async delete({ id }: DeploymentIdentifying, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.deployment.delete')
     const deployment = await this.get({ id }, trx)
 
-    const [result] = await (trx || this.knex)(config.TABLES.deployment)
+    const [result] = await (trx || this.knex)<Deployment>(config.TABLES.deployment)
       .where({
         id,
       })
@@ -127,16 +124,16 @@ export class DeploymentStore {
     params:
       * id
   */
-  public get({ id }: { id: number }, trx: Knex.Transaction) {
+  public get({ id }: DeploymentIdentifying, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.deployment.get')
 
     return (trx || this.knex)
-      .select('*')
+      .select<Deployment>('*')
       .from(config.TABLES.deployment)
       .where({
         id,
       })
-      .first()
+      .first<Deployment>()
   }
 
   /*
@@ -144,12 +141,12 @@ export class DeploymentStore {
     params:
       * cluster
   */
-  public list({ cluster, deleted }: { cluster: number | 'all'; deleted: boolean }, trx: Knex.Transaction) {
+  public list({ cluster, deleted }: { cluster: number | 'all'; deleted: boolean }, trx?: Knex.Transaction) {
     const orderBy = config.LIST_ORDER_BY_FIELDS.clusterfile
 
     if (!cluster) throw new Error('cluster must be given to store.deployment.list')
 
-    const sqlQuery = (trx || this.knex).select('*').from(config.TABLES.deployment)
+    const sqlQuery = (trx || this.knex).select<Deployment>('*').from(config.TABLES.deployment)
 
     if (cluster !== 'all') {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -183,11 +180,11 @@ export class DeploymentStore {
         * maintenance_flag
 
   */
-  public async update({ id, data }: { id: number; data: any }, trx: Knex.Transaction) {
+  public async update({ id, data }: { data: Partial<Deployment>; id: number }, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
-    const previousRecord = await this.deploymentHistoryStore.get({ deployment_id: id, first: true }, trx)
-    const [result] = await (trx || this.knex)(config.TABLES.deployment)
+    const previousRecord = await this.deploymentHistoryStore.getLast({ deployment_id: id }, trx)
+    const [result] = await (trx || this.knex)<Deployment>(config.TABLES.deployment)
       .where({
         id,
       })
@@ -213,13 +210,17 @@ export class DeploymentStore {
   }
 
   public async updateStatus(
-    { id, helm_response, data }: { id: number; helm_response: any; data: any },
-    trx: Knex.Transaction
+    {
+      id,
+      helm_response,
+      data,
+    }: DeploymentIdentifying & { data: Partial<Deployment> } & Partial<Pick<DeploymentHistory, 'helm_response'>>,
+    trx?: Knex.Transaction
   ) {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
     const ts = new Date(currentHour()).toISOString().replace('T', ' ').replace('Z', '')
-    const [result] = await (trx || this.knex)(config.TABLES.deployment)
+    const [result] = await (trx || this.knex)<Deployment>(config.TABLES.deployment)
       .where({
         id,
       })

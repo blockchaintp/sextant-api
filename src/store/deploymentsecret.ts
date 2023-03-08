@@ -1,6 +1,7 @@
 import { Knex } from 'knex'
 import * as config from '../config'
 import * as base64 from '../utils/base64'
+import { DeploymentSecret } from './model/model-types'
 
 /*
 
@@ -8,6 +9,8 @@ import * as base64 from '../utils/base64'
   at some point
 
 */
+
+export type DeploymentSecretIdentifying = { deployment: number; id?: number; name?: string }
 
 export class DeploymentSecretStore {
   private knex: Knex
@@ -21,21 +24,32 @@ export class DeploymentSecretStore {
       * data
         * deployment
         * name
-        * rawData || base64Data
+        * rawData || base64data
   */
-  public async create({ data: { deployment, name, rawData, base64Data } }, trx: Knex.Transaction) {
+  public async create(
+    {
+      data: { deployment, name, rawData, base64data },
+    }: {
+      data: Pick<DeploymentSecret, 'deployment' | 'name'> & { rawData?: string } & Partial<
+          Pick<DeploymentSecret, 'base64data'>
+        >
+    },
+    trx?: Knex.Transaction
+  ) {
     if (!deployment) throw new Error(`data.deployment param must be given to store.deploymentsecret.create`)
     if (!name) throw new Error(`data.name param must be given to store.deploymentsecret.create`)
-    if (!rawData && !base64Data)
-      throw new Error(`data.rawData or data.base64Data param must be given to store.deploymentsecret.create`)
+    if (!rawData && !base64data)
+      throw new Error(`data.rawData or data.base64data param must be given to store.deploymentsecret.create`)
 
     const insertData = {
       deployment,
       name,
-      base64data: base64Data || base64.encode(rawData),
+      base64data: base64data || base64.encode(rawData),
     }
 
-    const [result] = await (trx || this.knex)(config.TABLES.deploymentsecret).insert(insertData).returning('*')
+    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
+      .insert(insertData)
+      .returning('*')
     return result
   }
 
@@ -45,10 +59,7 @@ export class DeploymentSecretStore {
       * deployment
       * id or name
   */
-  public async delete(
-    { deployment, id, name }: { deployment: number; id?: number; name?: string },
-    trx: Knex.Transaction
-  ) {
+  public async delete({ deployment, id, name }: DeploymentSecretIdentifying, trx?: Knex.Transaction) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.del`)
     if (!id && !name) throw new Error(`id or name must be given to store.deploymentsecret.del`)
 
@@ -59,7 +70,10 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    const [result] = await (trx || this.knex)(config.TABLES.deploymentsecret).where(queryParams).del().returning('*')
+    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
+      .where(queryParams)
+      .del()
+      .returning('*')
     return result
   }
 
@@ -68,9 +82,12 @@ export class DeploymentSecretStore {
     params:
       * deployment
   */
-  public async deleteForDeployment({ deployment }: { deployment: number }, trx: Knex.Transaction) {
+  public async deleteForDeployment(
+    { deployment }: Pick<DeploymentSecretIdentifying, 'deployment'>,
+    trx?: Knex.Transaction
+  ) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.deleteForDeployment`)
-    const [result] = await (trx || this.knex)(config.TABLES.deploymentsecret)
+    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
       .where({
         deployment,
       })
@@ -85,7 +102,7 @@ export class DeploymentSecretStore {
       * deployment
       * id or name
   */
-  public get({ deployment, id, name }: { deployment: number; id?: number; name?: string }, trx: Knex.Transaction) {
+  public get({ deployment, id, name }: DeploymentSecretIdentifying, trx?: Knex.Transaction) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.get`)
     if (!id && !name) throw new Error(`id or name must be given to store.deploymentsecret.get`)
 
@@ -96,7 +113,11 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    return (trx || this.knex).select('*').from(config.TABLES.deploymentsecret).where(queryParams).first()
+    return (trx || this.knex)
+      .select<DeploymentSecret>('*')
+      .from(config.TABLES.deploymentsecret)
+      .where(queryParams)
+      .first()
   }
 
   /*
@@ -104,13 +125,13 @@ export class DeploymentSecretStore {
     params:
       * deployment
   */
-  public list({ deployment }: { deployment: number }, trx: Knex.Transaction) {
+  public list({ deployment }: Pick<DeploymentSecretIdentifying, 'deployment'>, trx?: Knex.Transaction) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.list`)
 
     const orderBy = config.LIST_ORDER_BY_FIELDS.deploymentsecret
 
     return (trx || this.knex)
-      .select('*')
+      .select<DeploymentSecret>('*')
       .from(config.TABLES.deploymentsecret)
       .where({
         deployment,
@@ -125,9 +146,18 @@ export class DeploymentSecretStore {
       * data
         * deployment
         * name
-        * rawData || base64Data
+        * rawData || base64data
   */
-  public async replace({ data: { deployment, name, rawData, base64Data } }, trx: Knex.Transaction) {
+  public async replace(
+    {
+      data: { deployment, name, rawData, base64data },
+    }: {
+      data: Pick<DeploymentSecret, 'deployment' | 'name'> & { rawData?: string } & Partial<
+          Pick<DeploymentSecret, 'base64data'>
+        >
+    },
+    trx?: Knex.Transaction
+  ) {
     await this.delete(
       {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -144,7 +174,7 @@ export class DeploymentSecretStore {
           deployment,
           name,
           rawData,
-          base64Data,
+          base64data,
         },
       },
       trx
@@ -157,21 +187,21 @@ export class DeploymentSecretStore {
       * deployment
       * id or name
       * data
-        * rawData || base64Data
+        * rawData || base64data
   */
   public async update(
     {
       deployment,
       id,
       name,
-      data: { rawData, base64Data },
-    }: { data: { base64Data?: string; rawData?: string }; deployment: number; id?: number; name?: string },
-    trx: Knex.Transaction
+      data: { rawData, base64data },
+    }: { data: { rawData?: string } & Partial<Pick<DeploymentSecret, 'base64data'>> } & DeploymentSecretIdentifying,
+    trx?: Knex.Transaction
   ) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.update`)
     if (!id && !name) throw new Error(`id or name must be given to store.deploymentsecret.update`)
-    if (!rawData && !base64Data)
-      throw new Error(`data.rawData or data.base64Data param must be given to store.deploymentsecret.update`)
+    if (!rawData && !base64data)
+      throw new Error(`data.rawData or data.base64data param must be given to store.deploymentsecret.update`)
 
     const queryParams: { deployment: number; id?: number; name?: string } = {
       deployment,
@@ -180,10 +210,10 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    const [result] = await (trx || this.knex)(config.TABLES.deploymentsecret)
+    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
       .where(queryParams)
       .update({
-        base64data: base64Data || base64.encode(rawData),
+        base64data: base64data || base64.encode(rawData),
       })
       .returning('*')
     return result

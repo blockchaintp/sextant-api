@@ -61,7 +61,7 @@ const FileSecretStoreTest = ({ GetStore, title }) =>
         data: {
           cluster: testCluster.id,
           name: `base64-${testFile.name}`,
-          base64Data: testFile.base64data,
+          base64data: testFile.base64data,
         },
       })
       t.equal(file.cluster, testCluster.id, 'the cluster is correct')
@@ -129,7 +129,7 @@ const FileSecretStoreTest = ({ GetStore, title }) =>
         cluster: currentTestCluster.id,
         name: testFile.name,
         data: {
-          base64Data: testFile.updatedBase64Data,
+          base64data: testFile.updatedBase64Data,
         },
       })
 

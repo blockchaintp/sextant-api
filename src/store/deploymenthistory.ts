@@ -1,5 +1,7 @@
+/* eslint-disable camelcase */
 import { Knex } from 'knex'
 import { getLogger } from '../logging'
+import { DeploymentHistory } from './model/model-types'
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
   name: ' DeploymentHistoryStore',
@@ -17,14 +19,19 @@ export class DeploymentHistoryStore {
   }
 
   public async create(
-    { data: { cluster_id, deployment_id, name, deployment_type, deployment_version, status, helm_response } },
-    trx: Knex.Transaction
+    {
+      data: { cluster_id, deployment_id, name, deployment_type, deployment_version, status, helm_response },
+    }: {
+      data: Pick<DeploymentHistory, 'deployment_id' | 'name' | 'status'> &
+        Partial<Omit<DeploymentHistory, 'deployment_id' | 'name' | 'status'>>
+    },
+    trx?: Knex.Transaction
   ) {
-    if (!name) throw new Error('data.name param must be given to store.deploymentresult.create')
-    if (!status) throw new Error('data.status param must be given to store.deploymentresult.create')
-    if (!deployment_id) throw new Error('data.deployment_id param must be given to store.deploymentresult.create')
+    if (!name) throw new Error('data.name param must be given to store.deploymenthistory.create')
+    if (!status) throw new Error('data.status param must be given to store.deploymenthistory.create')
+    if (!deployment_id) throw new Error('data.deployment_id param must be given to store.deploymenthistory.create')
 
-    const [result] = await (trx || this.knex)('deployment_history')
+    const [result] = await (trx || this.knex)<DeploymentHistory>('deployment_history')
       .insert({
         cluster_id,
         deployment_id,
@@ -47,41 +54,30 @@ export class DeploymentHistoryStore {
     return result
   }
 
-  public get(
-    {
-      deployment_id,
-      limit,
-      first,
-      after,
-      before,
-    }: { deployment_id: number; limit?: number; first?: boolean } & DateRange,
-    trx: Knex.Transaction
-  ): any {
-    if (!deployment_id) throw new Error('id must be given to store.deploymentresult.get')
-    let query = (trx || this.knex).select('*').from('deployment_history').where({ deployment_id })
-
-    if (limit) {
-      query = query.limit(limit)
-    }
+  public async getLast(
+    { deployment_id, after, before }: { deployment_id: number } & DateRange,
+    trx?: Knex.Transaction
+  ) {
+    if (!deployment_id) throw new Error('id must be given to store.deploymenthistory.get')
+    let query = (trx || this.knex).select<DeploymentHistory>('*').from('deployment_history').where({ deployment_id })
 
     query = query.orderBy('recorded_at', 'desc')
 
-    if (first) {
-      query = query.first()
-    }
+    query = query.first<DeploymentHistory>()
 
-    query = this.timeRange(query, after, before)
-    return query
+    query = this.timeRange<DeploymentHistory>(query, after, before)
+    return await query.returning<DeploymentHistory>('*')
   }
 
-  public list({ after, before }: DateRange, trx: Knex.Transaction) {
+  public list({ after, before }: DateRange, trx?: Knex.Transaction) {
     let query = (trx || this.knex).select('*').from('deployment_history')
 
     query = this.timeRange(query, after, before)
     return query
   }
 
-  private timeRange(query, start?: Date, end?: Date) {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  private timeRange<T>(query: Knex.QueryBuilder<{}, T>, start?: Date, end?: Date) {
     let retQuery = query
     if (start) {
       retQuery = query.andWhere('recorded_at', '>=', start)
