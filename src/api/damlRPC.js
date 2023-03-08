@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-shadow */
 /*
  * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
  *
  * License: Product
  */
-const memoize = require('memoizee');
+const memoize = require('memoizee')
 const jwt = require('jsonwebtoken')
 const Promise = require('bluebird')
 const fs = require('fs')
@@ -16,15 +23,13 @@ const database = require('./database')
 const deploymentNames = require('../utils/deploymentNames')
 
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
-const SecretLoader = require('../utils/secretLoader')
+const { SecretLoader } = require('../utils/secretLoader')
 const Grpcurl = require('../utils/grpcurl')
 
 const DAML_GRPC_METHOD_PREFIX = 'com.daml.ledger.api.v1.'
 const DAML_RPC_PORT = 39000
 
-const DamlRPC = ({
-  store,
-} = {}) => {
+const DamlRPC = ({ store } = {}) => {
   if (!store) {
     throw new Error('Daml rpc requires a store')
   }
@@ -34,14 +39,12 @@ const DamlRPC = ({
     return `${fullName}-cert`
   }
 
-  const getPrivateKey = async ({
-    id,
-  }) => {
+  const getPrivateKey = async ({ id }) => {
     const deployment = await store.deployment.get({
       id,
     })
 
-    const secretLoader = await SecretLoader({
+    const secretLoader = new SecretLoader({
       store,
       id,
     })
@@ -54,41 +57,40 @@ const DamlRPC = ({
     return Buffer.from(keyBase64, 'base64').toString('utf8')
   }
 
-  const getJWTToken = async ({
-    id,
-    payload,
-  }) => {
+  const getJWTToken = async ({ id, payload }) => {
     const privateKey = await getPrivateKey({
       id,
     })
     return new Promise((resolve, reject) => {
-      jwt.sign({
-        'https://daml.com/ledger-api': payload,
-      // eslint-disable-next-line consistent-return
-      }, privateKey, {
-        algorithm: 'RS256',
-      }, (err, result) => {
-        if (err) return reject(err)
-        return resolve(result)
-      })
+      jwt.sign(
+        {
+          'https://daml.com/ledger-api': payload,
+          // eslint-disable-next-line consistent-return
+        },
+        privateKey,
+        {
+          algorithm: 'RS256',
+        },
+        (err, result) => {
+          if (err) return reject(err)
+          return resolve(result)
+        }
+      )
     })
   }
 
-  const getAdminJWTToken = async ({
-    id,
-  }) => getJWTToken({
-    id,
-    payload: {
-      admin: true,
-      public: true,
-    },
-  })
+  const getAdminJWTToken = ({ id }) =>
+    getJWTToken({
+      id,
+      payload: {
+        admin: true,
+        public: true,
+      },
+    })
 
   // eslint-disable-next-line max-len
   // grpcurl -plaintext -H 'Authorization: Bearer 123' localhost:39000 com.daml.ledger.api.v1.LedgerIdentityService.GetLedgerIdentity
-  const m_getLedgerId = async ({
-    id,
-  }) => {
+  const m_getLedgerId = async ({ id }) => {
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -103,9 +105,7 @@ const DamlRPC = ({
     return proxy.request({
       pod: pods[0].metadata.name,
       port: DAML_RPC_PORT,
-      handler: async ({
-        port,
-      }) => {
+      handler: async ({ port }) => {
         const token = await getAdminJWTToken({
           id,
         })
@@ -114,9 +114,7 @@ const DamlRPC = ({
           port,
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
-        const {
-          ledgerId,
-        } = await grpccurl({
+        const { ledgerId } = await grpccurl({
           service: 'LedgerIdentityService',
           method: 'GetLedgerIdentity',
         })
@@ -126,9 +124,7 @@ const DamlRPC = ({
   }
   const getLedgerId = memoize(m_getLedgerId, { maxAge: 30000, promise: true })
 
-  const m_getParticipantId = async ({
-    id,
-  }) => {
+  const m_getParticipantId = async ({ id }) => {
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -143,9 +139,7 @@ const DamlRPC = ({
     return proxy.request({
       pod: pods[0].metadata.name,
       port: DAML_RPC_PORT,
-      handler: async ({
-        port,
-      }) => {
+      handler: async ({ port }) => {
         const token = await getAdminJWTToken({
           id,
         })
@@ -154,9 +148,7 @@ const DamlRPC = ({
           port,
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
-        const {
-          participantId,
-        } = await grpccurl({
+        const { participantId } = await grpccurl({
           service: 'admin.PartyManagementService',
           method: 'GetParticipantId',
         })
@@ -186,53 +178,47 @@ const DamlRPC = ({
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
     logger.debug({ fn: 'getParticipants', numberOfPods: pods.length }, 'found daml pods')
 
-    return Promise.map(pods, async (pod) => proxy.request({
-      pod: pod ? pod.metadata.name : null,
-      port: DAML_RPC_PORT,
-      handler: async ({
-        port,
-      }) => {
-        const grpccurl = Grpcurl({
-          token,
-          port,
-          prefix: DAML_GRPC_METHOD_PREFIX,
-        })
+    return Promise.map(pods, (pod) =>
+      proxy.request({
+        pod: pod ? pod.metadata.name : null,
+        port: DAML_RPC_PORT,
+        handler: async ({ port }) => {
+          const grpccurl = Grpcurl({
+            token,
+            port,
+            prefix: DAML_GRPC_METHOD_PREFIX,
+          })
 
-        const ledgerId = await getLedgerId({
-          id,
-        })
+          const ledgerId = await getLedgerId({
+            id,
+          })
 
-        const {
-          participantId,
-        } = await grpccurl({
-          service: 'admin.PartyManagementService',
-          method: 'GetParticipantId',
-        })
+          const { participantId } = await grpccurl({
+            service: 'admin.PartyManagementService',
+            method: 'GetParticipantId',
+          })
 
-        const {
-          partyDetails = [],
-        } = await grpccurl({
-          service: 'admin.PartyManagementService',
-          method: 'ListKnownParties',
-        })
+          const { partyDetails = [] } = await grpccurl({
+            service: 'admin.PartyManagementService',
+            method: 'ListKnownParties',
+          })
 
-        const partyNames = partyDetails.map((item) => ({
-          name: item.displayName,
-        }))
+          const partyNames = partyDetails.map((item) => ({
+            name: item.displayName,
+          }))
 
-        return {
-          participantId,
-          damlId: `${ledgerId}-${pod.metadata.name}`,
-          parties: partyNames,
-        };
-      },
-    }))
+          return {
+            participantId,
+            damlId: `${ledgerId}-${pod.metadata.name}`,
+            parties: partyNames,
+          }
+        },
+      })
+    )
   }
   const getParticipants = memoize(m_getParticipants, { maxAge: 30000, promise: true })
 
-  const m_getParticipantDetails = async ({
-    id,
-  }) => {
+  const m_getParticipantDetails = async ({ id }) => {
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -243,39 +229,34 @@ const DamlRPC = ({
     if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
     logger.trace({ fn: 'getParticipantDetails', numberOfPods: pods.length }, 'found daml pods')
 
-    return Promise.map(pods, async (pod) => proxy.request({
-      pod: pod.metadata.name,
-      port: DAML_RPC_PORT,
-      handler: async ({
-        port,
-      }) => {
-        const token = await getAdminJWTToken({
-          id,
-        })
-        const grpccurl = Grpcurl({
-          token,
-          port,
-          prefix: DAML_GRPC_METHOD_PREFIX,
-        })
-        const {
-          participantId,
-        } = await grpccurl({
-          service: 'admin.PartyManagementService',
-          method: 'GetParticipantId',
-        })
-        return {
-          validator: pod.metadata.name,
-          participantId: participantId.participantId,
-        }
-      },
-    }))
+    return Promise.map(pods, (pod) =>
+      proxy.request({
+        pod: pod.metadata.name,
+        port: DAML_RPC_PORT,
+        handler: async ({ port }) => {
+          const token = await getAdminJWTToken({
+            id,
+          })
+          const grpccurl = Grpcurl({
+            token,
+            port,
+            prefix: DAML_GRPC_METHOD_PREFIX,
+          })
+          const { participantId } = await grpccurl({
+            service: 'admin.PartyManagementService',
+            method: 'GetParticipantId',
+          })
+          return {
+            validator: pod.metadata.name,
+            participantId: participantId.participantId,
+          }
+        },
+      })
+    )
   }
   const getParticipantDetails = memoize(m_getParticipantDetails, { maxAge: 30000, promise: true })
 
-  const registerParticipant = async ({
-    id,
-    publicKey,
-  }) => {
+  const registerParticipant = async ({ id, publicKey }) => {
     if (!publicKey) throw new Error('publicKey must be given to api.damlRPC.registerParticipant')
 
     const participantId = await getParticipantId({
@@ -297,10 +278,7 @@ const DamlRPC = ({
     return database.damlParticipants
   }
 
-  const updateKey = ({
-    oldPublicKey,
-    newPublicKey,
-  }) => {
+  const updateKey = ({ oldPublicKey, newPublicKey }) => {
     if (!oldPublicKey) throw new Error('oldPublicKey must be given to api.damlRPC.updateKey')
     if (!newPublicKey) throw new Error('newPublicKey must be given to api.damlRPC.updateKey')
     const participant = database.damlParticipants.find((oneParticipant) => oneParticipant.publicKey === oldPublicKey)
@@ -309,11 +287,7 @@ const DamlRPC = ({
     return true
   }
 
-  const addParty = async ({
-    id,
-    partyName,
-    partyIdHint,
-  }) => {
+  const addParty = async ({ id, partyName, partyIdHint }) => {
     logger.info({
       fn: 'addParty',
       id,
@@ -339,7 +313,7 @@ const DamlRPC = ({
       port: DAML_RPC_PORT,
       handler: async ({
         port,
-      // eslint-disable-next-line consistent-return
+        // eslint-disable-next-line consistent-return
       }) => {
         logger.debug(`Allocating party to ${pod.metadata.name}`)
         const data = {
@@ -357,9 +331,7 @@ const DamlRPC = ({
           prefix: DAML_GRPC_METHOD_PREFIX,
         })
 
-        const {
-          partyDetails,
-        } = await grpccurl({
+        const { partyDetails } = await grpccurl({
           service: 'admin.PartyManagementService',
           method: 'AllocateParty',
           data,
@@ -372,12 +344,7 @@ const DamlRPC = ({
     return result ? true : false
   }
 
-  const generatePartyToken = async ({
-    id,
-    applicationId,
-    readAs,
-    actAs,
-  }) => {
+  const generatePartyToken = async ({ id, applicationId, readAs, actAs }) => {
     if (!applicationId) throw new Error('applicationId must be given to api.damlRPC.generatePartyTokens')
     if (!readAs) throw new Error('readAs must be given to api.damlRPC.generatePartyTokens')
     if (!actAs) throw new Error('actAs must be given to api.damlRPC.generatePartyTokens')
@@ -398,10 +365,7 @@ const DamlRPC = ({
     })
   }
 
-  const generateAdminToken = async ({
-    id,
-    applicationId,
-  }) => {
+  const generateAdminToken = async ({ id, applicationId }) => {
     if (!applicationId) throw new Error('applicationId must be given to api.damlRPC.generateAdminToken')
 
     const ledgerId = await getLedgerId({
@@ -419,9 +383,7 @@ const DamlRPC = ({
     })
   }
 
-  const getArchives = async ({
-    id,
-  } = {}) => {
+  const getArchives = async ({ id } = {}) => {
     logger.info({
       fn: 'getArchives',
       id,
@@ -446,31 +408,33 @@ const DamlRPC = ({
     // This is regardless of all validator pods
     // reaching consensus
     try {
-      return await Promise.resolve(proxy.request({
-        pod: pod.metadata.name,
-        port: DAML_RPC_PORT,
-        handler: async ({
-          port,
-        }) => {
-          const token = await Promise.resolve(getAdminJWTToken({
-            id,
-          }))
+      return await Promise.resolve(
+        proxy.request({
+          pod: pod.metadata.name,
+          port: DAML_RPC_PORT,
+          handler: async ({ port }) => {
+            const token = await Promise.resolve(
+              getAdminJWTToken({
+                id,
+              })
+            )
 
-          const grpccurl = Grpcurl({
-            token,
-            port,
-            prefix: DAML_GRPC_METHOD_PREFIX,
-          })
+            const grpccurl = Grpcurl({
+              token,
+              port,
+              prefix: DAML_GRPC_METHOD_PREFIX,
+            })
 
-          const response = await grpccurl({
-            service: 'admin.PackageManagementService',
-            method: 'ListKnownPackages',
-          })
-          const packages = response.packageDetails
+            const response = await grpccurl({
+              service: 'admin.PackageManagementService',
+              method: 'ListKnownPackages',
+            })
+            const packages = response.packageDetails
 
-          return packages ? packages.sort() : []
-        },
-      }))
+            return packages ? packages.sort() : []
+          },
+        })
+      )
     } catch (error) {
       logger.error({
         fn: 'getArchives',
@@ -484,12 +448,7 @@ const DamlRPC = ({
 
   // eslint-disable-next-line max-len
   // grpcurl -plaintext -H 'Authorization: Bearer 123' -d '{"dar_file": "ABC"}' localhost:39000 com.daml.ledger.api.v1.admin.PackageManagementService.UploadDarFile
-  const uploadArchive = async ({
-    id,
-    name,
-    size,
-    localFilepath,
-  } = {}) => {
+  const uploadArchive = async ({ id, name, size, localFilepath } = {}) => {
     logger.info({
       fn: 'uploadArchive',
       id,
@@ -498,8 +457,8 @@ const DamlRPC = ({
       localFilepath,
     })
 
-    const content = fs.readFileSync(localFilepath);
-    const contentBase64 = content.toString('base64');
+    const content = fs.readFileSync(localFilepath)
+    const contentBase64 = content.toString('base64')
 
     // This is responsible for port forwarding
     const proxy = await DeploymentPodProxy({
@@ -519,9 +478,7 @@ const DamlRPC = ({
     return proxy.request({
       pod: pod.metadata.name,
       port: DAML_RPC_PORT,
-      handler: async ({
-        port,
-      }) => {
+      handler: async ({ port }) => {
         const token = await getAdminJWTToken({
           id,
         })
@@ -544,7 +501,7 @@ const DamlRPC = ({
           })
         } catch (e) {
           if (e.toString().indexOf('Invalid DAR') >= 0) {
-            throw new Error('that file doesn\'t look like a DAR file')
+            throw new Error("that file doesn't look like a DAR file")
           } else {
             throw e
           }
