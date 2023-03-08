@@ -27,7 +27,7 @@ type ChartParsedDetails = {
   }
 }
 
-type ChartBundleDetailsMap = {
+export type ChartBundleDetailsMap = {
   [key: ChartBundleName]: ChartParsedDetails
 }
 
@@ -109,7 +109,7 @@ const structureYamlContent = (yamlContent: ChartDetails) => {
 // iterates over all of the charts in the helmCharts directory,
 // re-structures and merges the deployment details together
 const getHelmDeploymentDetails = () => {
-  let allDetails = {}
+  let allDetails: ChartBundleDetailsMap = {}
   const deploymentTypes = Object.keys(chartTable)
 
   for (const chartBundleName of deploymentTypes) {
