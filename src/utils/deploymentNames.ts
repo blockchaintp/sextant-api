@@ -1,35 +1,46 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable camelcase */
 /*
  * Copyright © 2021 Blockchain Technology Partners Limited All Rights Reserved
  *
  * License: Product
  */
-const memoize = require('memoizee')
-const helmUtils = require('../tasks/deployment/utils/helmUtils')
-const logger = require('../logging').getLogger({
+import * as memoize from 'memoizee'
+import * as helmUtils from '../tasks/deployment/utils/helmUtils'
+import { getLogger } from '../logging'
+import { getField as getFieldOriginal } from './getField'
+import { Deployment } from '../store/model/model-types'
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const logger = getLogger({
   name: 'utils/deploymentNames',
 })
-const getField = memoize(require('./getField').getField, { maxAge: 10000 })
 
-const getBestNamespace = memoize(
-  (deployment) => {
-    if (deployment.namespace) {
-      return deployment.namespace
+const getField = memoize(getFieldOriginal, { maxAge: 10000 })
+
+function hasProperty(obj: object, prop: string): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, prop) as boolean
+}
+
+export const getBestNamespace = memoize(
+  (deployment: Deployment): string => {
+    if (deployment.applied_state) {
+      const applied_state = deployment.applied_state as object
+      if (hasProperty(applied_state, 'namespace')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return applied_state['namespace']
+      }
     }
-    if (deployment.applied_state && deployment.applied_state.namespace) {
-      return deployment.applied_state.namespace
-    }
-    if (deployment.desired_state && deployment.desired_state.namespace) {
-      return deployment.desired_state.namespace
+    if (deployment.desired_state) {
+      const desired_state = deployment.desired_state as object
+      if (hasProperty(desired_state, 'namespace')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return deployment.desired_state['namespace']
+      }
     }
     const { deployment_type, deployment_version, applied_state, desired_state } = deployment
 
     if (applied_state) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       logger.warn(
         {
           fn: 'getBestNamespace',
@@ -41,7 +52,7 @@ const getBestNamespace = memoize(
       const applied_namespace = getField({
         deployment_type,
         deployment_version,
-        data: applied_state,
+        data: applied_state as object,
         field: 'namespace',
       })
       if (applied_namespace) {
@@ -51,20 +62,25 @@ const getBestNamespace = memoize(
     return getField({
       deployment_type,
       deployment_version,
-      data: desired_state,
+      data: desired_state as object,
       field: 'namespace',
     })
   },
   { maxAge: 60000 }
 )
 
+export type HelmRelease = {
+  chart: string
+  name: string
+  namespace: string
+}
 /**
  * Given a helm release status object translate that into an object that
  * __resembles__ a sextant deployment object.
  * @param {*} release the helm release status object
  */
-const helmReleaseToDeployment = memoize(
-  (release) => {
+export const helmReleaseToDeployment = memoize(
+  (release: HelmRelease) => {
     const { name, namespace, chart } = release
 
     const extension = name.split('-').slice(-1)[0] || ''
@@ -77,6 +93,7 @@ const helmReleaseToDeployment = memoize(
       extension,
       namespace,
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     logger.trace({ fn: 'helmReleaseToDeployment', deployment, release })
     return deployment
   },
@@ -88,8 +105,8 @@ const helmReleaseToDeployment = memoize(
  * __resembles__ a helm release status object.
  * @param {*} deployment a sextant deployment object
  */
-const deploymentToHelmRelease = memoize(
-  (deployment) => {
+export const deploymentToHelmRelease = memoize(
+  (deployment: Deployment) => {
     const { deployment_type, deployment_version, name } = deployment
     const chartInfo = helmUtils.getChartInfo(deployment_type, deployment_version)
     const chartVersion = helmUtils.getChartVersion(deployment_type, deployment_version)
@@ -99,12 +116,13 @@ const deploymentToHelmRelease = memoize(
 
     const releaseName = `$}-${extension}`
 
-    const release = {
+    const release: HelmRelease = {
       name: releaseName,
       namespace: getBestNamespace(deployment),
       chart,
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     logger.trace({
       fn: 'deploymentToHelmRelease',
       deployment_type,
@@ -117,26 +135,19 @@ const deploymentToHelmRelease = memoize(
   { maxAge: 60000 }
 )
 
-const getChartNameForDeployment = memoize(
-  (deployment) => {
+export const getChartNameForDeployment = memoize(
+  (deployment: Deployment) => {
     const chartInfo = helmUtils.getChartInfo(deployment.deployment_type, deployment.deployment_version)
     return helmUtils.getChartName(chartInfo)
   },
   { maxAge: 60000 }
 )
 
-const deploymentReleaseFullName = memoize(
-  (deployment) => {
+export const deploymentReleaseFullName = memoize(
+  (deployment: Deployment) => {
     const { name } = deploymentToHelmRelease(deployment)
     const chartName = getChartNameForDeployment(deployment)
     return `${name}-${chartName}`
   },
   { maxAge: 60000 }
 )
-
-module.exports = {
-  helmReleaseToDeployment,
-  deploymentToHelmRelease,
-  deploymentReleaseFullName,
-  getChartNameForDeployment,
-}
