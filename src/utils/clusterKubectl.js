@@ -1,17 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /*
-
   given a cluster - return a kubectl client that will connect to it
-
   it will load the secrets from the store if needed
-
 */
 
-const Kubectl = require('./kubectl')
+const { Kubectl } = require('./kubectl')
 
-const ClusterKubectl = async ({
-  cluster,
-  store,
-}) => {
+const ClusterKubectl = async ({ cluster, store }) => {
   if (!cluster) throw new Error('cluster required for ClusterKubectl')
   if (!store) throw new Error('store required for ClusterKubectl')
 
@@ -35,7 +33,7 @@ const ClusterKubectl = async ({
     }
   }
 
-  return Kubectl({
+  return new Kubectl({
     mode,
     remoteCredentials,
   })
