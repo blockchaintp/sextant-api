@@ -65,7 +65,7 @@ const getJWTToken = async ({ id, payload, store }: { id: DatabaseIdentifier; pay
         return resolve(result)
       }
     )
-  })
+  }) as Promise<string>
 }
 
 const getPrivateKey = async ({ id, store }: { id: DatabaseIdentifier; store: Store }) => {
@@ -390,7 +390,7 @@ export class DamlRPC {
     return database.damlParticipants
   }
 
-  public updateKey({ oldPublicKey, newPublicKey }: { oldPublicKey: string; newPublicKey: string }) {
+  public updateKey({ oldPublicKey, newPublicKey }: { newPublicKey: string; oldPublicKey: string }) {
     if (!oldPublicKey) throw new Error('oldPublicKey must be given to api.damlRPC.updateKey')
     if (!newPublicKey) throw new Error('newPublicKey must be given to api.damlRPC.updateKey')
     const participant = database.damlParticipants.find((oneParticipant) => oneParticipant.publicKey === oldPublicKey)

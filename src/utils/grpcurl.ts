@@ -19,7 +19,7 @@ const DEFAULT_HOSTNAME = 'localhost'
 // we apply this to grpcurl so we are not limited with our upload message size
 const MAX_MESSAGE_SIZE = 200000000
 
-function getOptions(options: { env?: { [key: string]: string }; [key: string]: unknown }) {
+function getOptions(options: { [key: string]: unknown; env?: { [key: string]: string } }) {
   const useOptions: { [key: string]: unknown; env?: { [key: string]: string } } = {
     ...options,
     // allow 5MB back on stdout
@@ -31,6 +31,19 @@ function getOptions(options: { env?: { [key: string]: string }; [key: string]: u
     },
   }
   return useOptions
+}
+
+async function cleanup(tokenPath: string, data?: unknown, dataPath?: string) {
+  await deleteFile(tokenPath)
+  if (data) {
+    await deleteFile(dataPath)
+  }
+}
+
+async function writeDataIfNecessary(data: unknown, dataPath: string) {
+  if (data) {
+    await writeFile(dataPath, JSON.stringify(data), 'utf8')
+  }
 }
 
 export const Grpcurl = ({
@@ -52,7 +65,8 @@ export const Grpcurl = ({
     data,
     options = {},
   }: {
-    data?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data?: any
     method: string
     options?: {
       [key: string]: unknown
@@ -66,27 +80,23 @@ export const Grpcurl = ({
     const tokenPath = tmp.tmpNameSync({ postfix: '.txt' })
     const dataPath = tmp.tmpNameSync({ postfix: '.json' })
     await writeFile(tokenPath, token, 'utf8')
+    await writeDataIfNecessary(data, dataPath)
+
+    // inject the token as a variable so it is not listed in "ps -ef"
+    const commandOptions = getOptions(options)
+    commandOptions.env.GRPC_TOKEN = token
+
+    let dataSource = ''
+    let dataFlag = ''
+    let dataLength: number | undefined = undefined
     if (data) {
-      await writeFile(dataPath, JSON.stringify(data), 'utf8')
-    }
-
-    // cleanup token and data files in both error and success cases
-    const cleanup = async () => {
-      await deleteFile(tokenPath)
-      if (data) {
-        await deleteFile(dataPath)
-      }
-    }
-
-    try {
-      // inject the token as a variable so it is not listed in "ps -ef"
-      const commandOptions = getOptions(options)
-      commandOptions.env.GRPC_TOKEN = token
-
       // if we have data - we pipe it from a tempfile
-      const dataSource = data ? `cat ${dataPath} |` : ''
-      const dataFlag = data ? '-d @' : ''
-
+      dataSource = `cat ${dataPath} |`
+      dataFlag = '-d @'
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      dataLength = data.length
+    }
+    try {
       // the grpcurl command
       // in the patched grpcurl -max-msg-sz applies to both request + response
       const runCommand =
@@ -94,12 +104,12 @@ export const Grpcurl = ({
         `-H 'Authorization: Bearer \${GRPC_TOKEN}' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      logger.debug({
+      logger.trace({
         action: 'grpcurl',
         command: runCommand,
         service,
         method,
-        dataLength: data ? data.length : undefined,
+        dataLength,
       })
       const result = await exec(runCommand, commandOptions)
       const parsedResult: unknown = result.stdout ? JSON.parse(result.stdout) : {}
@@ -108,13 +118,13 @@ export const Grpcurl = ({
         action: 'grpcurl',
         service,
         method,
-        dataLength: data ? data.length : undefined,
+        dataLength,
         parsedResult,
       })
-      await cleanup()
+      await cleanup(tokenPath, data, dataPath)
       return parsedResult
     } catch (e) {
-      await cleanup()
+      await cleanup(tokenPath, data, dataPath)
       throw e
     }
   }
