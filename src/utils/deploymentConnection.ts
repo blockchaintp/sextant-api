@@ -10,7 +10,7 @@ import * as base64 from './base64'
 import { ClusterKubectl } from './clusterKubectl'
 import * as deploymentNames from './deploymentNames'
 
-type Connection = {
+export type CachedConnection = {
   apiServer: string
   applied_state: unknown
   baseUrl: string
@@ -19,11 +19,11 @@ type Connection = {
   token: string
 }
 const cachedConnections: {
-  [key in string]: Connection
+  [key in string]: CachedConnection
 } = {}
 
 // an axios instance with authentication and pointing to the deployment namespace
-const deploymentConnection = async ({
+export const deploymentConnection = async ({
   store,
   id,
   onConnection,
@@ -31,7 +31,7 @@ const deploymentConnection = async ({
 }: {
   connectionCacheId?: string
   id: DatabaseIdentifier
-  onConnection?: (connection: Connection) => Promise<void>
+  onConnection?: (connection: CachedConnection) => Promise<void>
   store: Store
 }) => {
   let connection = cachedConnections[connectionCacheId]
