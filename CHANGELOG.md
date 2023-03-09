@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+* refactor(utils): remove database as unused [view commit](https://github.com/catenasys/sextant-api/commit/30e9d393a12f7a013431cf9b890120a36f8a7b91)
+* refactor(utils): remove transaction.js as unused [view commit](https://github.com/catenasys/sextant-api/commit/166c83ca233f4e3cf6385a7b2a5376cd74a2ac11)
+* refactor(utils): convert template to ts [view commit](https://github.com/catenasys/sextant-api/commit/5f93a0e21d4938ed7aa8c4ef2aef2183fe12b259)
+* refactor(utils): convert deploymentNames to ts [view commit](https://github.com/catenasys/sextant-api/commit/c53cd3506b744a16397ad7096ef4b987e4e5e3f0)
+* refactor(deployment_templates): improve typing in templateLoader.ts [view commit](https://github.com/catenasys/sextant-api/commit/b996581d6f5d0c5a592753243f69f23ebb68c2ee)
+* refactor(utils): convert getField to ts [view commit](https://github.com/catenasys/sextant-api/commit/3c9e0e15669c4822428c308b203e3d579d95ca5a)
+* refactor(utils): convert sextantKeyPair to ts [view commit](https://github.com/catenasys/sextant-api/commit/0fea8e94643ddb1f931e9a1d1da82e69b26e9ae4)
+* refactor(utils): convert user to ts [view commit](https://github.com/catenasys/sextant-api/commit/3ea7a3d5af1319d6f469cd8c69e3353673a810c0)
+* refactor(utils): convert secp256k1 to ts [view commit](https://github.com/catenasys/sextant-api/commit/518d225113e552baf434807d2ffbc28ba183a270)
+* refactor(utils): convert http to ts [view commit](https://github.com/catenasys/sextant-api/commit/1e3a8a1840e18c5c64937947455eda420ad30798)
+* refactor(utils): convert base64 to ts [view commit](https://github.com/catenasys/sextant-api/commit/955dc78063019a5e12868c66d9f37c9f58a0c2ef)
+* refactor(utils): convert address to ts [view commit](https://github.com/catenasys/sextant-api/commit/dcf239bd07879557bd3498c2b92a193c668e73a1)
+* refactor(refactor): convert random to ts [view commit](https://github.com/catenasys/sextant-api/commit/3bdc9dbac60397abed9566c97dfd1891c304398c)
+* build(deps): add typescript types packages [view commit](https://github.com/catenasys/sextant-api/commit/75410bf358def764d1a4c4073b1c3a7e9a16753c)
+* refactor(store): fully type store module [view commit](https://github.com/catenasys/sextant-api/commit/5891927b3fdf1b47348e522d9b19551168589b3f)
+* refactor(docker): slightly improve docker caching [view commit](https://github.com/catenasys/sextant-api/commit/da0d1c35e4b90e33e1c0e03b74b51fe472a6cb48)
+* build(deps): upgrade to Node.js 18 LTS [view commit](https://github.com/catenasys/sextant-api/commit/77705313ae5a046d3d6730fbc1015ad8c24c0108)
 * refactor(store): convert Store and ClusterStore to ts [view commit](https://github.com/catenasys/sextant-api/commit/f66aa9ab1620e5f5f638229dcea9d83143aec552)
 * refactor(store): convert task to ts [view commit](https://github.com/catenasys/sextant-api/commit/2b57da4f953777118f98f583bef3e4264eec19e5)
 * refactor(store): convert deployment related [view commit](https://github.com/catenasys/sextant-api/commit/446fe14b4a070b5e0f66f2d235827a6aedad86a1)
