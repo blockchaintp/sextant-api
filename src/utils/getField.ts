@@ -6,11 +6,10 @@
 // unified way
 
 import { get } from 'dotty'
-import { mergedDeploymentDetails } from '../deployment_templates/templateLoader'
+import * as templateLoader from '../deployment_templates/templateLoader'
 import { ChartBundleName, ChartVersion } from '../edition-type'
 import { getLogger } from '../logging'
 
-const deploymentTypes = mergedDeploymentDetails()
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
   name: 'utils/getField',
@@ -27,6 +26,7 @@ export function getField({
   deployment_version: ChartVersion
   field: 'name' | 'namespace'
 }) {
+  const deploymentTypes = templateLoader.getHelmDeploymentDetails()
   const type = deploymentTypes[deployment_type]
   if (!type) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call

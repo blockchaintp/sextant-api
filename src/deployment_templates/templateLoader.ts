@@ -5,6 +5,7 @@ import { ChartBundleName, ChartVersion } from '../edition-type'
 import { HELM_CHARTS_PATH } from '../tasks/deployment/utils/helmUtils'
 import { overwriteMerge } from '../utils/overwrite-merge'
 import { getYaml } from '../utils/yaml'
+import * as fs from 'fs'
 
 const { chartTable } = edition
 
@@ -57,6 +58,16 @@ type ButtonVersion = Pick<ChartDetails, 'description' | 'features' | 'title'> & 
   version: SextantVersion
 }
 
+function replaceAll(searchString: string, replaceString: string, originalString: string) {
+  let previousString = originalString
+  let newString = originalString.replace(searchString, replaceString)
+  while (newString !== previousString) {
+    previousString = newString
+    newString = previousString.replace(searchString, replaceString)
+  }
+  return newString
+}
+
 // pulls values from details.yaml to build an object with the same structure as the index files
 const structureYamlContent = (yamlContent: ChartDetails) => {
   const deploymentType: ChartBundleName = yamlContent.deploymentType
@@ -77,20 +88,41 @@ const structureYamlContent = (yamlContent: ChartDetails) => {
 
   const entry = details[deploymentType]
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  entry.forms[deploymentVersion] = require(path.resolve(
-    HELM_CHARTS_PATH,
-    deploymentType,
-    deploymentVersion,
-    yamlContent.form
-  ))
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  entry.summary[deploymentVersion] = require(path.resolve(
-    HELM_CHARTS_PATH,
-    deploymentType,
-    deploymentVersion,
-    yamlContent.summary
-  ))
+  const formPath = path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, yamlContent.form)
+  const formDir = path.dirname(formPath)
+  let formDefinition = fs.readFileSync(formPath).toString()
+  formDefinition = replaceAll(`require('./`, `require('${formDir}/`, formDefinition)
+  formDefinition = `"use strict"\n${formDefinition}`
+
+  const summaryPath = path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, yamlContent.summary)
+  const summaryDir = path.dirname(summaryPath)
+  let summaryDefinition = fs.readFileSync(summaryPath).toString()
+  summaryDefinition = replaceAll(`require('./`, `require('${summaryDir}/`, summaryDefinition)
+  summaryDefinition = `"use strict"\n${summaryDefinition}`
+
+  try {
+    const formDefStr = `${formDefinition}`
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    entry.forms[deploymentVersion] = eval(formDefStr)
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      throw new Error(`Error reading form definition for ${deploymentType} ${deploymentVersion} ${e.message}`)
+    } else {
+      throw new Error(`XXError reading form definition for ${deploymentType} ${deploymentVersion}`)
+    }
+  }
+
+  try {
+    const summaryDefStr = `${summaryDefinition}`
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    entry.summary[deploymentVersion] = eval(summaryDefStr)
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      throw new Error(`Error reading summary definition for ${deploymentType} ${deploymentVersion} ${e.message}`)
+    } else {
+      throw new Error(`Error reading summary definition for ${deploymentType} ${deploymentVersion}`)
+    }
+  }
 
   entry.paths[deploymentVersion] = { name: yamlContent.namePath, namespace: yamlContent.namespacePath }
   entry.button.versions.push({
@@ -108,7 +140,7 @@ const structureYamlContent = (yamlContent: ChartDetails) => {
 
 // iterates over all of the charts in the helmCharts directory,
 // re-structures and merges the deployment details together
-const getHelmDeploymentDetails = () => {
+export function getHelmDeploymentDetails() {
   let allDetails: ChartBundleDetailsMap = {}
   const deploymentTypes = Object.keys(chartTable)
 
@@ -135,11 +167,5 @@ const getHelmDeploymentDetails = () => {
       }
     }
   }
-
   return allDetails
-}
-
-// merges the classic deployment details with the helm chart details
-export const mergedDeploymentDetails = () => {
-  return getHelmDeploymentDetails()
 }
