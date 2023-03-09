@@ -1,19 +1,17 @@
-/* eslint-disable max-len */
-/* eslint-disable no-trailing-spaces */
-/* eslint-disable no-unneeded-ternary */
-const Promise = require('bluebird')
-const tmp = require('tmp')
-const fs = require('fs')
-const childProcess = require('child_process')
+import * as tmp from 'tmp'
+import * as fs from 'fs'
+import * as childProcess from 'child_process'
+import * as util from 'util'
+import { getLogger } from '../logging'
 
-const logger = require('../logging').getLogger({
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const logger = getLogger({
   name: 'utils/grpcurl',
 })
 
-const exec = Promise.promisify(childProcess.exec)
-const tempName = Promise.promisify(tmp.tmpName)
-const writeFile = Promise.promisify(fs.writeFile)
-const deleteFile = Promise.promisify(fs.unlink)
+const exec = util.promisify(childProcess.exec)
+const writeFile = util.promisify(fs.writeFile)
+const deleteFile = util.promisify(fs.unlink)
 
 // we are relying on the pod proxy
 const DEFAULT_HOSTNAME = 'localhost'
@@ -21,23 +19,31 @@ const DEFAULT_HOSTNAME = 'localhost'
 // we apply this to grpcurl so we are not limited with our upload message size
 const MAX_MESSAGE_SIZE = 200000000
 
-const getOptions = (options) => {
-  const useOptions = {
+function getOptions(options: { env?: { [key: string]: string }; [key: string]: unknown }) {
+  const useOptions: { [key: string]: unknown; env?: { [key: string]: string } } = {
     ...options,
     // allow 5MB back on stdout
     // (which should not happen but some logs might be longer than 200kb which is the default)
     maxBuffer: 1024 * 1024 * 5,
+    env: {
+      ...process.env,
+      ...options.env,
+    },
   }
-  useOptions.env = { ...process.env, ...options.env }
   return useOptions
 }
 
-const Grpcurl = ({
+export const Grpcurl = ({
   token,
   port,
   prefix = '',
   hostname = DEFAULT_HOSTNAME,
-} = {}) => {
+}: {
+  hostname?: string
+  port: number
+  prefix?: string
+  token: string
+}) => {
   if (!token) throw new Error('token required for grpcurl')
   if (!port) throw new Error('port required for grpcurl')
   return async ({
@@ -45,12 +51,20 @@ const Grpcurl = ({
     method,
     data,
     options = {},
-  } = {}) => {
+  }: {
+    data?: string
+    method: string
+    options?: {
+      [key: string]: unknown
+      env?: { [key: string]: string }
+    }
+    service: string
+  }) => {
     if (!service) throw new Error('service required for grpcurl')
     if (!method) throw new Error('method required for grpcurl')
 
-    const tokenPath = await tempName({ postfix: '.txt' })
-    const dataPath = await tempName({ postfix: '.json' })
+    const tokenPath = tmp.tmpNameSync({ postfix: '.txt' })
+    const dataPath = tmp.tmpNameSync({ postfix: '.json' })
     await writeFile(tokenPath, token, 'utf8')
     if (data) {
       await writeFile(dataPath, JSON.stringify(data), 'utf8')
@@ -75,13 +89,21 @@ const Grpcurl = ({
 
       // the grpcurl command
       // in the patched grpcurl -max-msg-sz applies to both request + response
-      const runCommand = `${dataSource} grpcurl -expand-headers -plaintext -max-msg-sz ${MAX_MESSAGE_SIZE} -H 'Authorization: Bearer \${GRPC_TOKEN}' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
+      const runCommand =
+        `${dataSource} grpcurl -expand-headers -plaintext -max-msg-sz ${MAX_MESSAGE_SIZE} ` +
+        `-H 'Authorization: Bearer \${GRPC_TOKEN}' ${dataFlag} ${hostname}:${port} ${prefix}${service}.${method}`
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       logger.debug({
-        action: 'grpcurl', command: runCommand, service, method, dataLength: data ? data.length : undefined,
+        action: 'grpcurl',
+        command: runCommand,
+        service,
+        method,
+        dataLength: data ? data.length : undefined,
       })
       const result = await exec(runCommand, commandOptions)
-      const parsedResult = result ? JSON.parse(result) : {}
+      const parsedResult: unknown = result.stdout ? JSON.parse(result.stdout) : {}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       logger.trace({
         action: 'grpcurl',
         service,

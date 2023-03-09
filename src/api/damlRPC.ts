@@ -14,7 +14,7 @@ import { Deployment } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
 import * as deploymentNames from '../utils/deploymentNames'
 import { DeploymentPodProxy } from '../utils/deploymentPodProxy'
-import * as Grpcurl from '../utils/grpcurl'
+import { Grpcurl } from '../utils/grpcurl'
 import { SecretLoader } from '../utils/secretLoader'
 import * as database from './database'
 
