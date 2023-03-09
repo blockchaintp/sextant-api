@@ -1,15 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const database = require('./database')
 const DeploymentPodProxy = require('../utils/deploymentPodProxy')
 const DamlRPC = require('./damlRPC')
 
-const KeyManager = ({
-  store,
-}) => {
+const KeyManager = ({ store }) => {
   if (!store) {
     throw new Error('Daml rpc requires a store')
   }
 
-  const damlRPC = DamlRPC({
+  const damlRPC = new DamlRPC({
     store,
   })
 
@@ -20,10 +26,7 @@ const KeyManager = ({
     params:
 
   */
-  const getKeys = async ({
-    id,
-    sextantPublicKey,
-  } = {}) => {
+  const getKeys = async ({ id, sextantPublicKey } = {}) => {
     const proxy = await DeploymentPodProxy({
       store,
       id,
@@ -39,22 +42,27 @@ const KeyManager = ({
     })
 
     const results = participantDetails.map((item) => {
-      const result = [{
-        publicKey: database.getKey(),
-        name: `${item.validator}`,
-      }, {
-        publicKey: database.getKey(),
-        name: `${item.participantId}`,
-      }];
+      const result = [
+        {
+          publicKey: database.getKey(),
+          name: `${item.validator}`,
+        },
+        {
+          publicKey: database.getKey(),
+          name: `${item.participantId}`,
+        },
+      ]
       return result
     })
 
     const combinedResult = results.reduce((accumulator, currentItem) => accumulator.concat(currentItem))
 
-    database.keyManagerKeys = [{
-      publicKey: sextantPublicKey,
-      name: 'sextant',
-    }].concat(combinedResult)
+    database.keyManagerKeys = [
+      {
+        publicKey: sextantPublicKey,
+        name: 'sextant',
+      },
+    ].concat(combinedResult)
 
     return database.keyManagerKeys
   }
@@ -69,9 +77,7 @@ const KeyManager = ({
      * key
 
   */
-  const rotateRPCKey = async ({
-    publicKey,
-  }) => {
+  const rotateRPCKey = ({ publicKey }) => {
     if (!publicKey) throw new Error('publicKey must be given to api.keyManager.rotateDamlRPCKey')
     const rpc = database.keyManagerKeys.find((oneRpc) => oneRpc.publicKey === publicKey)
     if (!rpc) throw new Error(`no daml RPC server with that public key found: ${publicKey}`)

@@ -3,12 +3,17 @@
  *
  * License: Product
  */
+import { getLogger } from '../logging'
+import * as deploymentNames from './deploymentNames'
+import { ClusterKubectl } from './clusterKubectl'
+import { Kubectl } from './kubectl'
+import { Store } from '../store'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
 
-const logger = require('../logging').getLogger({
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const logger = getLogger({
   name: 'utils/deploymentPodProxy',
 })
-const deploymentNames = require('./deploymentNames')
-const ClusterKubectl = require('./clusterKubectl')
 
 const ProxyRequest = async ({
   kubectl,
@@ -16,6 +21,12 @@ const ProxyRequest = async ({
   pod,
   port,
   handler,
+}: {
+  handler: (args: { port: number }) => Promise<unknown>
+  kubectl: Kubectl
+  namespace: string
+  pod: string
+  port: number
 }) => {
   if (!pod) throw new Error('A running pod is required for a proxy request.')
   const portForward = await kubectl.portForward({
@@ -24,6 +35,7 @@ const ProxyRequest = async ({
     port,
   })
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     logger.info({
       action: 'executing handler',
       port: portForward.port,
@@ -31,26 +43,34 @@ const ProxyRequest = async ({
     const result = await handler({
       port: portForward.port,
     })
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     logger.info({
       action: 'stopping proxy',
       port: portForward.port,
     })
-    await portForward.stop()
+
+    portForward.stop()
     return result
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     logger.info({
       action: 'stopping proxy',
       port: portForward.port,
     })
-    await portForward.stop()
+    portForward.stop()
     throw err
   }
 }
 
-const DeploymentPodProxy = async ({
+export const DeploymentPodProxy = async ({
   store,
   id,
   labelPattern = 'app.kubernetes.io/instance=<name>',
+}: {
+  id: DatabaseIdentifier
+  labelPattern?: string
+  store: Store
 }) => {
   const deployment = await store.deployment.get({
     id,
@@ -62,10 +82,7 @@ const DeploymentPodProxy = async ({
 
   const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
 
-  const {
-    name,
-    namespace,
-  } = modelRelease
+  const { name, namespace } = modelRelease
 
   const clusterKubectl = await ClusterKubectl({
     cluster,
@@ -74,9 +91,8 @@ const DeploymentPodProxy = async ({
 
   const useLabel = labelPattern.replace('<name>', name)
 
-  const getPods = () => clusterKubectl
-    .getPods(namespace, { labelSelector: useLabel })
-    .then((data) => {
+  const getPods = () =>
+    clusterKubectl.getPods(namespace, { labelSelector: useLabel }).then((data) => {
       const allPods = data.items
       return allPods.filter((pod) => {
         const readyConditions = pod.status.conditions.filter((item) => item.type === 'Ready')
@@ -93,13 +109,18 @@ const DeploymentPodProxy = async ({
       pod,
       port,
       handler,
-    }) => ProxyRequest({
-      kubectl: clusterKubectl,
-      namespace,
-      pod,
-      port,
-      handler,
-    }),
+    }: {
+      handler: (args: { port: number }) => Promise<unknown>
+      pod: string
+      port: number
+    }) =>
+      ProxyRequest({
+        kubectl: clusterKubectl,
+        namespace,
+        pod,
+        port,
+        handler,
+      }),
   }
 }
 
