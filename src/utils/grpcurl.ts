@@ -129,5 +129,3 @@ export const Grpcurl = ({
     }
   }
 }
-
-module.exports = Grpcurl

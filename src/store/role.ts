@@ -118,7 +118,7 @@ export class RoleStore {
     if (!resource_type) throw new Error('resource_type must be given to store.role.listForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.role.listForResource')
 
-    return (trx || this.knex).select<Role>('*').from(config.TABLES.role).where({
+    return (trx || this.knex)<Role, Role[]>(config.TABLES.role).where({
       resource_type,
       resource_id,
     })

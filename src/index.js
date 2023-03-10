@@ -20,7 +20,7 @@ const App = require('./app')
 const Initialise = require('./initialise')
 const TaskHandlers = require('./tasks')
 const { Store } = require('./store')
-const deploymentStatusPoll = require('./jobs/deploymentStatusPoll')
+const { deploymentStatusPoll } = require('./jobs/deploymentStatusPoll')
 const Meter = require('./jobs/meter/Meter')
 const { ClusterStatusTracker } = require('./jobs/ClusterStatusTracker')
 

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -12,7 +13,7 @@ const asyncTest = require('../asyncTest')
 const asyncTestError = require('../asyncTestError')
 const database = require('../database')
 const fixtures = require('../fixtures')
-const ClusterController = require('../../src/controller/cluster')
+const { ClusterController } = require('../../src/controller/cluster')
 const { Store } = require('../../src/store')
 const base64 = require('../../src/utils/base64')
 

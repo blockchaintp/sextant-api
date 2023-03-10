@@ -5,6 +5,10 @@
 import { Store } from '../store'
 import { Cluster } from '../store/model/model-types'
 import { Kubectl, RemoteCredentials } from './kubectl'
+import { getLogger } from '../logging'
+const logger = getLogger({
+  name: 'utils/clusterKubectl',
+})
 
 export async function ClusterKubectl({ cluster, store }: { cluster: Cluster; store: Store }) {
   if (!cluster) throw new Error('cluster required for ClusterKubectl')
@@ -29,11 +33,18 @@ export async function ClusterKubectl({ cluster, store }: { cluster: Cluster; sto
       apiServer: cluster.desired_state.apiServer as string,
     }
   }
-
+  logger.debug(
+    {
+      mode,
+      cluster: {
+        id: cluster.id,
+        name: cluster.name,
+      },
+    },
+    `Acquired kubectl for cluster`
+  )
   return new Kubectl({
     mode,
     remoteCredentials,
   })
 }
-
-module.exports = ClusterKubectl

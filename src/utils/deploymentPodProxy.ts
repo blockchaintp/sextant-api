@@ -123,5 +123,3 @@ export const DeploymentPodProxy = async ({
       }),
   }
 }
-
-module.exports = DeploymentPodProxy

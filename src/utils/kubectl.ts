@@ -80,15 +80,15 @@ export class Kubectl {
   /*
   write a YAML file
   */
-  private writeTempYaml(data): string {
-    const yamlText = yaml.dump(data, { schema: yaml.FAILSAFE_SCHEMA })
+  private writeTempYaml(data: unknown): string {
+    const yamlText = yaml.dump(data, { schema: yaml.JSON_SCHEMA })
     const options: TmpNameOptions = { postfix: '.yaml' }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const tmpPath = tmpNameSync(options)
 
     writeFileSync(tmpPath, yamlText, 'utf8')
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    logger.debug({ message: `Wrote - ${tmpPath}` })
+    logger.debug({ path: tmpPath }, 'wrote temp yaml file')
     return tmpPath
   }
 
@@ -97,7 +97,7 @@ export class Kubectl {
       name: 'target',
       server: this.remoteCredentials.apiServer,
       caData: this.remoteCredentials.ca,
-      skipTLSVerify: true,
+      skipTLSVerify: this.remoteCredentials.ca ? false : true,
     }
 
     const user: k8s.User = {
@@ -200,7 +200,9 @@ export class Kubectl {
     const kubeConfig = this.getConfig()
     const forward = new k8s.PortForward(kubeConfig)
     const server = net.createServer((socket) => {
-      void forward.portForward(namespace, pod, [port], socket, null, socket)
+      forward.portForward(namespace, pod, [port], socket, null, socket).catch((err: unknown) => {
+        logger.warn({ namespace, pod, port, err }, 'port-forward error')
+      })
     })
     const usePort = localPort === 0 ? port : localPort
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call

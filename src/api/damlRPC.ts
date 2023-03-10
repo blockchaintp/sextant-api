@@ -354,7 +354,7 @@ export class DamlRPC {
       )
     } catch (error: unknown) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      logger.error({
+      logger.warn({
         fn: 'getArchives',
         error,
       })
@@ -481,5 +481,3 @@ export class DamlRPC {
     })
   }
 }
-
-module.exports = DamlRPC

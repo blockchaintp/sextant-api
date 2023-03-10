@@ -146,8 +146,7 @@ export class DeploymentStore {
 
     if (!cluster) throw new Error('cluster must be given to store.deployment.list')
 
-    const sqlQuery = (trx || this.knex).select<Deployment>('*').from(config.TABLES.deployment)
-
+    const sqlQuery = (trx || this.knex)<Deployment>(config.TABLES.deployment)
     if (cluster !== 'all') {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       sqlQuery.where({

@@ -1,11 +1,19 @@
-const Promise = require('bluebird');
-const { MarketplaceMeteringClient, MeterUsageCommand } = require('@aws-sdk/client-marketplace-metering');
-const { sendCommandOrFail } = require('./AwsMeterUtils');
-const { DEPLOYMENT_STATUS } = require('../../config');
-const AWS = require('../../utils/aws');
-const ClusterKubectl = require('../../utils/clusterKubectl');
-const { deploymentToHelmRelease } = require('../../utils/deploymentNames');
-const AbstractJob = require('../AbstractJob');
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
+const Promise = require('bluebird')
+const { MarketplaceMeteringClient, MeterUsageCommand } = require('@aws-sdk/client-marketplace-metering')
+const { sendCommandOrFail } = require('./AwsMeterUtils')
+const { DEPLOYMENT_STATUS } = require('../../config')
+const { AWS } = require('../../utils/aws')
+const { ClusterKubectl } = require('../../utils/clusterKubectl')
+const { deploymentToHelmRelease } = require('../../utils/deploymentNames')
+const AbstractJob = require('../AbstractJob')
 
 const logger = require('../../logging').getLogger({
   name: __filename,
@@ -54,46 +62,50 @@ class AwsMeterUsage extends AbstractJob {
   constructor(store, name = 'AwsMeterUsage', options = {}, schedule = '25,55 * * * *') {
     super(name, options, schedule)
     logger.trace({ options }, 'initializing AwsMeterUsage')
-    this.store = store;
+    this.store = store
     this.softwareStart = new Date()
-    this.productCode = options.productCode || 'dummycode';
-    this.publicKeyVersion = options.publicKeyVersion || 'dummykey';
-    this.region = undefined;
+    this.productCode = options.productCode || 'dummycode'
+    this.publicKeyVersion = options.publicKeyVersion || 'dummykey'
+    this.region = undefined
   }
 
   start() {
     // Run once immediately
-    this.run();
-    super.start();
+    void this.run()
+    super.start()
   }
 
   // eslint-disable-next-line class-methods-use-this
-  async resourcesForDeployment(cluster, deployment) {
+  resourcesForDeployment(cluster, deployment) {
     if (deployment.deployment_type in nodeChargeableMap) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const metricDefinition = nodeChargeableMap[deployment.deployment_type]
 
-      const { store } = this;
+      const { store } = this
       logger.trace({ deployment }, 'using deployment details')
       const release = deploymentToHelmRelease(deployment)
       return ClusterKubectl({ cluster, store })
-        .then((kubectl) => kubectl.getPods(release.namespace, {
-          labelSelector: metricDefinition.labelSelector,
-        }))
+        .then((kubectl) =>
+          kubectl.getPods(release.namespace, {
+            labelSelector: metricDefinition.labelSelector,
+          })
+        )
         .then((body) => {
           const retItem = {}
           retItem[metricDefinition.metric] = body.items.length
           return retItem
         })
     }
-    return []
+    return Promise.resolve({})
   }
 
   async run() {
-    const region = await AWS.getRegion();
+    const region = await AWS.getRegion()
     const client = new MarketplaceMeteringClient({ region })
 
-    logger.debug(`${this.getName()} executed for ${currentHour()}`);
-    const activeDeployments = await this.store.deploymenthistory.list({ after: currentHour() })
+    logger.debug(`${this.getName()} executed for ${currentHour()}`)
+    const activeDeployments = await this.store.deploymenthistory
+      .list({ after: currentHour() })
       .where('status', '=', DEPLOYMENT_STATUS.provisioned)
       .clear('select')
       .distinct('deployment_id')
@@ -112,12 +124,14 @@ class AwsMeterUsage extends AbstractJob {
 
     const deployments2Clusters = Object.keys(nodeChargeableMap).flatMap((k) => {
       const typedDeployments = activeDeployments.filter((d) => d.deployment_type === k)
-      logger.trace(`Found ${typedDeployments.length} ${k} deployments`);
+      logger.trace(`Found ${typedDeployments.length} ${k} deployments`)
       if (typedDeployments.length > 0) {
         return typedDeployments.flatMap((checkDeployment) => {
           const cluster = clusters.find((c) => c.id === checkDeployment.cluster)
-          logger.trace({ cluster },
-            `Found deployment of type ${checkDeployment.deployment_type} in cluster ${cluster.id}`)
+          logger.trace(
+            { cluster },
+            `Found deployment of type ${checkDeployment.deployment_type} in cluster ${cluster.id}`
+          )
           return {
             deployment: checkDeployment,
             cluster,
@@ -127,12 +141,11 @@ class AwsMeterUsage extends AbstractJob {
       return []
     })
 
-    const deployments2resources = deployments2Clusters.map(
-      (pair) => this.resourcesForDeployment(pair.cluster, pair.deployment)
-        .then((resources) => ({
-          deployment: pair.deployment,
-          resources,
-        })),
+    const deployments2resources = deployments2Clusters.map((pair) =>
+      this.resourcesForDeployment(pair.cluster, pair.deployment).then((resources) => ({
+        deployment: pair.deployment,
+        resources,
+      }))
     )
 
     const metricsCalculation = deployments2resources.reduce((accumulator, current) => {
@@ -158,15 +171,15 @@ class AwsMeterUsage extends AbstractJob {
         UsageDimension: key,
         UsageQuantity: reading[key],
       }
-      logger.info({ params }, `${this.getName()} command for ${currentHour()}`);
+      logger.info({ params }, `${this.getName()} command for ${currentHour()}`)
       return new MeterUsageCommand(params)
     })
-    commands.forEach((command) => sendCommandOrFail(client, command, 'aws-marketplace:MeterUsage'))
+    commands.forEach((command) => void sendCommandOrFail(client, command, 'aws-marketplace:MeterUsage'))
   }
 
-  async activeDeployments(deploymentIds) {
+  activeDeployments(deploymentIds) {
     return Promise.map(deploymentIds, (deploymentId) => this.store.deployment.get({ id: deploymentId.deployment_id }))
   }
 }
 
-module.exports = AwsMeterUsage;
+module.exports = AwsMeterUsage

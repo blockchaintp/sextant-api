@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint eqeqeq: "error" */
 const { Agent } = require('https')
 const axios = require('axios')
 const logger = require('../logging').getLogger({
   name: 'api/taekion',
 })
-const deploymentHttpConnection = require('../utils/deploymentHttpConnection')
+const { deploymentHttpConnection } = require('../utils/deploymentHttpConnection')
 
 /*
   Utility func that returns a unique id to be used when retrieving a connection from the cache
@@ -24,7 +31,7 @@ const TaekionAPI = ({ store } = {}) => {
   if (!store) {
     throw new Error('TaekionAPI requires a store')
   }
-  const getItemConnection = async ({ deployment, kind, labels = {} }) =>
+  const getItemConnection = ({ deployment, kind, labels = {} }) =>
     deploymentHttpConnection({
       labels,
       store,
@@ -61,8 +68,7 @@ const TaekionAPI = ({ store } = {}) => {
       },
     })
 
-  const getPodConnection = async ({ deployment, labels = {} }) =>
-    getItemConnection({ deployment, kind: 'pods', labels })
+  const getPodConnection = ({ deployment, labels = {} }) => getItemConnection({ deployment, kind: 'pods', labels })
 
   // this is for speaking to the taekion middleware
   const tfsApiRequest = async ({ deployment, method = 'GET', path, ...extra }) => {
@@ -235,7 +241,7 @@ const TaekionAPI = ({ store } = {}) => {
       },
     })
 
-  const deleteVolume = async () => {
+  const deleteVolume = () => {
     throw new Error('endpoint tbc')
   }
 
@@ -268,7 +274,7 @@ const TaekionAPI = ({ store } = {}) => {
       },
     })
 
-  const deleteSnapshot = async () => {
+  const deleteSnapshot = () => {
     throw new Error('endpoint tbc')
   }
 

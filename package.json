@@ -53,7 +53,7 @@
     "openapi-types": "^9.3.0",
     "passport": "^0.6.0",
     "pg": "8.7.1",
-    "pino": "^4.17.6",
+    "pino": "^8.11.0",
     "randomstring": "^1.2.1",
     "request": "^2.88.2",
     "sawtooth-sdk": "git+https://github.com/hyperledger/sawtooth-sdk-javascript.git#5cdf299ce466",

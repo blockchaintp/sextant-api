@@ -29,5 +29,3 @@ export class AWS {
     }
   }
 }
-
-module.exports = AWS
