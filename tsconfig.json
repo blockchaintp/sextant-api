@@ -4,7 +4,8 @@
     "allowJs": true,
     "target": "es6",
     "module": "commonjs",
-    "inlineSourceMap": true
+    "inlineSourceMap": true,
+    "esModuleInterop": true
   },
   "rootDir": ".",
   "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*", "./jest/**/*"]

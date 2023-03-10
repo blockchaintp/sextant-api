@@ -14,7 +14,7 @@
 import * as k8s from '@kubernetes/client-node'
 import * as childProcess from 'child_process'
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
-import * as getPort from 'get-port'
+import getPort = require('get-port')
 import * as yaml from 'js-yaml'
 import * as net from 'net'
 import { TmpNameOptions, tmpNameSync } from 'tmp'

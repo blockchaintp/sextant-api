@@ -4,7 +4,7 @@
  *
  * License: Product
  */
-import * as memoize from 'memoizee'
+import memoize = require('memoizee')
 import * as helmUtils from '../tasks/deployment/utils/helmUtils'
 import { getLogger } from '../logging'
 import { getField as getFieldOriginal } from './getField'

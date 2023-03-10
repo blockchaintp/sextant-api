@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import * as memoize from 'memoizee'
+import memoize = require('memoizee')
 import { getLogger } from '../logging'
 import { Store } from '../store'
 import { Deployment } from '../store/model/model-types'
