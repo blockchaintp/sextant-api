@@ -16,27 +16,6 @@ const deploymentNames = require('../utils/deploymentNames')
 
 const { getHelmDeploymentDetails } = require('../deployment_templates/templateLoader')
 const validate = require('../forms/validate')
-const { edition } = require('../edition')
-
-/*
-This function relies on the chartTable in the edition object
-Using the deployment type and version, determine whether or not the template type is helm or classic
-The template type will always default to 'classic'
-*/
-
-const getDeploymentMethod = (deployment_type, deployment_version) => {
-  const { chartTable } = edition
-  let deploymentMethod
-
-  // eslint-disable-next-line max-len
-  if (chartTable && chartTable[deployment_type] && chartTable[deployment_type][deployment_version]) {
-    deploymentMethod = 'helm'
-  } else {
-    deploymentMethod = 'classic'
-  }
-
-  return deploymentMethod
-}
 
 const { DEPLOYMENT_STATUS, USER_TYPES } = config
 
@@ -170,21 +149,24 @@ const DeploymentController = ({ store }) => {
     deployment on this cluster
 
   */
-  const create = ({ user, cluster, data: { name, deployment_type, deployment_version, desired_state, custom_yaml } }) =>
-    store.transaction(async (trx) => {
-      if (!user) throw new Error('user required for controllers.deployment.create')
-      if (!name) throw new Error('data.name required for controllers.deployment.create')
-      if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create')
-      if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create')
-      if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create')
+  const create = ({
+    user,
+    cluster,
+    data: { name, deployment_type, deployment_version, desired_state, custom_yaml },
+  }) => {
+    if (!user) throw new Error('user required for controllers.deployment.create')
+    if (!name) throw new Error('data.name required for controllers.deployment.create')
+    if (!deployment_type) throw new Error('data.deployment_type required for controllers.deployment.create')
+    if (!deployment_version) throw new Error('data.deployment_version required for controllers.deployment.create')
+    if (!desired_state) throw new Error('data.desired_state required for controllers.deployment.create')
 
+    return store.transaction(async (trx) => {
       const deploymentTemplates = getHelmDeploymentDetails()
-      const typeForm = deploymentTemplates[deployment_type]
 
+      const typeForm = deploymentTemplates[deployment_type]
       if (!typeForm) throw new Error(`unknown deployment_type: ${deployment_type}`)
 
       const schema = typeForm.forms[deployment_version]
-
       if (!schema) throw new Error(`unknown deployment_type: ${deployment_type} version ${deployment_version}`)
 
       // validate the incoming form data
@@ -204,8 +186,6 @@ const DeploymentController = ({ store }) => {
       if (existingDeployment) throw new Error(`there is already a deployment with the name ${name}`)
 
       // determine if there is a helm chart for this deployment type
-      const deployment_method = getDeploymentMethod(deployment_type, deployment_version)
-
       // create the deployment record
       const deployment = await store.deployment.create(
         {
@@ -216,7 +196,7 @@ const DeploymentController = ({ store }) => {
             deployment_version,
             desired_state,
             custom_yaml,
-            deployment_method,
+            deployment_method: 'helm',
           },
         },
         trx
@@ -255,6 +235,7 @@ const DeploymentController = ({ store }) => {
         trx
       )
     })
+  }
 
   /*
 
@@ -372,12 +353,11 @@ const DeploymentController = ({ store }) => {
     * permission
 
   */
-  const createRole = ({ id, user, username, permission }) =>
-    store.transaction(async (trx) => {
-      if (!id) throw new Error('id must be given to controller.deployment.createRole')
-      if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole')
-      if (!permission) throw new Error('permission must be given to controller.deployment.createRole')
-
+  const createRole = ({ id, user, username, permission }) => {
+    if (!id) throw new Error('id must be given to controller.deployment.createRole')
+    if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole')
+    if (!permission) throw new Error('permission must be given to controller.deployment.createRole')
+    return store.transaction(async (trx) => {
       const userQuery = {}
 
       if (user) userQuery.id = user
@@ -412,7 +392,7 @@ const DeploymentController = ({ store }) => {
         trx
       )
     })
-
+  }
   /*
 
     delete a role for a given deployment
