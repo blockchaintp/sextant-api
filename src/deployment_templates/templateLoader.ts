@@ -3,11 +3,9 @@ import * as path from 'path'
 import { edition } from '../edition'
 import { ChartBundleName, ChartVersion } from '../edition-type'
 import { HELM_CHARTS_PATH } from '../tasks/deployment/utils/helmUtils'
+import { ContentCache } from '../utils/content-cache'
 import { overwriteMerge } from '../utils/overwrite-merge'
 import { getYaml } from '../utils/yaml'
-import * as fs from 'fs'
-
-const { chartTable } = edition
 
 type ChartParsedDetails = {
   button: {
@@ -58,6 +56,10 @@ type ButtonVersion = Pick<ChartDetails, 'description' | 'features' | 'title'> & 
   version: SextantVersion
 }
 
+const { chartTable } = edition
+
+const DeploymentTemplateCache = new ContentCache()
+
 function replaceAll(searchString: string, replaceString: string, originalString: string) {
   let previousString = originalString
   let newString = originalString.replace(searchString, replaceString)
@@ -90,13 +92,13 @@ const structureYamlContent = (yamlContent: ChartDetails) => {
 
   const formPath = path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, yamlContent.form)
   const formDir = path.dirname(formPath)
-  let formDefinition = fs.readFileSync(formPath).toString()
+  let formDefinition = DeploymentTemplateCache.getFileSync(formPath)
   formDefinition = replaceAll(`require('./`, `require('${formDir}/`, formDefinition)
   formDefinition = `"use strict"\n${formDefinition}`
 
   const summaryPath = path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, yamlContent.summary)
   const summaryDir = path.dirname(summaryPath)
-  let summaryDefinition = fs.readFileSync(summaryPath).toString()
+  let summaryDefinition = DeploymentTemplateCache.getFileSync(summaryPath)
   summaryDefinition = replaceAll(`require('./`, `require('${summaryDir}/`, summaryDefinition)
   summaryDefinition = `"use strict"\n${summaryDefinition}`
 
@@ -108,7 +110,7 @@ const structureYamlContent = (yamlContent: ChartDetails) => {
     if (e instanceof Error) {
       throw new Error(`Error reading form definition for ${deploymentType} ${deploymentVersion} ${e.message}`)
     } else {
-      throw new Error(`XXError reading form definition for ${deploymentType} ${deploymentVersion}`)
+      throw new Error(`Error reading form definition for ${deploymentType} ${deploymentVersion}`)
     }
   }
 
