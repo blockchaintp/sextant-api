@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* refactor(utils): related fixes for grpcurl and damlRPC [view commit](https://github.com/catenasys/sextant-api/commit/bd1e35d6ee35aa286e4fa1f50a31f308fdfbe233)
+* refactor(utils): convert grpcurl to ts [view commit](https://github.com/catenasys/sextant-api/commit/4d6e6f0392f14f54f00f68b9b0f22f543e6e1f47)
+* refactor(utils): conver deploymentHttpConnection to ts [view commit](https://github.com/catenasys/sextant-api/commit/cd28ace0e7b039fcc8188573db8cd17f420fd1db)
+* refactor(utils): convert deploymentConnect to ts [view commit](https://github.com/catenasys/sextant-api/commit/6e9c8938aa5a343e61df5122e8338932d72b69e5)
+* refactor: convert damlRPC and deploymentPodProxy to ts [view commit](https://github.com/catenasys/sextant-api/commit/8a82c7d783cf4996ebbfb3c03b1b739dcbc30920)
+* refactor(utils): convert secretLoader to ts [view commit](https://github.com/catenasys/sextant-api/commit/a118c208af3ad7c99f1ce96676b1e273789ea116)
+* refactor(utils): conver cluster to ts [view commit](https://github.com/catenasys/sextant-api/commit/cdc00ba8831680c63c3a484a7774acf9976c06ad)
+* refactor(utils): convert clusterKubectl to ts [view commit](https://github.com/catenasys/sextant-api/commit/a5885dc7b4c67fdd5744a79744a45e50c6afcc20)
+* refactor(utils): convert kubectl to ts [view commit](https://github.com/catenasys/sextant-api/commit/49a9b66f4e2a293535e3a8a5e35c4059204410a6)
+* refactor(model): type out desired_state and applied_state [view commit](https://github.com/catenasys/sextant-api/commit/0a4b498e7b3f1ab50c2e56e61baf5b76747696b4)
+* build(deps): add @types/tmp [view commit](https://github.com/catenasys/sextant-api/commit/16785852f0738f45741ad0125ba9b96b33efcb8b)
 * refactor(utils): remove database as unused [view commit](https://github.com/catenasys/sextant-api/commit/30e9d393a12f7a013431cf9b890120a36f8a7b91)
 * refactor(utils): remove transaction.js as unused [view commit](https://github.com/catenasys/sextant-api/commit/166c83ca233f4e3cf6385a7b2a5376cd74a2ac11)
 * refactor(utils): convert template to ts [view commit](https://github.com/catenasys/sextant-api/commit/5f93a0e21d4938ed7aa8c4ef2aef2183fe12b259)
