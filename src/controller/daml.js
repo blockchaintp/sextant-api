@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const KeyPair = require('../utils/sextantKeyPair')
 const KeyManager = require('../api/keyManager')
-const DamlRPC = require('../api/damlRPC')
+const { DamlRPC } = require('../api/damlRPC')
 const SettingsTP = require('../api/settingsTP')
 
 const DamlController = ({ store }) => {
@@ -51,7 +51,7 @@ const DamlController = ({ store }) => {
     })
   }
 
-  const rotateParticipantKey = async ({ id, publicKey }) => {
+  const rotateParticipantKey = ({ id, publicKey }) => {
     if (!id) throw new Error('id must be given to controller.deployment.rotateParticipantKey')
     if (!publicKey) throw new Error('publicKey must be given to controller.deployment.rotateParticipantKey')
 
@@ -59,7 +59,7 @@ const DamlController = ({ store }) => {
       publicKey,
     })
 
-    await damlRPC.updateKey({
+    damlRPC.updateKey({
       oldPublicKey: publicKey,
       newPublicKey: newKey,
     })

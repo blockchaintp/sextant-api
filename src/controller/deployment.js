@@ -10,7 +10,7 @@
 const Promise = require('bluebird')
 const config = require('../config')
 const userUtils = require('../utils/user')
-const ClusterKubectl = require('../utils/clusterKubectl')
+const { ClusterKubectl } = require('../utils/clusterKubectl')
 const RBAC = require('../rbac')
 const deploymentNames = require('../utils/deploymentNames')
 
@@ -19,7 +19,7 @@ const validate = require('../forms/validate')
 
 const { DEPLOYMENT_STATUS, USER_TYPES } = config
 
-const DeploymentController = ({ store }) => {
+export const DeploymentController = ({ store }) => {
   /*
 
     load the most recent task for each cluster so the frontend can display
@@ -677,5 +677,3 @@ const DeploymentController = ({ store }) => {
     deleteRole,
   }
 }
-
-module.exports = DeploymentController

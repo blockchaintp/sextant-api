@@ -7,8 +7,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const database = require('./database')
-const DeploymentPodProxy = require('../utils/deploymentPodProxy')
-const DamlRPC = require('./damlRPC')
+const { DeploymentPodProxy } = require('../utils/deploymentPodProxy')
+const { DamlRPC } = require('./damlRPC')
 
 const KeyManager = ({ store }) => {
   if (!store) {

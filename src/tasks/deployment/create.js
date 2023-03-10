@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
-const ClusterKubectl = require('../../utils/clusterKubectl')
+const { ClusterKubectl } = require('../../utils/clusterKubectl')
 const deploymentNames = require('../../utils/deploymentNames')
 const saveAppliedState = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
@@ -65,12 +65,10 @@ const DeploymentCreate = ({ testMode }) =>
     const chartInfo = yield getChartInfo(deployment_type, deployment_version)
     const chartversion = yield getChartVersion(deployment_type, deployment_version)
     const { chart } = chartInfo
-    const installationName = `${name}`
     const valuesPath = yield writeValues({ desired_state, custom_yaml })
     const useChart = process.env.USE_LOCAL_CHART ? process.env.USE_LOCAL_CHART : chart
     yield clusterKubectl.helmCommand(
-      `-n ${namespace} install --create-namespace ${installationName}` +
-        ` -f ${valuesPath} ${useChart} --version ${chartversion}`
+      `-n ${namespace} install --create-namespace ${name}` + ` -f ${valuesPath} ${useChart} --version ${chartversion}`
     )
 
     // If the secret exists, continue. If not, create it.

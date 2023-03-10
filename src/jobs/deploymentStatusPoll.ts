@@ -1,12 +1,11 @@
-const logger = require('../logging').getLogger({
+import { getLogger } from '../logging'
+import { Store } from '../store'
+import { getAllDeployments, getHelmStatuses } from './pollUtils'
+const logger = getLogger({
   name: 'jobs/deploymentStatusPoll',
 })
-const {
-  getAllDeployments,
-  getHelmStatuses,
-} = require('./pollUtils')
 
-const deploymentStatusPoll = async (store) => {
+export const deploymentStatusPoll = async (store: Store) => {
   // get a list of all of the deployments in the database
   logger.debug({
     fn: 'deploymentStatusPoll',
@@ -17,16 +16,8 @@ const deploymentStatusPoll = async (store) => {
   // if it does - update it in the DB
   const deploymentStatuses = await getHelmStatuses(deployments, store)
   logger.info({
-    deploymentStatuses: deploymentStatuses.map((deployment) => ({
-      name: deployment.name,
-      helmStatus: deployment.helmStatus,
-      sextantStatus: deployment.status,
-    })),
-  })
-  logger.info({
     fn: 'deploymentStatusPoll',
     message: 'end',
+    deploymentStatuses,
   })
 }
-
-module.exports = deploymentStatusPoll

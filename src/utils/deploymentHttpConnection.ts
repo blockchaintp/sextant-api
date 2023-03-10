@@ -40,5 +40,3 @@ export const deploymentHttpConnection = async ({
 
   return { ...connection, client }
 }
-
-module.exports = deploymentHttpConnection

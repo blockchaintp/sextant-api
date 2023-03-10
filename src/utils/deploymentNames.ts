@@ -40,21 +40,22 @@ export const getBestNamespace = memoize(
     const { deployment_type, deployment_version, applied_state, desired_state } = deployment
 
     if (applied_state) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      logger.warn(
-        {
-          fn: 'getBestNamespace',
-          deployment_type,
-          deployment_version,
-        },
-        'Deployment specified namespace via a field path'
-      )
       const applied_namespace = getField({
         deployment_type,
         deployment_version,
         data: applied_state as object,
         field: 'namespace',
       })
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      logger.debug(
+        {
+          fn: 'getBestNamespace',
+          deployment_type,
+          deployment_version,
+          applied_namespace,
+        },
+        'Deployment specified namespace via a field path'
+      )
       if (applied_namespace) {
         return applied_namespace
       }
@@ -114,7 +115,7 @@ export const deploymentToHelmRelease = memoize(
     const chart = `${chartName}-${chartVersion}`
     const { extension } = chartInfo
 
-    const releaseName = `$}-${extension}`
+    const releaseName = `${name}-${extension}`
 
     const release: HelmRelease = {
       name: releaseName,
@@ -123,7 +124,7 @@ export const deploymentToHelmRelease = memoize(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    logger.trace({
+    logger.debug({
       fn: 'deploymentToHelmRelease',
       deployment_type,
       deployment_version,

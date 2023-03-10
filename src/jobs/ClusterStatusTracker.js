@@ -1,17 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { date } = require('yup')
 const logger = require('../logging').getLogger({
   name: 'jobs/ClusterStatus',
 })
 
 const { CLUSTER_STATUS } = require('../config')
-const ProductionClusterKubectl = require('../utils/clusterKubectl')
+const { ClusterKubectl } = require('../utils/clusterKubectl')
 
 class ClusterStatusTracker {
-  constructor(Store, ClusterKubectl = ProductionClusterKubectl, test = false) {
-    this.store = Store
-    this.ClusterKubectl = ClusterKubectl
+  constructor(store, clusterKubectlFn = ClusterKubectl, test = false) {
+    this.store = store
+    this.clusterKubectlFn = clusterKubectlFn
     this.test = test
-    this.clusterStore = Store.cluster
+    this.clusterStore = store.cluster
   }
 
   async getAllClusters() {
@@ -40,10 +46,10 @@ class ClusterStatusTracker {
 
   async defineClusterKubectl(cluster, store) {
     if (this.test === true) {
-      const testVersion = new this.ClusterKubectl(cluster)
+      const testVersion = new this.clusterKubectlFn(cluster)
       return testVersion
     }
-    const defaultVersion = await this.ClusterKubectl({ cluster, store })
+    const defaultVersion = await this.clusterKubectlFn({ cluster, store })
     return defaultVersion
   }
 
@@ -91,7 +97,7 @@ class ClusterStatusTracker {
         throw new Error('Cluster is not provisioned')
       }
     } catch (error) {
-      logger.error({
+      logger.warn({
         fn: 'ping',
         cluster: cluster.name,
         error,

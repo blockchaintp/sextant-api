@@ -85,5 +85,3 @@ export const deploymentConnection = async ({
 
   return connection
 }
-
-module.exports = deploymentConnection

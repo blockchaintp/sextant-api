@@ -11,7 +11,7 @@
  *
  * License: Product
  */
-const ClusterKubectl = require('../../utils/clusterKubectl')
+const { ClusterKubectl } = require('../../utils/clusterKubectl')
 const deploymentNames = require('../../utils/deploymentNames')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
