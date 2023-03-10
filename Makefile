@@ -5,7 +5,7 @@ PMD_IMAGE = blockchaintp/pmd:latest
 
 build: $(MARKERS)/build_docker
 
-test: $(MARKERS)/test_npm
+test: $(MARKERS)/test_tape
 
 analyze: analyze_fossa analyze_sonar_js
 
@@ -34,7 +34,7 @@ clean_docker:
 clean_npm:
 	rm -rf node_modules
 
-$(MARKERS)/test_npm:
+$(MARKERS)/test_tape:
 	docker-compose -f docker-compose.test.yml up -d
 	docker-compose -f docker-compose.test.yml exec -T api npm run test || true
 	docker cp api_test:/tmp/test.out ./build/results.tap || true
@@ -61,3 +61,18 @@ update-helm-fixtures: build
 			tar -cvzf /tmp/helmCharts.tar.gz helmCharts && \
 			cp /tmp/helmCharts.tar.gz /app/api/test/fixtures/helmCharts.tar.gz \
 		"
+
+.PHONY: run-local
+run-local: $(MARKERS)/build_docker
+	docker-compose -f docker-compose.localtest.yml up -d
+	docker logs -f api_test | npx pino-pretty
+
+.PHONY: stop-local
+stop-local:
+	docker-compose -f docker-compose.localtest.yml down
+	rm -f $(MARKERS)/build_docker
+
+.PHONY: clean-local
+clean-local:
+	docker-compose -f docker-compose.localtest.yml down -v
+	rm -f $(MARKERS)/build_docker

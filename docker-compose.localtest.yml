@@ -1,4 +1,7 @@
 version: '3'
+
+volumes:
+  postgres_data:
 services:
   postgres:
     image: postgres:9.6.1
@@ -6,8 +9,32 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  router:
+    image: dev.catenasys.com:8083/blockchaintp/noxy:latest
+    ports:
+      - 80:80
+    depends_on:
+      - api
+      - frontend
+    environment:
+      - NOXY_DEFAULT_HOST=frontend
+      - NOXY_DEFAULT_PORT=8080
+      - NOXY_DEFAULT_WS=1
+      - NOXY_API_FRONT=/api/v1
+      - NOXY_API_HOST=api
+      - NOXY_PROXY_FRONT=/proxy
+      - NOXY_PROXY_HOST=api
+  frontend:
+    image: dev.catenasys.com:8083/blockchaintp/sextant-ci:canary
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
   api:
-    image: sextant-api-standard:$ISOLATION_ID
+    image: sextant-api:$ISOLATION_ID
 #    entrypoint: bash -c 'tail -f /dev/null'
     container_name: api_test
     depends_on:
