@@ -10,7 +10,7 @@ const fixtures = require('../fixtures')
 
 const asyncTest = require('../asyncTest')
 
-const ClusterController = require('../../src/controller/cluster')
+const { ClusterController } = require('../../src/controller/cluster')
 const { Store } = require('../../src/store')
 const TaskProcessor = require('../../src/taskprocessor')
 const Tasks = require('../../src/tasks')

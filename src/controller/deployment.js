@@ -13,11 +13,11 @@ const userUtils = require('../utils/user')
 const { ClusterKubectl } = require('../utils/clusterKubectl')
 const RBAC = require('../rbac')
 const deploymentNames = require('../utils/deploymentNames')
-
 const { getHelmDeploymentDetails } = require('../deployment_templates/templateLoader')
 const validate = require('../forms/validate')
+const { createRoleForResource } = require('./createRole')
 
-const { DEPLOYMENT_STATUS, USER_TYPES } = config
+const { DEPLOYMENT_STATUS } = config
 
 export const DeploymentController = ({ store }) => {
   /*
@@ -353,46 +353,9 @@ export const DeploymentController = ({ store }) => {
     * permission
 
   */
-  const createRole = ({ id, user, username, permission }) => {
-    if (!id) throw new Error('id must be given to controller.deployment.createRole')
-    if (!user && !username) throw new Error('user or username must be given to controller.deployment.createRole')
-    if (!permission) throw new Error('permission must be given to controller.deployment.createRole')
-    return store.transaction(async (trx) => {
-      const userQuery = {}
+  const createRole = ({ id, user, username, permission }) =>
+    createRoleForResource({ id, user, username, permission, resource_type: 'deployment' }, store)
 
-      if (user) userQuery.id = user
-      else if (username) userQuery.username = username
-
-      const userRecord = await store.user.get(userQuery, trx)
-
-      if (!userRecord) throw new Error('no user found')
-      if (userRecord.permission === USER_TYPES.superuser) throw new Error('cannot create role for superuser')
-
-      const existingRoles = await store.role.listForResource(
-        {
-          resource_type: 'deployment',
-          resource_id: id,
-        },
-        trx
-      )
-
-      const existingRole = existingRoles.find((role) => role.user === userRecord.id)
-
-      if (existingRole) throw new Error('this user already has a role for this deployment - delete it first')
-
-      return store.role.create(
-        {
-          data: {
-            resource_type: 'deployment',
-            resource_id: id,
-            user: userRecord.id,
-            permission,
-          },
-        },
-        trx
-      )
-    })
-  }
   /*
 
     delete a role for a given deployment

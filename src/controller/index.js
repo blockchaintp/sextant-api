@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { ConfigBackend } = require('./config')
 const UserController = require('./user')
-const ClusterController = require('./cluster')
+const { ClusterController } = require('./cluster')
 const { DeploymentController } = require('./deployment')
 const DamlController = require('./daml')
 const TaekionController = require('./taekion')

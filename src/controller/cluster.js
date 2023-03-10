@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -12,6 +13,7 @@ const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
 const { ClusterKubectl } = require('../utils/clusterKubectl')
+const { createRoleForResource } = require('./createRole')
 const RBAC = require('../rbac')
 
 const clusterForms = require('../forms/cluster')
@@ -559,45 +561,9 @@ const ClusterController = ({ store }) => {
      * username
      * permission
   */
-  const createRole = ({ id, user, username, permission }) => {
-    if (!id) throw new Error('id must be given to controller.cluster.createRole')
-    if (!user && !username) throw new Error('user or username must be given to controller.cluster.createRole')
-    if (!permission) throw new Error('permission must be given to controller.cluster.createRole')
-    return store.transaction(async (trx) => {
-      const userQuery = {}
+  const createRole = ({ id, user, username, permission }) =>
+    createRoleForResource({ id, user, username, permission, resource_type: 'cluster' }, store)
 
-      if (user) userQuery.id = user
-      else if (username) userQuery.username = username
-
-      const userRecord = await store.user.get(userQuery, trx)
-
-      if (!userRecord) throw new Error('no user found')
-      if (userRecord.permission === USER_TYPES.superuser) throw new Error('cannot create role for superuser')
-      const existingRoles = await store.role.listForResource(
-        {
-          resource_type: 'cluster',
-          resource_id: id,
-        },
-        trx
-      )
-
-      const existingRole = existingRoles.find((role) => role.user === userRecord.id)
-
-      if (existingRole) throw new Error('this user already has a role for this cluster - delete it first')
-
-      return store.role.create(
-        {
-          data: {
-            resource_type: 'cluster',
-            resource_id: id,
-            user: userRecord.id,
-            permission,
-          },
-        },
-        trx
-      )
-    })
-  }
   /*
     delete a role for a given cluster
 
@@ -716,4 +682,4 @@ const ClusterController = ({ store }) => {
   }
 }
 
-module.exports = ClusterController
+module.exports = { ClusterController, createRoleForResource }
