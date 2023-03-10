@@ -7,5 +7,5 @@
     "inlineSourceMap": true
   },
   "rootDir": ".",
-  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*"]
+  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*", "./jest/**/*"]
 }
