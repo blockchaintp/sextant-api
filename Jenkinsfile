@@ -15,7 +15,6 @@
 // limitations under the License.
 // ------------------------------------------------------------------------------
 
-
 pipeline {
   agent any
 
@@ -35,7 +34,7 @@ pipeline {
       steps {
         checkout([$class: 'GitSCM', branches: [[name: "${GIT_BRANCH}"]],
             doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-            userRemoteConfigs: [[credentialsId: 'github-credentials',noTags:false, url: "${GIT_URL}"]],
+            userRemoteConfigs: [[credentialsId: 'github-credentials', noTags:false, url: "${GIT_URL}"]],
             extensions: [
                   [$class: 'CloneOption',
                   shallow: false,
@@ -53,13 +52,14 @@ pipeline {
       }
     }
 
-    stage("Test") {
+    stage('Test') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'btp-build-nexus', passwordVariable: 'BTP_DEV_PSW', usernameVariable: 'BTP_DEV_USR')]) {
           sh '''
             make test
           '''
-          step([$class: "TapPublisher", failIfNoResults: true, testResults: "build/results.tap"])
+          step([$class: 'TapPublisher', failIfNoResults: true, testResults: 'build/results.tap'])
+          junit testResults: 'build/jest/junit.xml', skipMarkingBuildUnstable: false
         }
       }
     }
@@ -72,7 +72,7 @@ pipeline {
       }
     }
 
-    stage("Analyze") {
+    stage('Analyze') {
       steps {
         withCredentials([string(credentialsId: 'fossa.full.token', variable: 'FOSSA_API_KEY')]) {
           withSonarQubeEnv('sonarcloud') {
@@ -103,13 +103,13 @@ pipeline {
 
   post {
       success {
-        echo "Successfully completed"
+        echo 'Successfully completed'
       }
       aborted {
-        error "Aborted, exiting now"
+        error 'Aborted, exiting now'
       }
       failure {
-        error "Failed, exiting now"
+        error 'Failed, exiting now'
       }
   }
 }

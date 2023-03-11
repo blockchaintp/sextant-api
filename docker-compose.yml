@@ -8,7 +8,8 @@ services:
       args:
         EDITION_MODULE: aws_sfs_nometer
         NODE_ENV: development
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-aws-sfs-nometer:${ISOLATION_ID}
   api-sfd-nometer:
     build:
@@ -17,7 +18,8 @@ services:
       args:
         EDITION_MODULE: aws_sfd_nometer
         NODE_ENV: development
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-aws-sfd-nometer:${ISOLATION_ID}
   api-enterprise:
     build:
@@ -26,7 +28,8 @@ services:
       args:
         EDITION_MODULE: enterprise
         NODE_ENV: enterprise
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-enterprise:${ISOLATION_ID}
   api-standard:
     build:
@@ -35,7 +38,8 @@ services:
       args:
         EDITION_MODULE: enterprise
         NODE_ENV: standard
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-standard:${ISOLATION_ID}
   api-premium:
     build:
@@ -44,12 +48,14 @@ services:
       args:
         EDITION_MODULE: enterprise
         NODE_ENV: premium
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-premium:${ISOLATION_ID}
   api:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev-build
     image: sextant-api:${ISOLATION_ID}
   api-sft:
     build:
@@ -58,7 +64,8 @@ services:
       args:
         EDITION_MODULE: sft
         NODE_ENV: development
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-sft:${ISOLATION_ID}
   api-community:
     build:
@@ -67,5 +74,6 @@ services:
       args:
         EDITION_MODULE: community
         NODE_ENV: community
-        NPM_CI_ARGS: "--production"
+        NPM_CI_ARGS: "--omit=dev"
+      target: final
     image: sextant-api-community:${ISOLATION_ID}
