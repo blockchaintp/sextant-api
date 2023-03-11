@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* refactor(controller): extract createRole to remove duplication [view commit](https://github.com/catenasys/sextant-api/commit/7367ac2dab14a7e1b691ee959052753ba1fd9dc9)
+* fix: corrections to a large number of nastily coupled problems [view commit](https://github.com/catenasys/sextant-api/commit/22056e271eab1096fa5404e86af6c424d9998ac2)
+* fix: remove classic deployment related files and functions [view commit](https://github.com/catenasys/sextant-api/commit/0b5f48c240aff1a4e532aac40c3cc2e7812f9139)
+* feat(templateloader): add content-cache [view commit](https://github.com/catenasys/sextant-api/commit/ebe89f63a5e313c545818874bfb10125f7e87add)
+* feat(logging): update pino logger [view commit](https://github.com/catenasys/sextant-api/commit/aeec6779e10632a8c3c733f4ea7e33c910ca8f00)
+* refactor(templateLoader): use eval instead of require [view commit](https://github.com/catenasys/sextant-api/commit/28e9cfbb4e1d1c624c2c5fd88b1c141a41ad9742)
 * refactor(utils): related fixes for grpcurl and damlRPC [view commit](https://github.com/catenasys/sextant-api/commit/bd1e35d6ee35aa286e4fa1f50a31f308fdfbe233)
 * refactor(utils): convert grpcurl to ts [view commit](https://github.com/catenasys/sextant-api/commit/4d6e6f0392f14f54f00f68b9b0f22f543e6e1f47)
 * refactor(utils): conver deploymentHttpConnection to ts [view commit](https://github.com/catenasys/sextant-api/commit/cd28ace0e7b039fcc8188573db8cd17f420fd1db)
