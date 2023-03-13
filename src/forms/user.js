@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable max-len */
 
 // base user form that operates in the following modes:
@@ -210,7 +215,5 @@ const forms = {
     }),
   },
 }
-
-console.log('forms', forms.userEdit)
 
 module.exports = forms
