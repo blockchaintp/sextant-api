@@ -13,3 +13,4 @@ Makefile
 mkdocs.yml
 standard_defs.mk
 test.sh
+Dockerfile

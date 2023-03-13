@@ -1,4 +1,4 @@
-import * as merge from 'deepmerge'
+import merge = require('deepmerge')
 import * as path from 'path'
 import { edition } from '../edition'
 import { ChartBundleName, ChartVersion } from '../edition-type'

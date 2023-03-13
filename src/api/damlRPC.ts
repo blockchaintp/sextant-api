@@ -7,7 +7,7 @@
 import * as bluebird from 'bluebird'
 import * as fs from 'fs'
 import * as jwt from 'jsonwebtoken'
-import * as memoize from 'memoizee'
+import memoize = require('memoizee')
 import { getLogger } from '../logging'
 import { Store } from '../store'
 import { Deployment } from '../store/model/model-types'
@@ -50,7 +50,7 @@ const getJWTToken = async ({ id, payload, store }: { id: DatabaseIdentifier; pay
     id,
     store,
   })
-  return new bluebird((resolve, reject) => {
+  return new bluebird.Promise((resolve, reject) => {
     jwt.sign(
       {
         'https://daml.com/ledger-api': payload,
@@ -323,12 +323,12 @@ export class DamlRPC {
     // This is regardless of all validator pods
     // reaching consensus
     try {
-      return await bluebird.resolve(
+      return await bluebird.Promise.resolve(
         proxy.request({
           pod: pod.metadata.name,
           port: DAML_RPC_PORT,
           handler: async ({ port }) => {
-            const token = await bluebird.resolve(
+            const token = await bluebird.Promise.resolve(
               getAdminJWTToken({
                 id,
                 store: this.store,

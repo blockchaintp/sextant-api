@@ -5,7 +5,7 @@ PMD_IMAGE = blockchaintp/pmd:latest
 
 build: $(MARKERS)/build_docker
 
-test: $(MARKERS)/test_tape
+test: $(MARKERS)/test_jest $(MARKERS)/test_tape
 
 analyze: analyze_fossa analyze_sonar_js
 
@@ -34,7 +34,7 @@ clean_docker:
 clean_npm:
 	rm -rf node_modules
 
-$(MARKERS)/test_tape:
+$(MARKERS)/test_tape: $(MARKERS)/build_docker
 	docker-compose -f docker-compose.test.yml up -d
 	docker-compose -f docker-compose.test.yml exec -T api npm run test || true
 	docker cp api_test:/tmp/test.out ./build/results.tap || true
@@ -43,6 +43,18 @@ $(MARKERS)/test_tape:
 	docker cp api_test:/tmp/lcov-report ./build/ || true
 	docker-compose -f docker-compose.test.yml down -v || true
 	docker-compose -f docker-compose.test.yml rm -f || true
+	touch $@
+
+$(MARKERS)/test_jest: $(MARKERS)/build_docker
+	docker run -w /app/api --rm -v $$(pwd)/build:/app/api/build \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		--network host \
+		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run test:jest"
+	$(BUSYBOX) find /project -type d -exec chown -R $(UID):$(GID) {} \;
+	touch $@
+
+$(MARKERS)/build_npm_ci: $(MARKERS)/asdf
+	npm ci
 	touch $@
 
 .PHONY: docs
@@ -76,3 +88,30 @@ stop-local:
 clean-local:
 	docker-compose -f docker-compose.localtest.yml down -v
 	rm -f $(MARKERS)/build_docker
+
+export ASDF_DIR ?= $(HOME)/.asdf
+export ASDF_BIN ?= $(ASDF_DIR)/bin
+export ASDF_USER_SHIMS ?= $(ASDF_DIR)/shims
+export PATH := $(ASDF_BIN):$(PATH)
+export PATH := $(ASDF_USER_SHIMS):$(PATH)
+$(MARKERS)/asdf_installed:
+	if [ ! -d $(ASDF_DIR)/.git ]; then \
+		git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.11.2; \
+		asdf update; \
+		asdf plugin update --all; \
+	fi
+	touch $@
+
+$(MARKERS)/asdf_plugins: $(MARKERS)/asdf_installed
+	if [ -r .tool-versions ]; then \
+		cat .tool-versions | awk '{print $$1}' | xargs -n1 asdf plugin add || true ;\
+	fi
+	if [ -r $(HOME)/.tool-versions ]; then \
+		cat $(HOME)/.tool-versions | awk '{print $$1}' | xargs -n1 asdf plugin add || true ;\
+	fi
+	touch $@
+
+$(MARKERS)/asdf: $(MARKERS)/asdf_plugins
+	asdf install
+	asdf current
+	touch $@
