@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* style(forms-user): adds ignores to deal with typescript and removes logging [view commit](https://github.com/catenasys/sextant-api/commit/0e985e63f28cc7c5a06f3c30eea76a6420878a39)
+* feat(forms-user): updates fields object to include change password dialog and references the new schema in appropriate form builders [view commit](https://github.com/catenasys/sextant-api/commit/9663e5866f54e7ea8a4991a342a285c196e10b35)
+* test: add jest reporting to ci [view commit](https://github.com/catenasys/sextant-api/commit/3eaf0fe05e30a9c438fb1c73010525ece7d98c5d)
+* test: testcontainers requires esModuleInterop [view commit](https://github.com/catenasys/sextant-api/commit/b2c45d9efa88fc3d3c109cddd4f223052be7fbea)
+* test: add jest framework [view commit](https://github.com/catenasys/sextant-api/commit/2b2c7a06b52f01639e977f77fc3095952a70577c)
 * refactor(controller): extract createRole to remove duplication [view commit](https://github.com/catenasys/sextant-api/commit/7367ac2dab14a7e1b691ee959052753ba1fd9dc9)
 * fix: corrections to a large number of nastily coupled problems [view commit](https://github.com/catenasys/sextant-api/commit/22056e271eab1096fa5404e86af6c424d9998ac2)
 * fix: remove classic deployment related files and functions [view commit](https://github.com/catenasys/sextant-api/commit/0b5f48c240aff1a4e532aac40c3cc2e7812f9139)
