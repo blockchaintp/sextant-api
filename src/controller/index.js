@@ -5,8 +5,8 @@ const UserController = require('./user')
 const { ClusterController } = require('./cluster')
 const { DeploymentController } = require('./deployment')
 const DamlController = require('./daml')
-const TaekionController = require('./taekion')
-const AdministrationController = require('./administration')
+const { TaekionController } = require('./taekion')
+const { AdministrationController } = require('./administration')
 
 const Controllers = ({ store, settings }) => {
   const config = ConfigBackend({
@@ -34,12 +34,12 @@ const Controllers = ({ store, settings }) => {
     settings,
   })
 
-  const taekion = TaekionController({
+  const taekion = new TaekionController({
     store,
     settings,
   })
 
-  const administration = AdministrationController({})
+  const administration = new AdministrationController()
 
   return {
     config,
