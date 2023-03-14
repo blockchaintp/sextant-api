@@ -7,16 +7,16 @@
 import * as bluebird from 'bluebird'
 import * as fs from 'fs'
 import * as jwt from 'jsonwebtoken'
-import memoize = require('memoizee')
-import { getLogger } from '../logging'
-import { Store } from '../store'
-import { Deployment } from '../store/model/model-types'
-import { DatabaseIdentifier } from '../store/model/scalar-types'
-import * as deploymentNames from '../utils/deploymentNames'
-import { DeploymentPodProxy } from '../utils/deploymentPodProxy'
-import { Grpcurl } from '../utils/grpcurl'
-import { SecretLoader } from '../utils/secretLoader'
+import { getLogger } from '../../logging'
+import { Store } from '../../store'
+import { Deployment } from '../../store/model/model-types'
+import { DatabaseIdentifier } from '../../store/model/scalar-types'
+import * as deploymentNames from '../../utils/deploymentNames'
+import { DeploymentPodProxy } from '../../utils/deploymentPodProxy'
 import * as database from './database'
+import { Grpcurl } from './grpcurl'
+import { SecretLoader } from './secretLoader'
+import memoize = require('memoizee')
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({

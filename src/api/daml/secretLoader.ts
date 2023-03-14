@@ -3,10 +3,10 @@
  *
  * License: Product
  */
-import { Store } from '../store'
-import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { ClusterKubectl } from './clusterKubectl'
-import * as deploymentNames from './deploymentNames'
+import { Store } from '../../store'
+import { DatabaseIdentifier } from '../../store/model/scalar-types'
+import { ClusterKubectl } from '../../utils/clusterKubectl'
+import * as deploymentNames from '../../utils/deploymentNames'
 
 export class SecretLoader {
   private id: DatabaseIdentifier

@@ -6,8 +6,8 @@
 import * as https from 'https'
 import * as axios from 'axios'
 import { deploymentConnection, CachedConnection } from './deploymentConnection'
-import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { Store } from '../store'
+import { DatabaseIdentifier } from '../../store/model/scalar-types'
+import { Store } from '../../store'
 
 export const deploymentHttpConnection = async ({
   store,

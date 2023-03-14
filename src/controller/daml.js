@@ -4,9 +4,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const KeyPair = require('../utils/sextantKeyPair')
-const KeyManager = require('../api/keyManager')
-const { DamlRPC } = require('../api/damlRPC')
-const SettingsTP = require('../api/settingsTP')
+const KeyManager = require('../api/daml/keyManager')
+const { DamlRPC } = require('../api/daml/damlRPC')
+const SettingsTP = require('../api/daml/settingsTP')
 
 const DamlController = ({ store }) => {
   const keyManager = KeyManager({

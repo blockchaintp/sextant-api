@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const database = require('./database')
 
 const SettingsTP = () => {
@@ -10,7 +13,7 @@ const SettingsTP = () => {
      * id
 
   */
-  const getEnrolledKeys = async () => database.sawtoothEnrolledKeys
+  const getEnrolledKeys = () => database.sawtoothEnrolledKeys
 
   /*
 
@@ -22,9 +25,7 @@ const SettingsTP = () => {
      * key
 
   */
-  const addEnrolledKey = async ({
-    publicKey,
-  }) => {
+  const addEnrolledKey = ({ publicKey }) => {
     if (!publicKey) throw new Error('publicKey must be given to api.settingsTP.addEnrolledKey')
     database.sawtoothEnrolledKeys.push({
       publicKey,

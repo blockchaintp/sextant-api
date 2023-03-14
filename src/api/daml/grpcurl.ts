@@ -1,8 +1,8 @@
-import * as tmp from 'tmp'
-import * as fs from 'fs'
 import * as childProcess from 'child_process'
+import * as fs from 'fs'
+import * as tmp from 'tmp'
 import * as util from 'util'
-import { getLogger } from '../logging'
+import { getLogger } from '../../logging'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({

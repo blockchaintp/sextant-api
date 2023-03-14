@@ -1,23 +1,21 @@
-const fs = require('fs')
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const Promise = require('bluebird')
 const merge = require('deepmerge')
 const yaml = require('js-yaml')
 const tmp = require('tmp')
+const { writeYamlAsync } = require('../utils/yaml')
 
-const writeFile = Promise.promisify(fs.writeFile)
 const tempName = Promise.promisify(tmp.tmpName)
 
 // eslint-disable-next-line no-unused-vars
 const overwriteMerge = (destinationArray, sourceArray, options) => sourceArray
 
-const writeYaml = async (filepath, data) => {
-  const yamlText = yaml.safeDump(data)
-  return writeFile(filepath, yamlText, 'utf8')
-}
-
-const formatData = async ({
-  desired_state,
-}) => {
+const formatData = ({ desired_state }) => {
   const initialData = desired_state
 
   if (initialData.sawtooth && initialData.sawtooth.customTPs) {
@@ -43,10 +41,7 @@ const formatData = async ({
   return the filepath to the new values.yaml
 */
 
-const writeValues = async ({
-  desired_state,
-  custom_yaml,
-}) => {
+const writeValues = async ({ desired_state, custom_yaml }) => {
   const valuesPath = await tempName({
     postfix: '.yaml',
   })
@@ -65,7 +60,7 @@ const writeValues = async ({
     finalValuesYaml = merge(data, customYaml, { arrayMerge: overwriteMerge })
   }
 
-  await writeYaml(valuesPath, finalValuesYaml)
+  await writeYamlAsync(valuesPath, finalValuesYaml)
 
   return valuesPath
 }
