@@ -4,7 +4,6 @@ import { edition } from '../edition'
 import { ChartBundleName, ChartVersion } from '../edition-type'
 import { HELM_CHARTS_PATH } from '../tasks/deployment/utils/helmUtils'
 import { ContentCache } from '../utils/content-cache'
-import { overwriteMerge } from '../utils/overwrite-merge'
 import { getYaml } from '../utils/yaml'
 
 type ChartParsedDetails = {
@@ -57,6 +56,8 @@ type ButtonVersion = Pick<ChartDetails, 'description' | 'features' | 'title'> & 
 }
 
 const { chartTable } = edition
+
+export const overwriteMerge = (destinationArray: any[], sourceArray: any[]): any[] => sourceArray
 
 const DeploymentTemplateCache = new ContentCache()
 
