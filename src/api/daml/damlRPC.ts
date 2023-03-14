@@ -11,9 +11,9 @@ import { getLogger } from '../../logging'
 import { Store } from '../../store'
 import { Deployment } from '../../store/model/model-types'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
-import * as deploymentNames from '../../utils/deploymentNames'
+import { deploymentReleaseFullName } from '../../utils/deploymentNames'
 import { DeploymentPodProxy } from '../../utils/deploymentPodProxy'
-import * as database from './database'
+import { damlParticipants, damlTimeService, getKey } from './database'
 import { Grpcurl } from './grpcurl'
 import { SecretLoader } from './secretLoader'
 import memoize = require('memoizee')
@@ -87,7 +87,7 @@ const getPrivateKey = async ({ id, store }: { id: DatabaseIdentifier; store: Sto
 }
 
 const getCertSecretName = (deployment: Deployment) => {
-  const fullName = deploymentNames.deploymentReleaseFullName(deployment)
+  const fullName = deploymentReleaseFullName(deployment)
   return `${fullName}-cert`
 }
 
@@ -363,7 +363,7 @@ export class DamlRPC {
   }
 
   public getTimeServiceInfo() {
-    return database.damlTimeService
+    return damlTimeService
   }
 
   public async registerParticipant({ id, publicKey }: { id: DatabaseIdentifier; publicKey: string }) {
@@ -380,20 +380,20 @@ export class DamlRPC {
       publicKey,
     })
 
-    database.damlParticipants.push({
-      damlId: database.getKey(),
+    damlParticipants.push({
+      damlId: getKey(),
       participantId,
       publicKey,
       parties: [],
     })
 
-    return database.damlParticipants
+    return damlParticipants
   }
 
   public updateKey({ oldPublicKey, newPublicKey }: { newPublicKey: string; oldPublicKey: string }) {
     if (!oldPublicKey) throw new Error('oldPublicKey must be given to api.damlRPC.updateKey')
     if (!newPublicKey) throw new Error('newPublicKey must be given to api.damlRPC.updateKey')
-    const participant = database.damlParticipants.find((oneParticipant) => oneParticipant.publicKey === oldPublicKey)
+    const participant = damlParticipants.find((oneParticipant) => oneParticipant.publicKey === oldPublicKey)
     if (!participant) throw new Error(`no participant found with publicKey ${oldPublicKey}`)
     participant.publicKey = newPublicKey
     return true

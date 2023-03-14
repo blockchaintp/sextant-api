@@ -6,7 +6,7 @@
 // unified way
 
 import { get } from 'dotty'
-import * as templateLoader from '../deployment_templates/templateLoader'
+import { getHelmDeploymentDetails } from '../deployment_templates/templateLoader'
 import { ChartBundleName, ChartVersion } from '../edition-type'
 import { getLogger } from '../logging'
 
@@ -26,7 +26,7 @@ export function getField({
   deployment_version: ChartVersion
   field: 'name' | 'namespace'
 }) {
-  const deploymentTypes = templateLoader.getHelmDeploymentDetails()
+  const deploymentTypes = getHelmDeploymentDetails()
   const type = deploymentTypes[deployment_type]
   if (!type) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call

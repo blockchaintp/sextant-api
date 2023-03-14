@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
-import * as config from '../config'
-import * as base64 from '../utils/base64'
+import { LIST_ORDER_BY_FIELDS, TABLES } from '../config'
+import { encode } from '../utils/base64'
 import { DeploymentSecret } from './model/model-types'
 
 /*
@@ -10,7 +10,7 @@ import { DeploymentSecret } from './model/model-types'
 
 */
 
-export type DeploymentSecretIdentifying = { deployment: number; id?: number; name?: string }
+type DeploymentSecretIdentifying = { deployment: number; id?: number; name?: string }
 
 export class DeploymentSecretStore {
   private knex: Knex
@@ -44,10 +44,10 @@ export class DeploymentSecretStore {
     const insertData = {
       deployment,
       name,
-      base64data: base64data || base64.encode(rawData),
+      base64data: base64data || encode(rawData),
     }
 
-    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
+    const [result] = await (trx || this.knex)<DeploymentSecret>(TABLES.deploymentsecret)
       .insert(insertData)
       .returning('*')
     return result
@@ -70,7 +70,7 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
+    const [result] = await (trx || this.knex)<DeploymentSecret>(TABLES.deploymentsecret)
       .where(queryParams)
       .del()
       .returning('*')
@@ -87,7 +87,7 @@ export class DeploymentSecretStore {
     trx?: Knex.Transaction
   ) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.deleteForDeployment`)
-    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
+    const [result] = await (trx || this.knex)<DeploymentSecret>(TABLES.deploymentsecret)
       .where({
         deployment,
       })
@@ -113,11 +113,7 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    return (trx || this.knex)
-      .select<DeploymentSecret>('*')
-      .from(config.TABLES.deploymentsecret)
-      .where(queryParams)
-      .first()
+    return (trx || this.knex).select<DeploymentSecret>('*').from(TABLES.deploymentsecret).where(queryParams).first()
   }
 
   /*
@@ -128,11 +124,11 @@ export class DeploymentSecretStore {
   public list({ deployment }: Pick<DeploymentSecretIdentifying, 'deployment'>, trx?: Knex.Transaction) {
     if (!deployment) throw new Error(`deployment must be given to store.deploymentsecret.list`)
 
-    const orderBy = config.LIST_ORDER_BY_FIELDS.deploymentsecret
+    const orderBy = LIST_ORDER_BY_FIELDS.deploymentsecret
 
     return (trx || this.knex)
       .select<DeploymentSecret>('*')
-      .from(config.TABLES.deploymentsecret)
+      .from(TABLES.deploymentsecret)
       .where({
         deployment,
       })
@@ -210,10 +206,10 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
-    const [result] = await (trx || this.knex)<DeploymentSecret>(config.TABLES.deploymentsecret)
+    const [result] = await (trx || this.knex)<DeploymentSecret>(TABLES.deploymentsecret)
       .where(queryParams)
       .update({
-        base64data: base64data || base64.encode(rawData),
+        base64data: base64data || encode(rawData),
       })
       .returning('*')
     return result

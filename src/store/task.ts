@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-shadow */
 import { Knex } from 'knex'
-import * as config from '../config'
-import * as enumerations from '../enumerations'
+import { LIST_ORDER_BY_FIELDS, RESOURCE_TYPES, TABLES, TASK_ACTIVE_STATUSES } from '../config'
+import { TASK_STATUS } from '../enumerations'
 import { ResourceInfo, Task } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
 
@@ -38,7 +38,7 @@ export class TaskStore {
     } = {
       // created tasks are expected to be picked up by the worker any moment
       // so count as active
-      status: config.TASK_ACTIVE_STATUSES,
+      status: TASK_ACTIVE_STATUSES,
     }
 
     if (cluster) query.cluster = cluster
@@ -75,7 +75,7 @@ export class TaskStore {
     if (typeof restartable !== 'boolean') throw new Error('data.restartable param must be given to store.task.create')
     if (!payload) throw new Error('data.payload param must be given to store.task.create')
 
-    const [result] = await (trx || this.knex)<Task>(config.TABLES.task)
+    const [result] = await (trx || this.knex)<Task>(TABLES.task)
       .insert({
         user,
         resource_type,
@@ -97,7 +97,7 @@ export class TaskStore {
   public deleteForResource({ resource_type, resource_id }: ResourceInfo, trx?: Knex.Transaction) {
     if (!resource_type) throw new Error('resource_type must be given to store.task.deleteForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.task.deleteForResource')
-    return (trx || this.knex)<Task>(config.TABLES.task)
+    return (trx || this.knex)<Task>(TABLES.task)
       .where({
         resource_type,
         resource_id,
@@ -116,7 +116,7 @@ export class TaskStore {
 
     return (trx || this.knex)
       .select<Task>('*')
-      .from(config.TABLES.task)
+      .from(TABLES.task)
       .where({
         id,
       })
@@ -157,12 +157,12 @@ export class TaskStore {
     } = {}
 
     if (cluster) {
-      query.resource_type = config.RESOURCE_TYPES.cluster
+      query.resource_type = RESOURCE_TYPES.cluster
       query.resource_id = cluster
     }
 
     if (deployment) {
-      query.resource_type = config.RESOURCE_TYPES.deployment
+      query.resource_type = RESOURCE_TYPES.deployment
       query.resource_id = deployment
     }
 
@@ -173,19 +173,16 @@ export class TaskStore {
     if (status) {
       queryStatus = typeof status === 'string' ? [status] : status
 
-      const badStatuses = queryStatus.filter((currentStatus) => enumerations.TASK_STATUS.indexOf(currentStatus) < 0)
+      const badStatuses = queryStatus.filter((currentStatus) => TASK_STATUS.indexOf(currentStatus) < 0)
 
       if (badStatuses.length > 0) {
         throw new Error(`bad task status: ${badStatuses.join(', ')}`)
       }
     }
 
-    const orderBy = config.LIST_ORDER_BY_FIELDS.task
+    const orderBy = LIST_ORDER_BY_FIELDS.task
 
-    let sqlQuery = (trx || this.knex)
-      .select<Task>('*')
-      .from(config.TABLES.task)
-      .orderBy(orderBy.field, orderBy.direction)
+    let sqlQuery = (trx || this.knex).select<Task>('*').from(TABLES.task).orderBy(orderBy.field, orderBy.direction)
 
     if (Object.keys(query).length > 0 && queryStatus.length > 0) {
       sqlQuery = sqlQuery.whereIn('status', queryStatus).andWhere(query)
@@ -257,7 +254,7 @@ export class TaskStore {
     if (!id) throw new Error('id must be given to store.task.update')
     if (!status) throw new Error('data.status param must be given to store.task.update')
 
-    if (enumerations.TASK_STATUS.indexOf(status) < 0) throw new Error(`bad status: ${status}`)
+    if (TASK_STATUS.indexOf(status) < 0) throw new Error(`bad status: ${status}`)
 
     const updateData: {
       ended_at?: Date
@@ -272,7 +269,7 @@ export class TaskStore {
     if (started_at) updateData.started_at = started_at
     if (ended_at) updateData.ended_at = ended_at
 
-    const [result] = await (trx || this.knex)<Task>(config.TABLES.task)
+    const [result] = await (trx || this.knex)<Task>(TABLES.task)
       .where({
         id,
       })

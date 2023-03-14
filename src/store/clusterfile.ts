@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
-import * as config from '../config'
-import * as base64 from '../utils/base64'
+import { LIST_ORDER_BY_FIELDS, TABLES } from '../config'
+import { encode } from '../utils/base64'
 import { ClusterFile } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
 
@@ -17,8 +17,8 @@ export class ClusterFileStore {
 
   constructor(
     knex: Knex,
-    table: string = config.TABLES.clusterfile,
-    orderBy: { direction: string; field: string } = config.LIST_ORDER_BY_FIELDS.clusterfile
+    table: string = TABLES.clusterfile,
+    orderBy: { direction: string; field: string } = LIST_ORDER_BY_FIELDS.clusterfile
   ) {
     this.knex = knex
     this.table = table
@@ -49,7 +49,7 @@ export class ClusterFileStore {
     const insertData = {
       cluster,
       name,
-      base64data: base64data || base64.encode(rawData),
+      base64data: base64data || encode(rawData),
     }
 
     const [result] = await (trx || this.knex)<ClusterFile>(this.table).insert(insertData).returning('*')
@@ -199,7 +199,7 @@ export class ClusterFileStore {
     const [result] = await (trx || this.knex)<ClusterFile>(this.table)
       .where(queryParams)
       .update({
-        base64data: base64data || base64.encode(rawData),
+        base64data: base64data || encode(rawData),
       })
       .returning('*')
     return result

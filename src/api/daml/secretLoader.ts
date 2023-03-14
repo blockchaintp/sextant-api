@@ -6,7 +6,7 @@
 import { Store } from '../../store'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
 import { ClusterKubectl } from '../../utils/clusterKubectl'
-import * as deploymentNames from '../../utils/deploymentNames'
+import { deploymentToHelmRelease } from '../../utils/deploymentNames'
 
 export class SecretLoader {
   private id: DatabaseIdentifier
@@ -26,7 +26,7 @@ export class SecretLoader {
       id: deployment.cluster,
     })
 
-    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+    const modelRelease = deploymentToHelmRelease(deployment)
 
     const { namespace } = modelRelease
 

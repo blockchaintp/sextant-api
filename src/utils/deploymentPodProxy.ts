@@ -4,11 +4,11 @@
  * License: Product
  */
 import { getLogger } from '../logging'
-import * as deploymentNames from './deploymentNames'
-import { ClusterKubectl } from './clusterKubectl'
-import { Kubectl } from './kubectl'
 import { Store } from '../store'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
+import { ClusterKubectl } from './clusterKubectl'
+import { deploymentToHelmRelease } from './deploymentNames'
+import { Kubectl } from './kubectl'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
@@ -80,7 +80,7 @@ export const DeploymentPodProxy = async ({
     id: deployment.cluster,
   })
 
-  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+  const modelRelease = deploymentToHelmRelease(deployment)
 
   const { name, namespace } = modelRelease
 

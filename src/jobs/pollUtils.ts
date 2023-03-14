@@ -5,7 +5,7 @@ import { Store } from '../store'
 import { Deployment } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
 import { ClusterKubectl } from '../utils/clusterKubectl'
-import * as deploymentNames from '../utils/deploymentNames'
+import { deploymentToHelmRelease } from '../utils/deploymentNames'
 import { Kubectl } from '../utils/kubectl'
 
 const logger = getLogger({
@@ -25,7 +25,7 @@ export const getAllDeployments = async (store: Store) => {
   return deployments
 }
 
-export const executeHelmCommand = async (configuredClusterKubectl: Kubectl, command: string) => {
+const executeHelmCommand = async (configuredClusterKubectl: Kubectl, command: string) => {
   const helmResponse = await configuredClusterKubectl.helmCommand(command)
   const parsedHelmResponse = JSON.parse(helmResponse.stdout) as unknown[]
   logger.debug({
@@ -46,8 +46,8 @@ type HelmReleaseItem = {
   updated: string
 }
 
-export const runHelmList = async (deployment: Deployment, store: Store) => {
-  const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+const runHelmList = async (deployment: Deployment, store: Store) => {
+  const modelRelease = deploymentToHelmRelease(deployment)
 
   const { namespace } = modelRelease
 
@@ -131,7 +131,7 @@ type HelmDeploymentResponse = {
   status: string
   updated_at: Date
 }
-export const processHelmResponse = (helmResponse: HelmReleaseItem, deployment: Deployment) => {
+const processHelmResponse = (helmResponse: HelmReleaseItem, deployment: Deployment) => {
   // returns an object full of useful information for the deployment status poll job
   const helmStatus = helmResponse ? helmResponse.status : undefined
   const translatedStatus = translateStatus(helmStatus)
@@ -152,7 +152,7 @@ export const processHelmResponse = (helmResponse: HelmReleaseItem, deployment: D
 }
 
 // Updates the deployment status in the DB, if the status is more recent AND new
-export const updateStatus = async (processedHelmResponse: HelmDeploymentResponse, store: Store) => {
+const updateStatus = async (processedHelmResponse: HelmDeploymentResponse, store: Store) => {
   const databaseResponse = await store.deployment.updateStatus({
     id: processedHelmResponse.deployment_id,
     helm_response: processedHelmResponse.helm_response,
@@ -183,7 +183,7 @@ export const getHelmStatuses = (deployments: Deployment[], store: Store) => {
       try {
         // returns a release with the given name
         // will be undefined if a match is not found in the helm list
-        const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+        const modelRelease = deploymentToHelmRelease(deployment)
 
         const helmResponse = helmList.find((release) => release.name === modelRelease.name)
         logger.debug({ fn: 'getHelmStatuses', message: 'selected helmResponse', helmResponse })

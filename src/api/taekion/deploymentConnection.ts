@@ -6,9 +6,9 @@
  */
 import { Store } from '../../store'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
-import * as base64 from '../../utils/base64'
+import { decode } from '../../utils/base64'
 import { ClusterKubectl } from '../../utils/clusterKubectl'
-import * as deploymentNames from '../../utils/deploymentNames'
+import { deploymentToHelmRelease } from '../../utils/deploymentNames'
 
 export type CachedConnection = {
   apiServer: string
@@ -47,7 +47,7 @@ export const deploymentConnection = async ({
 
     const { applied_state } = deployment
 
-    const modelRelease = deploymentNames.deploymentToHelmRelease(deployment)
+    const modelRelease = deploymentToHelmRelease(deployment)
 
     const { namespace } = modelRelease
 
@@ -58,8 +58,8 @@ export const deploymentConnection = async ({
 
     const { apiServer, token, ca } = clusterKubectl.getRemoteCredentials()
 
-    const token_dec = base64.decode(token).toString()
-    const ca_dec = base64.decode(ca).toString()
+    const token_dec = decode(token).toString()
+    const ca_dec = decode(ca).toString()
     const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
 
     cachedConnections[connectionCacheId] = {
