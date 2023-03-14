@@ -1,10 +1,8 @@
-import { hash, compare } from 'bcrypt'
+import { compare, hash } from 'bcrypt'
 import { sign, verify } from 'jsonwebtoken'
 import { generate } from 'randomstring'
-import * as config from '../config'
+import { USER_ACCESS_LEVELS, USER_TYPES } from '../config'
 import { User } from '../store/model/model-types'
-
-const { USER_TYPES, USER_ACCESS_LEVELS } = config
 
 const SALT_ROUNDS = 10
 

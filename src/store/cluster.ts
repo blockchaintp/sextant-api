@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { Knex } from 'knex'
-import * as config from '../config'
+import { TABLES, CLUSTER_STATUS } from '../config'
 import { Cluster } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
 
@@ -35,7 +35,7 @@ export class ClusterStore {
     if (!provision_type) throw new Error('data.provision_type param must be given to store.cluster.create')
     if (!desired_state) throw new Error('data.desired_state param must be given to store.cluster.create')
 
-    const [result] = await (trx || this.knex)<Cluster>(config.TABLES.cluster)
+    const [result] = await (trx || this.knex)<Cluster>(TABLES.cluster)
       .insert({
         name,
         provision_type,
@@ -57,12 +57,12 @@ export class ClusterStore {
   public async delete({ id }: ClusterIdentifying, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.cluster.delete')
 
-    const [result] = await (trx || this.knex)<Cluster>(config.TABLES.cluster)
+    const [result] = await (trx || this.knex)<Cluster>(TABLES.cluster)
       .where({
         id,
       })
       .update({
-        status: config.CLUSTER_STATUS.deleted,
+        status: CLUSTER_STATUS.deleted,
       })
       .returning('*')
     return result
@@ -71,7 +71,7 @@ export class ClusterStore {
   public async deletePermanently({ id }: ClusterIdentifying, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.cluster.deletePermanently')
 
-    const [result] = await (trx || this.knex)<Cluster>(config.TABLES.cluster)
+    const [result] = await (trx || this.knex)<Cluster>(TABLES.cluster)
       .where({
         id,
       })
@@ -86,17 +86,16 @@ export class ClusterStore {
   */
   public get({ id }: ClusterIdentifying, trx?: Knex.Transaction): Promise<Cluster> {
     if (!id) throw new Error('id must be given to store.cluster.get')
-    return (trx || this.knex)<Cluster>(config.TABLES.cluster)
-      .where(`${config.TABLES.cluster}.id`, id)
-      .select(`${config.TABLES.cluster}.*`)
-      .count(`${config.TABLES.deployment}.id as active_deployments`)
-      .leftOuterJoin(config.TABLES.deployment, function () {
-        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(
-          `${config.TABLES.deployment}.status`,
-          ['deleted']
-        )
+    return (trx || this.knex)<Cluster>(TABLES.cluster)
+      .where(`${TABLES.cluster}.id`, id)
+      .select(`${TABLES.cluster}.*`)
+      .count(`${TABLES.deployment}.id as active_deployments`)
+      .leftOuterJoin(TABLES.deployment, function () {
+        this.on(`${TABLES.cluster}.id`, '=', `${TABLES.deployment}.cluster`).onNotIn(`${TABLES.deployment}.status`, [
+          'deleted',
+        ])
       })
-      .groupBy(`${config.TABLES.cluster}.id`)
+      .groupBy(`${TABLES.cluster}.id`)
       .first()
   }
 
@@ -105,19 +104,18 @@ export class ClusterStore {
     params:
   */
   public list({ deleted }: { deleted: boolean }, trx?: Knex.Transaction) {
-    let sqlQuery = (trx || this.knex)<Cluster>(config.TABLES.cluster)
-      .select(`${config.TABLES.cluster}.*`)
-      .count(`${config.TABLES.deployment}.id as active_deployments`)
-      .leftOuterJoin(config.TABLES.deployment, function () {
-        this.on(`${config.TABLES.cluster}.id`, '=', `${config.TABLES.deployment}.cluster`).onNotIn(
-          `${config.TABLES.deployment}.status`,
-          ['deleted']
-        )
+    let sqlQuery = (trx || this.knex)<Cluster>(TABLES.cluster)
+      .select(`${TABLES.cluster}.*`)
+      .count(`${TABLES.deployment}.id as active_deployments`)
+      .leftOuterJoin(TABLES.deployment, function () {
+        this.on(`${TABLES.cluster}.id`, '=', `${TABLES.deployment}.cluster`).onNotIn(`${TABLES.deployment}.status`, [
+          'deleted',
+        ])
       })
-      .groupBy(`${config.TABLES.cluster}.id`)
+      .groupBy(`${TABLES.cluster}.id`)
 
     if (!deleted) {
-      sqlQuery = sqlQuery.whereNot(`${config.TABLES.cluster}.status`, config.CLUSTER_STATUS.deleted)
+      sqlQuery = sqlQuery.whereNot(`${TABLES.cluster}.status`, CLUSTER_STATUS.deleted)
     }
 
     return sqlQuery
@@ -139,7 +137,7 @@ export class ClusterStore {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
 
-    const [result] = await (trx || this.knex)<Cluster>(config.TABLES.cluster)
+    const [result] = await (trx || this.knex)<Cluster>(TABLES.cluster)
       .where({
         id,
       })

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { Knex } from 'knex'
-import * as config from '../config'
+import { TABLES } from '../config'
 import { ResourceInfo, Role } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
 
@@ -37,7 +37,7 @@ export class RoleStore {
     if (!resource_type) throw new Error('data.resource_type param must be given to store.role.create')
     if (!resource_id) throw new Error('data.resource_id param must be given to store.role.create')
 
-    const [result] = await (trx || this.knex)<Role>(config.TABLES.role)
+    const [result] = await (trx || this.knex)<Role>(TABLES.role)
       .insert({
         user,
         permission,
@@ -55,7 +55,7 @@ export class RoleStore {
   */
   public async delete({ id }: { id: DatabaseIdentifier }, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.role.delete')
-    const [result] = await (trx || this.knex)<Role>(config.TABLES.role)
+    const [result] = await (trx || this.knex)<Role>(TABLES.role)
       .where({
         id,
       })
@@ -72,7 +72,7 @@ export class RoleStore {
   public deleteForResource({ resource_type, resource_id }: ResourceInfo, trx?: Knex.Transaction) {
     if (!resource_type) throw new Error('resource_type must be given to store.role.deleteForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.role.deleteForResource')
-    return (trx || this.knex)<Role>(config.TABLES.role)
+    return (trx || this.knex)<Role>(TABLES.role)
       .where({
         resource_type,
         resource_id,
@@ -99,7 +99,7 @@ export class RoleStore {
 
     return (trx || this.knex)
       .select<Role>('*')
-      .from(config.TABLES.role)
+      .from(TABLES.role)
       .where({
         user,
         resource_type,
@@ -118,7 +118,7 @@ export class RoleStore {
     if (!resource_type) throw new Error('resource_type must be given to store.role.listForResource')
     if (!resource_id) throw new Error('resource_type must be given to store.role.listForResource')
 
-    return (trx || this.knex)<Role, Role[]>(config.TABLES.role).where({
+    return (trx || this.knex)<Role, Role[]>(TABLES.role).where({
       resource_type,
       resource_id,
     })
@@ -132,7 +132,7 @@ export class RoleStore {
   public listForUser({ user }: { user: DatabaseIdentifier }, trx?: Knex.Transaction) {
     if (!user) throw new Error('user must be given to store.role.listForUser')
 
-    return (trx || this.knex).select<Role>('*').from(config.TABLES.role).where({
+    return (trx || this.knex).select<Role>('*').from(TABLES.role).where({
       user,
     })
   }

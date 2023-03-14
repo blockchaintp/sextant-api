@@ -5,10 +5,10 @@
  * License: Product
  */
 import memoize = require('memoizee')
-import * as helmUtils from '../tasks/deployment/utils/helmUtils'
 import { getLogger } from '../logging'
-import { getField as getFieldOriginal } from './getField'
 import { Deployment } from '../store/model/model-types'
+import { getChartInfo, getChartName, getChartVersion } from '../tasks/deployment/utils/helmUtils'
+import { getField as getFieldOriginal } from './getField'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
@@ -109,9 +109,9 @@ export const helmReleaseToDeployment = memoize(
 export const deploymentToHelmRelease = memoize(
   (deployment: Deployment) => {
     const { deployment_type, deployment_version, name } = deployment
-    const chartInfo = helmUtils.getChartInfo(deployment_type, deployment_version)
-    const chartVersion = helmUtils.getChartVersion(deployment_type, deployment_version)
-    const chartName = helmUtils.getChartName(chartInfo)
+    const chartInfo = getChartInfo(deployment_type, deployment_version)
+    const chartVersion = getChartVersion(deployment_type, deployment_version)
+    const chartName = getChartName(chartInfo)
     const chart = `${chartName}-${chartVersion}`
     const { extension } = chartInfo
 
@@ -138,8 +138,8 @@ export const deploymentToHelmRelease = memoize(
 
 export const getChartNameForDeployment = memoize(
   (deployment: Deployment) => {
-    const chartInfo = helmUtils.getChartInfo(deployment.deployment_type, deployment.deployment_version)
-    return helmUtils.getChartName(chartInfo)
+    const chartInfo = getChartInfo(deployment.deployment_type, deployment.deployment_version)
+    return getChartName(chartInfo)
   },
   { maxAge: 60000 }
 )

@@ -7,7 +7,7 @@ const logger = getLogger({
   name: ' DeploymentHistoryStore',
 })
 
-export type DateRange = {
+type DateRange = {
   after?: Date
   before?: Date
 }

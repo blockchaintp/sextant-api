@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import { Knex } from 'knex'
-
-import * as config from '../config'
+import { LIST_ORDER_BY_FIELDS, TABLES } from '../config'
 import { User } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
 
@@ -34,7 +33,7 @@ export class UserStore {
     if (!server_side_key) throw new Error('data.server_side_key param must be given to store.user.create')
     if (!permission) throw new Error('data.permission param must be given to store.user.create')
 
-    const [result] = await (trx || this.knex)<User>(config.TABLES.user)
+    const [result] = await (trx || this.knex)<User>(TABLES.user)
       .insert({
         username,
         hashed_password,
@@ -55,7 +54,7 @@ export class UserStore {
   public async delete({ id }: { id: DatabaseIdentifier }, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.user.delete')
 
-    const [result] = await (trx || this.knex)<User>(config.TABLES.user)
+    const [result] = await (trx || this.knex)<User>(TABLES.user)
       .where({
         id,
       })
@@ -78,7 +77,7 @@ export class UserStore {
     if (id) query.id = id
     if (username) query.username = username
 
-    return (trx || this.knex).select<User>('*').from(config.TABLES.user).where(query).first()
+    return (trx || this.knex).select<User>('*').from(TABLES.user).where(query).first()
   }
 
   /*
@@ -87,9 +86,9 @@ export class UserStore {
   */
   // eslint-disable-next-line no-empty-pattern
   public list(trx?: Knex.Transaction) {
-    const orderBy = config.LIST_ORDER_BY_FIELDS.user
+    const orderBy = LIST_ORDER_BY_FIELDS.user
 
-    return (trx || this.knex).select<User>('*').from(config.TABLES.user).orderBy(orderBy.field, orderBy.direction)
+    return (trx || this.knex).select<User>('*').from(TABLES.user).orderBy(orderBy.field, orderBy.direction)
   }
 
   /*
@@ -110,7 +109,7 @@ export class UserStore {
     if (!id) throw new Error('id must be given to store.user.update')
     if (!data) throw new Error('data param must be given to store.user.update')
 
-    const [result] = await (trx || this.knex)<User>(config.TABLES.user)
+    const [result] = await (trx || this.knex)<User>(TABLES.user)
       .where({
         id,
       })

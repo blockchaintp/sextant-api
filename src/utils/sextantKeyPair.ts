@@ -1,9 +1,9 @@
-import * as secp256k1 from './secp256k1'
-import * as base64 from './base64'
+import { Knex } from 'knex'
 import { getLogger } from '../logging'
 import { Store } from '../store'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { Knex } from 'knex'
+import { decode } from './base64'
+import { binaryToHex, createKeyPair, KeyPairHex } from './secp256k1'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
@@ -14,7 +14,7 @@ export async function create(
   { store, deployment }: { deployment: DatabaseIdentifier; store: Store },
   trx?: Knex.Transaction
 ) {
-  const keyPair = secp256k1.binaryToHex(secp256k1.createKeyPair())
+  const keyPair = binaryToHex(createKeyPair())
   await store.deploymentsecret.create(
     {
       data: {
@@ -47,7 +47,7 @@ export async function get(
   }
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   logger.trace({ deployment }, 'sextantKeypair fetched')
-  return JSON.parse(base64.decode(secret.base64data).toString('utf8')) as secp256k1.KeyPairHex
+  return JSON.parse(decode(secret.base64data).toString('utf8')) as KeyPairHex
 }
 
 // load the sextant keypair for a deployment

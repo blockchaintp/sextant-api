@@ -1,7 +1,7 @@
-import * as config from '../config'
-import * as userForms from '../forms/user'
-import * as clusterForms from '../forms/cluster'
+import { API_VERSION, PERMISSION_ACCESS_LEVELS, USER_ACCESS_LEVELS } from '../config'
 import { getHelmDeploymentDetails } from '../deployment_templates/templateLoader'
+import { browser as clusterFormsBrowser } from '../forms/cluster'
+import { browser as userFormsBrowser } from '../forms/user'
 
 export const ConfigBackend = () => {
   /*
@@ -12,14 +12,14 @@ export const ConfigBackend = () => {
         version (string)
   */
   const values = () => ({
-    version: config.API_VERSION,
+    version: API_VERSION,
     forms: {
-      user: userForms.browser,
-      cluster: clusterForms.browser,
+      user: userFormsBrowser,
+      cluster: clusterFormsBrowser,
       deployment: getHelmDeploymentDetails(),
     },
-    userAccessLevels: config.USER_ACCESS_LEVELS,
-    roleAccessLevels: config.PERMISSION_ACCESS_LEVELS,
+    userAccessLevels: USER_ACCESS_LEVELS,
+    roleAccessLevels: PERMISSION_ACCESS_LEVELS,
   })
 
   return {
