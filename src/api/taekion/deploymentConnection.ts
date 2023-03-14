@@ -4,11 +4,11 @@
  *
  * License: Product
  */
-import { Store } from '../store'
-import { DatabaseIdentifier } from '../store/model/scalar-types'
-import * as base64 from './base64'
-import { ClusterKubectl } from './clusterKubectl'
-import * as deploymentNames from './deploymentNames'
+import { Store } from '../../store'
+import { DatabaseIdentifier } from '../../store/model/scalar-types'
+import * as base64 from '../../utils/base64'
+import { ClusterKubectl } from '../../utils/clusterKubectl'
+import * as deploymentNames from '../../utils/deploymentNames'
 
 export type CachedConnection = {
   apiServer: string

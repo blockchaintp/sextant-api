@@ -8,10 +8,10 @@
 /* eslint eqeqeq: "error" */
 const { Agent } = require('https')
 const axios = require('axios')
-const logger = require('../logging').getLogger({
+const logger = require('../../logging').getLogger({
   name: 'api/taekion',
 })
-const { deploymentHttpConnection } = require('../utils/deploymentHttpConnection')
+const { deploymentHttpConnection } = require('./deploymentHttpConnection')
 
 /*
   Utility func that returns a unique id to be used when retrieving a connection from the cache
