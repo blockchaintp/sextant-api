@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
@@ -5,10 +6,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-shadow */
 const Promise = require('bluebird')
-const API = require('../api/taekion/taekion')
+const { TaekionAPI } = require('../api/taekion/taekion')
 
 const TaekionController = ({ store }) => {
-  const api = API({
+  const api = new TaekionAPI({
     store,
   })
 
