@@ -8,5 +8,5 @@
     "esModuleInterop": true
   },
   "rootDir": ".",
-  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*", "./jest/**/*"]
+  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*", "./jest/**/*", "knexfile.js"]
 }
