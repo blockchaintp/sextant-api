@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+* fix(revert): add back in knexfile.js [view commit](https://github.com/catenasys/sextant-api/commit/edae5e0b3cb12b2a3f0a0401d60e752247fdaaca)
+* refactor: eliminate all unused exports and excessive imports [view commit](https://github.com/catenasys/sextant-api/commit/c716922f9ea16af438279042c86e4762adf998a0)
+* refactor: remove knexfile.js - not used [view commit](https://github.com/catenasys/sextant-api/commit/cd0ddb1b1948642ad2c0e28d7cf75cd7f51fce1c)
+* refactor: reduce complexity of api/taekion [view commit](https://github.com/catenasys/sextant-api/commit/724b3d87b2316366008f2e1e03f696a860e8cded)
+* refactor: move writeYaml functions to utils [view commit](https://github.com/catenasys/sextant-api/commit/d4661a2f41ba3f78494205fc95c7b2bf06171435)
+* refactor(utils): eliminate address.ts - unusued [view commit](https://github.com/catenasys/sextant-api/commit/a259282fb9a2abf13b318556da6aae423e92cfac)
+* refactor: eliminate http module [view commit](https://github.com/catenasys/sextant-api/commit/7ae1acc8f7e4c79f91e7e84914300e0d4371d7a7)
+* refactor: eliminate overwrite-merge module [view commit](https://github.com/catenasys/sextant-api/commit/7a20ba28ae017bfcb5a98e396917427c9e4a4056)
+* refactor(utils): remove random.ts unreferenced anywhere [view commit](https://github.com/catenasys/sextant-api/commit/cae3683e563e078af278bbf95a591868227add9d)
+* refactor(utils): remove template.ts not referenced anywhere [view commit](https://github.com/catenasys/sextant-api/commit/5fc56537e06086bf62d01b5b9e82d9e2dfc9c579)
+* refactor(api): isolate daml api files [view commit](https://github.com/catenasys/sextant-api/commit/a49ce0739a49d493138f567b449ac31e00da2368)
+* refactor(api): move taekion api files together [view commit](https://github.com/catenasys/sextant-api/commit/a10fb4e7858a6eecdcccd64380ce13895a67c063)
 * style(forms-user): adds ignores to deal with typescript and removes logging [view commit](https://github.com/catenasys/sextant-api/commit/0e985e63f28cc7c5a06f3c30eea76a6420878a39)
 * feat(forms-user): updates fields object to include change password dialog and references the new schema in appropriate form builders [view commit](https://github.com/catenasys/sextant-api/commit/9663e5866f54e7ea8a4991a342a285c196e10b35)
 * test: add jest reporting to ci [view commit](https://github.com/catenasys/sextant-api/commit/3eaf0fe05e30a9c438fb1c73010525ece7d98c5d)
