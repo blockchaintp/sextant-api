@@ -103,3 +103,32 @@ export type DeploymentHistory = DeploymentTypeInfo & {
   recorded_at: Date
   status: string
 }
+
+export type HelmRepository = {
+  active: boolean
+  created_at: Date
+  id: DatabaseIdentifier
+  name: string
+  refreshed_at?: Date
+  updated_at: Date
+  url: string
+}
+
+export type HelmChart = {
+  // short name of the chart without the repo name
+  active: boolean
+  app_version: string
+  created_at: Date
+  description: string
+  digest: string
+  icon?: string
+  id: DatabaseIdentifier
+  keywords?: string[]
+  kubeVersion?: string
+  name: string
+  refreshed_at?: Date
+  repository_id: DatabaseIdentifier
+  updated_at: Date
+  verified: boolean
+  version: string
+}
