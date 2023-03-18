@@ -9,7 +9,7 @@ const TaekionController = require('./taekion')
 const { AdministrationController } = require('./administration')
 
 const Controllers = ({ store, settings }) => {
-  const config = ConfigBackend({
+  const config = new ConfigBackend({
     store,
     settings,
   })
