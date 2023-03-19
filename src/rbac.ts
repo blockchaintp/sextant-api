@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /*
 
   used to tell you if a user can do a certain thing
@@ -51,15 +52,11 @@
 
 */
 
-const config = require('./config')
-const userUtils = require('./utils/user')
-
-const {
-  RESOURCE_TYPES,
-  USER_TYPES,
-  PERMISSION_TYPES,
-  PERMISSION_ACCESS_LEVELS,
-} = config
+import { RESOURCE_TYPES, USER_TYPES, PERMISSION_TYPES, PERMISSION_ACCESS_LEVELS } from './config'
+import { Store } from './store'
+import { ResourceInfo, User } from './store/model/model-types'
+import { DatabaseIdentifier } from './store/model/scalar-types'
+import * as userUtils from './utils/user'
 
 // Here we rename variables for readability and clarity in the rbac definition.
 // Eventually the config variables will be refactored, but until then we will rename them as needed
@@ -68,28 +65,28 @@ const {
 // const PERMISSION_ACCESS_LEVELS = PERMISSION_ACCESS_LEVELS
 
 const HELPERS = {
-
   // allow a logged in user to read or update it's own record
   // this is so a user can read itself or update their password etc
-  allowUserAccessToOwnRecord: (opts) => async (store, user, action) => {
-    // requires a user
-    if (!user) return false
+  allowUserAccessToOwnRecord:
+    (opts: { allowAdmin?: boolean; allowSuperuser?: boolean }) => (store: Store, user: User, action: ResourceInfo) => {
+      // requires a user
+      if (!user) return false
 
-    // superuser gets access if configured
-    if (user && userUtils.isSuperuser(user) && opts.allowSuperuser) return true
+      // superuser gets access if configured
+      if (user && userUtils.isSuperuser(user) && opts.allowSuperuser) return true
 
-    // admin gets access if configured
-    if (user && userUtils.isAdminuser(user) && opts.allowAdmin) return true
+      // admin gets access if configured
+      if (user && userUtils.isAdminuser(user) && opts.allowAdmin) return true
 
-    // if the user is getting it's own data - allow
-    // eslint-disable-next-line eqeqeq
-    if (action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
-    return false
-  },
+      // if the user is getting it's own data - allow
+      // eslint-disable-next-line eqeqeq
+      if (action.resource_type == RESOURCE_TYPES.user && action.resource_id == user.id) return true
+      return false
+    },
 
   // if there is no user and zero existing users - allow (so the initial account can be created)
   // if there is a user - they must be an admin
-  allowInitialAccountCreation: () => async (store, user) => {
+  allowInitialAccountCreation: () => async (store: Store, user: User) => {
     if (user) {
       if (userUtils.isSuperuser(user) || userUtils.isAdminuser(user)) return true
       return false
@@ -101,7 +98,23 @@ const HELPERS = {
   },
 }
 
-const METHOD_CONFIG = {
+type ResourceType = 'administration' | 'user' | 'cluster' | 'deployment'
+type MethodRule =
+  | ((store: Store, user: User) => Promise<boolean>)
+  | ((store: Store, user: User, action: ResourceInfo) => boolean)
+  | {
+      [key in string]: string
+    }
+
+type MethodConstraintGroup = {
+  [key in string]: MethodRule
+}
+
+type MethodGroupConfig = {
+  [key in ResourceType]: MethodConstraintGroup
+}
+
+const METHOD_CONFIG: MethodGroupConfig = {
   administration: {
     restart: {
       minimumUserType: USER_TYPES.superuser,
@@ -184,13 +197,15 @@ const METHOD_CONFIG = {
   },
 }
 
-const RBAC = async (store, user, action) => {
-  const {
-    resource_type,
-    resource_id,
-    method,
-    cluster_id,
-  } = action
+export type RBACAction = ResourceInfo & {
+  cluster_id?: DatabaseIdentifier
+  method: string
+  resource_id: DatabaseIdentifier
+  resource_type: ResourceType
+}
+
+function validateRBACAction(action: RBACAction) {
+  const { resource_type, method } = action
 
   if (!resource_type) throw new Error('resource_type required')
   if (!method) throw new Error('method required')
@@ -200,26 +215,17 @@ const RBAC = async (store, user, action) => {
 
   const methodConfig = group[method]
   if (!methodConfig) throw new Error(`unknown method ${method}`)
+  return { methodConfig }
+}
 
-  // if the method handler is a function - it looks after itself
-  if (typeof (methodConfig) === 'function') {
-    const result = await methodConfig(store, user, action)
-    return result
-  }
-  // no logged in user - deny
-  if (!user) return false
+async function checkMinimumPermission(
+  methodConfig: { [x: string]: string },
+  store: Store,
+  user: User,
+  action: RBACAction
+) {
+  const { cluster_id, resource_id, resource_type } = action
 
-  // if they are an superuser - allow
-  if (userUtils.isSuperuser(user)) return true
-
-  // require superuser and they are not - deny
-  if (methodConfig.superuser && !userUtils.isSuperuser(user)) return false
-
-  // require at least X user permission - deny
-  if (methodConfig.minimumUserType
-    && !userUtils.hasMinimumUserType(user, methodConfig.minimumUserType)) return false
-
-  // require a resource role with the given permission
   if (methodConfig.minimumResourcePermission) {
     // if the method config is asking for another type of resource type use it
     //  - otherwise default to the action type
@@ -227,7 +233,9 @@ const RBAC = async (store, user, action) => {
 
     // if the resourceType is cluster, use the cluster_id for the resourceId
     let resourceId = resource_id
-    if (methodConfig.resourcePermissionForType === 'cluster') { resourceId = cluster_id }
+    if (methodConfig.resourcePermissionForType === 'cluster') {
+      resourceId = cluster_id
+    }
 
     // we need a resource_id if we are performing a minimumResourcePermission check
     if (!resourceId) return false
@@ -252,15 +260,30 @@ const RBAC = async (store, user, action) => {
     if (!PERMISSION_ACCESS_LEVELS[role.permission]) return false
 
     // check the granted role is at least the required type
-    if (PERMISSION_ACCESS_LEVELS[role.permission]
-      < PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission]) return false
-
-    // ok - we are allowed
-    return true
+    if (PERMISSION_ACCESS_LEVELS[role.permission] < PERMISSION_ACCESS_LEVELS[methodConfig.minimumResourcePermission])
+      return false
   }
-
-  // we assume that there are no checks to perform for this method so allow
   return true
 }
 
-module.exports = RBAC
+export const RBAC = async (store: Store, user: User, action: RBACAction) => {
+  const { methodConfig } = validateRBACAction(action)
+  // if the method handler is a function - it looks after itself
+  if (typeof methodConfig === 'function') {
+    const result = await methodConfig(store, user, action)
+    return result
+  }
+  // no logged in user - deny
+  if (!user) return false
+
+  // if they are an superuser - allow
+  if (userUtils.isSuperuser(user)) return true
+
+  // require superuser and they are not - deny
+  if (methodConfig.superuser && !userUtils.isSuperuser(user)) return false
+
+  // require at least X user permission - deny
+  if (methodConfig.minimumUserType && !userUtils.hasMinimumUserType(user, methodConfig.minimumUserType)) return false
+
+  return checkMinimumPermission(methodConfig, store, user, action)
+}

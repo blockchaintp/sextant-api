@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { Kubectl } = require('../../utils/kubectl')
 const deploymentNames = require('../../utils/deploymentNames')
-const saveAppliedState = require('./utils/saveAppliedState')
+const { saveAppliedState } = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
 const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
 const { writeValues } = require('../../deployment_templates/writeValues')

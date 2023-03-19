@@ -13,7 +13,7 @@
  */
 const { Kubectl } = require('../../utils/kubectl')
 const deploymentNames = require('../../utils/deploymentNames')
-const saveAppliedState = require('./utils/saveAppliedState')
+const { saveAppliedState } = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
 const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
 const KeyPair = require('../../utils/sextantKeyPair')

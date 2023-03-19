@@ -14,7 +14,7 @@ const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
 const { Kubectl } = require('../utils/kubectl')
 const { createRoleForResource } = require('./createRole')
-const RBAC = require('../rbac')
+const { RBAC } = require('../rbac')
 
 const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')

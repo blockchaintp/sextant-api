@@ -1,14 +1,22 @@
+/* eslint-disable camelcase */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
 const asyncHandler = require('express-async-handler')
 const bodyParser = require('body-parser')
-const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express')
+const swaggerJsdoc = require('swagger-jsdoc')
 
 const logger = require('../logging').getLogger({
   name: 'router',
 })
-const rbac = require('../rbac')
+const { RBAC } = require('../rbac')
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
 const ClusterRoutes = require('./cluster')
@@ -29,7 +37,7 @@ const ignoreBackgroundRequests = (req) => {
 
 const RbacMiddleware = (settings) => (store, resource_type, method) => async (req, res, next) => {
   try {
-    const canAccess = await rbac(store, req.user, {
+    const canAccess = await RBAC(store, req.user, {
       resource_type,
       resource_id: req.params.id,
       method,
@@ -69,12 +77,7 @@ const requireUser = (req, res, next) => {
   next()
 }
 
-const Routes = ({
-  app,
-  controllers,
-  settings,
-  store,
-}) => {
+const Routes = ({ app, controllers, settings, store }) => {
   const rbacMiddleware = RbacMiddleware(settings)
   const basePath = (path) => `${settings.baseUrl}${path}`
 
@@ -98,14 +101,18 @@ const Routes = ({
     },
     // List of files to be processes. You can also set globs './routes/*.js'
     apis: ['/app/api/src/router/index.js', '/app/api/src/router/definitions.yaml'],
-  };
+  }
 
-  const specs = swaggerJsdoc(options);
-  app.use(basePath('/api-docs'), swaggerUi.serve, swaggerUi.setup(specs));
+  const specs = swaggerJsdoc(options)
+  app.use(basePath('/api-docs'), swaggerUi.serve, swaggerUi.setup(specs))
 
   // this goes here because we don't want to enforce JSON body parsing
   // (because it's a proxy)
-  app.use(basePath('/clusters/:cluster/deployments/:id/taekion/rest_api'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.restApiProxy))
+  app.use(
+    basePath('/clusters/:cluster/deployments/:id/taekion/rest_api'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(taekion.restApiProxy)
+  )
 
   app.use(bodyParser.json())
 
@@ -137,7 +144,11 @@ const Routes = ({
    *            type: integer
    *            example: 1234567890
    */
-  app.get(basePath('/administration/startTime'), rbacMiddleware(store, 'administration', 'startTime'), asyncHandler(administration.startTime))
+  app.get(
+    basePath('/administration/startTime'),
+    rbacMiddleware(store, 'administration', 'startTime'),
+    asyncHandler(administration.startTime)
+  )
 
   /**
    * @swagger
@@ -151,7 +162,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/administration/restart'), rbacMiddleware(store, 'administration', 'restart'), asyncHandler(administration.restart))
+  app.post(
+    basePath('/administration/restart'),
+    rbacMiddleware(store, 'administration', 'restart'),
+    asyncHandler(administration.restart)
+  )
 
   /**
    * @swagger
@@ -183,17 +198,17 @@ const Routes = ({
    */
   app.get(basePath('/user/hasInitialUser'), asyncHandler(user.hasInitialUser))
   /**
-  * @swagger
-  *  /user/login:
-  *    description: Login a currently logged out user.
-  *    parameters:
-  *      - $ref: '#/parameters/loginParam'
-  *    post:
-  *      description: Login a currently logged out user.
-  *      responses:
-  *        200:
-  *          description: ok
-  */
+   * @swagger
+   *  /user/login:
+   *    description: Login a currently logged out user.
+   *    parameters:
+   *      - $ref: '#/parameters/loginParam'
+   *    post:
+   *      description: Login a currently logged out user.
+   *      responses:
+   *        200:
+   *          description: ok
+   */
   app.post(basePath('/user/login'), asyncHandler(user.login))
 
   /**
@@ -204,7 +219,7 @@ const Routes = ({
    *      description: Logout the current user.
    *      responses:
    *        200:
-  *          description: ok
+   *          description: ok
    */
   app.get(basePath('/user/logout'), requireUser, asyncHandler(user.logout))
 
@@ -392,7 +407,11 @@ const Routes = ({
    *          description:
    */
   app.get(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'get'), asyncHandler(cluster.listRoles))
-  app.post(basePath('/clusters/:id/roles'), rbacMiddleware(store, 'cluster', 'updateRole'), asyncHandler(cluster.createRole))
+  app.post(
+    basePath('/clusters/:id/roles'),
+    rbacMiddleware(store, 'cluster', 'updateRole'),
+    asyncHandler(cluster.createRole)
+  )
 
   /**
    * @swagger
@@ -409,7 +428,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.delete(basePath('/clusters/:id/roles/:userid'), rbacMiddleware(store, 'cluster', 'updateRole'), asyncHandler(cluster.deleteRole))
+  app.delete(
+    basePath('/clusters/:id/roles/:userid'),
+    rbacMiddleware(store, 'cluster', 'updateRole'),
+    asyncHandler(cluster.deleteRole)
+  )
 
   /**
    * @swagger
@@ -486,8 +509,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'list'), asyncHandler(deployment.list))
-  app.post(basePath('/clusters/:cluster/deployments'), rbacMiddleware(store, 'deployment', 'create'), asyncHandler(deployment.create))
+  app.get(
+    basePath('/clusters/:cluster/deployments'),
+    rbacMiddleware(store, 'deployment', 'list'),
+    asyncHandler(deployment.list)
+  )
+  app.post(
+    basePath('/clusters/:cluster/deployments'),
+    rbacMiddleware(store, 'deployment', 'create'),
+    asyncHandler(deployment.create)
+  )
 
   /**
    * @swagger
@@ -520,9 +551,21 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.get))
-  app.put(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(deployment.update))
-  app.delete(basePath('/clusters/:cluster/deployments/:id'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.delete))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(deployment.get)
+  )
+  app.put(
+    basePath('/clusters/:cluster/deployments/:id'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(deployment.update)
+  )
+  app.delete(
+    basePath('/clusters/:cluster/deployments/:id'),
+    rbacMiddleware(store, 'deployment', 'delete'),
+    asyncHandler(deployment.delete)
+  )
 
   /**
    * @swagger
@@ -548,8 +591,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/roles'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listRoles))
-  app.post(basePath('/clusters/:cluster/deployments/:id/roles'), rbacMiddleware(store, 'deployment', 'updateRole'), asyncHandler(deployment.createRole))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/roles'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(deployment.listRoles)
+  )
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/roles'),
+    rbacMiddleware(store, 'deployment', 'updateRole'),
+    asyncHandler(deployment.createRole)
+  )
 
   /**
    * @swagger
@@ -566,8 +617,12 @@ const Routes = ({
    *      responses:
    *        default:
    *          description:
-  */
-  app.delete(basePath('/clusters/:cluster/deployments/:id/roles/:userid'), rbacMiddleware(store, 'deployment', 'updateRole'), asyncHandler(deployment.deleteRole))
+   */
+  app.delete(
+    basePath('/clusters/:cluster/deployments/:id/roles/:userid'),
+    rbacMiddleware(store, 'deployment', 'updateRole'),
+    asyncHandler(deployment.deleteRole)
+  )
 
   /**
    * @swagger
@@ -582,7 +637,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/tasks'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.listTasks))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/tasks'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(deployment.listTasks)
+  )
 
   /**
    * @swagger
@@ -599,7 +658,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/resources'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.resources))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/resources'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(deployment.resources)
+  )
 
   /**
    * @swagger
@@ -617,7 +680,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.delete(basePath('/clusters/:cluster/deployments/:id/pod/:pod'), rbacMiddleware(store, 'deployment', 'delete'), asyncHandler(deployment.deletePod))
+  app.delete(
+    basePath('/clusters/:cluster/deployments/:id/pod/:pod'),
+    rbacMiddleware(store, 'deployment', 'delete'),
+    asyncHandler(deployment.deletePod)
+  )
 
   /**
    * @swagger
@@ -634,7 +701,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/summary'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(deployment.summary))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/summary'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(deployment.summary)
+  )
 
   /**
    * @swagger
@@ -650,7 +721,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/daml/keyManagerKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getKeyManagerKeys))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/daml/keyManagerKeys'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(daml.getKeyManagerKeys)
+  )
 
   /**
    * @swagger
@@ -672,8 +747,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/daml/enrolledKeys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getEnrolledKeys))
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/enrolledKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addEnrolledKey))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/daml/enrolledKeys'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(daml.getEnrolledKeys)
+  )
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/enrolledKeys'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.addEnrolledKey)
+  )
 
   /**
    * @swagger
@@ -689,7 +772,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/daml/participants'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getParticipants))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/daml/participants'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(daml.getParticipants)
+  )
 
   /**
    * @swagger
@@ -705,7 +792,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/daml/archives'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getArchives))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/daml/archives'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(daml.getArchives)
+  )
 
   /**
    * @swagger
@@ -721,7 +812,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/daml/timeServiceInfo'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(daml.getTimeServiceInfo))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/daml/timeServiceInfo'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(daml.getTimeServiceInfo)
+  )
 
   /**
    * @swagger
@@ -737,7 +832,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/registerParticipant'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.registerParticipant))
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/registerParticipant'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.registerParticipant)
+  )
 
   /**
    * @swagger
@@ -753,7 +852,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/rotateKeys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.rotateParticipantKey))
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/rotateKeys'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.rotateParticipantKey)
+  )
 
   /**
    * @swagger
@@ -769,7 +872,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/addParty'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.addParty))
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/addParty'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.addParty)
+  )
 
   /**
    * @swagger
@@ -785,7 +892,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/generatePartyToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generatePartyToken))
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/generatePartyToken'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.generatePartyToken)
+  )
 
   /**
    * @swagger
@@ -801,7 +912,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/generateAdminToken'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.generateAdminToken))
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/generateAdminToken'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.generateAdminToken)
+  )
 
   /**
    * @swagger
@@ -817,7 +932,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.post(basePath('/clusters/:cluster/deployments/:id/daml/uploadArchive'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(daml.uploadArchive))
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/daml/uploadArchive'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(daml.uploadArchive)
+  )
 
   /**
    * @swagger
@@ -839,8 +958,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/keys'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listKeys))
-  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/keys'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createKey))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/taekion/keys'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(taekion.listKeys)
+  )
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/taekion/keys'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.createKey)
+  )
 
   /**
    * @swagger
@@ -856,7 +983,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/keys/:keyId'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteKey))
+  app.delete(
+    basePath('/clusters/:cluster/deployments/:id/taekion/keys/:keyId'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.deleteKey)
+  )
 
   /**
    * @swagger
@@ -878,8 +1009,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listVolumes))
-  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createVolume))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(taekion.listVolumes)
+  )
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.createVolume)
+  )
 
   /**
    * @swagger
@@ -902,8 +1041,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.put(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.updateVolume))
-  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteVolume))
+  app.put(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.updateVolume)
+  )
+  app.delete(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.deleteVolume)
+  )
 
   /**
    * @swagger
@@ -926,8 +1073,16 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.listSnapshots))
-  app.post(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.createSnapshot))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(taekion.listSnapshots)
+  )
+  app.post(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.createSnapshot)
+  )
 
   /**
    * @swagger
@@ -945,7 +1100,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.delete(basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'), rbacMiddleware(store, 'deployment', 'update'), asyncHandler(taekion.deleteSnapshot))
+  app.delete(
+    basePath('/clusters/:cluster/deployments/:id/taekion/volumes/:volume/snapshots/:snapshotName'),
+    rbacMiddleware(store, 'deployment', 'update'),
+    asyncHandler(taekion.deleteSnapshot)
+  )
 
   /**
    * @swagger
@@ -963,7 +1122,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerListDirectory))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:inode'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(taekion.explorerListDirectory)
+  )
 
   /**
    * @swagger
@@ -982,7 +1145,11 @@ const Routes = ({
    *        default:
    *          description:
    */
-  app.get(basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:directory_inode/file/:file_inode'), rbacMiddleware(store, 'deployment', 'get'), asyncHandler(taekion.explorerDownloadFile))
+  app.get(
+    basePath('/clusters/:cluster/deployments/:id/taekion/explorer/:volume/dir/:directory_inode/file/:file_inode'),
+    rbacMiddleware(store, 'deployment', 'get'),
+    asyncHandler(taekion.explorerDownloadFile)
+  )
 }
 
 module.exports = Routes

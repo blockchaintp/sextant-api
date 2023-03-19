@@ -60,7 +60,7 @@ export type ClusterFile = {
   name: string
 }
 
-type ClusterSecret = ClusterFile
+export type ClusterSecret = ClusterFile
 
 export type DeploymentSecret = {
   base64data: string

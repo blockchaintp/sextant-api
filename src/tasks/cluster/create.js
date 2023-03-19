@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { Kubectl } = require('../../utils/kubectl')
-const saveAppliedState = require('./utils/saveAppliedState')
+const { saveAppliedState } = require('./utils/saveAppliedState')
 
 const ClusterCreate = ({ testMode }) =>
   function* clusterCreateTask(params) {
