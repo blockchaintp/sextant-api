@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const { ConfigBackend } = require('./config')
-const UserController = require('./user')
+const { UserController } = require('./user')
 const { ClusterController } = require('./cluster')
 const { DeploymentController } = require('./deployment')
 const DamlController = require('./daml')
@@ -14,7 +14,7 @@ const Controllers = ({ store, settings }) => {
     settings,
   })
 
-  const user = UserController({
+  const user = new UserController({
     store,
     settings,
   })

@@ -3,6 +3,7 @@ import { sign, verify } from 'jsonwebtoken'
 import { generate } from 'randomstring'
 import { USER_ACCESS_LEVELS, USER_TYPES } from '../config'
 import { User } from '../store/model/model-types'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
 
 const SALT_ROUNDS = 10
 
@@ -18,7 +19,7 @@ export function safe(user: User): SafeUser {
   }
 }
 
-export function getPasswordHash(plainTextPassword: string) {
+export function getPasswordHash(plainTextPassword: string): Promise<string> {
   return new Promise((resolve, reject) => {
     hash(plainTextPassword, SALT_ROUNDS, (err, result) => {
       if (err) return reject(err)
@@ -40,7 +41,7 @@ export function getTokenServerSideKey() {
 }
 
 // create the token given the username and server_side_key
-export function getToken(id: string, serverSideKey: string, secret) {
+export function getToken(id: DatabaseIdentifier, serverSideKey: string, secret) {
   if (!id) throw new Error(`id required to get token`)
   if (!serverSideKey) throw new Error(`server_side_key required to get token`)
   if (!secret) throw new Error(`secret required to get token`)
