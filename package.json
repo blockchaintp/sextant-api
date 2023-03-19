@@ -5,7 +5,7 @@
   "description": "api server for the sextant cluster creation service",
   "main": "index.js",
   "scripts": {
-    "migrate": "knex migrate:latest",
+    "migrate": "if [ -r src/config.ts ]; then tsc && cd dist; fi && knex migrate:latest",
     "build": "node -c src/index.js",
     "check": "npm-check",
     "download-helm-charts": "node scripts/download-helm-charts.js",
@@ -23,7 +23,7 @@
     "cover:test": "nyc --silent npm run test:tape",
     "cover:report": "nyc report --report-dir /tmp --reporter=text --reporter=lcov",
     "start": "npm run download-helm-charts && npm run serve",
-    "compile": "tsc",
+    "compile": "tsc && node -c dist/src/index.js",
     "watch": "tsc -w"
   },
   "dependencies": {

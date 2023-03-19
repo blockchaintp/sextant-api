@@ -50,7 +50,7 @@ $(MARKERS)/test_jest: $(MARKERS)/build_docker
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		--network host \
 		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run test:jest"
-	$(BUSYBOX) find /project -type d -exec chown -R $(UID):$(GID) {} \;
+	$(BUSYBOX_ROOT) find /project -type d -exec chown -R $(UID):$(GID) {} \;
 	touch $@
 
 $(MARKERS)/build_npm_ci: $(MARKERS)/asdf
@@ -62,7 +62,7 @@ docs:
 	mkdir -p docs/api
 	docker run --rm -v $(PWD)/docs/api:/app/api/build \
 		sextant-api:$(ISOLATION_ID) run generate-swagger
-	$(BUSYBOX) find /project -type d -exec chown -R $(UID):$(GID) {} \;
+	$(BUSYBOX_ROOT) find /project -type d -exec chown -R $(UID):$(GID) {} \;
 	find docs/api -type f -exec sed -i 's/[ \t]*$$//' {} \;
 
 update-helm-fixtures: build
