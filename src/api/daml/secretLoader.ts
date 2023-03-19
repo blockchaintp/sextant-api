@@ -5,8 +5,8 @@
  */
 import { Store } from '../../store'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
-import { ClusterKubectl } from '../../utils/clusterKubectl'
 import { deploymentToHelmRelease } from '../../utils/deploymentNames'
+import { Kubectl } from '../../utils/kubectl'
 
 export class SecretLoader {
   private id: DatabaseIdentifier
@@ -30,10 +30,7 @@ export class SecretLoader {
 
     const { namespace } = modelRelease
 
-    const clusterKubectl = await ClusterKubectl({
-      cluster,
-      store: this.store,
-    })
+    const clusterKubectl = await Kubectl.getKubectlForCluster({ cluster, store: this.store })
     return clusterKubectl.getSecretByName(namespace, name)
   }
 }

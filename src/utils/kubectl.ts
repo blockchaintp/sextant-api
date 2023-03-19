@@ -14,13 +14,15 @@
 import * as k8s from '@kubernetes/client-node'
 import * as childProcess from 'child_process'
 import { existsSync, unlinkSync, writeFileSync } from 'fs'
-import getPort = require('get-port')
 import * as yaml from 'js-yaml'
 import * as net from 'net'
 import { TmpNameOptions, tmpNameSync } from 'tmp'
 import * as util from 'util'
 import { getLogger } from '../logging'
+import { Store } from '../store'
+import { Cluster } from '../store/model/model-types'
 import * as base64 from './base64'
+import getPort = require('get-port')
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
@@ -71,6 +73,26 @@ export class Kubectl {
     }
     this.remoteCredentials = remoteCredentials
     this.mode = mode
+  }
+
+  public static async getKubectlForCluster({ cluster, store }: { cluster: Cluster; store: Store }) {
+    const tokenSecret = await store.clustersecret.get({
+      cluster: cluster.id,
+      id: cluster.desired_state.token_id as number,
+    })
+
+    const caSecret = await store.clustersecret.get({
+      cluster: cluster.id,
+      id: cluster.desired_state.ca_id as number,
+    })
+
+    const remoteCredentials = {
+      token: tokenSecret.base64data,
+      ca: caSecret.base64data,
+      apiServer: cluster.desired_state.apiServer as string,
+    }
+
+    return new Kubectl({ mode: 'remote', remoteCredentials })
   }
 
   public getRemoteCredentials() {

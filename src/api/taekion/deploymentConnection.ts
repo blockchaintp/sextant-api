@@ -7,8 +7,8 @@
 import { Store } from '../../store'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
 import { decode } from '../../utils/base64'
-import { ClusterKubectl } from '../../utils/clusterKubectl'
 import { deploymentToHelmRelease } from '../../utils/deploymentNames'
+import { Kubectl } from '../../utils/kubectl'
 
 export type CachedConnection = {
   apiServer: string
@@ -51,10 +51,7 @@ export const deploymentConnection = async ({
 
     const { namespace } = modelRelease
 
-    const clusterKubectl = await ClusterKubectl({
-      cluster,
-      store,
-    })
+    const clusterKubectl = await Kubectl.getKubectlForCluster({ cluster, store })
 
     const { apiServer, token, ca } = clusterKubectl.getRemoteCredentials()
 

@@ -3,11 +3,15 @@
  *
  * License: Product
  */
-import * as https from 'https'
 import * as axios from 'axios'
-import { deploymentConnection, CachedConnection } from './deploymentConnection'
-import { DatabaseIdentifier } from '../../store/model/scalar-types'
+import * as https from 'https'
 import { Store } from '../../store'
+import { DatabaseIdentifier } from '../../store/model/scalar-types'
+import { CachedConnection, deploymentConnection } from './deploymentConnection'
+
+type CachedHttpConnection = CachedConnection & {
+  client: axios.AxiosInstance
+}
 
 export const deploymentHttpConnection = async ({
   store,
@@ -38,5 +42,5 @@ export const deploymentHttpConnection = async ({
     httpsAgent,
   })
 
-  return { ...connection, client }
+  return { ...connection, client } as CachedHttpConnection
 }

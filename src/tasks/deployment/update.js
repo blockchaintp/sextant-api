@@ -11,7 +11,7 @@
  *
  * License: Product
  */
-const { ClusterKubectl } = require('../../utils/clusterKubectl')
+const { Kubectl } = require('../../utils/kubectl')
 const deploymentNames = require('../../utils/deploymentNames')
 const saveAppliedState = require('./utils/saveAppliedState')
 const { writeValues } = require('../../deployment_templates/writeValues')
@@ -57,7 +57,7 @@ const DeploymentUpdate = ({ testMode }) =>
       return
     }
 
-    const clusterKubectl = yield ClusterKubectl({
+    const clusterKubectl = yield Kubectl.getKubectlForCluster({
       cluster,
       store,
     })
