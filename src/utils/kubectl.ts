@@ -95,10 +95,6 @@ export class Kubectl {
     return new Kubectl({ mode: 'remote', remoteCredentials })
   }
 
-  public getRemoteCredentials() {
-    return this.remoteCredentials
-  }
-
   /*
   write a YAML file
   */
