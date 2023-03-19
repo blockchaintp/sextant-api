@@ -9,7 +9,7 @@ test: $(MARKERS)/test_jest $(MARKERS)/test_tape
 
 analyze: analyze_fossa analyze_sonar_js
 
-clean: clean_container
+clean: fix_permissions clean_container
 
 distclean: clean_docker clean_npm
 
