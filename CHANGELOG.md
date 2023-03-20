@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* build: correct permissions as root [view commit](https://github.com/catenasys/sextant-api/commit/c7e3b8559e5993f55bd47d18751dc996b8d2d9ec)
+* fix: add back in knexfile COPY steps [view commit](https://github.com/catenasys/sextant-api/commit/f42e7c4d0fe9eca44105de7ecf996b51c1074dbf)
 * fix(revert): add back in knexfile.js [view commit](https://github.com/catenasys/sextant-api/commit/edae5e0b3cb12b2a3f0a0401d60e752247fdaaca)
 * refactor: eliminate all unused exports and excessive imports [view commit](https://github.com/catenasys/sextant-api/commit/c716922f9ea16af438279042c86e4762adf998a0)
 * refactor: remove knexfile.js - not used [view commit](https://github.com/catenasys/sextant-api/commit/cd0ddb1b1948642ad2c0e28d7cf75cd7f51fce1c)
