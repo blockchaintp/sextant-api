@@ -11,7 +11,7 @@ const { MarketplaceMeteringClient, MeterUsageCommand } = require('@aws-sdk/clien
 const { sendCommandOrFail } = require('./AwsMeterUtils')
 const { DEPLOYMENT_STATUS } = require('../../config')
 const { AWS } = require('../../utils/aws')
-const { ClusterKubectl } = require('../../utils/clusterKubectl')
+const { Kubectl } = require('../../utils/kubectl')
 const { deploymentToHelmRelease } = require('../../utils/deploymentNames')
 const AbstractJob = require('../AbstractJob')
 
@@ -69,13 +69,12 @@ class AwsMeterUsage extends AbstractJob {
     this.region = undefined
   }
 
-  start() {
-    // Run once immediately
-    void this.run()
-    super.start()
+  // eslint-disable-next-line class-methods-use-this
+
+  activeDeployments(deploymentIds) {
+    return Promise.map(deploymentIds, (deploymentId) => this.store.deployment.get({ id: deploymentId.deployment_id }))
   }
 
-  // eslint-disable-next-line class-methods-use-this
   resourcesForDeployment(cluster, deployment) {
     if (deployment.deployment_type in nodeChargeableMap) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -84,7 +83,7 @@ class AwsMeterUsage extends AbstractJob {
       const { store } = this
       logger.trace({ deployment }, 'using deployment details')
       const release = deploymentToHelmRelease(deployment)
-      return ClusterKubectl({ cluster, store })
+      return Kubectl.getKubectlForCluster({ cluster, store })
         .then((kubectl) =>
           kubectl.getPods(release.namespace, {
             labelSelector: metricDefinition.labelSelector,
@@ -177,8 +176,10 @@ class AwsMeterUsage extends AbstractJob {
     commands.forEach((command) => void sendCommandOrFail(client, command, 'aws-marketplace:MeterUsage'))
   }
 
-  activeDeployments(deploymentIds) {
-    return Promise.map(deploymentIds, (deploymentId) => this.store.deployment.get({ id: deploymentId.deployment_id }))
+  start() {
+    // Run once immediately
+    void this.run()
+    super.start()
   }
 }
 

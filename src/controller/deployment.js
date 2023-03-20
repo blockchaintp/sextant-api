@@ -10,8 +10,8 @@
 const Promise = require('bluebird')
 const config = require('../config')
 const userUtils = require('../utils/user')
-const { ClusterKubectl } = require('../utils/clusterKubectl')
-const RBAC = require('../rbac')
+const { Kubectl } = require('../utils/kubectl')
+const { RBAC } = require('../rbac')
 const deploymentNames = require('../utils/deploymentNames')
 const { getHelmDeploymentDetails } = require('../deployment_templates/templateLoader')
 const validate = require('../forms/validate')
@@ -538,7 +538,7 @@ export const DeploymentController = ({ store }) => {
       id: deployment.cluster,
     })
 
-    const kubectl = await ClusterKubectl({
+    const kubectl = await Kubectl.getKubectlForCluster({
       cluster,
       store,
     })
@@ -587,7 +587,7 @@ export const DeploymentController = ({ store }) => {
       id: deployment.cluster,
     })
 
-    const kubectl = await ClusterKubectl({
+    const kubectl = await Kubectl.getKubectlForCluster({
       cluster,
       store,
     })

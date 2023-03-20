@@ -7,7 +7,7 @@
 
 const asyncTest = require('../asyncTest')
 const database = require('../database')
-const UserController = require('../../src/controller/user')
+const { UserController } = require('../../src/controller/user')
 const { Store } = require('../../src/store')
 const userUtils = require('../../src/utils/user')
 const config = require('../../src/config')
@@ -17,7 +17,7 @@ const { USER_TYPES } = config
 database.testSuiteWithDatabase((getConnection) => {
   const getController = () => {
     const store = new Store(getConnection())
-    return UserController({
+    return new UserController({
       store,
       settings: {
         tokenSecret: config.tokenSecret,

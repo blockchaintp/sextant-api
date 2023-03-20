@@ -12,9 +12,9 @@ const Promise = require('bluebird')
 const config = require('../config')
 const userUtils = require('../utils/user')
 const clusterUtils = require('../utils/cluster')
-const { ClusterKubectl } = require('../utils/clusterKubectl')
+const { Kubectl } = require('../utils/kubectl')
 const { createRoleForResource } = require('./createRole')
-const RBAC = require('../rbac')
+const { RBAC } = require('../rbac')
 
 const clusterForms = require('../forms/cluster')
 const validate = require('../forms/validate')
@@ -628,7 +628,7 @@ const ClusterController = ({ store }) => {
       id,
     })
 
-    const kubectl = await ClusterKubectl({
+    const kubectl = await Kubectl.getKubectlForCluster({
       cluster,
       store,
     })

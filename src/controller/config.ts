@@ -3,7 +3,7 @@ import { getHelmDeploymentDetails } from '../deployment_templates/templateLoader
 import { browser as clusterFormsBrowser } from '../forms/cluster'
 import { browser as userFormsBrowser } from '../forms/user'
 
-export const ConfigBackend = () => {
+export class ConfigBackend {
   /*
     return any values required by the frontend api
     params:
@@ -11,18 +11,16 @@ export const ConfigBackend = () => {
       object
         version (string)
   */
-  const values = () => ({
-    version: API_VERSION,
-    forms: {
-      user: userFormsBrowser,
-      cluster: clusterFormsBrowser,
-      deployment: getHelmDeploymentDetails(),
-    },
-    userAccessLevels: USER_ACCESS_LEVELS,
-    roleAccessLevels: PERMISSION_ACCESS_LEVELS,
-  })
-
-  return {
-    values,
+  public values() {
+    return {
+      version: API_VERSION,
+      forms: {
+        user: userFormsBrowser,
+        cluster: clusterFormsBrowser,
+        deployment: getHelmDeploymentDetails(),
+      },
+      userAccessLevels: USER_ACCESS_LEVELS,
+      roleAccessLevels: PERMISSION_ACCESS_LEVELS,
+    }
   }
 }

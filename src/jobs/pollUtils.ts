@@ -4,7 +4,6 @@ import { getLogger } from '../logging'
 import { Store } from '../store'
 import { Deployment } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { ClusterKubectl } from '../utils/clusterKubectl'
 import { deploymentToHelmRelease } from '../utils/deploymentNames'
 import { Kubectl } from '../utils/kubectl'
 
@@ -55,7 +54,7 @@ const runHelmList = async (deployment: Deployment, store: Store) => {
     id: deployment.cluster,
   })
 
-  const clusterKubectl = await ClusterKubectl({
+  const clusterKubectl = await Kubectl.getKubectlForCluster({
     cluster,
     store,
   })

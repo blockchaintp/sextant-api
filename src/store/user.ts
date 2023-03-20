@@ -88,7 +88,10 @@ export class UserStore {
   public list(trx?: Knex.Transaction) {
     const orderBy = LIST_ORDER_BY_FIELDS.user
 
-    return (trx || this.knex).select<User>('*').from(TABLES.user).orderBy(orderBy.field, orderBy.direction)
+    return (trx || this.knex)<User>(TABLES.user)
+      .from(TABLES.user)
+      .orderBy(orderBy.field, orderBy.direction)
+      .returning<User[]>('*')
   }
 
   /*

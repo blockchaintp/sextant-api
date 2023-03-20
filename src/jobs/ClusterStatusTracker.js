@@ -10,13 +10,11 @@ const logger = require('../logging').getLogger({
 })
 
 const { CLUSTER_STATUS } = require('../config')
-const { ClusterKubectl } = require('../utils/clusterKubectl')
+const { Kubectl } = require('../utils/kubectl')
 
 class ClusterStatusTracker {
-  constructor(store, clusterKubectlFn = ClusterKubectl, test = false) {
+  constructor(store) {
     this.store = store
-    this.clusterKubectlFn = clusterKubectlFn
-    this.test = test
     this.clusterStore = store.cluster
   }
 
@@ -32,29 +30,8 @@ class ClusterStatusTracker {
     return clusters
   }
 
-  async updateClusterStatus(cluster, status) {
-    const updatedCluster = await this.clusterStore.update({
-      id: cluster.id,
-      data: { status },
-    })
-    logger.debug({
-      fn: 'updateClusterStatus',
-      updatedCluster: { name: updatedCluster.name, status: updatedCluster.status },
-    })
-    return updatedCluster
-  }
-
-  async defineClusterKubectl(cluster, store) {
-    if (this.test === true) {
-      const testVersion = new this.clusterKubectlFn(cluster)
-      return testVersion
-    }
-    const defaultVersion = await this.clusterKubectlFn({ cluster, store })
-    return defaultVersion
-  }
-
   async ping(cluster) {
-    const clusterKubectl = await this.defineClusterKubectl(cluster, this.store)
+    const clusterKubectl = await Kubectl.getKubectlForCluster(cluster, this.store)
 
     try {
       const namespaces = await clusterKubectl.getNamespaces()
@@ -130,6 +107,18 @@ class ClusterStatusTracker {
       clusters: clusters.map((cluster) => cluster.name),
     })
     await clusters.forEach(this.ping.bind(this))
+  }
+
+  async updateClusterStatus(cluster, status) {
+    const updatedCluster = await this.clusterStore.update({
+      id: cluster.id,
+      data: { status },
+    })
+    logger.debug({
+      fn: 'updateClusterStatus',
+      updatedCluster: { name: updatedCluster.name, status: updatedCluster.status },
+    })
+    return updatedCluster
   }
 }
 

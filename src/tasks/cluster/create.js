@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { ClusterKubectl } = require('../../utils/clusterKubectl')
-const saveAppliedState = require('./utils/saveAppliedState')
+const { Kubectl } = require('../../utils/kubectl')
+const { saveAppliedState } = require('./utils/saveAppliedState')
 
 const ClusterCreate = ({ testMode }) =>
   function* clusterCreateTask(params) {
@@ -29,7 +29,7 @@ const ClusterCreate = ({ testMode }) =>
       return
     }
 
-    const clusterKubectl = yield ClusterKubectl({
+    const clusterKubectl = yield Kubectl.getKubectlForCluster({
       cluster,
       store,
     })

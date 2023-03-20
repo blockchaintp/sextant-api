@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
@@ -7,12 +8,9 @@
 'use strict'
 
 const Promise = require('bluebird')
-const tape = require('tape')
-const async = require('async')
-const tools = require('./tools')
 
 const { Store } = require('../src/store')
-const rbac = require('../src/rbac')
+const { RBAC } = require('../src/rbac')
 const config = require('../src/config')
 
 const asyncTest = require('./asyncTest')
@@ -21,15 +19,14 @@ const asyncTestError = require('./asyncTestError')
 const database = require('./database')
 const fixtures = require('./fixtures')
 
-const { RESOURCE_TYPES, PERMISSION_TYPES, USER_TYPES } = config
+const { RESOURCE_TYPES, PERMISSION_TYPES } = config
 
 database.testSuiteWithDatabase((getConnection) => {
   let userMap = {}
-  let roleMap = {}
 
   const rbacTest = async ({ t, user, action, expectedResult }) => {
     const store = new Store(getConnection())
-    const result = await rbac(store, user, action)
+    const result = await RBAC(store, user, action)
     t.equal(result, expectedResult, `the result was correct`)
   }
 
@@ -57,7 +54,7 @@ database.testSuiteWithDatabase((getConnection) => {
     })
   })
 
-  asyncTest('rbac -> insert users', async (t) => {
+  asyncTest('rbac -> insert users', async () => {
     const users = await fixtures.insertTestUsers(getConnection())
     userMap = users
   })
@@ -311,7 +308,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   // insert a read role for a cluster for the read user
-  asyncTest('rbac -> cluster.get insert read role', async (t) => {
+  asyncTest('rbac -> cluster.get insert read role', async () => {
     const store = new Store(getConnection())
 
     await store.role.create({
@@ -464,7 +461,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   // insert a write role for a cluster for the write user
-  asyncTest('rbac -> cluster.update insert write role', async (t) => {
+  asyncTest('rbac -> cluster.update insert write role', async () => {
     const store = new Store(getConnection())
 
     await store.role.create({
@@ -635,7 +632,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   // insert a read role for a deployment for the read user
-  asyncTest('rbac -> deployment.get insert read role', async (t) => {
+  asyncTest('rbac -> deployment.get insert read role', async () => {
     const store = new Store(getConnection())
 
     await store.role.create({
@@ -675,7 +672,7 @@ database.testSuiteWithDatabase((getConnection) => {
   })
 
   // insert a read role for a deployment for the read user
-  asyncTest('rbac -> deployment.update insert write role', async (t) => {
+  asyncTest('rbac -> deployment.update insert write role', async () => {
     const store = new Store(getConnection())
 
     await store.role.create({

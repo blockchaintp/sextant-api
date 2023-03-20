@@ -6,7 +6,6 @@
 import { getLogger } from '../logging'
 import { Store } from '../store'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { ClusterKubectl } from './clusterKubectl'
 import { deploymentToHelmRelease } from './deploymentNames'
 import { Kubectl } from './kubectl'
 
@@ -84,7 +83,7 @@ export const DeploymentPodProxy = async ({
 
   const { name, namespace } = modelRelease
 
-  const clusterKubectl = await ClusterKubectl({
+  const clusterKubectl = await Kubectl.getKubectlForCluster({
     cluster,
     store,
   })

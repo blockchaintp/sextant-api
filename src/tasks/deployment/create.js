@@ -4,9 +4,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-var-requires */
-const { ClusterKubectl } = require('../../utils/clusterKubectl')
+const { Kubectl } = require('../../utils/kubectl')
 const deploymentNames = require('../../utils/deploymentNames')
-const saveAppliedState = require('./utils/saveAppliedState')
+const { saveAppliedState } = require('./utils/saveAppliedState')
 const KeyPair = require('../../utils/sextantKeyPair')
 const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
 const { writeValues } = require('../../deployment_templates/writeValues')
@@ -56,7 +56,7 @@ const DeploymentCreate = ({ testMode }) =>
 
     const { name, namespace } = modelRelease
 
-    const clusterKubectl = yield ClusterKubectl({
+    const clusterKubectl = yield Kubectl.getKubectlForCluster({
       cluster,
       store,
     })

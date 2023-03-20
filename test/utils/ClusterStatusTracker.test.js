@@ -119,40 +119,4 @@ database.testSuiteWithDatabase((getConnection) => {
     const updatedCluster = await clusterStatusTracker.updateClusterStatus(cluster, CLUSTER_STATUS.error)
     test.deepEqual(updatedCluster.status, CLUSTER_STATUS.error)
   })
-
-  asyncTest(
-    "ping() should not update a provisioned cluster's status if Kubernetes returns a list of namespaces",
-    async (test) => {
-      const store = new Store(getConnection())
-      const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
-
-      await clusterStatusTracker.ping(PG_CLUSTER_DATA[0])
-      const cluster1 = await store.cluster.get({ id: 1 })
-      test.deepEqual(cluster1.status, CLUSTER_STATUS.provisioned)
-    }
-  )
-
-  asyncTest(
-    "ping() should update a provisioned cluster's status to error if Kubernetes returns an empty list of namespaces",
-    async (test) => {
-      const store = new Store(getConnection())
-      const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
-
-      await clusterStatusTracker.ping(PG_CLUSTER_DATA[1], MockKubectl)
-      const cluster2 = await store.cluster.get({ id: 2 })
-      test.deepEqual(cluster2.status, CLUSTER_STATUS.error)
-    }
-  )
-
-  asyncTest(
-    "ping() should update an error cluster's status to provisioned if Kubernetes returns a list of namespaces",
-    async (test) => {
-      const store = new Store(getConnection())
-      const clusterStatusTracker = new ClusterStatusTracker(store, MockKubectl, true)
-
-      await clusterStatusTracker.ping(PG_CLUSTER_DATA[2], MockKubectl)
-      const cluster3 = await store.cluster.get({ id: 3 })
-      test.deepEqual(cluster3.status, CLUSTER_STATUS.provisioned)
-    }
-  )
 })

@@ -6,15 +6,6 @@
 const knex = require('knex')
 const path = require('path')
 
-const config = {
-  client: 'sqlite3',
-  connection: ':memory:',
-  useNullAsDefault: true,
-  migrations: {
-    directory: path.join(__dirname, '../migrations'),
-  },
-}
-
 function acquireDatabase(postgresContainer, port = 5432) {
   const config = {
     client: 'pg',
