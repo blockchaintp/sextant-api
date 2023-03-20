@@ -1,6 +1,7 @@
 import { getLogger } from '../logging'
-import * as settings from '../settings'
+import { Settings } from '../settings-singleton'
 
+const settings = Settings.getInstance()
 const logger = getLogger({
   name: 'controller/administration',
 })

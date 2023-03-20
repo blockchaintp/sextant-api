@@ -2,10 +2,11 @@
 import * as randomstring from 'randomstring'
 import * as config from './config'
 import { getLogger } from './logging'
-import * as settings from './settings'
+import { Settings } from './settings-singleton'
 import { Store } from './store'
 import * as userUtils from './utils/user'
 
+const settings = Settings.getInstance()
 const logger = getLogger({
   name: 'initialise',
 })
