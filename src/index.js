@@ -17,7 +17,7 @@ const logger = require('./logging').getLogger({
 
 const settings = require('./settings')
 const App = require('./app')
-const Initialise = require('./initialise')
+const { Initialise } = require('./initialise')
 const TaskHandlers = require('./tasks')
 const { Store } = require('./store')
 const { deploymentStatusPoll } = require('./jobs/deploymentStatusPoll')
