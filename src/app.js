@@ -13,7 +13,7 @@ const logger = require('./logging').getLogger({
 const Passport = require('./passport')
 
 const { Store } = require('./store')
-const Controller = require('./controller')
+const { Controller } = require('./controller')
 const Router = require('./router')
 const TaskProcessor = require('./taskprocessor')
 
@@ -26,7 +26,7 @@ const App = ({ knex, store, controllers, settings, sessionStore, taskHandlers })
   // eslint-disable-next-line no-param-reassign
   controllers =
     controllers ||
-    Controller({
+    new Controller({
       store,
       settings,
     })
