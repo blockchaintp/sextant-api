@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+* refactor: convert RBAC to ts [view commit](https://github.com/catenasys/sextant-api/commit/2c260ceec8a0e908112ad53491ed5d3ee0f4023a)
+* refactor(kubectl): extract authentication types [view commit](https://github.com/catenasys/sextant-api/commit/07f98b112c709b224f77a224b005f780e36f87b1)
+* refactor(utils): remove ref to kubectl.getRemoteCredentials [view commit](https://github.com/catenasys/sextant-api/commit/ab40719d853ee2fdc78a805ece6a84a3d96ebbba)
+* refactor(utils): eliminate ClusterKubectl [view commit](https://github.com/catenasys/sextant-api/commit/5925a7976d13a1ae825fb6fbb51137f4f616dd82)
+* refactor(controller): convert UserController to class [view commit](https://github.com/catenasys/sextant-api/commit/9735bdc9e2488256cb4a86728289a2e7d0cd5180)
+* refactor(controller): convert TaekionController to class [view commit](https://github.com/catenasys/sextant-api/commit/fe69ab930d0c632aaf9dae05b3009b1b904dba46)
+* refactor(controller): convert ConfigBackend to class [view commit](https://github.com/catenasys/sextant-api/commit/5ac80fb27958c1e4ac6895cb1fe5bff52594d46c)
+* refactor(controller): convert administration to TS [view commit](https://github.com/catenasys/sextant-api/commit/033036916f293b3d27762e39ca95457774f146b9)
+* build(deps): remove sqlite3 config [view commit](https://github.com/catenasys/sextant-api/commit/abfad98c32c1636aaf66c6995649a8d8ab9abe13)
 * build: correct permissions as root [view commit](https://github.com/catenasys/sextant-api/commit/c7e3b8559e5993f55bd47d18751dc996b8d2d9ec)
 * fix: add back in knexfile COPY steps [view commit](https://github.com/catenasys/sextant-api/commit/f42e7c4d0fe9eca44105de7ecf996b51c1074dbf)
 * fix(revert): add back in knexfile.js [view commit](https://github.com/catenasys/sextant-api/commit/edae5e0b3cb12b2a3f0a0401d60e752247fdaaca)
