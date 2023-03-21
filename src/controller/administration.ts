@@ -15,6 +15,7 @@ export class AdministrationController {
     setTimeout(() => {
       process.exit()
     }, 5000)
+    return true
   }
 
   public startTime() {
