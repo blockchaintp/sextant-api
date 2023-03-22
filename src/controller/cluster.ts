@@ -1,27 +1,26 @@
 /* eslint-disable camelcase */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable no-shadow */
-/* eslint-disable max-len */
-const Promise = require('bluebird')
-const config = require('../config')
-const userUtils = require('../utils/user')
-const clusterUtils = require('../utils/cluster')
-const { Kubectl } = require('../utils/kubectl')
-const { createRoleForResource } = require('./createRole')
-const { RBAC } = require('../rbac')
+import { Cluster, Task, User } from '../store/model/model-types'
+import bluebird from 'bluebird'
+import {
+  CLUSTER_PROVISION_TYPE,
+  CLUSTER_STATUS,
+  DEPLOYMENT_STATUS,
+  PERMISSION_TYPES,
+  RESOURCE_TYPES,
+  TASK_ACTION,
+} from '../config'
+import clusterForms from '../forms/cluster'
+import validate from '../forms/validate'
+import { RBAC } from '../rbac'
+import * as clusterUtils from '../utils/cluster'
+import { Kubectl } from '../utils/kubectl'
+import * as userUtils from '../utils/user'
+import { createRoleForResource } from './createRole'
+import { Store } from '../store'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
+import { Knex } from 'knex'
 
-const clusterForms = require('../forms/cluster')
-const validate = require('../forms/validate')
-
-const { CLUSTER_STATUS, DEPLOYMENT_STATUS, CLUSTER_PROVISION_TYPE, USER_TYPES } = config
-
-const ClusterController = ({ store }) => {
+export const ClusterController = ({ store }: { store: Store }) => {
   /*
 
     list clusters
@@ -37,14 +36,14 @@ const ClusterController = ({ store }) => {
     given user
 
   */
-  const list = async ({ user, deleted, withTasks }) => {
+  const list = async ({ user, deleted, withTasks }: { deleted?: boolean; user: User; withTasks?: boolean }) => {
     if (!user) throw new Error('user required for controllers.cluster.list')
 
     const currentClusters = await store.cluster.list({
       deleted,
     })
 
-    const filteredClusters = await Promise.filter(currentClusters, async (cluster) => {
+    const filteredClusters = await bluebird.filter(currentClusters, async (cluster) => {
       const canSeeCluster = await RBAC(store, user, {
         resource_type: 'cluster',
         resource_id: cluster.id,
@@ -61,15 +60,19 @@ const ClusterController = ({ store }) => {
 
      * clusters
     */
-    const loadMostRecentTasksForClusters = ({ clusters }) =>
-      Promise.map(clusters, async (cluster) => {
-        const task = await store.task.mostRecentForResource({
-          cluster: cluster.id,
-        })
+    const loadMostRecentTasksForClusters = ({ clusters }: { clusters: Cluster[] }) =>
+      Promise.all(
+        clusters.map(async (cluster) => {
+          const task = await store.task.mostRecentForResource({
+            cluster: cluster.id,
+          })
 
-        cluster.task = task
-        return cluster
-      })
+          return {
+            ...cluster,
+            task,
+          }
+        })
+      )
 
     if (withTasks) {
       return loadMostRecentTasksForClusters({
@@ -77,7 +80,7 @@ const ClusterController = ({ store }) => {
       })
     }
 
-    return filteredClusters
+    return filteredClusters as (Cluster & { task?: Task })[]
   }
 
   /*
@@ -88,7 +91,7 @@ const ClusterController = ({ store }) => {
      * id
      * withTask - should we load the latest task into the result
   */
-  const get = async ({ id, withTask }) => {
+  const get = async ({ id, withTask }: { id: DatabaseIdentifier; withTask?: boolean }) => {
     if (!id) throw new Error('id must be given to controller.cluster.update')
 
     const cluster = await store.cluster.get({
@@ -101,10 +104,13 @@ const ClusterController = ({ store }) => {
       const task = await store.task.mostRecentForResource({
         cluster: id,
       })
-      cluster.task = task
+      return {
+        ...cluster,
+        task,
+      }
     }
 
-    return cluster
+    return cluster as Cluster & { task?: Task }
   }
 
   /*
@@ -117,8 +123,33 @@ const ClusterController = ({ store }) => {
      * desired_state
      * secrets
   */
-  const createClusterSecrets = async ({ cluster, desired_state, secrets }, trx) => {
-    const createdSecrets = {}
+  const createClusterSecrets = async (
+    {
+      cluster,
+      desired_state,
+      secrets,
+    }: {
+      cluster: Cluster
+      desired_state: object
+      secrets: {
+        ca?: {
+          rawData: string
+        }
+        token?: {
+          rawData: string
+        }
+      }
+    },
+    trx: Knex.Transaction
+  ) => {
+    const createdSecrets: {
+      ca?: {
+        id: DatabaseIdentifier
+      }
+      token?: {
+        id: DatabaseIdentifier
+      }
+    } = {}
 
     if (secrets.token) {
       createdSecrets.token = await store.clustersecret.create(
@@ -148,7 +179,12 @@ const ClusterController = ({ store }) => {
 
     const { applied_state } = cluster
 
-    const updatedDesiredState = { ...desired_state }
+    const updatedDesiredState: typeof desired_state & {
+      ca?: unknown
+      ca_id?: unknown
+      token?: unknown
+      token_id?: unknown
+    } = { ...desired_state }
 
     if (createdSecrets.token) {
       updatedDesiredState.token_id = createdSecrets.token.id
@@ -182,7 +218,20 @@ const ClusterController = ({ store }) => {
     if the user is not an superuser - we create a write role for that
     user on this cluster
   */
-  const create = ({ user, data: { name, provision_type, desired_state, capabilities } }) =>
+  const create = ({
+    user,
+    data: { name, provision_type, desired_state, capabilities },
+  }: {
+    data: {
+      capabilities: string[]
+      desired_state: {
+        [key: string]: unknown
+      }
+      name: string
+      provision_type: string
+    }
+    user: User
+  }) =>
     store.transaction(async (trx) => {
       if (!user) throw new Error('user required for controllers.cluster.create')
       if (!name) throw new Error('data.name required for controllers.cluster.create')
@@ -197,6 +246,7 @@ const ClusterController = ({ store }) => {
 
       // validate the incoming form data
       await validate({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         schema: clusterForms.server[provision_type].add,
         data: {
           name,
@@ -207,7 +257,7 @@ const ClusterController = ({ store }) => {
       })
 
       // check there is no cluster already with that name
-      const clusters = await store.cluster.list({})
+      const clusters = await store.cluster.list({ deleted: false })
       const existingCluster = clusters.find(
         (currentCluster) => currentCluster.name.toLowerCase() === name.toLowerCase()
       )
@@ -253,8 +303,8 @@ const ClusterController = ({ store }) => {
           {
             data: {
               user: user.id,
-              permission: config.PERMISSION_TYPES.write,
-              resource_type: config.RESOURCE_TYPES.cluster,
+              permission: PERMISSION_TYPES.write,
+              resource_type: RESOURCE_TYPES.cluster,
               resource_id: cluster.id,
             },
           },
@@ -266,9 +316,9 @@ const ClusterController = ({ store }) => {
         {
           data: {
             user: user.id,
-            resource_type: config.RESOURCE_TYPES.cluster,
+            resource_type: RESOURCE_TYPES.cluster,
             resource_id: cluster.id,
-            action: config.TASK_ACTION['cluster.create'],
+            action: TASK_ACTION['cluster.create'],
             restartable: true,
             payload: {},
             resource_status: {
@@ -296,14 +346,22 @@ const ClusterController = ({ store }) => {
         * desired_state
         * maintenance_flag
   */
-  const update = ({ id, user, data }) =>
+  const update = ({ id, user, data }: { data: object; id: DatabaseIdentifier; user: User }) =>
     store.transaction(async (trx) => {
       if (!id) throw new Error('id must be given to controller.cluster.update')
       if (!user) throw new Error('user must be given to controller.cluster.update')
       if (!data) throw new Error('data must be given to controller.cluster.update')
 
       // extract the fields that are actually given in the payload
-      const formData = ['name', 'provision_type', 'desired_state', 'maintenance_flag'].reduce((all, field) => {
+      const formData: {
+        desired_state?: {
+          [key: string]: unknown
+        }
+        maintenance_flag?: boolean
+        name?: string
+        provision_type?: string
+      } = ['name', 'provision_type', 'desired_state', 'maintenance_flag'].reduce((all, field) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         if (data[field]) all[field] = data[field]
         return all
       }, {})
@@ -330,6 +388,7 @@ const ClusterController = ({ store }) => {
 
       // validate the form data
       await validate({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         schema: clusterForms.server[cluster.provision_type].edit,
         data: formData,
       })
@@ -369,9 +428,9 @@ const ClusterController = ({ store }) => {
         {
           data: {
             user: user.id,
-            resource_type: config.RESOURCE_TYPES.cluster,
+            resource_type: RESOURCE_TYPES.cluster,
             resource_id: cluster.id,
-            action: config.TASK_ACTION['cluster.update'],
+            action: TASK_ACTION['cluster.update'],
             restartable: true,
             payload: {},
             resource_status: {
@@ -394,7 +453,7 @@ const ClusterController = ({ store }) => {
      * user - the user that is creating the cluster
      * id
   */
-  const del = ({ user, id }) =>
+  const del = ({ user, id }: { id: DatabaseIdentifier; user: User }) =>
     store.transaction(async (trx) => {
       if (!user) throw new Error('user required for controllers.cluster.delete')
       if (!id) throw new Error('id must be given to controller.cluster.delete')
@@ -414,9 +473,9 @@ const ClusterController = ({ store }) => {
         {
           data: {
             user: user.id,
-            resource_type: config.RESOURCE_TYPES.cluster,
+            resource_type: RESOURCE_TYPES.cluster,
             resource_id: id,
-            action: config.TASK_ACTION['cluster.delete'],
+            action: TASK_ACTION['cluster.delete'],
             restartable: true,
             payload: {},
             resource_status: {
@@ -440,9 +499,8 @@ const ClusterController = ({ store }) => {
      * user - the user that is creating the cluster
      * id
   */
-  const deletePermanently = ({ user, id }) =>
+  const deletePermanently = ({ id }: { id: DatabaseIdentifier }) =>
     store.transaction(async (trx) => {
-      if (!user) throw new Error('user required for controllers.cluster.delete')
       if (!id) throw new Error('id must be given to controller.cluster.delete')
 
       // check there are no active tasks for this cluster
@@ -463,7 +521,7 @@ const ClusterController = ({ store }) => {
       )
 
       if (cluster.status !== CLUSTER_STATUS.deleted)
-        throw new Error('a cluster must be in deleted status to be deleted permenantly')
+        throw new Error('a cluster must be in deleted status to be deleted permanently')
 
       // get a list of deployments for this cluster and check they are all in deleted status
       const deployments = await store.deployment.list(
@@ -477,9 +535,9 @@ const ClusterController = ({ store }) => {
       const nonDeletedDeployments = deployments.filter((deployment) => deployment.status !== DEPLOYMENT_STATUS.deleted)
 
       if (nonDeletedDeployments.length > 0)
-        throw new Error('all deployments for this cluster must be in deleted state to be deleted permenantly')
+        throw new Error('all deployments for this cluster must be in deleted state to be deleted permanently')
       // loop over each deployment and remove, tasks and roles and then the deployment
-      await Promise.each(deployments, async (deployment) => {
+      await bluebird.each(deployments, async (deployment) => {
         await store.task.deleteForResource(
           {
             resource_type: 'deployment',
@@ -534,7 +592,7 @@ const ClusterController = ({ store }) => {
 
      * id
   */
-  const getRoles = async ({ id }) => {
+  const getRoles = async ({ id }: { id: DatabaseIdentifier }) => {
     if (!id) throw new Error('id must be given to controller.cluster.getRoles')
 
     const roles = await store.role.listForResource({
@@ -542,13 +600,15 @@ const ClusterController = ({ store }) => {
       resource_id: id,
     })
 
-    return Promise.map(roles, async (role) => {
-      const user = await store.user.get({
-        id: role.user,
+    return Promise.all(
+      roles.map(async (role) => {
+        const user = await store.user.get({
+          id: role.user,
+        })
+        const userRecord = userUtils.safe(user)
+        return { ...role, userRecord }
       })
-      role.userRecord = userUtils.safe(user)
-      return role
-    })
+    )
   }
 
   /*
@@ -561,8 +621,17 @@ const ClusterController = ({ store }) => {
      * username
      * permission
   */
-  const createRole = ({ id, user, username, permission }) =>
-    createRoleForResource({ id, user, username, permission, resource_type: 'cluster' }, store)
+  const createRole = ({
+    id,
+    user,
+    username,
+    permission,
+  }: {
+    id: DatabaseIdentifier
+    permission: string
+    user: DatabaseIdentifier
+    username: string
+  }) => createRoleForResource({ id, user, username, permission, resource_type: 'cluster' }, store)
 
   /*
     delete a role for a given cluster
@@ -572,7 +641,7 @@ const ClusterController = ({ store }) => {
      * id
      * user
   */
-  const deleteRole = ({ id, user }) =>
+  const deleteRole = ({ id, user }: { id: DatabaseIdentifier; user: DatabaseIdentifier }) =>
     store.transaction(async (trx) => {
       if (!id) throw new Error('id must be given to controller.cluster.createRole')
       if (!user) throw new Error('user must be given to controller.cluster.createRole')
@@ -604,7 +673,7 @@ const ClusterController = ({ store }) => {
 
      * id
   */
-  const getTasks = ({ id }) => {
+  const getTasks = ({ id }: { id: DatabaseIdentifier }) => {
     if (!id) throw new Error('id must be given to controller.cluster.getTasks')
 
     return store.task.list({
@@ -621,7 +690,7 @@ const ClusterController = ({ store }) => {
 
      * id - the cluster id
   */
-  const resources = async ({ id }) => {
+  const resources = async ({ id }: { id: DatabaseIdentifier }) => {
     if (!id) throw new Error('id must be given to controller.cluster.resources')
 
     const cluster = await store.cluster.get({
@@ -633,7 +702,7 @@ const ClusterController = ({ store }) => {
       store,
     })
 
-    return Promise.props({
+    return bluebird.props({
       nodes: kubectl.getNodes().then((result) => result.items),
     })
   }
@@ -645,7 +714,7 @@ const ClusterController = ({ store }) => {
 
      * id - the cluster id
   */
-  const summary = async ({ id }) => {
+  const summary = async ({ id }: { id: DatabaseIdentifier }) => {
     if (!id) throw new Error('id must be given to controller.cluster.summary')
 
     const cluster = await store.cluster.get({
@@ -681,5 +750,3 @@ const ClusterController = ({ store }) => {
     summary,
   }
 }
-
-module.exports = { ClusterController, createRoleForResource }

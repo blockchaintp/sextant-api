@@ -118,7 +118,7 @@ export class ClusterStore {
       sqlQuery = sqlQuery.whereNot(`${TABLES.cluster}.status`, CLUSTER_STATUS.deleted)
     }
 
-    return sqlQuery
+    return sqlQuery.returning<Cluster[]>('*')
   }
 
   /*
