@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import { Cluster, Task, User } from '../store/model/model-types'
 import bluebird from 'bluebird'
+import { Knex } from 'knex'
 import {
   CLUSTER_PROVISION_TYPE,
   CLUSTER_STATUS,
@@ -12,13 +12,27 @@ import {
 import clusterForms from '../forms/cluster'
 import validate from '../forms/validate'
 import { RBAC } from '../rbac'
+import { Store } from '../store'
+import { Cluster, Task } from '../store/model/model-types'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
 import * as clusterUtils from '../utils/cluster'
 import { Kubectl } from '../utils/kubectl'
 import * as userUtils from '../utils/user'
 import { createRoleForResource } from './createRole'
-import { Store } from '../store'
-import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { Knex } from 'knex'
+import {
+  ClusterCreateRequestV1,
+  ClusterCreateRoleRequest,
+  ClusterDeletePermanentlyRequest,
+  ClusterDeleteRequest,
+  ClusterDeleteRoleRequest,
+  ClusterGetRequest,
+  ClusterGetRolesRequest,
+  ClusterGetTasksRequest,
+  ClusterListRequest,
+  ClusterResourcesRequest,
+  ClusterSummaryRequest,
+  ClusterUpdateRequest,
+} from './signals'
 
 export const ClusterController = ({ store }: { store: Store }) => {
   /*
@@ -36,7 +50,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
     given user
 
   */
-  const list = async ({ user, deleted, withTasks }: { deleted?: boolean; user: User; withTasks?: boolean }) => {
+  const list = async ({ user, deleted, withTasks }: ClusterListRequest) => {
     if (!user) throw new Error('user required for controllers.cluster.list')
 
     const currentClusters = await store.cluster.list({
@@ -91,7 +105,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
      * id
      * withTask - should we load the latest task into the result
   */
-  const get = async ({ id, withTask }: { id: DatabaseIdentifier; withTask?: boolean }) => {
+  const get = async ({ id, withTask }: ClusterGetRequest) => {
     if (!id) throw new Error('id must be given to controller.cluster.update')
 
     const cluster = await store.cluster.get({
@@ -218,20 +232,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
     if the user is not an superuser - we create a write role for that
     user on this cluster
   */
-  const create = ({
-    user,
-    data: { name, provision_type, desired_state, capabilities },
-  }: {
-    data: {
-      capabilities: string[]
-      desired_state: {
-        [key: string]: unknown
-      }
-      name: string
-      provision_type: string
-    }
-    user: User
-  }) =>
+  const create = ({ user, data: { name, provision_type, desired_state, capabilities } }: ClusterCreateRequestV1) =>
     store.transaction(async (trx) => {
       if (!user) throw new Error('user required for controllers.cluster.create')
       if (!name) throw new Error('data.name required for controllers.cluster.create')
@@ -346,7 +347,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
         * desired_state
         * maintenance_flag
   */
-  const update = ({ id, user, data }: { data: object; id: DatabaseIdentifier; user: User }) =>
+  const update = ({ id, user, data }: ClusterUpdateRequest) =>
     store.transaction(async (trx) => {
       if (!id) throw new Error('id must be given to controller.cluster.update')
       if (!user) throw new Error('user must be given to controller.cluster.update')
@@ -453,7 +454,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
      * user - the user that is creating the cluster
      * id
   */
-  const del = ({ user, id }: { id: DatabaseIdentifier; user: User }) =>
+  const del = ({ user, id }: ClusterDeleteRequest) =>
     store.transaction(async (trx) => {
       if (!user) throw new Error('user required for controllers.cluster.delete')
       if (!id) throw new Error('id must be given to controller.cluster.delete')
@@ -499,7 +500,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
      * user - the user that is creating the cluster
      * id
   */
-  const deletePermanently = ({ id }: { id: DatabaseIdentifier }) =>
+  const deletePermanently = ({ id }: ClusterDeletePermanentlyRequest) =>
     store.transaction(async (trx) => {
       if (!id) throw new Error('id must be given to controller.cluster.delete')
 
@@ -592,7 +593,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
      * id
   */
-  const getRoles = async ({ id }: { id: DatabaseIdentifier }) => {
+  const getRoles = async ({ id }: ClusterGetRolesRequest) => {
     if (!id) throw new Error('id must be given to controller.cluster.getRoles')
 
     const roles = await store.role.listForResource({
@@ -621,17 +622,8 @@ export const ClusterController = ({ store }: { store: Store }) => {
      * username
      * permission
   */
-  const createRole = ({
-    id,
-    user,
-    username,
-    permission,
-  }: {
-    id: DatabaseIdentifier
-    permission: string
-    user: DatabaseIdentifier
-    username: string
-  }) => createRoleForResource({ id, user, username, permission, resource_type: 'cluster' }, store)
+  const createRole = ({ id, user, username, permission }: ClusterCreateRoleRequest) =>
+    createRoleForResource({ id, user, username, permission, resource_type: 'cluster' }, store)
 
   /*
     delete a role for a given cluster
@@ -641,7 +633,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
      * id
      * user
   */
-  const deleteRole = ({ id, user }: { id: DatabaseIdentifier; user: DatabaseIdentifier }) =>
+  const deleteRole = ({ id, user }: ClusterDeleteRoleRequest) =>
     store.transaction(async (trx) => {
       if (!id) throw new Error('id must be given to controller.cluster.createRole')
       if (!user) throw new Error('user must be given to controller.cluster.createRole')
@@ -673,7 +665,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
      * id
   */
-  const getTasks = ({ id }: { id: DatabaseIdentifier }) => {
+  const getTasks = ({ id }: ClusterGetTasksRequest) => {
     if (!id) throw new Error('id must be given to controller.cluster.getTasks')
 
     return store.task.list({
@@ -690,7 +682,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
      * id - the cluster id
   */
-  const resources = async ({ id }: { id: DatabaseIdentifier }) => {
+  const resources = async ({ id }: ClusterResourcesRequest) => {
     if (!id) throw new Error('id must be given to controller.cluster.resources')
 
     const cluster = await store.cluster.get({
@@ -714,7 +706,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
      * id - the cluster id
   */
-  const summary = async ({ id }: { id: DatabaseIdentifier }) => {
+  const summary = async ({ id }: ClusterSummaryRequest) => {
     if (!id) throw new Error('id must be given to controller.cluster.summary')
 
     const cluster = await store.cluster.get({

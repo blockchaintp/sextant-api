@@ -58,6 +58,7 @@ export const ClusterRoutes = (controllers: Controller) => {
     if (cluster.status == CLUSTER_STATUS.deleted) {
       data = await controllers.cluster.deletePermanently({
         id: Number.parseInt(req.params.id),
+        user: req.user,
       })
     } else {
       data = await controllers.cluster.delete({
@@ -69,9 +70,10 @@ export const ClusterRoutes = (controllers: Controller) => {
     res.status(200).json(data)
   }
 
-  const listRoles = async (req: Request, res: Response, _next: NextFunction) => {
+  const listRoles = async (req: RequestWithUser, res: Response, _next: NextFunction) => {
     const data = await controllers.cluster.getRoles({
       id: Number.parseInt(req.params.id),
+      user: req.user,
     })
     res.status(200).json(data)
   }
@@ -94,23 +96,26 @@ export const ClusterRoutes = (controllers: Controller) => {
     res.status(200).json(data)
   }
 
-  const listTasks = async (req: Request, res: Response, _next: NextFunction) => {
+  const listTasks = async (req: RequestWithUser, res: Response, _next: NextFunction) => {
     const data = await controllers.cluster.getTasks({
       id: Number.parseInt(req.params.id),
+      user: req.user,
     })
     res.status(200).json(data)
   }
 
-  const resources = async (req: Request, res: Response, _next: NextFunction) => {
+  const resources = async (req: RequestWithUser, res: Response, _next: NextFunction) => {
     const data = await controllers.cluster.resources({
       id: Number.parseInt(req.params.id),
+      user: req.user,
     })
     res.status(200).json(data)
   }
 
-  const summary = async (req: Request, res: Response, _next: NextFunction) => {
+  const summary = async (req: RequestWithUser, res: Response, _next: NextFunction) => {
     const data = await controllers.cluster.summary({
       id: Number.parseInt(req.params.id),
+      user: req.user,
     })
     res.status(200).json(data)
   }

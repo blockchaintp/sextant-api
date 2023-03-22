@@ -3,6 +3,15 @@ import { LIST_ORDER_BY_FIELDS, TABLES } from '../config'
 import { encode } from '../utils/base64'
 import { ClusterFile } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
+import {
+  ClusterFileCreateRequest,
+  ClusterFileDeleteForClusterRequest,
+  ClusterFileDeleteRequest,
+  ClusterFileGetRequest,
+  ClusterFileListRequest,
+  ClusterFileReplaceRequest,
+  ClusterFileUpdateRequest,
+} from './signals'
 
 export type ClusterFileIdentifying = {
   cluster: DatabaseIdentifier
@@ -35,11 +44,7 @@ export class ClusterFileStore {
         * base64data
   */
   public async create(
-    {
-      data: { cluster, name, rawData, base64data },
-    }: {
-      data: Pick<ClusterFile, 'cluster' | 'name'> & Partial<Pick<ClusterFile, 'base64data'>> & { rawData?: string }
-    },
+    { data: { cluster, name, rawData, base64data } }: ClusterFileCreateRequest,
     trx?: Knex.Transaction
   ) {
     if (!cluster) throw new Error(`data.cluster param must be given to create`)
@@ -62,7 +67,7 @@ export class ClusterFileStore {
       * cluster
       * id or name
   */
-  public async delete({ cluster, id, name }: ClusterFileIdentifying, trx?: Knex.Transaction) {
+  public async delete({ cluster, id, name }: ClusterFileDeleteRequest, trx?: Knex.Transaction) {
     if (!cluster) throw new Error(`cluster must be given to delete`)
     if (!id && !name) throw new Error(`id or name must be given to delete`)
 
@@ -82,7 +87,7 @@ export class ClusterFileStore {
     params:
       * cluster
   */
-  public async deleteForCluster({ cluster }: Pick<ClusterFileIdentifying, 'cluster'>, trx?: Knex.Transaction) {
+  public async deleteForCluster({ cluster }: ClusterFileDeleteForClusterRequest, trx?: Knex.Transaction) {
     if (!cluster) throw new Error(`cluster must be given to store.clusterfile.del`)
     const [result] = await (trx || this.knex)<ClusterFile>(this.table)
       .where({
@@ -99,7 +104,7 @@ export class ClusterFileStore {
       * cluster
       * id or name
   */
-  public get({ cluster, id, name }: ClusterFileIdentifying, trx?: Knex.Transaction) {
+  public get({ cluster, id, name }: ClusterFileGetRequest, trx?: Knex.Transaction) {
     if (!cluster) throw new Error(`cluster must be given to get`)
     if (!id && !name) throw new Error(`id or name must be given to get`)
 
@@ -118,7 +123,7 @@ export class ClusterFileStore {
     params:
       * cluster
   */
-  public list({ cluster }: Pick<ClusterFileIdentifying, 'cluster'>, trx?: Knex.Transaction) {
+  public list({ cluster }: ClusterFileListRequest, trx?: Knex.Transaction) {
     if (!cluster) throw new Error(`cluster must be given to list`)
 
     return (trx || this.knex)
@@ -140,11 +145,7 @@ export class ClusterFileStore {
         * rawData || base64data
   */
   public async replace(
-    {
-      data: { cluster, name, rawData, base64data },
-    }: {
-      data: Pick<ClusterFile, 'cluster' | 'name'> & Partial<Pick<ClusterFile, 'base64data'>> & { rawData?: string }
-    },
+    { data: { cluster, name, rawData, base64data } }: ClusterFileReplaceRequest,
     trx?: Knex.Transaction
   ) {
     await this.delete(
@@ -177,12 +178,7 @@ export class ClusterFileStore {
         * rawData
   */
   public async update(
-    {
-      cluster,
-      id,
-      name,
-      data: { rawData, base64data },
-    }: ClusterFileIdentifying & { data: { base64data?: string; rawData?: string } },
+    { cluster, id, name, data: { rawData, base64data } }: ClusterFileUpdateRequest,
     trx?: Knex.Transaction
   ) {
     if (!cluster) throw new Error(`cluster must be given to update`)
