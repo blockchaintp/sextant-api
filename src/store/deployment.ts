@@ -214,10 +214,10 @@ export class DeploymentStore {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
     const ts = new Date(currentHour()).getTime()
-    const deploymentsToUpdate = await (trx || this.knex)<Deployment>(TABLES.deployment).where({
+    let deploymentsToUpdate = await (trx || this.knex)<Deployment>(TABLES.deployment).where({
       id,
     })
-    deploymentsToUpdate
+    deploymentsToUpdate = deploymentsToUpdate
       .filter((deployment) => deployment.status === data.status)
       .filter((deployment) => {
         if (data.updated_at) {
