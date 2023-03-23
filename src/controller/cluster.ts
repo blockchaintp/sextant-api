@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import * as k8s from '@kubernetes/client-node'
 import bluebird from 'bluebird'
 import { Knex } from 'knex'
 import {
@@ -17,6 +18,7 @@ import { RBAC } from '../rbac'
 import { Store } from '../store'
 import { Cluster, Role, Task, User } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
+import { decode } from '../utils/base64'
 import * as clusterUtils from '../utils/cluster'
 import { Kubectl } from '../utils/kubectl'
 import * as userUtils from '../utils/user'
@@ -34,6 +36,7 @@ import {
   ClusterResourcesRequest,
   ClusterSummaryRequest,
   ClusterUpdateRequest,
+  ClusterUpdateUserPTRequest,
 } from './signals'
 
 export const ClusterController = ({ store }: { store: Store }) => {
@@ -462,7 +465,6 @@ export const ClusterController = ({ store }: { store: Store }) => {
         formData.desired_state = updatedDesiredState
       }
 
-      // save the cluster; removal of updateCluster will cause tests to fail
       await store.cluster.update(
         {
           id,
@@ -473,26 +475,95 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
       // if there is an update to the desired state
       // trigger a task to update it
-      const task = await store.task.create(
+      return await createUpdateTask(user, cluster, trx)
+    })
+
+  const updateUserPT = ({ id, user, data }: ClusterUpdateUserPTRequest) =>
+    store.transaction(async (trx) => {
+      // check to see if there are active tasks for this cluster
+      const activeTasks = await store.task.activeForResource(
         {
+          cluster: id,
+        },
+        trx
+      )
+
+      if (activeTasks.length > 0) throw new Error('there are active tasks for this cluster')
+
+      // get the existing cluster
+      const cluster = await store.cluster.get(
+        {
+          id,
+        },
+        trx
+      )
+
+      if (!cluster) throw new Error(`no cluster with that id found: ${id}`)
+
+      const k8sCredentials = await store.clustersecret.get({
+        cluster: cluster.id,
+        name: K8S_CREDENTIALS_SECRET_NAME,
+      })
+      if (k8sCredentials) {
+        const partialCreds = JSON.parse(decode(k8sCredentials.base64data).toString()) as {
+          cluster: k8s.Cluster
+          user: k8s.User
+        }
+
+        const newCreds = {
+          cluster: {
+            ...partialCreds.cluster,
+            ...data.cluster,
+          },
+          user: {
+            ...partialCreds.user,
+            ...data.user,
+          },
+        }
+
+        await store.clustersecret.update({
+          cluster: cluster.id,
+          name: K8S_CREDENTIALS_SECRET_NAME,
           data: {
-            user: user.id,
-            resource_type: RESOURCE_TYPES.cluster,
-            resource_id: cluster.id,
-            action: TASK_ACTION['cluster.update'],
-            restartable: true,
-            payload: {},
-            resource_status: {
-              completed: 'provisioned',
-              error: 'error',
-            },
+            rawData: JSON.stringify(newCreds),
+          },
+        })
+      }
+
+      await store.cluster.update(
+        {
+          id,
+          data: {
+            name: data.cluster.name || cluster.name,
           },
         },
         trx
       )
 
-      return task
+      // if there is an update to the desired state
+      // trigger a task to update it
+      return await createUpdateTask(user, cluster, trx)
     })
+
+  const createUpdateTask = async (user: User, cluster: Cluster, trx: Knex.Transaction) => {
+    return await store.task.create(
+      {
+        data: {
+          user: user.id,
+          resource_type: RESOURCE_TYPES.cluster,
+          resource_id: cluster.id,
+          action: TASK_ACTION['cluster.update'],
+          restartable: true,
+          payload: {},
+          resource_status: {
+            completed: 'provisioned',
+            error: 'error',
+          },
+        },
+      },
+      trx
+    )
+  }
 
   /*
     delete a cluster
@@ -795,6 +866,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
     create,
     createUserPT,
     update,
+    updateUserPT,
     delete: del,
     deletePermanently,
     getRoles,

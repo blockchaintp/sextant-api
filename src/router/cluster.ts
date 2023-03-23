@@ -73,9 +73,12 @@ export const ClusterRoutes = (controllers: Controller) => {
       })
       res.status(200).json(data)
     } else if (validators.user.edit(req.body)) {
-      res.status(400).json({
-        error: 'not yet implemented',
+      const data = await controllers.cluster.updateUserPT({
+        id: Number.parseInt(req.params.id),
+        user: req.user,
+        data: req.body,
       })
+      res.status(200).json(data)
     } else {
       logger.warn(
         { remoteValidate: validators.remote.edit.errors, localValidate: validators.local.edit.errors },

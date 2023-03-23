@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { ClusterAddUserForm } from '../../forms/schema/cluster'
+import { ClusterAddUserForm, ClusterEditUserForm } from '../../forms/schema/cluster'
 import { User } from '../../store/model/model-types'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
 
@@ -23,6 +23,8 @@ export type ClusterCreateRequestV1 = {
 export type ClusterCreateUserPTRequest = { data: ClusterAddUserForm; user: User }
 
 export type ClusterUpdateRequest = { data: object; id: DatabaseIdentifier; user: User }
+
+export type ClusterUpdateUserPTRequest = { data: ClusterEditUserForm; id: DatabaseIdentifier; user: User }
 
 export type ClusterDeleteRequest = { id: DatabaseIdentifier; user: User }
 
