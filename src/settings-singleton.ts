@@ -41,7 +41,7 @@ const argSpec: {
 }
 
 type PostgresSettings = {
-  clint: 'pg'
+  client: 'pg'
   connection: {
     database: string
     host: string
@@ -76,7 +76,7 @@ export class Settings {
     }
     const parsedArgs = minimist(process.argv.slice(2), argSpec)
     this.postgres = {
-      clint: 'pg',
+      client: 'pg',
       connection: {
         database: parsedArgs.postgresdatabase as string,
         host: parsedArgs.postgreshost as string,
