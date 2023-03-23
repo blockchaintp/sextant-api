@@ -82,7 +82,7 @@ export class Settings {
         host: parsedArgs.postgreshost as string,
         password: parsedArgs.postgrespassword as string,
         port: parsedArgs.postgresport as number,
-        ssl: parsedArgs.postgrestls ? true : false,
+        ssl: parsedArgs.postgrestls === 'true' ? true : false,
         user: parsedArgs.postgresuser as string,
       },
       pool: {
