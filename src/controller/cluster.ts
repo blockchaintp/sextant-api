@@ -300,40 +300,9 @@ export const ClusterController = ({ store }: { store: Store }) => {
         trx
       )
 
-      // if the user is not a super-user - create a role for the user against the cluster
-      if (!userUtils.isSuperuser(user)) {
-        await store.role.create(
-          {
-            data: {
-              user: user.id,
-              permission: PERMISSION_TYPES.write,
-              resource_type: RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
-            },
-          },
-          trx
-        )
-      }
+      await createRoleForCluster(user, cluster, trx)
 
-      const task = await store.task.create(
-        {
-          data: {
-            user: user.id,
-            resource_type: RESOURCE_TYPES.cluster,
-            resource_id: cluster.id,
-            action: TASK_ACTION['cluster.create'],
-            restartable: true,
-            payload: {},
-            resource_status: {
-              completed: 'provisioned',
-              error: 'error',
-            },
-          },
-        },
-        trx
-      )
-
-      return task
+      return await createProvisionTask(user, cluster, trx)
     })
 
   const createUserPT = ({ user, data }: { data: ClusterAddUserForm; user: User }) =>
@@ -371,41 +340,47 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
       await store.clustersecret.create(credentialsData, trx)
 
-      // if the user is not a super-user - create a role for the user against the cluster
-      if (!userUtils.isSuperuser(user)) {
-        await store.role.create(
-          {
-            data: {
-              user: user.id,
-              permission: PERMISSION_TYPES.write,
-              resource_type: RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
-            },
-          },
-          trx
-        )
-      }
+      await createRoleForCluster(user, cluster, trx)
 
-      const task = await store.task.create(
+      return await createProvisionTask(user, cluster, trx)
+    })
+
+  const createProvisionTask = (user: User, cluster: Cluster, trx: Knex.Transaction) => {
+    return store.task.create(
+      {
+        data: {
+          user: user.id,
+          resource_type: RESOURCE_TYPES.cluster,
+          resource_id: cluster.id,
+          action: TASK_ACTION['cluster.create'],
+          restartable: true,
+          payload: {},
+          resource_status: {
+            completed: 'provisioned',
+            error: 'error',
+          },
+        },
+      },
+      trx
+    )
+  }
+
+  const createRoleForCluster = async (user: User, cluster: Cluster, trx: Knex.Transaction) => {
+    // if the user is not a super-user - create a role for the user against the cluster
+    if (!userUtils.isSuperuser(user)) {
+      await store.role.create(
         {
           data: {
             user: user.id,
+            permission: PERMISSION_TYPES.write,
             resource_type: RESOURCE_TYPES.cluster,
             resource_id: cluster.id,
-            action: TASK_ACTION['cluster.create'],
-            restartable: true,
-            payload: {},
-            resource_status: {
-              completed: 'provisioned',
-              error: 'error',
-            },
           },
         },
         trx
       )
-
-      return task
-    })
+    }
+  }
 
   /*
     update a cluster
