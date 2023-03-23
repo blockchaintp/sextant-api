@@ -29,6 +29,7 @@
   "dependencies": {
     "@aws-sdk/client-marketplace-metering": "^3.43.0",
     "@kubernetes/client-node": "^0.15.1",
+    "ajv": "^8.12.0",
     "axios": "^0.24.0",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
