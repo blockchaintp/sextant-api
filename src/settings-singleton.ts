@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { baseUrl } from './config'
 import minimist from 'minimist'
+import randomstring from 'randomstring'
 
 const requiredEnv = ['POSTGRES_SERVICE_HOST', 'POSTGRES_USER', 'POSTGRES_DB', 'POSTGRES_PASSWORD']
 
@@ -16,25 +17,25 @@ const argSpec: {
     baseUrl: process.env.BASE_URL || baseUrl,
 
     // turn logging on?
-    logging: process.env.LOGGING,
+    logging: process.env.LOGGING || 'on',
 
     // postgres
-    postgreshost: process.env.POSTGRES_SERVICE_HOST,
+    postgreshost: process.env.POSTGRES_SERVICE_HOST || 'localhost',
     postgresport: process.env.POSTGRES_SERVICE_PORT || 5432,
-    postgresuser: process.env.POSTGRES_USER,
-    postgrespassword: process.env.POSTGRES_PASSWORD,
-    postgresdatabase: process.env.POSTGRES_DB,
-    postgrestls: process.env.POSTGRES_TLS,
+    postgresuser: process.env.POSTGRES_USER || 'noone',
+    postgrespassword: process.env.POSTGRES_PASSWORD || 'nopassword',
+    postgresdatabase: process.env.POSTGRES_DB || 'postgres',
+    postgrestls: process.env.POSTGRES_TLS || 'false',
 
     // sessions
     sessionSecret: 'unset',
     tokenSecret: 'unset',
 
     // the name of the initial root user to create if it doesn't exist
-    initialUser: process.env.INITIAL_USER,
+    initialUser: process.env.INITIAL_USER || 'admin',
 
     // the password of the initial user to create if it doesn't exist
-    initialPassword: process.env.INITIAL_PASSWORD,
+    initialPassword: process.env.INITIAL_PASSWORD || randomstring.generate(32),
 
     startTime: Date.now(),
   },

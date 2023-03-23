@@ -213,23 +213,32 @@ export class DeploymentStore {
   ) {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
-    const ts = new Date(currentHour()).toISOString().replace('T', ' ').replace('Z', '')
-    const [result] = await (trx || this.knex)<Deployment>(TABLES.deployment)
-      .where({
-        id,
+    const ts = new Date(currentHour()).getTime()
+    const deploymentsToUpdate = await (trx || this.knex)<Deployment>(TABLES.deployment).where({
+      id,
+    })
+    deploymentsToUpdate
+      .filter((deployment) => deployment.status === data.status)
+      .filter((deployment) => {
+        if (data.updated_at) {
+          if (new Date(deployment.updated_at).getTime() < new Date(data.updated_at).getTime()) {
+            return true
+          }
+        }
+        if (new Date(deployment.updated_at).getTime() < ts) {
+          return true
+        }
       })
-      .andWhere((a) => {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        a.orWhere((b) => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          b.where('updated_at', '<', data.updated_at).andWhereNot('status', '=', `${data.status}`)
-        }).orWhere((c) => {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          c.whereRaw(`updated_at < '${ts}'::timestamp`).andWhere('status', '=', `${data.status}`)
-        })
+    const [result] = await Promise.all(
+      deploymentsToUpdate.map((deployment) => {
+        return (trx || this.knex)<Deployment>(TABLES.deployment)
+          .where({
+            id: deployment.id,
+          })
+          .update(data)
+          .returning<Deployment>('*')
       })
-      .update(data)
-      .returning('*')
+    )
     if (result) {
       await this.deploymentHistoryStore.create(
         {

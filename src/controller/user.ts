@@ -131,7 +131,7 @@ export class UserController {
     const user = await this.get({
       id,
     })
-
+    if (!user) throw new Error('user not found')
     return utils.getToken(id, user.server_side_key, this.settings.tokenSecret)
   }
 

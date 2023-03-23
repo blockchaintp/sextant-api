@@ -26,7 +26,6 @@ function getOptions(options: { [key: string]: unknown; env?: { [key: string]: st
     // (which should not happen but some logs might be longer than 200kb which is the default)
     maxBuffer: 1024 * 1024 * 5,
     env: {
-      ...process.env,
       ...options.env,
     },
   }
@@ -35,7 +34,7 @@ function getOptions(options: { [key: string]: unknown; env?: { [key: string]: st
 
 async function cleanup(tokenPath: string, data?: unknown, dataPath?: string) {
   await deleteFile(tokenPath)
-  if (data) {
+  if (data && dataPath) {
     await deleteFile(dataPath)
   }
 }
@@ -84,7 +83,13 @@ export const Grpcurl = ({
 
     // inject the token as a variable so it is not listed in "ps -ef"
     const commandOptions = getOptions(options)
-    commandOptions.env.GRPC_TOKEN = token
+    if (commandOptions.env) {
+      commandOptions.env.GRPC_TOKEN = token
+    } else {
+      commandOptions.env = {
+        GRPC_TOKEN: token,
+      }
+    }
 
     let dataSource = ''
     let dataFlag = ''

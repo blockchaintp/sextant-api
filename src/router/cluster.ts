@@ -53,7 +53,12 @@ export const ClusterRoutes = (controllers: Controller) => {
       id: Number.parseInt(req.params.id),
     })
 
-    let data = null
+    if (!cluster) {
+      res.status(200).json()
+      return
+    }
+
+    let data
 
     if (cluster.status == CLUSTER_STATUS.deleted) {
       data = await controllers.cluster.deletePermanently({

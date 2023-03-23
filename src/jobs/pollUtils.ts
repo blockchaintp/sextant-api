@@ -63,8 +63,8 @@ const runHelmList = async (deployment: Deployment, store: Store) => {
   return executeHelmCommand(clusterKubectl, command) as Promise<HelmReleaseItem[]>
 }
 
-const translateStatus = memoize((helmStatus: string) => {
-  let translatedStatus: string
+const translateStatus = memoize((helmStatus: string | undefined) => {
+  let translatedStatus: string | undefined
   switch (helmStatus) {
     case undefined:
       translatedStatus = 'deleted'
@@ -124,13 +124,13 @@ type HelmDeploymentResponse = {
   deployment_id: DatabaseIdentifier
   deployment_type: string
   deployment_version: string
-  helmStatus: string
-  helm_response: HelmReleaseItem
+  helmStatus: string | undefined
+  helm_response: HelmReleaseItem | undefined
   name: string
-  status: string
+  status: string | undefined
   updated_at: Date
 }
-const processHelmResponse = (helmResponse: HelmReleaseItem, deployment: Deployment) => {
+const processHelmResponse = (helmResponse: HelmReleaseItem | undefined, deployment: Deployment) => {
   // returns an object full of useful information for the deployment status poll job
   const helmStatus = helmResponse ? helmResponse.status : undefined
   const translatedStatus = translateStatus(helmStatus)
@@ -141,7 +141,7 @@ const processHelmResponse = (helmResponse: HelmReleaseItem, deployment: Deployme
     deployment_type: deployment.deployment_type,
     deployment_version: deployment.deployment_version,
     helm_response: helmResponse,
-    helmStatus: helmStatus,
+    helmStatus,
     name: deployment.name,
     status: translatedStatus,
     updated_at: new Date(),

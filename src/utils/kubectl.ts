@@ -95,6 +95,10 @@ export class Kubectl {
       id: cluster.desired_state.ca_id as number,
     })
 
+    if (!tokenSecret || !caSecret) {
+      throw new Error('Missing token or ca secret')
+    }
+
     const credentials = {
       mode: 'remote',
       token: tokenSecret.base64data,
@@ -385,6 +389,9 @@ export class Kubectl {
   }
 
   private createRemoteConfig(credentials: OldServiceCredentials) {
+    if (!credentials.apiServer || !credentials.token || !credentials.ca) {
+      throw new Error('apiServer, token and ca are all required fields for credentials')
+    }
     const cluster: k8s.Cluster = {
       name: 'target',
       server: credentials.apiServer,

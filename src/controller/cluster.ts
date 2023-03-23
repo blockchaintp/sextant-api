@@ -13,7 +13,7 @@ import clusterForms from '../forms/cluster'
 import validate from '../forms/validate'
 import { RBAC } from '../rbac'
 import { Store } from '../store'
-import { Cluster, Task } from '../store/model/model-types'
+import { Cluster, Role, Task } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
 import * as clusterUtils from '../utils/cluster'
 import { Kubectl } from '../utils/kubectl'
@@ -601,15 +601,29 @@ export const ClusterController = ({ store }: { store: Store }) => {
       resource_id: id,
     })
 
-    return Promise.all(
+    const mappedRoles = await Promise.all(
       roles.map(async (role) => {
         const user = await store.user.get({
           id: role.user,
         })
-        const userRecord = userUtils.safe(user)
-        return { ...role, userRecord }
+        if (user) {
+          const userRecord = userUtils.safe(user)
+          return { role, userRecord }
+        }
+        return { role, userRecord: undefined } as { role: Role; userRecord: userUtils.SafeUser | undefined }
       })
     )
+    return mappedRoles
+      .filter((r) => {
+        if (r.userRecord) {
+          return true
+        } else {
+          return false
+        }
+      })
+      .map((r) => {
+        return { ...r.role, userRecord: r.userRecord }
+      })
   }
 
   /*

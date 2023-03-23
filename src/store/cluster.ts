@@ -99,7 +99,7 @@ export class ClusterStore {
         ])
       })
       .groupBy(`${TABLES.cluster}.id`)
-      .first()
+      .first<Cluster>()
   }
 
   /*
