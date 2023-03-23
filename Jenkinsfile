@@ -58,7 +58,7 @@ pipeline {
           sh '''
             make test
           '''
-          step([$class: 'TapPublisher', failIfNoResults: true, testResults: 'build/results.tap'])
+          step([$class: 'TapPublisher', failIfNoResults: true, testResults: 'build/tape/results.tap'])
           junit testResults: 'build/jest/junit.xml', skipMarkingBuildUnstable: false
         }
       }
