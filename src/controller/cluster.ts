@@ -9,6 +9,7 @@ import {
   RESOURCE_TYPES,
   TASK_ACTION,
 } from '../config'
+import { K8S_CREDENTIALS_SECRET_NAME } from '../constants'
 import clusterForms from '../forms/cluster'
 import { ClusterAddUserForm } from '../forms/schema/cluster'
 import validate from '../forms/validate'
@@ -362,7 +363,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
       const credentialsData = {
         data: {
-          name: 'k8s-credentials',
+          name: K8S_CREDENTIALS_SECRET_NAME,
           cluster: cluster.id,
           rawData: JSON.stringify(data),
         },

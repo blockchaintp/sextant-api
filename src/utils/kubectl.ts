@@ -22,6 +22,7 @@ import { Store } from '../store'
 import { Cluster } from '../store/model/model-types'
 import * as base64 from './base64'
 import getPort = require('get-port')
+import { K8S_CREDENTIALS_SECRET_NAME } from '../constants'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
@@ -85,6 +86,25 @@ export class Kubectl {
   }
 
   public static async getKubectlForCluster({ cluster, store }: { cluster: Cluster; store: Store }) {
+    const k8sCredentials = await store.clustersecret.get({
+      cluster: cluster.id,
+      name: K8S_CREDENTIALS_SECRET_NAME,
+    })
+    if (k8sCredentials) {
+      const partialCreds = JSON.parse(base64.decode(k8sCredentials.base64data).toString()) as {
+        cluster: k8s.Cluster
+        user: k8s.User
+      }
+
+      const credentials = {
+        mode: 'user',
+        cluster: partialCreds.cluster,
+        user: partialCreds.user,
+      } as UserCredentials
+
+      return new Kubectl(credentials)
+    }
+
     const tokenSecret = await store.clustersecret.get({
       cluster: cluster.id,
       id: cluster.desired_state.token_id as number,

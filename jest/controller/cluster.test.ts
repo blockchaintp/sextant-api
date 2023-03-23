@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Knex } from 'knex'
 import { StartedTestContainer } from 'testcontainers'
+import { K8S_CREDENTIALS_SECRET_NAME } from '../../src/constants'
 import { ClusterController } from '../../src/controller/cluster'
 import { ClusterAddUserForm } from '../../src/forms/schema/cluster'
 import { Store } from '../../src/store'
@@ -51,7 +52,7 @@ describe('ClusterController', () => {
 
     const secret = await store.clustersecret.get({
       cluster: 1, // probably not the right way to do this
-      name: 'k8s-credentials',
+      name: K8S_CREDENTIALS_SECRET_NAME,
     })
     expect(secret).toBeDefined()
     expect(secret?.base64data).toBeDefined()
