@@ -5,7 +5,9 @@ import ajvErrors from 'ajv-errors'
 import { CERTIFICATE_PEM, URL_REGEXP } from './patterns'
 import * as k8s from '@kubernetes/client-node'
 
-const ajv = new Ajv()
+const ajv = new Ajv({
+  allErrors: true,
+})
 ajvKeywords(ajv)
 ajvErrors(ajv)
 

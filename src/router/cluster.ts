@@ -10,7 +10,7 @@ const logger = getLogger({
   name: 'router/cluster',
 })
 
-type RequestWithUser = Request & { user: User }
+export type RequestWithUser = Request & { user: User }
 
 export const ClusterRoutes = (controllers: Controller) => {
   const list = async (req: RequestWithUser, res: Response, _next: NextFunction) => {
@@ -46,9 +46,11 @@ export const ClusterRoutes = (controllers: Controller) => {
       })
       res.status(201).json(data)
     } else if (validators.user.add(req.body)) {
-      res.status(400).json({
-        error: 'not yet implemented',
+      const data = await controllers.cluster.createUserPT({
+        user: req.user,
+        data: req.body,
       })
+      res.status(201).json(data)
     } else {
       logger.warn(
         { remoteValidate: validators.remote.add.errors, localValidate: validators.local.add.errors },

@@ -10,5 +10,13 @@
     "skipLibCheck": true
   },
   "rootDir": ".",
-  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*", "./jest/**/*", "knexfile.js"]
+  "include": [
+    "./editions/*",
+    "./src/**/*",
+    "./scripts/**/*",
+    "./test/**/*",
+    "./jest/**/*",
+    "knexfile.js",
+    "./migrations/*"
+  ]
 }

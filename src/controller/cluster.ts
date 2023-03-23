@@ -10,10 +10,11 @@ import {
   TASK_ACTION,
 } from '../config'
 import clusterForms from '../forms/cluster'
+import { ClusterAddUserForm } from '../forms/schema/cluster'
 import validate from '../forms/validate'
 import { RBAC } from '../rbac'
 import { Store } from '../store'
-import { Cluster, Role, Task } from '../store/model/model-types'
+import { Cluster, Role, Task, User } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
 import * as clusterUtils from '../utils/cluster'
 import { Kubectl } from '../utils/kubectl'
@@ -297,6 +298,77 @@ export const ClusterController = ({ store }: { store: Store }) => {
         },
         trx
       )
+
+      // if the user is not a super-user - create a role for the user against the cluster
+      if (!userUtils.isSuperuser(user)) {
+        await store.role.create(
+          {
+            data: {
+              user: user.id,
+              permission: PERMISSION_TYPES.write,
+              resource_type: RESOURCE_TYPES.cluster,
+              resource_id: cluster.id,
+            },
+          },
+          trx
+        )
+      }
+
+      const task = await store.task.create(
+        {
+          data: {
+            user: user.id,
+            resource_type: RESOURCE_TYPES.cluster,
+            resource_id: cluster.id,
+            action: TASK_ACTION['cluster.create'],
+            restartable: true,
+            payload: {},
+            resource_status: {
+              completed: 'provisioned',
+              error: 'error',
+            },
+          },
+        },
+        trx
+      )
+
+      return task
+    })
+
+  const createUserPT = ({ user, data }: { data: ClusterAddUserForm; user: User }) =>
+    store.transaction(async (trx) => {
+      const name = data.cluster.name
+      // check there is no cluster already with that name
+      const clusters = await store.cluster.list({ deleted: false })
+      const existingCluster = clusters.find(
+        (currentCluster) => currentCluster.name.toLowerCase() === name.toLowerCase()
+      )
+      if (existingCluster) throw new Error(`there is already a cluster with the name ${name}`)
+
+      // create the cluster record
+      const cluster = await store.cluster.create(
+        {
+          data: {
+            name,
+            provision_type: data.provision_type,
+            capabilities: [],
+            desired_state: {
+              ...data,
+            },
+          },
+        },
+        trx
+      )
+
+      const credentialsData = {
+        data: {
+          name: 'k8s-credentials',
+          cluster: cluster.id,
+          rawData: JSON.stringify(data),
+        },
+      }
+
+      await store.clustersecret.create(credentialsData, trx)
 
       // if the user is not a super-user - create a role for the user against the cluster
       if (!userUtils.isSuperuser(user)) {
@@ -745,6 +817,7 @@ export const ClusterController = ({ store }: { store: Store }) => {
     list,
     get,
     create,
+    createUserPT,
     update,
     delete: del,
     deletePermanently,
