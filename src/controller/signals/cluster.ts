@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { User } from '../../store/model/model-types'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
 
@@ -7,14 +8,14 @@ export type ClusterGetRequest = { id: DatabaseIdentifier; withTask?: boolean }
 
 export type ClusterCreateRequestV1 = {
   data: {
-    capabilities: string[]
+    capabilities: { [key: string]: boolean }
     desired_state: {
-      apiServer: string
-      ca: string
-      token: string
+      apiServer?: string
+      ca?: string
+      token?: string
     }
     name: string
-    provision_type: string
+    provision_type: 'local' | 'remote' | 'test'
   }
   user: User
 }
