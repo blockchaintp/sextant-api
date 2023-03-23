@@ -196,7 +196,7 @@ export class TaskStore {
       sqlQuery = sqlQuery.limit(limit)
     }
 
-    return sqlQuery
+    return sqlQuery.returning<Task[]>('*')
   }
 
   /*
@@ -210,8 +210,8 @@ export class TaskStore {
       cluster,
       deployment,
     }: {
-      cluster: DatabaseIdentifier
-      deployment: DatabaseIdentifier
+      cluster?: DatabaseIdentifier
+      deployment?: DatabaseIdentifier
     },
     trx?: Knex.Transaction
   ) {

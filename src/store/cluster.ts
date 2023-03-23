@@ -3,6 +3,14 @@ import { Knex } from 'knex'
 import { TABLES, CLUSTER_STATUS } from '../config'
 import { Cluster } from './model/model-types'
 import { DatabaseIdentifier } from './model/scalar-types'
+import {
+  ClusterCreateRequest,
+  ClusterDeletePermanentlyRequest,
+  ClusterDeleteRequest,
+  ClusterGetRequest,
+  ClusterListRequest,
+  ClusterUpdateRequest,
+} from './signals'
 
 export type ClusterIdentifying = { id: DatabaseIdentifier }
 
@@ -23,12 +31,7 @@ export class ClusterStore {
         * desired_state
   */
   public async create(
-    {
-      data: { name, provision_type, capabilities, desired_state, status },
-    }: {
-      data: Pick<Cluster, 'name' | 'provision_type' | 'desired_state'> &
-        Partial<Omit<Cluster, 'name' | 'provision_type' | 'desired_state'>>
-    },
+    { data: { name, provision_type, capabilities, desired_state, status } }: ClusterCreateRequest,
     trx?: Knex.Transaction
   ) {
     if (!name) throw new Error('data.name param must be given to store.cluster.create')
@@ -54,7 +57,7 @@ export class ClusterStore {
     params:
       * id
   */
-  public async delete({ id }: ClusterIdentifying, trx?: Knex.Transaction) {
+  public async delete({ id }: ClusterDeleteRequest, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.cluster.delete')
 
     const [result] = await (trx || this.knex)<Cluster>(TABLES.cluster)
@@ -68,7 +71,7 @@ export class ClusterStore {
     return result
   }
 
-  public async deletePermanently({ id }: ClusterIdentifying, trx?: Knex.Transaction) {
+  public async deletePermanently({ id }: ClusterDeletePermanentlyRequest, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.cluster.deletePermanently')
 
     const [result] = await (trx || this.knex)<Cluster>(TABLES.cluster)
@@ -84,7 +87,7 @@ export class ClusterStore {
     get a single cluster
     params:
   */
-  public get({ id }: ClusterIdentifying, trx?: Knex.Transaction): Promise<Cluster> {
+  public get({ id }: ClusterGetRequest, trx?: Knex.Transaction): Promise<Cluster> {
     if (!id) throw new Error('id must be given to store.cluster.get')
     return (trx || this.knex)<Cluster>(TABLES.cluster)
       .where(`${TABLES.cluster}.id`, id)
@@ -103,7 +106,7 @@ export class ClusterStore {
     list all clusters
     params:
   */
-  public list({ deleted }: { deleted: boolean }, trx?: Knex.Transaction) {
+  public list({ deleted }: ClusterListRequest, trx?: Knex.Transaction) {
     let sqlQuery = (trx || this.knex)<Cluster>(TABLES.cluster)
       .select(`${TABLES.cluster}.*`)
       .count(`${TABLES.deployment}.id as active_deployments`)
@@ -118,7 +121,7 @@ export class ClusterStore {
       sqlQuery = sqlQuery.whereNot(`${TABLES.cluster}.status`, CLUSTER_STATUS.deleted)
     }
 
-    return sqlQuery
+    return sqlQuery.returning<Cluster[]>('*')
   }
 
   /*
@@ -133,7 +136,7 @@ export class ClusterStore {
         * applied_state
         * maintenance_flag
   */
-  public async update({ id, data }: { data: Partial<Cluster> } & ClusterIdentifying, trx?: Knex.Transaction) {
+  public async update({ id, data }: ClusterUpdateRequest, trx?: Knex.Transaction) {
     if (!id) throw new Error('id must be given to store.cluster.update')
     if (!data) throw new Error('data param must be given to store.cluster.update')
 

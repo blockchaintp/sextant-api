@@ -52,8 +52,8 @@ FROM build AS compile
 WORKDIR /app/api
 COPY ./package.json /app/api/package.json
 COPY ./package-lock.json /app/api/package-lock.json
-COPY . /app/api
 RUN npm ci
+COPY . /app/api
 RUN npm run compile
 
 
@@ -66,6 +66,14 @@ RUN npm ci --omit=dev && npm cache clean --force
 FROM base AS dev-build
 ARG EDITION_MODULE=dev
 ARG NODE_ENV=development
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+  && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+  && apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+  containerd.io \
+  docker-ce \
+  docker-ce-cli
 
 WORKDIR /app/api
 COPY --from=compile /app/api/package.json /app/api/package.json
@@ -85,16 +93,6 @@ COPY --from=compile /app/api/tsconfig.json /app/api/tsconfig.json
 # this is the default noop metering module
 # copy in the edition module
 COPY --from=compile /app/api/dist/editions/${EDITION_MODULE}.js /app/api/src/edition.js
-
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
-  && echo "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-  && apt-get update -y \
-  && apt-get install -y --no-install-recommends \
-  containerd.io \
-  docker-ce \
-  docker-ce-cli
-
 
 ARG NODE_ENV=development
 ENV NODE_ENV ${NODE_ENV}

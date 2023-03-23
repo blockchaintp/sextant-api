@@ -15,9 +15,10 @@ const logger = require('./logging').getLogger({
   name: 'index',
 })
 
-const settings = require('./settings')
+const { Settings } = require('./settings-singleton')
+const settings = Settings.getInstance()
 const App = require('./app')
-const Initialise = require('./initialise')
+const { Initialise } = require('./initialise')
 const TaskHandlers = require('./tasks')
 const { Store } = require('./store')
 const { deploymentStatusPoll } = require('./jobs/deploymentStatusPoll')
@@ -32,24 +33,6 @@ const sessionStore = new PgSession({
 const knex = Knex(settings.postgres)
 const store = new Store(knex)
 
-const meter = new Meter('main-meter', store, config.get('meter'))
-meter.start()
-
-const clusterStatusTracker = new ClusterStatusTracker(store)
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-clusterStatusTracker.run()
-const clusterStatusTrackerJob = schedule.scheduleJob('*/10 * * * *', () => {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  clusterStatusTracker.run()
-})
-
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-deploymentStatusPoll(store)
-const deploymentStatusPollJob = schedule.scheduleJob('*/5 * * * *', () => {
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  deploymentStatusPoll(store)
-})
-
 const app = App({
   knex,
   store,
@@ -59,11 +42,36 @@ const app = App({
 })
 
 const boot = async () => {
+  const meter = new Meter('main-meter', store, config.get('meter'))
+  meter.start()
+
+  const clusterStatusTracker = new ClusterStatusTracker(store)
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  clusterStatusTracker.run()
+  schedule.scheduleJob('*/10 * * * *', () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    clusterStatusTracker.run()
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  deploymentStatusPoll(store)
+  schedule.scheduleJob('*/5 * * * *', () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    deploymentStatusPoll(store)
+  })
+
   // wait the the initialisation to complete
   // before we start listing on the port and
   // start the task processor
   await Initialise({
     store,
+  })
+
+  app.taskProcessor.start(() => {
+    logger.info({
+      action: 'taskProcessor.start',
+      message: 'taskProcessor started',
+    })
   })
 
   app.listen(settings.port, () => {
@@ -74,16 +82,7 @@ const boot = async () => {
       })
     }
   })
-
-  app.taskProcessor.start(() => {
-    logger.info({
-      action: 'taskProcessor.start',
-      message: 'taskProcessor started',
-    })
-  })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 boot()
-
-module.exports = { deploymentStatusPollJob, clusterStatusTrackerJob }

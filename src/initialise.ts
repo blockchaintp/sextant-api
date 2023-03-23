@@ -1,23 +1,27 @@
-const randomstring = require('randomstring')
+/* eslint-disable camelcase */
+import * as randomstring from 'randomstring'
+import * as config from './config'
+import { getLogger } from './logging'
+import { Settings } from './settings-singleton'
+import { Store } from './store'
+import * as userUtils from './utils/user'
 
-const logger = require('./logging').getLogger({
+const settings = Settings.getInstance()
+const logger = getLogger({
   name: 'initialise',
 })
-const settings = require('./settings')
-const userUtils = require('./utils/user')
-const config = require('./config')
 
-const createInitialUser = async ({
-  store,
-}) => {
+const createInitialUser = async ({ store }: { store: Store }) => {
   // check to see if we have been given an initial user and password
   // to create
   if (settings.initialUser && settings.initialPassword) {
     const users = await store.user.list()
     if (users.length <= 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const hashed_password = await userUtils.getPasswordHash(settings.initialPassword)
       await store.user.create({
         data: {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           username: settings.initialUser,
           permission: config.USER_TYPES.superuser,
           hashed_password,
@@ -26,13 +30,14 @@ const createInitialUser = async ({
       })
       logger.info({
         action: 'createInitialUser',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         username: settings.initialUser,
       })
     }
   }
 }
 
-const handleSessionSecret = async ({ store }) => {
+const handleSessionSecret = async ({ store }: { store: Store }) => {
   // Is there a session.secret in the database?
   const data = await store.settings.get({ key: 'session.secret' })
   if (data) {
@@ -49,7 +54,7 @@ const handleSessionSecret = async ({ store }) => {
   }
 }
 
-const handleTokenSecret = async ({ store }) => {
+const handleTokenSecret = async ({ store }: { store: Store }) => {
   // Is there a token.secret in the database?
   const data = await store.settings.get({ key: 'token.secret' })
   if (data) {
@@ -67,9 +72,7 @@ const handleTokenSecret = async ({ store }) => {
 }
 
 // code we run before the app is booted and starts serving
-const Initialise = async ({
-  store,
-}) => {
+export const Initialise = async ({ store }: { store: Store }) => {
   try {
     await createInitialUser({
       store,
@@ -77,14 +80,19 @@ const Initialise = async ({
     await handleSessionSecret({ store })
     await handleTokenSecret({ store })
   } catch (error) {
-    logger.error({
-      error: error.toString(),
-      stack: error.stack,
-    })
+    if (error instanceof Error) {
+      logger.error({
+        error: error.toString(),
+        stack: error.stack,
+      })
+    } else {
+      logger.error({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        error,
+      })
+    }
     process.exit(1)
   }
 
   return true
 }
-
-module.exports = Initialise

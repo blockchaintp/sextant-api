@@ -1,6 +1,7 @@
 import { getLogger } from '../logging'
-import * as settings from '../settings'
+import { Settings } from '../settings-singleton'
 
+const settings = Settings.getInstance()
 const logger = getLogger({
   name: 'controller/administration',
 })
@@ -14,6 +15,7 @@ export class AdministrationController {
     setTimeout(() => {
       process.exit()
     }, 5000)
+    return true
   }
 
   public startTime() {

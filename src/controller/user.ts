@@ -6,12 +6,13 @@ import userForms from '../forms/user'
 import validate from '../forms/validate'
 import { Store } from '../store'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
+import { Settings } from '../settings-singleton'
 
 export class UserController {
-  private settings: any
+  private settings: Settings
   private store: Store
 
-  constructor({ store, settings }: { store: Store; settings: any }) {
+  constructor({ store, settings }: { settings: Settings; store: Store }) {
     if (!settings) throw new Error('settings required for user controller')
     if (!settings.tokenSecret) throw new Error('settings.tokenSecret required for user controller')
     this.store = store

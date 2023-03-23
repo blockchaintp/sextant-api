@@ -19,11 +19,11 @@ const logger = require('../logging').getLogger({
 const { RBAC } = require('../rbac')
 const ConfigRoutes = require('./config')
 const UserRoutes = require('./user')
-const ClusterRoutes = require('./cluster')
+const { ClusterRoutes } = require('./cluster')
 const DeploymentRoutes = require('./deployment')
 const DamlRoutes = require('./daml')
 const TaekionRoutes = require('./taekion')
-const AdministrationRoutes = require('./administration')
+const { AdministrationRoutes } = require('./administration')
 
 // middleware function looks for '?mode=<background or foreground>' on incoming requests
 const ignoreBackgroundRequests = (req) => {
