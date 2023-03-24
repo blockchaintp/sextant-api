@@ -14,7 +14,12 @@ const logger = getLogger({
 const createInitialUser = async ({ store }: { store: Store }) => {
   // check to see if we have been given an initial user and password
   // to create
-  if (settings.initialUser && settings.initialPassword) {
+  if (
+    settings.initialUser &&
+    settings.initialPassword &&
+    settings.initialUser !== '' &&
+    settings.initialPassword !== ''
+  ) {
     const users = await store.user.list()
     if (users.length <= 0) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
