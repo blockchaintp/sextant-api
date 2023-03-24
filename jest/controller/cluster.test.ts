@@ -117,4 +117,51 @@ describe('ClusterController', () => {
       },
     })
   })
+
+  it('delete', async () => {
+    const controller = ClusterController({ store })
+    const user = await makeAUser(store, `delete-user`)
+
+    try {
+      await controller.delete({ id: 1, user })
+      fail('should have thrown an exception since there are active tasks')
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(err.message).toBeDefined()
+    }
+    await store.task.deleteForResource({ resource_type: 'cluster', resource_id: 1 })
+
+    const retTask = await controller.delete({ id: 1, user })
+    expect(retTask).toBeDefined()
+    expect(retTask).toMatchObject({
+      action: 'cluster.delete',
+      status: 'created',
+    })
+  })
+
+  it('deletePermanently', async () => {
+    const controller = ClusterController({ store })
+    const user = await makeAUser(store, `deletePermanently-user`)
+
+    try {
+      await controller.deletePermanently({ id: 1, user })
+      fail('should have thrown an exception since there are active tasks')
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(err.message).toBeDefined()
+    }
+    await store.task.deleteForResource({ resource_type: 'cluster', resource_id: 1 })
+
+    try {
+      await controller.deletePermanently({ id: 1, user })
+      fail('should have thrown an exception since cluster is not deleted')
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(err.message).toBeDefined()
+    }
+    await store.cluster.update({ id: 1, data: { status: 'deleted' } })
+    const retTask = await controller.deletePermanently({ id: 1, user })
+    expect(retTask).toBeDefined()
+    expect(retTask).toEqual(true)
+  })
 })
