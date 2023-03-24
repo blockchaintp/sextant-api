@@ -27,7 +27,10 @@ export class ContentCache {
   public getFileSync(path: string) {
     if (this.cache.has(path)) {
       logger.trace({ path }, `Cache hit`)
-      return this.cache.get(path)
+      const val = this.cache.get(path)
+      if (val) {
+        return val
+      }
     }
     logger.debug({ path }, `Cache miss`)
     const content = fs.readFileSync(path).toString()

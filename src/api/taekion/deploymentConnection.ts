@@ -33,52 +33,59 @@ export const deploymentConnection = async ({
   onConnection?: (connection: CachedConnection) => Promise<void>
   store: Store
 }) => {
-  let connection = cachedConnections[connectionCacheId]
-
-  if (!connection) {
-    const deployment = await store.deployment.get({
-      id,
-    })
-
-    const cluster = await store.cluster.get({
-      id: deployment.cluster,
-    })
-
-    const { applied_state } = deployment
-
-    const modelRelease = deploymentToHelmRelease(deployment)
-
-    const { namespace } = modelRelease
-
-    const tokenSecret = await store.clustersecret.get({
-      cluster: cluster.id,
-      id: cluster.desired_state.token_id as number,
-    })
-
-    const caSecret = await store.clustersecret.get({
-      cluster: cluster.id,
-      id: cluster.desired_state.ca_id as number,
-    })
-
-    const apiServer = cluster.desired_state.apiServer as string
-
-    const token_dec = decode(tokenSecret.base64data).toString()
-    const ca_dec = decode(caSecret.base64data).toString()
-    const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
-
-    cachedConnections[connectionCacheId] = {
-      token: token_dec,
-      apiServer,
-      baseUrl,
-      ca: ca_dec,
-      namespace,
-      applied_state,
-    }
+  let connection: CachedConnection | undefined = undefined
+  if (connectionCacheId) {
     connection = cachedConnections[connectionCacheId]
-
-    if (onConnection) {
-      await onConnection(connection)
+    if (connection) {
+      return connection
     }
+  }
+
+  const deployment = await store.deployment.get({
+    id,
+  })
+
+  const cluster = await store.cluster.get({
+    id: deployment.cluster,
+  })
+
+  const { applied_state } = deployment
+
+  const modelRelease = deploymentToHelmRelease(deployment)
+
+  const { namespace } = modelRelease
+
+  const tokenSecret = await store.clustersecret.get({
+    cluster: cluster.id,
+    id: cluster.desired_state.token_id as number,
+  })
+
+  const caSecret = await store.clustersecret.get({
+    cluster: cluster.id,
+    id: cluster.desired_state.ca_id as number,
+  })
+
+  const apiServer = cluster.desired_state.apiServer as string
+
+  const token_dec = tokenSecret ? decode(tokenSecret.base64data).toString() : ''
+  const ca_dec = caSecret ? decode(caSecret.base64data).toString() : ''
+  const baseUrl = `${apiServer}/api/v1/namespaces/${namespace}`
+
+  connection = {
+    token: token_dec,
+    apiServer,
+    baseUrl,
+    ca: ca_dec,
+    namespace,
+    applied_state,
+  }
+
+  if (onConnection) {
+    await onConnection(connection)
+  }
+
+  if (connectionCacheId) {
+    cachedConnections[connectionCacheId] = connection
 
     // keep cached connections for 5 mins
     // this is to avoid doing multiple database + kubectl for each request

@@ -41,10 +41,19 @@ export class DeploymentSecretStore {
     if (!rawData && !base64data)
       throw new Error(`data.rawData or data.base64data param must be given to store.deploymentsecret.create`)
 
+    let bdata: string
+    if (base64data) {
+      bdata = base64data
+    } else {
+      if (rawData) bdata = encode(rawData)
+      else {
+        throw new Error(`data.rawData or data.base64data param must be given to store.deploymentsecret.create`)
+      }
+    }
     const insertData = {
       deployment,
       name,
-      base64data: base64data || encode(rawData),
+      base64data: bdata,
     }
 
     const [result] = await (trx || this.knex)<DeploymentSecret>(TABLES.deploymentsecret)
@@ -206,10 +215,20 @@ export class DeploymentSecretStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
+    let bdata: string
+    if (base64data) {
+      bdata = base64data
+    } else {
+      if (rawData) bdata = encode(rawData)
+      else {
+        throw new Error(`data.rawData or data.base64data param must be given to store.deploymentsecret.update`)
+      }
+    }
+
     const [result] = await (trx || this.knex)<DeploymentSecret>(TABLES.deploymentsecret)
       .where(queryParams)
       .update({
-        base64data: base64data || encode(rawData),
+        base64data: bdata,
       })
       .returning('*')
     return result

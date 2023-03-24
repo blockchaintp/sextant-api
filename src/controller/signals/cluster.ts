@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+import { ClusterAddUserForm, ClusterEditUserForm } from '../../forms/schema/cluster'
 import { User } from '../../store/model/model-types'
 import { DatabaseIdentifier } from '../../store/model/scalar-types'
 
@@ -7,19 +9,22 @@ export type ClusterGetRequest = { id: DatabaseIdentifier; withTask?: boolean }
 
 export type ClusterCreateRequestV1 = {
   data: {
-    capabilities: string[]
+    capabilities: { [key: string]: boolean }
     desired_state: {
-      apiServer: string
-      ca: string
-      token: string
+      apiServer?: string
+      ca?: string
+      token?: string
     }
     name: string
-    provision_type: string
+    provision_type: 'local' | 'remote' | 'test'
   }
   user: User
 }
+export type ClusterCreateUserPTRequest = { data: ClusterAddUserForm; user: User }
 
 export type ClusterUpdateRequest = { data: object; id: DatabaseIdentifier; user: User }
+
+export type ClusterUpdateUserPTRequest = { data: ClusterEditUserForm; id: DatabaseIdentifier; user: User }
 
 export type ClusterDeleteRequest = { id: DatabaseIdentifier; user: User }
 

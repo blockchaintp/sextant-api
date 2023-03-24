@@ -111,7 +111,7 @@ async function callProxy({
   if (pods.length <= 0) throw new Error('The daml-rpc pod cannot be found.')
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   logger.debug({ fn: 'getLedgerId', numberOfPods: pods.length }, 'found daml pods')
-
+  if (!pods[0].metadata?.name) throw new Error('The daml-rpc pod cannot be found.')
   return proxy.request({
     pod: pods[0].metadata.name,
     port: DAML_RPC_PORT,
@@ -204,6 +204,7 @@ export class DamlRPC {
     logger.debug({ fn: 'addParty', numberOfPods: pods.length }, 'found daml pods')
 
     const pod = pods[0]
+    if (!pod.metadata?.name) throw new Error('The daml-rpc pod cannot be found.')
 
     const result = await proxy.request({
       pod: pod.metadata.name,
@@ -212,6 +213,7 @@ export class DamlRPC {
         port,
         // eslint-disable-next-line consistent-return
       }) => {
+        if (!pod.metadata?.name) throw new Error('The daml-rpc pod cannot be found.')
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         logger.debug(`Allocating party to ${pod.metadata.name}`)
         const data = {
@@ -318,6 +320,7 @@ export class DamlRPC {
     logger.debug({ fn: 'getArchives', numberOfPods: pods.length }, 'found daml pods')
 
     const pod = pods[0]
+    if (!pod.metadata?.name) throw new Error('The daml-rpc pod cannot be found.')
 
     // Extract archive information from one pod only
     // This is regardless of all validator pods
@@ -437,6 +440,7 @@ export class DamlRPC {
     logger.debug({ fn: 'uploadArchive', numberOfPods: pods.length }, 'found daml pods')
 
     const pod = pods[0]
+    if (!pod.metadata?.name) throw new Error('The daml-rpc pod cannot be found.')
 
     return proxy.request({
       pod: pod.metadata.name,

@@ -5,8 +5,18 @@
     "target": "es6",
     "module": "commonjs",
     "inlineSourceMap": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true
   },
   "rootDir": ".",
-  "include": ["./editions/*", "./src/**/*", "./scripts/**/*", "./test/**/*", "./jest/**/*", "knexfile.js"]
+  "include": [
+    "./editions/*",
+    "./src/**/*",
+    "./scripts/**/*",
+    "./test/**/*",
+    "./jest/**/*",
+    "knexfile.js",
+    "./migrations/*"
+  ]
 }

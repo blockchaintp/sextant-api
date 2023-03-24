@@ -65,6 +65,7 @@ export const RESOURCE_TYPES = {
 export const CLUSTER_PROVISION_TYPE = {
   remote: 'remote',
   local: 'local',
+  user: 'user',
 }
 
 export const CLUSTER_STATUS = {

@@ -233,7 +233,7 @@ async function checkMinimumPermission(
 
     // if the resourceType is cluster, use the cluster_id for the resourceId
     let resourceId = resource_id
-    if (methodConfig.resourcePermissionForType === 'cluster') {
+    if (cluster_id && methodConfig.resourcePermissionForType === 'cluster') {
       resourceId = cluster_id
     }
 

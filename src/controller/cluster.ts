@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import * as k8s from '@kubernetes/client-node'
 import bluebird from 'bluebird'
 import { Knex } from 'knex'
 import {
@@ -9,12 +10,15 @@ import {
   RESOURCE_TYPES,
   TASK_ACTION,
 } from '../config'
+import { K8S_CREDENTIALS_SECRET_NAME } from '../constants'
 import clusterForms from '../forms/cluster'
+import { ClusterAddUserForm } from '../forms/schema/cluster'
 import validate from '../forms/validate'
 import { RBAC } from '../rbac'
 import { Store } from '../store'
-import { Cluster, Task } from '../store/model/model-types'
+import { Cluster, Role, Task, User } from '../store/model/model-types'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
+import { decode } from '../utils/base64'
 import * as clusterUtils from '../utils/cluster'
 import { Kubectl } from '../utils/kubectl'
 import * as userUtils from '../utils/user'
@@ -32,6 +36,7 @@ import {
   ClusterResourcesRequest,
   ClusterSummaryRequest,
   ClusterUpdateRequest,
+  ClusterUpdateUserPTRequest,
 } from './signals'
 
 export const ClusterController = ({ store }: { store: Store }) => {
@@ -298,41 +303,87 @@ export const ClusterController = ({ store }: { store: Store }) => {
         trx
       )
 
-      // if the user is not a super-user - create a role for the user against the cluster
-      if (!userUtils.isSuperuser(user)) {
-        await store.role.create(
-          {
-            data: {
-              user: user.id,
-              permission: PERMISSION_TYPES.write,
-              resource_type: RESOURCE_TYPES.cluster,
-              resource_id: cluster.id,
-            },
-          },
-          trx
-        )
-      }
+      await createRoleForCluster(user, cluster, trx)
 
-      const task = await store.task.create(
+      return await createProvisionTask(user, cluster, trx)
+    })
+
+  const createUserPT = ({ user, data }: { data: ClusterAddUserForm; user: User }) =>
+    store.transaction(async (trx) => {
+      const name = data.cluster.name
+      // check there is no cluster already with that name
+      const clusters = await store.cluster.list({ deleted: false })
+      const existingCluster = clusters.find(
+        (currentCluster) => currentCluster.name.toLowerCase() === name.toLowerCase()
+      )
+      if (existingCluster) throw new Error(`there is already a cluster with the name ${name}`)
+
+      // create the cluster record
+      const cluster = await store.cluster.create(
         {
           data: {
-            user: user.id,
-            resource_type: RESOURCE_TYPES.cluster,
-            resource_id: cluster.id,
-            action: TASK_ACTION['cluster.create'],
-            restartable: true,
-            payload: {},
-            resource_status: {
-              completed: 'provisioned',
-              error: 'error',
+            name,
+            provision_type: data.provision_type,
+            capabilities: [],
+            desired_state: {
+              ...data,
             },
           },
         },
         trx
       )
 
-      return task
+      const credentialsData = {
+        data: {
+          name: K8S_CREDENTIALS_SECRET_NAME,
+          cluster: cluster.id,
+          rawData: JSON.stringify(data),
+        },
+      }
+
+      await store.clustersecret.create(credentialsData, trx)
+
+      await createRoleForCluster(user, cluster, trx)
+
+      return await createProvisionTask(user, cluster, trx)
     })
+
+  const createProvisionTask = (user: User, cluster: Cluster, trx: Knex.Transaction) => {
+    return store.task.create(
+      {
+        data: {
+          user: user.id,
+          resource_type: RESOURCE_TYPES.cluster,
+          resource_id: cluster.id,
+          action: TASK_ACTION['cluster.create'],
+          restartable: true,
+          payload: {},
+          resource_status: {
+            completed: 'provisioned',
+            error: 'error',
+          },
+        },
+      },
+      trx
+    )
+  }
+
+  const createRoleForCluster = async (user: User, cluster: Cluster, trx: Knex.Transaction) => {
+    // if the user is not a super-user - create a role for the user against the cluster
+    if (!userUtils.isSuperuser(user)) {
+      await store.role.create(
+        {
+          data: {
+            user: user.id,
+            permission: PERMISSION_TYPES.write,
+            resource_type: RESOURCE_TYPES.cluster,
+            resource_id: cluster.id,
+          },
+        },
+        trx
+      )
+    }
+  }
 
   /*
     update a cluster
@@ -414,7 +465,6 @@ export const ClusterController = ({ store }: { store: Store }) => {
         formData.desired_state = updatedDesiredState
       }
 
-      // save the cluster; removal of updateCluster will cause tests to fail
       await store.cluster.update(
         {
           id,
@@ -425,26 +475,95 @@ export const ClusterController = ({ store }: { store: Store }) => {
 
       // if there is an update to the desired state
       // trigger a task to update it
-      const task = await store.task.create(
+      return await createUpdateTask(user, cluster, trx)
+    })
+
+  const updateUserPT = ({ id, user, data }: ClusterUpdateUserPTRequest) =>
+    store.transaction(async (trx) => {
+      // check to see if there are active tasks for this cluster
+      const activeTasks = await store.task.activeForResource(
         {
+          cluster: id,
+        },
+        trx
+      )
+
+      if (activeTasks.length > 0) throw new Error('there are active tasks for this cluster')
+
+      // get the existing cluster
+      const cluster = await store.cluster.get(
+        {
+          id,
+        },
+        trx
+      )
+
+      if (!cluster) throw new Error(`no cluster with that id found: ${id}`)
+
+      const k8sCredentials = await store.clustersecret.get({
+        cluster: cluster.id,
+        name: K8S_CREDENTIALS_SECRET_NAME,
+      })
+      if (k8sCredentials) {
+        const partialCreds = JSON.parse(decode(k8sCredentials.base64data).toString()) as {
+          cluster: k8s.Cluster
+          user: k8s.User
+        }
+
+        const newCreds = {
+          cluster: {
+            ...partialCreds.cluster,
+            ...data.cluster,
+          },
+          user: {
+            ...partialCreds.user,
+            ...data.user,
+          },
+        }
+
+        await store.clustersecret.update({
+          cluster: cluster.id,
+          name: K8S_CREDENTIALS_SECRET_NAME,
           data: {
-            user: user.id,
-            resource_type: RESOURCE_TYPES.cluster,
-            resource_id: cluster.id,
-            action: TASK_ACTION['cluster.update'],
-            restartable: true,
-            payload: {},
-            resource_status: {
-              completed: 'provisioned',
-              error: 'error',
-            },
+            rawData: JSON.stringify(newCreds),
+          },
+        })
+      }
+
+      await store.cluster.update(
+        {
+          id,
+          data: {
+            name: data.cluster.name || cluster.name,
           },
         },
         trx
       )
 
-      return task
+      // if there is an update to the desired state
+      // trigger a task to update it
+      return await createUpdateTask(user, cluster, trx)
     })
+
+  const createUpdateTask = async (user: User, cluster: Cluster, trx: Knex.Transaction) => {
+    return await store.task.create(
+      {
+        data: {
+          user: user.id,
+          resource_type: RESOURCE_TYPES.cluster,
+          resource_id: cluster.id,
+          action: TASK_ACTION['cluster.update'],
+          restartable: true,
+          payload: {},
+          resource_status: {
+            completed: 'provisioned',
+            error: 'error',
+          },
+        },
+      },
+      trx
+    )
+  }
 
   /*
     delete a cluster
@@ -601,15 +720,29 @@ export const ClusterController = ({ store }: { store: Store }) => {
       resource_id: id,
     })
 
-    return Promise.all(
+    const mappedRoles = await Promise.all(
       roles.map(async (role) => {
         const user = await store.user.get({
           id: role.user,
         })
-        const userRecord = userUtils.safe(user)
-        return { ...role, userRecord }
+        if (user) {
+          const userRecord = userUtils.safe(user)
+          return { role, userRecord }
+        }
+        return { role, userRecord: undefined } as { role: Role; userRecord: userUtils.SafeUser | undefined }
       })
     )
+    return mappedRoles
+      .filter((r) => {
+        if (r.userRecord) {
+          return true
+        } else {
+          return false
+        }
+      })
+      .map((r) => {
+        return { ...r.role, userRecord: r.userRecord }
+      })
   }
 
   /*
@@ -731,7 +864,9 @@ export const ClusterController = ({ store }: { store: Store }) => {
     list,
     get,
     create,
+    createUserPT,
     update,
+    updateUserPT,
     delete: del,
     deletePermanently,
     getRoles,

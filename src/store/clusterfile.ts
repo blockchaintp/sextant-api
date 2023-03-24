@@ -49,12 +49,25 @@ export class ClusterFileStore {
   ) {
     if (!cluster) throw new Error(`data.cluster param must be given to create`)
     if (!name) throw new Error(`data.name param must be given to create`)
-    if (!rawData && !base64data) throw new Error(`data.rawData or data.base64data param must be given to create`)
+    if (!base64data && !rawData) throw new Error(`data.rawData or data.base64data param must be given to create`)
 
-    const insertData = {
-      cluster,
-      name,
-      base64data: base64data || encode(rawData),
+    let insertData: Partial<ClusterFile>
+    if (base64data) {
+      insertData = {
+        cluster,
+        name,
+        base64data,
+      }
+    } else {
+      if (rawData) {
+        insertData = {
+          cluster,
+          name,
+          base64data: encode(rawData),
+        }
+      } else {
+        throw new Error(`data.rawData or data.base64data param must be given to create`)
+      }
     }
 
     const [result] = await (trx || this.knex)<ClusterFile>(this.table).insert(insertData).returning('*')
@@ -192,11 +205,20 @@ export class ClusterFileStore {
     if (id) queryParams.id = id
     if (name) queryParams.name = name
 
+    let updateData: { base64data: string }
+    if (base64data) {
+      updateData = { base64data }
+    } else {
+      if (rawData) {
+        updateData = { base64data: encode(rawData) }
+      } else {
+        throw new Error(`data.rawData or data.base64data param must be given to update`)
+      }
+    }
+
     const [result] = await (trx || this.knex)<ClusterFile>(this.table)
       .where(queryParams)
-      .update({
-        base64data: base64data || encode(rawData),
-      })
+      .update(updateData)
       .returning('*')
     return result
   }

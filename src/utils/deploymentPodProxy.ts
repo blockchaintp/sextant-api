@@ -94,6 +94,7 @@ export const DeploymentPodProxy = async ({
     clusterKubectl.getPods(namespace, { labelSelector: useLabel }).then((data) => {
       const allPods = data.items
       return allPods.filter((pod) => {
+        if (!pod.status || !pod.status.conditions) return false
         const readyConditions = pod.status.conditions.filter((item) => item.type === 'Ready')
         if (readyConditions && readyConditions.length > 0) {
           return readyConditions.every((condition) => condition.status === 'True')

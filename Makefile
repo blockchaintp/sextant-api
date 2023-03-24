@@ -10,6 +10,7 @@ test: $(MARKERS)/test_jest $(MARKERS)/test_tape
 analyze: analyze_fossa analyze_sonar_js
 
 clean: fix_permissions clean_container
+clean_dirs_standard: fix_permissions
 
 distclean: clean_docker clean_npm
 
@@ -37,10 +38,11 @@ clean_npm:
 $(MARKERS)/test_tape: $(MARKERS)/build_docker
 	docker-compose -f docker-compose.test.yml up -d
 	docker-compose -f docker-compose.test.yml exec -T api npm run test || true
-	docker cp api_test:/tmp/test.out ./build/results.tap || true
-	docker cp api_test:/tmp/junit.xml ./build/junit.xml || true
-	docker cp api_test:/tmp/lcov.info ./build/ || true
-	docker cp api_test:/tmp/lcov-report ./build/ || true
+	mkdir -p build/tape
+	docker cp api_test:/tmp/test.out ./build/tape/results.tap || true
+	docker cp api_test:/tmp/junit.xml ./build/tape/junit.xml || true
+	docker cp api_test:/tmp/lcov.info ./build/tape/ || true
+	docker cp api_test:/tmp/lcov-report ./build/tape/ || true
 	docker-compose -f docker-compose.test.yml down -v || true
 	docker-compose -f docker-compose.test.yml rm -f || true
 	touch $@
@@ -51,6 +53,14 @@ $(MARKERS)/test_jest: $(MARKERS)/build_docker
 		--network host \
 		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run test:jest"
 	$(BUSYBOX_ROOT) find /project -type d -exec chown -R $(UID):$(GID) {} \;
+	touch $@
+
+test: $(MARKERS)/test_report_merge
+$(MARKERS)/test_report_merge: $(MARKERS)/test_jest $(MARKERS)/test_tape
+	docker run -w /app/api --rm -v $$(pwd)/build:/app/api/build \
+		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run merge:junit"
+	docker run -w /app/api --rm -v $$(pwd)/build:/app/api/build \
+		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run merge:coverage"
 	touch $@
 
 $(MARKERS)/build_npm_ci: $(MARKERS)/asdf
