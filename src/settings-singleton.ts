@@ -56,7 +56,19 @@ type PostgresSettings = {
   }
 }
 
-export class Settings {
+export interface Settings {
+  readonly baseUrl: string
+  readonly initialPassword: string
+  readonly initialUser: string
+  readonly logging: string
+  readonly port: number
+  readonly postgres: PostgresSettings
+  sessionSecret: string
+  readonly startTime: number
+  tokenSecret: string
+}
+
+export class SettingsSingleton implements Settings {
   private static _instance: Settings
 
   public readonly baseUrl: string
@@ -100,10 +112,10 @@ export class Settings {
     this.startTime = Date.now()
   }
 
-  public static getInstance() {
-    if (!Settings._instance) {
-      Settings._instance = new Settings()
+  public static getInstance(): Settings {
+    if (!SettingsSingleton._instance) {
+      SettingsSingleton._instance = new SettingsSingleton()
     }
-    return Settings._instance
+    return SettingsSingleton._instance
   }
 }

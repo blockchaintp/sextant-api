@@ -15,8 +15,8 @@ const logger = require('./logging').getLogger({
   name: 'index',
 })
 
-const { Settings } = require('./settings-singleton')
-const settings = Settings.getInstance()
+const { SettingsSingleton } = require('./settings-singleton')
+const settings = SettingsSingleton.getInstance()
 const App = require('./app')
 const { Initialise } = require('./initialise')
 const TaskHandlers = require('./tasks')

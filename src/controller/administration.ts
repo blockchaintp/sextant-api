@@ -1,7 +1,7 @@
 import { getLogger } from '../logging'
-import { Settings } from '../settings-singleton'
+import { SettingsSingleton } from '../settings-singleton'
 
-const settings = Settings.getInstance()
+const settings = SettingsSingleton.getInstance()
 const logger = getLogger({
   name: 'controller/administration',
 })
