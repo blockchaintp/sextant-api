@@ -12,7 +12,7 @@ ajvKeywords(ajv)
 ajvErrors(ajv)
 
 export type ClusterAddRemoteForm = {
-  capabilities: { [key: string]: boolean }
+  capabilities?: { [key: string]: boolean }
   desired_state: {
     apiServer: string
     ca: string
@@ -30,6 +30,7 @@ const clusterAddRemoteFormSchema: JSONSchemaType<ClusterAddRemoteForm> = {
       patternProperties: {
         '^.+$': { type: 'boolean' },
       },
+      nullable: true,
       required: [],
     },
     desired_state: {
@@ -62,12 +63,12 @@ const clusterAddRemoteFormSchema: JSONSchemaType<ClusterAddRemoteForm> = {
       enum: ['remote'],
     },
   },
-  required: ['desired_state', 'name', 'capabilities'],
+  required: ['desired_state', 'name'],
   additionalProperties: false,
 }
 
 export type ClusterEditRemoteForm = {
-  capabilities: { [key: string]: boolean }
+  capabilities?: { [key: string]: boolean }
   desired_state: {
     apiServer: string
     ca?: string
@@ -85,6 +86,7 @@ const clusterEditRemoteFormSchema: JSONSchemaType<ClusterEditRemoteForm> = {
       patternProperties: {
         '^.+$': { type: 'boolean' },
       },
+      nullable: true,
       required: [],
     },
     desired_state: {
@@ -120,7 +122,7 @@ const clusterEditRemoteFormSchema: JSONSchemaType<ClusterEditRemoteForm> = {
       enum: ['remote'],
     },
   },
-  required: ['desired_state', 'name', 'capabilities'],
+  required: ['desired_state', 'name'],
   additionalProperties: false,
 }
 
