@@ -2,16 +2,15 @@
 import * as randomstring from 'randomstring'
 import * as config from './config'
 import { getLogger } from './logging'
-import { Settings } from './settings-singleton'
+import { SettingsSingleton, Settings } from './settings-singleton'
 import { Store } from './store'
 import * as userUtils from './utils/user'
 
-const settings = Settings.getInstance()
 const logger = getLogger({
   name: 'initialise',
 })
 
-const createInitialUser = async ({ store }: { store: Store }) => {
+const createInitialUser = async ({ store, settings }: { store: Store; settings: Settings }) => {
   // check to see if we have been given an initial user and password
   // to create
   if (
@@ -42,7 +41,7 @@ const createInitialUser = async ({ store }: { store: Store }) => {
   }
 }
 
-const handleSessionSecret = async ({ store }: { store: Store }) => {
+const handleSessionSecret = async ({ store, settings }: { store: Store; settings: Settings }) => {
   // Is there a session.secret in the database?
   const data = await store.settings.get({ key: 'session.secret' })
   if (data) {
@@ -59,7 +58,7 @@ const handleSessionSecret = async ({ store }: { store: Store }) => {
   }
 }
 
-const handleTokenSecret = async ({ store }: { store: Store }) => {
+const handleTokenSecret = async ({ store, settings }: { store: Store; settings: Settings }) => {
   // Is there a token.secret in the database?
   const data = await store.settings.get({ key: 'token.secret' })
   if (data) {
@@ -77,13 +76,16 @@ const handleTokenSecret = async ({ store }: { store: Store }) => {
 }
 
 // code we run before the app is booted and starts serving
-export const Initialise = async ({ store }: { store: Store }) => {
+export const Initialise = async ({ store, useSettings }: { store: Store; useSettings?: Settings }) => {
+  const settings = useSettings || SettingsSingleton.getInstance()
+
   try {
     await createInitialUser({
       store,
+      settings,
     })
-    await handleSessionSecret({ store })
-    await handleTokenSecret({ store })
+    await handleSessionSecret({ store, settings })
+    await handleTokenSecret({ store, settings })
   } catch (error) {
     if (error instanceof Error) {
       logger.error({

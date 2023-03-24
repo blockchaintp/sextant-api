@@ -4,9 +4,9 @@ import * as utils from '../utils/user'
 
 import userForms from '../forms/user'
 import validate from '../forms/validate'
+import { Settings } from '../settings-singleton'
 import { Store } from '../store'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
-import { Settings } from '../settings-singleton'
 
 export class UserController {
   private settings: Settings
