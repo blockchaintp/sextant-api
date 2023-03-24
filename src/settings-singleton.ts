@@ -1,7 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import { baseUrl } from './config'
 import minimist from 'minimist'
-import randomstring from 'randomstring'
+import { baseUrl } from './config'
 
 const requiredEnv = ['POSTGRES_SERVICE_HOST', 'POSTGRES_USER', 'POSTGRES_DB', 'POSTGRES_PASSWORD']
 
@@ -32,10 +31,10 @@ const argSpec: {
     tokenSecret: 'unset',
 
     // the name of the initial root user to create if it doesn't exist
-    initialUser: process.env.INITIAL_USER || 'admin',
+    initialUser: process.env.INITIAL_USER || '',
 
     // the password of the initial user to create if it doesn't exist
-    initialPassword: process.env.INITIAL_PASSWORD || randomstring.generate(32),
+    initialPassword: process.env.INITIAL_PASSWORD || '',
 
     startTime: Date.now(),
   },
