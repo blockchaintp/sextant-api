@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* test(initialise): add unit test [view commit](https://github.com/catenasys/sextant-api/commit/57df4d079af0fb6b6cd513c5584362a4b10513ed)
+* refactor(settings): extract Settings interface [view commit](https://github.com/catenasys/sextant-api/commit/f25d9b3dd970ac18ba2eaa8a01df8f9c9518935a)
+* fix(initialise): correct intiial user creation params [view commit](https://github.com/catenasys/sextant-api/commit/6abb5d20e3fc52db5e6f8a56367b1dea4ffb110c)
 * test(controller): add tests for cluster [view commit](https://github.com/catenasys/sextant-api/commit/73ffc5e374e5a25d39f8b88e2f1fa6b39d2b73d3)
 * test(controller): add test for cluster.updateUsetPT [view commit](https://github.com/catenasys/sextant-api/commit/cbe2a3e1e6777ac0787af7c5437fcf414cdf1b8a)
 * fix(route): add updateUserPTCluster [view commit](https://github.com/catenasys/sextant-api/commit/0574e9b3429c1c6b30de464ef87251396f5071ba)
