@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* build(deps): upgrade to ts5 [view commit](https://github.com/catenasys/sextant-api/commit/ba6ce849dacc9d9211bdf09ca738a666018b0b2b)
+* fix(controller): make capabilities optional in old style cluster.create [view commit](https://github.com/catenasys/sextant-api/commit/7bd21ed72df46d74ffd3ab71c5ee469543d83f07)
 * test(initialise): add unit test [view commit](https://github.com/catenasys/sextant-api/commit/57df4d079af0fb6b6cd513c5584362a4b10513ed)
 * refactor(settings): extract Settings interface [view commit](https://github.com/catenasys/sextant-api/commit/f25d9b3dd970ac18ba2eaa8a01df8f9c9518935a)
 * fix(initialise): correct intiial user creation params [view commit](https://github.com/catenasys/sextant-api/commit/6abb5d20e3fc52db5e6f8a56367b1dea4ffb110c)
