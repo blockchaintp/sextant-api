@@ -61,28 +61,21 @@
   }
 */
 
-const EventEmitter = require('events')
-const Promise = require('bluebird')
-
-const logger = require('./logging').getLogger({
+import EventEmitter from 'events'
+import bluebird from 'bluebird'
+import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from './config'
+import Task from './task'
+import resourceUpdaters from './tasks/resource_updaters/index'
+import { getLogger } from './logging'
+import { Store } from './store'
+import { DatabaseIdentifier } from './store/model/scalar-types'
+import * as model from './store/model/model-types'
+import { Knex } from 'knex'
+const logger = getLogger({
   name: 'taskprocessor',
 })
 
-const config = require('./config')
-const Task = require('./task')
-const resourceUpdaters = require('./tasks/resource_updaters/index')
-
-const {
-  TASK_STATUS,
-  RESOURCE_TYPES,
-  TASK_CONTROLLER_LOOP_DELAY,
-} = config
-
-const TaskProcessor = ({
-  store,
-  handlers,
-  logging,
-}) => {
+const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: unknown; logging: boolean }) => {
   if (!store) {
     throw new Error('store required')
   }
@@ -102,37 +95,44 @@ const TaskProcessor = ({
   }
 
   // get the current status of a task
-  const loadTaskStatus = (id) => store.task.get({
-    id,
-  })
-    .then((task) => task.status)
+  const loadTaskStatus = (id: DatabaseIdentifier) =>
+    store.task
+      .get({
+        id,
+      })
+      .then((task) => task.status)
 
   // get a list of tasks with the given status
-  const loadTasksWithStatus = (status) => store.task.list({
-    status,
-  })
+  const loadTasksWithStatus = (status: string) =>
+    store.task.list({
+      status,
+    })
   const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
   const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
 
   // return a function that will check a running task cancel status
-  const isTaskCancelled = async (task) => {
+  const isTaskCancelled = async (task: model.Task) => {
     const status = await loadTaskStatus(task.id)
     return status === TASK_STATUS.cancelling
   }
 
   // update the status of a task
   // timestamps indicates what fields we should stamp as now
-  const updateTaskStatus = (task, status, timestamps) => {
-    const updateData = {
+  const updateTaskStatus = (task: model.Task, status: string, timestamps: { started?: boolean; ended?: boolean }) => {
+    const updateData: {
+      status: string
+      started_at?: Date
+      ended_at?: Date
+    } = {
       status,
     }
 
     if (timestamps.started) {
-      updateData.started_at = store.knex.fn.now()
+      updateData.started_at = new Date(Date.now())
     }
 
     if (timestamps.ended) {
-      updateData.ended_at = store.knex.fn.now()
+      updateData.ended_at = new Date(Date.now())
     }
 
     return store.task.update({
@@ -143,7 +143,7 @@ const TaskProcessor = ({
 
   // mark the task as failed and update the corresponding resource with
   // the error status
-  const errorTask = async (task, error) => {
+  const errorTask = async (task: model.Task, error: Error) => {
     if (logging) {
       logger.error({
         action: 'error',
@@ -158,7 +158,7 @@ const TaskProcessor = ({
       id: task.id,
       data: {
         status: TASK_STATUS.error,
-        ended_at: store.knex.fn.now(),
+        ended_at: new Date(Date.now()),
         error: error.toString().substring(0, 250),
       },
     })
@@ -168,19 +168,19 @@ const TaskProcessor = ({
 
     // import the correct resource updater based on the task.action
     // resourceUpdaters are defined in tasks/resource_updaters
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters.default
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await resourceUpdater(task, error, resourceTypeStore)
   }
 
   // mark the task as complete and update the corresponding resource with
   // the correct status - if the task was cancelled - we don't update
   // the resource status
-  const completeTask = async (task, trx, cancelled) => {
+  const completeTask = async (task: model.Task, trx: Knex.Transaction, cancelled: boolean) => {
     // what status are we setting the task to
-    const finalTaskStatus = cancelled
-      ? TASK_STATUS.cancelled
-      : TASK_STATUS.finished
+    const finalTaskStatus = cancelled ? TASK_STATUS.cancelled : TASK_STATUS.finished
 
     await updateTaskStatus(task, finalTaskStatus, { ended: true })
 
@@ -189,62 +189,74 @@ const TaskProcessor = ({
       // get a reference to the store handler for the task resource
       const resourceTypeStore = resourceTypeStores[task.resource_type]
       if (task.resource_type === 'deployment') {
-        await resourceTypeStore.update({
+        await resourceTypeStore.update(
+          {
+            id: task.resource_id,
+            data: {
+              status: task.resource_status.completed,
+              updated_at: new Date(),
+            },
+          },
+          trx
+        )
+      }
+      await resourceTypeStore.update(
+        {
           id: task.resource_id,
           data: {
             status: task.resource_status.completed,
-            updated_at: new Date(),
           },
-        }, trx)
-      }
-      await resourceTypeStore.update({
-        id: task.resource_id,
-        data: {
-          status: task.resource_status.completed,
         },
-      }, trx)
+        trx
+      )
     }
   }
 
   // run a task
   // we create a transaction and pass it as part of the params into the task
   // this means the task's database updates will get unwound on an error
-  const runTask = async (task) => {
-    await store.transaction(async (trx) => {
-      // check that we have a handler for the task
-      const handler = handlers[task.action]
+  const runTask = async (task: model.Task) => {
+    await store
+      .transaction(async (trx) => {
+        // check that we have a handler for the task
+        const handler = handlers[task.action]
 
-      if (!handler) {
-        throw new Error(`no handler was found for task: ${task.action}`)
-      }
+        if (!handler) {
+          throw new Error(`no handler was found for task: ${task.action}`)
+        }
 
-      // update the task be to in running state
-      const runningTask = await updateTaskStatus(task, TASK_STATUS.running, { started: true })
+        // update the task be to in running state
+        const runningTask = await updateTaskStatus(task, TASK_STATUS.running, { started: true })
 
-      // create the task runner
-      const runner = Task({
-        generator: handler,
-        params: {
-          store,
-          trx,
-          task: runningTask,
-          logging,
-        },
-        // before each yielded step of the task - check if the database has a cancel
-        // status and cancel the task if yes
-        onStep: async () => {
-          const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
-          if (isCancelled) runner.cancel()
-        },
+        // create the task runner
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const runner = Task({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          generator: handler,
+          params: {
+            store,
+            trx,
+            task: runningTask,
+            logging,
+          },
+          // before each yielded step of the task - check if the database has a cancel
+          // status and cancel the task if yes
+          onStep: async () => {
+            const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+            if (isCancelled) runner.cancel()
+          },
+        })
+
+        taskProcessor.emit('task.start', task)
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        await runner.run()
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        await completeTask(task, trx, runner.cancelled)
+        taskProcessor.emit('task.complete', task)
       })
-
-      taskProcessor.emit('task.start', task)
-
-      await runner.run()
-      await completeTask(task, trx, runner.cancelled)
-      taskProcessor.emit('task.complete', task)
-    })
-      .catch(async (err) => {
+      .catch(async (err: Error) => {
         await errorTask(task, err)
         taskProcessor.emit('task.error', task, err)
       })
@@ -262,8 +274,10 @@ const TaskProcessor = ({
     const errorTasks = tasks.filter((task) => !task.restartable)
 
     await Promise.all([
-      Promise.each(runTasks, runTask),
-      Promise.each(errorTasks, (task) => errorTask(task, 'the server restarted whilst this task was running and the task is not restartable')),
+      bluebird.each(runTasks, runTask),
+      bluebird.each(errorTasks, (task) =>
+        errorTask(task, new Error('the server restarted whilst this task was running and the task is not restartable'))
+      ),
     ])
   }
 
@@ -272,14 +286,14 @@ const TaskProcessor = ({
     if (!controlLoopRunning) return
     try {
       const runTasks = await loadCreatedTasks()
-      await Promise.each(runTasks, runTask)
-      await Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
-      controlLoop()
+      await bluebird.each(runTasks, runTask)
+      await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY)
+      void controlLoop()
     } catch (err) {
       if (logging) {
         logger.error({
           type: 'controlloop',
-          error: err.toString(),
+          error: String(err),
         })
       }
       throw err
@@ -290,7 +304,7 @@ const TaskProcessor = ({
   const startControlLoop = () => {
     if (stopped) throw new Error('the task processor was stopped')
     controlLoopRunning = true
-    controlLoop()
+    void controlLoop()
   }
 
   const start = async () => {
@@ -302,7 +316,7 @@ const TaskProcessor = ({
       if (logging) {
         logger.error({
           type: 'start',
-          error: err.toString(),
+          error: String(err),
         })
       }
       throw err
@@ -312,7 +326,7 @@ const TaskProcessor = ({
   const stop = () => {
     controlLoopRunning = false
     stopped = true
-    return Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
+    return bluebird.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
   taskProcessor.start = start
