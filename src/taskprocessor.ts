@@ -61,28 +61,21 @@
   }
 */
 
-const EventEmitter = require('events')
-const Promise = require('bluebird')
+import EventEmitter from 'events'
+import BluebirdPromise from 'bluebird'
 
-const logger = require('./logging').getLogger({
+import { getLogger } from './logging'
+
+import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from './config'
+import { Task } from './task'
+import resourceUpdaters from './tasks/resource_updaters/index'
+import { Store } from './store'
+
+const logger = getLogger({
   name: 'taskprocessor',
 })
 
-const config = require('./config')
-const Task = require('./task')
-const resourceUpdaters = require('./tasks/resource_updaters/index')
-
-const {
-  TASK_STATUS,
-  RESOURCE_TYPES,
-  TASK_CONTROLLER_LOOP_DELAY,
-} = config
-
-const TaskProcessor = ({
-  store,
-  handlers,
-  logging,
-}) => {
+const TaskProcessor = ({ store, handlers, logging }) => {
   if (!store) {
     throw new Error('store required')
   }
@@ -102,15 +95,18 @@ const TaskProcessor = ({
   }
 
   // get the current status of a task
-  const loadTaskStatus = (id) => store.task.get({
-    id,
-  })
-    .then((task) => task.status)
+  const loadTaskStatus = (id) =>
+    store.task
+      .get({
+        id,
+      })
+      .then((task) => task.status)
 
   // get a list of tasks with the given status
-  const loadTasksWithStatus = (status) => store.task.list({
-    status,
-  })
+  const loadTasksWithStatus = (status) =>
+    store.task.list({
+      status,
+    })
   const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
   const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
 
@@ -178,9 +174,7 @@ const TaskProcessor = ({
   // the resource status
   const completeTask = async (task, trx, cancelled) => {
     // what status are we setting the task to
-    const finalTaskStatus = cancelled
-      ? TASK_STATUS.cancelled
-      : TASK_STATUS.finished
+    const finalTaskStatus = cancelled ? TASK_STATUS.cancelled : TASK_STATUS.finished
 
     await updateTaskStatus(task, finalTaskStatus, { ended: true })
 
@@ -189,20 +183,26 @@ const TaskProcessor = ({
       // get a reference to the store handler for the task resource
       const resourceTypeStore = resourceTypeStores[task.resource_type]
       if (task.resource_type === 'deployment') {
-        await resourceTypeStore.update({
+        await resourceTypeStore.update(
+          {
+            id: task.resource_id,
+            data: {
+              status: task.resource_status.completed,
+              updated_at: new Date(),
+            },
+          },
+          trx
+        )
+      }
+      await resourceTypeStore.update(
+        {
           id: task.resource_id,
           data: {
             status: task.resource_status.completed,
-            updated_at: new Date(),
           },
-        }, trx)
-      }
-      await resourceTypeStore.update({
-        id: task.resource_id,
-        data: {
-          status: task.resource_status.completed,
         },
-      }, trx)
+        trx
+      )
     }
   }
 
@@ -210,40 +210,41 @@ const TaskProcessor = ({
   // we create a transaction and pass it as part of the params into the task
   // this means the task's database updates will get unwound on an error
   const runTask = async (task) => {
-    await store.transaction(async (trx) => {
-      // check that we have a handler for the task
-      const handler = handlers[task.action]
+    await store
+      .transaction(async (trx) => {
+        // check that we have a handler for the task
+        const handler = handlers[task.action]
 
-      if (!handler) {
-        throw new Error(`no handler was found for task: ${task.action}`)
-      }
+        if (!handler) {
+          throw new Error(`no handler was found for task: ${task.action}`)
+        }
 
-      // update the task be to in running state
-      const runningTask = await updateTaskStatus(task, TASK_STATUS.running, { started: true })
+        // update the task be to in running state
+        const runningTask = await updateTaskStatus(task, TASK_STATUS.running, { started: true })
 
-      // create the task runner
-      const runner = Task({
-        generator: handler,
-        params: {
-          store,
-          trx,
-          task: runningTask,
-          logging,
-        },
-        // before each yielded step of the task - check if the database has a cancel
-        // status and cancel the task if yes
-        onStep: async () => {
-          const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
-          if (isCancelled) runner.cancel()
-        },
+        // create the task runner
+        const runner = Task({
+          generator: handler,
+          params: {
+            store,
+            trx,
+            task: runningTask,
+            logging,
+          },
+          // before each yielded step of the task - check if the database has a cancel
+          // status and cancel the task if yes
+          onStep: async () => {
+            const isCancelled = await BluebirdPromise.resolve(isTaskCancelled(runningTask))
+            if (isCancelled) runner.cancel()
+          },
+        })
+
+        taskProcessor.emit('task.start', task)
+
+        await runner.run()
+        await completeTask(task, trx, runner.cancelled)
+        taskProcessor.emit('task.complete', task)
       })
-
-      taskProcessor.emit('task.start', task)
-
-      await runner.run()
-      await completeTask(task, trx, runner.cancelled)
-      taskProcessor.emit('task.complete', task)
-    })
       .catch(async (err) => {
         await errorTask(task, err)
         taskProcessor.emit('task.error', task, err)
@@ -261,9 +262,11 @@ const TaskProcessor = ({
     const runTasks = tasks.filter((task) => task.restartable)
     const errorTasks = tasks.filter((task) => !task.restartable)
 
-    await Promise.all([
-      Promise.each(runTasks, runTask),
-      Promise.each(errorTasks, (task) => errorTask(task, 'the server restarted whilst this task was running and the task is not restartable')),
+    await BluebirdPromise.all([
+      BluebirdPromise.each(runTasks, runTask),
+      BluebirdPromise.each(errorTasks, (task) =>
+        errorTask(task, 'the server restarted whilst this task was running and the task is not restartable')
+      ),
     ])
   }
 
@@ -272,8 +275,8 @@ const TaskProcessor = ({
     if (!controlLoopRunning) return
     try {
       const runTasks = await loadCreatedTasks()
-      await Promise.each(runTasks, runTask)
-      await Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
+      await BluebirdPromise.each(runTasks, runTask)
+      await BluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
       controlLoop()
     } catch (err) {
       if (logging) {
@@ -312,7 +315,7 @@ const TaskProcessor = ({
   const stop = () => {
     controlLoopRunning = false
     stopped = true
-    return Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
+    return BluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
   taskProcessor.start = start

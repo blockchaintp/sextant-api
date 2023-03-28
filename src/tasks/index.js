@@ -7,9 +7,7 @@ const DeploymentDelete = require('./deployment/delete')
 
 const config = require('../config')
 
-const {
-  TASK_ACTION,
-} = config
+const { TASK_ACTION } = config
 
 module.exports = (opts) => ({
   [TASK_ACTION['cluster.create']]: ClusterCreate(opts),

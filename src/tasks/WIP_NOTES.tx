@@ -1,0 +1,4 @@
+I'd like to move the TaskProcessor and Task definitions closer to the tasks directory.
+Should I use a union type for the yeild return values?
+Is "<reasource><action>TaskInterface" a good name for the wrapper around the task generator function definitions?
+When is it correct to use the term 'params' vs. 'arguments'? Are they interchangeable terms or are params a subset of arguments?
