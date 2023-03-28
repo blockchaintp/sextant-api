@@ -16,7 +16,8 @@ const ClusterDelete = () =>
       trx
     )
 
-    typeof deployments = [Deployment] // can I sort of re-type or force-type at this stage of the interation?
+    // typeof deployments = [Deployment]
+    // can I sort of re-type or force-type at this stage of the interation?
     const nonDeletedDeployments = deployments.filter((deployment) => deployment.status !== DEPLOYMENT_STATUS.deleted)
 
     if (nonDeletedDeployments.length > 0) throw new Error('all deployments for this cluster must be in deleted state')
