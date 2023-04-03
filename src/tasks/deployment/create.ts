@@ -1,18 +1,15 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-var-requires */
-const { Kubectl } = require('../../utils/kubectl')
-const deploymentNames = require('../../utils/deploymentNames')
-const { saveAppliedState } = require('./utils/saveAppliedState')
-const KeyPair = require('../../utils/sextantKeyPair')
-const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
-const { writeValues } = require('../../deployment_templates/writeValues')
+import { Kubectl } from '../../utils/kubectl'
+import * as deploymentNames from '../../utils/deploymentNames'
+import { saveAppliedState } from './utils/saveAppliedState'
+import * as KeyPair from '../../utils/sextantKeyPair'
+import { getChartInfo, getChartVersion } from './utils/helmUtils'
+import { writeValues } from '../../deployment_templates/writeValues'
+import { Knex } from 'knex'
+import { Store } from '../../store'
+import * as model from '../../store/model/model-types'
 
 const DeploymentCreate = ({ testMode }) =>
-  function* deploymentCreateTask(params) {
+  function* deploymentCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
     const id = task.resource_id

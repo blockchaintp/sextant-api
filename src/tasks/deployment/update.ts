@@ -1,25 +1,20 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable max-len */
 /*
  * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
  *
  * License: Product
  */
-const { Kubectl } = require('../../utils/kubectl')
-const deploymentNames = require('../../utils/deploymentNames')
-const { saveAppliedState } = require('./utils/saveAppliedState')
-const { writeValues } = require('../../deployment_templates/writeValues')
-const { getChartInfo, getChartVersion } = require('./utils/helmUtils')
-const KeyPair = require('../../utils/sextantKeyPair')
+import { Kubectl } from '../../utils/kubectl'
+import * as deploymentNames from '../../utils/deploymentNames'
+import { saveAppliedState } from './utils/saveAppliedState'
+import { writeValues } from '../../deployment_templates/writeValues'
+import { getChartInfo, getChartVersion } from './utils/helmUtils'
+import * as KeyPair from '../../utils/sextantKeyPair'
+import { Knex } from 'knex'
+import { Store } from '../../store'
+import * as model from '../../store/model/model-types'
 
-const DeploymentUpdate = ({ testMode }) =>
-  function* deploymentUpdateTask(params) {
+const DeploymentUpdate = ({ testMode }: { testMode: boolean }) =>
+  function* deploymentUpdateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
     const id = task.resource_id

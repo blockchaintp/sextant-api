@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-var-requires */
-const { Kubectl } = require('../../utils/kubectl')
-const { saveAppliedState } = require('./utils/saveAppliedState')
+import { Knex } from 'knex'
+import { Store } from '../../store'
+import { Kubectl } from '../../utils/kubectl'
+import { saveAppliedState } from './utils/saveAppliedState'
+import * as model from '../../store/model/model-types'
 
-const ClusterCreate = ({ testMode }) =>
-  function* clusterCreateTask(params) {
+const ClusterCreate = ({ testMode }: { testMode: boolean }) =>
+  function* clusterCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
     const id = task.resource_id

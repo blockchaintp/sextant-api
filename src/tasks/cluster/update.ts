@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable no-undef */
-const { saveAppliedState } = require('./utils/saveAppliedState')
+import { saveAppliedState } from './utils/saveAppliedState'
+import { Knex } from 'knex'
+import { Store } from '../../store'
+import * as model from '../../store/model/model-types'
 
 const ClusterUpdate = ({ testMode }) =>
-  function* clusterUpdateTask(params) {
+  function* clusterUpdateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
     const id = task.resource_id
