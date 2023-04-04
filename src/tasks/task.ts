@@ -10,7 +10,7 @@
   to cancel a task before the next step is invoked
 */
 
-const Task = ({
+export const Task = ({
   generator,
   params = {},
   onStep,

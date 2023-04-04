@@ -63,19 +63,24 @@
 
 import EventEmitter from 'events'
 import bluebird from 'bluebird'
-import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from './config'
-import Task from './task'
-import resourceUpdaters from './tasks/resource_updaters/index'
-import { getLogger } from './logging'
-import { Store } from './store'
-import { DatabaseIdentifier } from './store/model/scalar-types'
-import * as model from './store/model/model-types'
+import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from '../config'
+import { Task } from './task'
+import resourceUpdaters from '../tasks/resource_updaters/index'
+import { getLogger } from '../logging'
+import { Store } from '../store'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
+import * as model from '../store/model/model-types'
 import { Knex } from 'knex'
 const logger = getLogger({
   name: 'taskprocessor',
 })
 
-const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: unknown; logging: boolean }) => {
+type TaskHandler = ({ testMode }: { testMode: boolean }) => (params: any) => GeneratorFunction
+type Handlers = {
+  [key: string]: TaskHandler
+}
+
+const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: Handlers; logging: boolean }) => {
   if (!store) {
     throw new Error('store required')
   }
