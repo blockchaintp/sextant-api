@@ -3,7 +3,19 @@ import { Knex } from 'knex'
 import { Store } from '../../store'
 import * as model from '../../store/model/model-types'
 
-const ClusterUpdate = ({ testMode }) =>
+type Options = {
+  testMode: boolean
+}
+
+type ClusterTask = ({
+  testMode,
+}: Options) => (params: {
+  store: Store
+  task: model.Task
+  trx: Knex.Transaction
+}) => Generator<Promise<model.Cluster>, void, unknown>
+
+export const ClusterUpdate = ({ testMode }) =>
   function* clusterUpdateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 

@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Kubectl } from '../../utils/kubectl'
 import * as deploymentNames from '../../utils/deploymentNames'
 import { getLogger } from '../../logging'
@@ -9,7 +14,7 @@ const logger = getLogger({
   name: 'tasks/deployment/delete',
 })
 
-const DeploymentDelete = ({ testMode }) =>
+export const DeploymentDelete = ({ testMode }) =>
   function* deploymentCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
@@ -46,7 +51,7 @@ const DeploymentDelete = ({ testMode }) =>
       try {
         await clusterKubectl.deleteConfigMap(namespace, 'validator-public')
         // delete stacks if they are there
-      } catch (err: Error) {
+      } catch (err) {
         let match = null
         if (err.response && err.response.statusCode === 404) {
           return

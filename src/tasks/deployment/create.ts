@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Kubectl } from '../../utils/kubectl'
 import * as deploymentNames from '../../utils/deploymentNames'
 import { saveAppliedState } from './utils/saveAppliedState'
@@ -8,7 +13,11 @@ import { Knex } from 'knex'
 import { Store } from '../../store'
 import * as model from '../../store/model/model-types'
 
-const DeploymentCreate = ({ testMode }) =>
+type Options = {
+  testMode: boolean
+}
+
+export const DeploymentCreate = ({ testMode }) =>
   function* deploymentCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 

@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /*
  * Copyright © 2020 Blockchain Technology Partners Limited All Rights Reserved
  *
@@ -13,7 +18,7 @@ import { Knex } from 'knex'
 import { Store } from '../../store'
 import * as model from '../../store/model/model-types'
 
-const DeploymentUpdate = ({ testMode }: { testMode: boolean }) =>
+export const DeploymentUpdate = ({ testMode }: { testMode: boolean }) =>
   function* deploymentUpdateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
@@ -25,8 +30,8 @@ const DeploymentUpdate = ({ testMode }: { testMode: boolean }) =>
       },
       trx
     )
-
-    KeyPair.getOrCreate({ store, deployment: deployment.id }, trx)
+    // this should be awaited - but the yield is required for the generator function
+    yield KeyPair.getOrCreate({ store, deployment: deployment.id }, trx)
 
     const cluster = yield store.cluster.get(
       {
@@ -73,6 +78,7 @@ const DeploymentUpdate = ({ testMode }: { testMode: boolean }) =>
 
     // if the chart is installed, upgrade it. Otherwise, install it
     yield clusterKubectl.helmCommand(
+      // eslint-disable-next-line max-len
       `-n ${namespace} upgrade --create-namespace ${installationName} -f ${valuesPath} ${useChart} --install --version ${chartversion}`
     )
 
