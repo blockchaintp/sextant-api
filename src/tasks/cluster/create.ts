@@ -5,7 +5,11 @@ import { saveAppliedState } from './utils/saveAppliedState'
 import * as model from '../../store/model/model-types'
 import { Cluster } from '../../store/model/model-types'
 
-export const ClusterCreate = ({ testMode }) =>
+type Options = {
+  testMode: boolean
+}
+
+export const ClusterCreate = ({ testMode }: Options) =>
   function* clusterCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 

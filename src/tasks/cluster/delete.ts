@@ -3,10 +3,6 @@ import { Store } from '../../store'
 import * as model from '../../store/model/model-types'
 import { DEPLOYMENT_STATUS } from '../../config'
 
-type Options = {
-  testMode: boolean
-}
-
 export const ClusterDelete = () =>
   function* clusterCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params

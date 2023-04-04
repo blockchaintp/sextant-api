@@ -14,7 +14,11 @@ const logger = getLogger({
   name: 'tasks/deployment/delete',
 })
 
-export const DeploymentDelete = ({ testMode }) =>
+type Options = {
+  testMode: boolean
+}
+
+export const DeploymentDelete = ({ testMode }: Options) =>
   function* deploymentCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 

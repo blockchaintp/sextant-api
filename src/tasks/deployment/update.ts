@@ -18,7 +18,11 @@ import { Knex } from 'knex'
 import { Store } from '../../store'
 import * as model from '../../store/model/model-types'
 
-export const DeploymentUpdate = ({ testMode }: { testMode: boolean }) =>
+type Options = {
+  testMode: boolean
+}
+
+export const DeploymentUpdate = ({ testMode }: Options) =>
   function* deploymentUpdateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 

@@ -17,7 +17,7 @@ type Options = {
   testMode: boolean
 }
 
-export const DeploymentCreate = ({ testMode }) =>
+export const DeploymentCreate = ({ testMode }: Options) =>
   function* deploymentCreateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 

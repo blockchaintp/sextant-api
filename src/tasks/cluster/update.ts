@@ -7,15 +7,7 @@ type Options = {
   testMode: boolean
 }
 
-type ClusterTask = ({
-  testMode,
-}: Options) => (params: {
-  store: Store
-  task: model.Task
-  trx: Knex.Transaction
-}) => Generator<Promise<model.Cluster>, void, unknown>
-
-export const ClusterUpdate = ({ testMode }) =>
+export const ClusterUpdate = ({ testMode }: Options) =>
   function* clusterUpdateTask(params: { store: Store; task: model.Task; trx: Knex.Transaction }) {
     const { store, task, trx } = params
 
