@@ -17,6 +17,8 @@ export const TABLES = {
   clusterfile: 'clusterfile',
   clustersecret: 'clustersecret',
   deploymentsecret: 'deploymentsecret',
+  helmrepository: 'helmrepository',
+  helmchart: 'helmchart',
 }
 
 export const LIST_ORDER_BY_FIELDS = {
@@ -46,6 +48,14 @@ export const LIST_ORDER_BY_FIELDS = {
   },
   user: {
     field: 'username',
+    direction: 'asc',
+  },
+  helmrepository: {
+    field: 'name',
+    direction: 'asc',
+  },
+  helmchart: {
+    field: 'name',
     direction: 'asc',
   },
 }

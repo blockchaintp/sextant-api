@@ -6,7 +6,7 @@ const up = (knex) => {
       table.specificType('id', 'serial primary key not null')
       table.string('name').unique().notNullable()
       table.string('active').defaultTo('true')
-      table.string('url').unique().notNullable()
+      table.string('url').notNullable()
       table.specificType('created_at', 'timestamp default now()')
       table.specificType('updated_at', 'timestamp default now()')
       table.specificType('refreshed_at', 'timestamp')

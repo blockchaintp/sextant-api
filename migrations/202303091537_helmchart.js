@@ -4,14 +4,14 @@ const up = (knex) => {
   return Promise.all([
     knex.schema.createTable('helmchart', (table) => {
       table.boolean('active').defaultTo('true').notNullable()
-      table.string('appVersion').notNullable()
+      table.string('app_version').notNullable()
       table.specificType('created_at', 'timestamp default now()')
       table.string('description').notNullable()
       table.string('digest').notNullable()
       table.string('icon')
       table.specificType('id', 'serial primary key not null')
       table.string('keywords')
-      table.string('kubeVersion')
+      table.string('kube_version')
       table.string('name').unique().notNullable()
       table.specificType('refreshed_at', 'timestamp')
       table.specificType('repository_id', 'integer references helmrepository(id)')
