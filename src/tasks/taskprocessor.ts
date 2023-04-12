@@ -65,7 +65,7 @@ import EventEmitter from 'events'
 import bluebird from 'bluebird'
 import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from '../config'
 import { Task } from './task'
-import resourceUpdaters from '../tasks/resource_updaters/index'
+import * as resourceUpdaters from '../tasks/resource_updaters'
 import { getLogger } from '../logging'
 import { Store } from '../store'
 import { DatabaseIdentifier } from '../store/model/scalar-types'
@@ -74,8 +74,9 @@ import { Knex } from 'knex'
 const logger = getLogger({
   name: 'taskprocessor',
 })
+type TaskHandlerParams = { testMode: boolean; cancel: () => true; isCancelled: () => boolean }
+export type TaskHandler = (useParams: TaskHandlerParams) => Generator
 
-type TaskHandler = ({ testMode }: { testMode: boolean }) => (params: any) => GeneratorFunction
 type Handlers = {
   [key: string]: TaskHandler
 }
@@ -174,7 +175,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     // import the correct resource updater based on the task.action
     // resourceUpdaters are defined in tasks/resource_updaters
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters.default
+    const resourceUpdater = resourceUpdaters[task.action]
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await resourceUpdater(task, error, resourceTypeStore)
@@ -334,10 +335,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     return bluebird.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
-  taskProcessor.start = start
-  taskProcessor.stop = stop
-
-  return taskProcessor
+  return { emitter: taskProcessor, start, stop }
 }
 
 module.exports = TaskProcessor

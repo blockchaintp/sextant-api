@@ -9,15 +9,22 @@
   onStep is called *before* each step is run - it can be used
   to cancel a task before the next step is invoked
 */
+import { TaskHandler } from './taskprocessor'
+
+type TaskFunction = {
+  run: () => Promise<null>
+  cancel: () => void
+  cancelled: boolean
+}
 
 export const Task = ({
   generator,
   params = {},
   onStep,
 }: {
-  generator: GeneratorFunction
+  generator: TaskHandler
   params: object
-  onStep: unknown
+  onStep: (task: TaskFunction) => Promise<void>
 }) => {
   // pass an isCancelled into the generator function
   // so if it needs to run a long running promise
@@ -25,6 +32,7 @@ export const Task = ({
   const useParams = Object.assign({}, params, {
     cancel: () => (task.cancelled = true),
     isCancelled: () => task.cancelled,
+    testMode: false,
   })
 
   // build a stack of generators so we can call inner generators from
@@ -55,7 +63,7 @@ export const Task = ({
     const iterator = iterators[iterators.length - 1]
 
     // get the next yielded value from the generator
-    let yielded = iterator.next(lastValue)
+    const yielded = iterator.next(lastValue)
     let value = yielded.value
 
     // if the generator has finished - remove the last function from the stack

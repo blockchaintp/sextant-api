@@ -25,16 +25,20 @@ if (expression1) {
   }
 */
 
-const logger = require('../../logging').getLogger({
+import { getLogger } from '../../logging'
+import { ClusterStore } from '../../store/cluster'
+import * as model from '../../store/model/model-types'
+
+const logger = getLogger({
   name: 'tasks/resource_updaters/clusterStatusUpdaters',
 })
 
-const errorTest = (error, knownError) => {
+const errorTest = (error: string, knownError: string) => {
   const example = new RegExp(knownError)
   return example.test(error)
 }
 
-const clusterCreateError = async (task, error, store) => {
+export const clusterCreateError = async (task: model.Task, store: ClusterStore) => {
   await store.update({
     id: task.resource_id,
     data: {
@@ -43,9 +47,9 @@ const clusterCreateError = async (task, error, store) => {
   })
 }
 
-const clusterUpdateError = clusterCreateError
+export const clusterUpdateError = clusterCreateError
 
-const clusterDeleteError = async (task, error, store) => {
+export const clusterDeleteError = async (task: model.Task, error: string, store: ClusterStore) => {
   if (errorTest(error, 'all deployments for this cluster must be in deleted state')) {
     logger.info({
       action: 'Update the cluster status',
