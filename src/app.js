@@ -15,7 +15,7 @@ const Passport = require('./passport')
 const { Store } = require('./store')
 const { Controller } = require('./controller')
 const Router = require('./router')
-const TaskProcessor = require('./taskprocessor')
+const TaskProcessor = require('./tasks/taskprocessor')
 
 const App = ({ knex, store, controllers, settings, sessionStore, taskHandlers }) => {
   // eslint-disable-next-line no-param-reassign
