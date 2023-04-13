@@ -9,15 +9,13 @@ const logger = getLogger({
   name: './download-helm-charts',
 })
 
-// helm add and helm pull(untar sextant)
-const runHelmToolStart = async () => {
-  if (edition && edition.helmRepos) {
-    logger.info({
-      action: 'downloading helm charts',
-    })
-    const helmTool = new HelmTool(edition)
-    await helmTool.start()
-  }
-}
-
-void runHelmToolStart()
+const helmTool = new HelmTool(edition)
+helmTool.start().catch((reason: unknown) => {
+  logger.error(
+    {
+      reason,
+    },
+    'Error running helmTool.start()'
+  )
+  process.exit(1)
+})

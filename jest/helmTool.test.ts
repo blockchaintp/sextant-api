@@ -16,18 +16,8 @@ describe('helmTool', () => {
     fsExtra.removeSync(tmpDir)
   })
 
-  it('Can add repositories', async () => {
+  it('can start', async () => {
     const tool = new HelmTool(edition, tmpDir)
-    await tool.add()
-  })
-
-  it('can update repositories', async () => {
-    const tool = new HelmTool(edition, tmpDir)
-    await tool.update()
-  }, 120000)
-
-  it('can store charts locally', async () => {
-    const tool = new HelmTool(edition, tmpDir)
-    await tool.storeChartsLocally()
-  }, 120000)
+    await tool.start()
+  }, 1200000)
 })

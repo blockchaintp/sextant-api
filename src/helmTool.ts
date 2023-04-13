@@ -17,11 +17,10 @@ export class HelmTool {
   helmRepos: HelmRepository[]
 
   constructor(edition: Edition, destinationDir = '/app/api/helmCharts') {
-    if (!edition) throw new Error('no edition found')
-    if (!edition.helmRepos) throw new Error('no helmRepos found')
     this.helmRepos = edition.helmRepos
     this.chartTable = edition.chartTable
     this.destinationDir = destinationDir
+    logger.info({ destinationDir }, 'HelmTool created')
   }
 
   async add() {
@@ -38,15 +37,7 @@ export class HelmTool {
       return result
     }
     for (const repo of this.helmRepos) {
-      try {
-        await runHelmAdd(repo)
-      } catch (err: unknown) {
-        logger.error({
-          action: 'add repository',
-          error: err,
-        })
-        process.exit(1)
-      }
+      await runHelmAdd(repo)
     }
   }
 
@@ -81,21 +72,13 @@ export class HelmTool {
     }
 
     const remove = async (deploymentType: string) => {
-      try {
-        logger.debug(
-          {
-            fn: 'storeChartsLocally.remove',
-          },
-          `removing ${this.destinationDir}/${deploymentType} if found`
-        )
-        await fsExtra.remove(`${this.destinationDir}/${deploymentType}`)
-      } catch (error: unknown) {
-        logger.error({
-          fn: 'remove()',
-          error,
-        })
-        throw error
-      }
+      logger.debug(
+        {
+          fn: 'storeChartsLocally.remove',
+        },
+        `removing ${this.destinationDir}/${deploymentType} if found`
+      )
+      await fsExtra.remove(`${this.destinationDir}/${deploymentType}`)
     }
 
     const pull = async (
@@ -107,21 +90,16 @@ export class HelmTool {
       const cmd =
         `helm pull ${chart} --version ${exactChartVersion} ` +
         ` --untar -d ${this.destinationDir}/${deploymentType}/${deploymentVersion}`
-      try {
-        logger.info(
-          {
-            fn: 'storeChartsLocally.removeAndPull',
-          },
-          `untaring the chart into ${this.destinationDir}/${deploymentType}/${deploymentVersion}`
-        )
-        logger.debug({ fn: 'removeAndPull', command: cmd }, 'helm pull')
-        const result = await exec(cmd)
-        logger.trace({ fn: 'removeAndPull', command: cmd, result }, 'helm pull')
-        return result.stdout
-      } catch (error: unknown) {
-        logger.error({ fn: 'removeAndPull', command: cmd, error }, 'error in helm pull')
-        throw error
-      }
+      logger.info(
+        {
+          fn: 'storeChartsLocally.removeAndPull',
+        },
+        `untaring the chart into ${this.destinationDir}/${deploymentType}/${deploymentVersion}`
+      )
+      logger.debug({ fn: 'removeAndPull', command: cmd }, 'helm pull')
+      const result = await exec(cmd)
+      logger.trace({ fn: 'removeAndPull', command: cmd, result }, 'helm pull')
+      return result.stdout
     }
 
     const removeAndPull = async (
@@ -147,32 +125,19 @@ export class HelmTool {
 
       const deploymentVersions = Object.keys(deploymentTypeData)
       for (const deploymentVersion of deploymentVersions) {
-        try {
-          const deploymentVersionData = deploymentTypeData[deploymentVersion]
-          await removeAndPull(deploymentType, deploymentVersion, deploymentVersionData)
-        } catch (error: unknown) {
-          logger.error({ fn: 'removeAndPull', error }, 'error in helm pull')
-          process.exit(1)
-        }
+        const deploymentVersionData = deploymentTypeData[deploymentVersion]
+        await removeAndPull(deploymentType, deploymentVersion, deploymentVersionData)
       }
     }
   }
 
   async update() {
-    try {
-      logger.info({
-        action: 'updating helm repositories',
-      })
-      const command = 'helm repo update'
-      logger.debug({ action: 'helm repo update', command })
-      const result = await exec(command)
-      logger.trace({ action: 'helm repo update', command, result })
-    } catch (err: unknown) {
-      logger.error({
-        action: 'helm repository update',
-        error: err,
-      })
-      process.exit(1)
-    }
+    logger.info({
+      action: 'updating helm repositories',
+    })
+    const command = 'helm repo update'
+    logger.debug({ action: 'helm repo update', command })
+    const result = await exec(command)
+    logger.trace({ action: 'helm repo update', command, result })
   }
 }
