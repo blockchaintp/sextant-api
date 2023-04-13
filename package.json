@@ -8,7 +8,7 @@
     "migrate": "if [ -r src/config.ts ]; then tsc && cd dist; fi && knex migrate:latest",
     "build": "node -c src/index.js",
     "check": "npm-check",
-    "download-helm-charts": "node scripts/download-helm-charts.js",
+    "download-helm-charts": "node src/download-helm-charts.js",
     "copy-helm-fixtures": "tar -xf ./test/fixtures/helmCharts.tar.gz -C .",
     "remove-helm-fixtures": "rm -rf ./helmCharts/*",
     "preserve": "npm run download-helm-charts && npm run migrate",

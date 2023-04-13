@@ -1,6 +1,6 @@
 # helmCharts.tar.gz
 
-`helmCharts.tar.gz` was created using `./scripts/download-helm-charts.js`.
+`helmCharts.tar.gz` was created using `./download-helm-charts.js`.
 
 `dev` is it's edition and unpacks the following charts:
 
