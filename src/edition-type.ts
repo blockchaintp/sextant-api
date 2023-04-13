@@ -1,6 +1,6 @@
 type MeteringType = 'dev' | 'aws'
 
-type HelmRepository = {
+export type HelmRepository = {
   name: string
   url: string
 }
@@ -9,7 +9,7 @@ export type ChartBundleName = string
 
 export type ChartVersion = string
 
-type ChartTable = {
+export type ChartTable = {
   [key: ChartBundleName]: ChartBundle
 }
 
