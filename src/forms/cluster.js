@@ -1,6 +1,15 @@
-const builder = require('./builder')
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable max-len */
+import builder from './builder'
 
 const validators = {
+  min: (num) => ['min', num, `Must be at least ${num} characters`],
+  max: (num) => ['max', num, `Must be at most ${num} characters`],
+  noSpaces: ['matches', '^\\S+$', 'Cannot contain spaces'],
+  reserved: ['matches', '^(?!default$|all$|local$|cluster$).*', 'Cannot be reserved word'],
+  specialCharacters: ['matches', '^[a-zA-Z0-9-]*$', 'Cannot contain special characters'],
   url: [
     'matches',
     [
@@ -28,7 +37,7 @@ const fields = {
     component: 'text',
     validate: {
       type: 'string',
-      methods: [],
+      methods: [validators.min(3), validators.max(30), validators.noSpaces, validators.reserved],
     },
   },
   apiServer: {
@@ -104,4 +113,4 @@ const forms = {
   },
 }
 
-module.exports = forms
+export default forms
