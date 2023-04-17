@@ -77,20 +77,7 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
 
 WORKDIR /app/api
 COPY --from=compile /app/api /app/api
-# COPY --from=compile /app/api/package.json /app/api/package.json
-# COPY --from=compile /app/api/package-lock.json /app/api/package-lock.json
 COPY --from=compile /app/api/dist/editions /app/api/editions
-# COPY --from=compile /app/api/dist/src /app/api/src
-# COPY --from=compile /app/api/dist/scripts /app/api/scripts
-# COPY --from=compile /app/api/dist/test /app/api/test
-# COPY --from=compile /app/api/jest /app/api/jest
-# COPY --from=compile /app/api/test/fixtures/helmCharts.tar.gz /app/api/test/fixtures/helmCharts.tar.gz
-# COPY --from=compile /app/api/config /app/api/config
-# COPY --from=compile /app/api/migrations /app/api/migrations
-# COPY --from=compile /app/api/knexfile.js /app/api/knexfile.js
-# COPY --from=compile /app/api/node_modules /app/api/node_modules
-# COPY --from=compile /app/api/jest.config.json /app/api/jest.config.json
-# COPY --from=compile /app/api/tsconfig.json /app/api/tsconfig.json
 
 # this is the default noop metering module
 # copy in the edition module
@@ -111,7 +98,6 @@ COPY --from=compile /app/api/package.json /app/api/package.json
 COPY --from=compile /app/api/package-lock.json /app/api/package-lock.json
 COPY --from=compile /app/api/dist/editions /app/api/editions
 COPY --from=compile /app/api/dist/src /app/api/src
-COPY --from=compile /app/api/dist/scripts /app/api/scripts
 COPY --from=compile /app/api/config /app/api/config
 COPY --from=compile /app/api/migrations /app/api/migrations
 COPY --from=compile /app/api/knexfile.js /app/api/knexfile.js

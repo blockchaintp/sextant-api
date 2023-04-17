@@ -19,7 +19,7 @@ function up(knex) {
     })
     .then(() =>
       knex.schema.table(tableName, (table) =>
-        table.enu('provision_type', enumerations.CLUSTER_PROVISION_TYPE).notNullable()
+        table.enu('provision_type', enumerations.CLUSTER_PROVISION_TYPE).notNullable().defaultTo('remote')
       )
     )
     .then(() => {
