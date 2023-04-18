@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+* fix(migrations): correct cluster migration [view commit](https://github.com/catenasys/sextant-api/commit/a92116025e354c9832e7c97e0f441e6e34e2f85d)
+* fix(npm): fix migrate and serve directives [view commit](https://github.com/catenasys/sextant-api/commit/7221b75dee9af9fd0c568c4826f0836a6b28dbd8)
+* fix(helmTool): tool is not a main so should not exit process [view commit](https://github.com/catenasys/sextant-api/commit/7af6978db7506387384f6871ea850c7ae7444fdf)
+* fix(scripts): convert and relocate download-helm-charts [view commit](https://github.com/catenasys/sextant-api/commit/cfed7d65a2d29ade41765efa62b24a9b1cd4980f)
+* refactor(helmTool): convert to TS and add test [view commit](https://github.com/catenasys/sextant-api/commit/fd04d6f237977ac0254c6c8ca935874828a14d92)
 * build(deps): upgrade to ts5 [view commit](https://github.com/catenasys/sextant-api/commit/ba6ce849dacc9d9211bdf09ca738a666018b0b2b)
 * fix(controller): make capabilities optional in old style cluster.create [view commit](https://github.com/catenasys/sextant-api/commit/7bd21ed72df46d74ffd3ab71c5ee469543d83f07)
 * test(initialise): add unit test [view commit](https://github.com/catenasys/sextant-api/commit/57df4d079af0fb6b6cd513c5584362a4b10513ed)
