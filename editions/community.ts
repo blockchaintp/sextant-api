@@ -16,7 +16,7 @@ export const edition: Edition = {
   ],
   chartTable: {
     'chronicle-on-sawtooth': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/chronicle-on-sawtooth',
         chartVersion: '~0.1.1',
         order: 1,
@@ -24,7 +24,7 @@ export const edition: Edition = {
       },
     },
     besu: {
-      1.4: {
+      '1.4': {
         chart: 'btp-stable/besu',
         chartVersion: '~0.0.8',
         order: 1,
@@ -32,7 +32,7 @@ export const edition: Edition = {
       },
     },
     sawtooth: {
-      1.1: {
+      '1.1': {
         chart: 'btp-stable/sawtooth',
         chartVersion: '~0.2.0',
         order: 2,
@@ -40,7 +40,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-besu': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/daml-on-besu',
         chartVersion: '~0.0.32',
         order: 3,
@@ -48,7 +48,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-sawtooth': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/daml-on-sawtooth',
         chartVersion: '~0.2.0',
         order: 4,

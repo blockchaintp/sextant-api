@@ -1,8 +1,8 @@
-import merge = require('deepmerge')
+import merge from 'deepmerge'
 import * as path from 'path'
 import { edition } from '../edition'
 import { ChartBundleName, ChartVersion } from '../edition-type'
-import { HELM_CHARTS_PATH } from '../tasks/deployment/utils/helmUtils'
+import { helmChartPath } from '../tasks/deployment/utils/helmUtils'
 import { ContentCache } from '../utils/content-cache'
 import { getYaml } from '../utils/yaml'
 
@@ -73,8 +73,8 @@ function replaceAll(searchString: string, replaceString: string, originalString:
 
 // pulls values from details.yaml to build an object with the same structure as the index files
 const structureYamlContent = (yamlContent: ChartDetails) => {
-  const deploymentType: ChartBundleName = yamlContent.deploymentType
-  const deploymentVersion: ChartVersion = yamlContent.deploymentVersion
+  const deploymentType: ChartBundleName = String(yamlContent.deploymentType)
+  const deploymentVersion: ChartVersion = String(yamlContent.deploymentVersion)
   const chartInfo = chartTable[deploymentType][deploymentVersion]
   const details: ChartBundleDetailsMap = {}
 
@@ -91,13 +91,13 @@ const structureYamlContent = (yamlContent: ChartDetails) => {
 
   const entry = details[deploymentType]
 
-  const formPath = path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, yamlContent.form)
+  const formPath = path.resolve(helmChartPath(), deploymentType, deploymentVersion, yamlContent.form)
   const formDir = path.dirname(formPath)
   let formDefinition = DeploymentTemplateCache.getFileSync(formPath)
   formDefinition = replaceAll(`require('./`, `require('${formDir}/`, formDefinition)
   formDefinition = `"use strict"\n${formDefinition}`
 
-  const summaryPath = path.resolve(HELM_CHARTS_PATH, deploymentType, deploymentVersion, yamlContent.summary)
+  const summaryPath = path.resolve(helmChartPath(), deploymentType, deploymentVersion, yamlContent.summary)
   const summaryDir = path.dirname(summaryPath)
   let summaryDefinition = DeploymentTemplateCache.getFileSync(summaryPath)
   summaryDefinition = replaceAll(`require('./`, `require('${summaryDir}/`, summaryDefinition)
@@ -156,7 +156,7 @@ export function getHelmDeploymentDetails() {
         const chartName = chart.split('/')[1]
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const yamlContent = getYaml(
-          `${HELM_CHARTS_PATH}/${chartBundleName}/${chartVersion}/${chartName}/sextant/details.yaml`
+          `${helmChartPath()}/${chartBundleName}/${chartVersion}/${chartName}/sextant/details.yaml`
         ) as ChartDetails
         const theseDetails = structureYamlContent(yamlContent)
 

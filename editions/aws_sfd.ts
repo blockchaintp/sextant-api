@@ -24,7 +24,7 @@ export const edition: Edition = {
   ],
   chartTable: {
     'daml-on-besu': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/daml-on-besu',
         chartVersion: '~0.0.32',
         order: 1,
@@ -32,7 +32,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-postgres': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/daml-on-postgres',
         chartVersion: '~0.1.1',
         order: 4,
@@ -40,7 +40,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-sawtooth': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/daml-on-sawtooth',
         chartVersion: '~0.1.56',
         order: 2,
@@ -48,7 +48,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-qldb': {
-      1.3: {
+      '1.3': {
         chart: 'btp-stable/daml-on-qldb',
         chartVersion: '~0.0.9',
         order: 3,
@@ -64,7 +64,7 @@ export const edition: Edition = {
       },
     },
     'nginx-ingress': {
-      1.8: {
+      '1.8': {
         chart: 'btp-stable/nginx-ingress',
         chartVersion: '~0.0.1',
         order: 6,
@@ -72,7 +72,7 @@ export const edition: Edition = {
       },
     },
     'postgresql-ha': {
-      11.9: {
+      '11.9': {
         chart: 'btp-stable/postgresql-ha',
         chartVersion: '~0.0.1',
         order: 5,

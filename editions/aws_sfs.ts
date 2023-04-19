@@ -18,7 +18,7 @@ export const edition: Edition = {
   ],
   chartTable: {
     sawtooth: {
-      1.1: {
+      '1.1': {
         chart: 'btp-stable/sawtooth',
         chartVersion: '~0.1.27',
         order: 1,
@@ -34,7 +34,7 @@ export const edition: Edition = {
       },
     },
     'nginx-ingress': {
-      1.8: {
+      '1.8': {
         chart: 'btp-stable/nginx-ingress',
         chartVersion: '~0.0.1',
         order: 3,
@@ -42,7 +42,7 @@ export const edition: Edition = {
       },
     },
     besu: {
-      1.4: {
+      '1.4': {
         chart: 'btp-stable/besu',
         chartVersion: '~0.0.8',
         order: 2,

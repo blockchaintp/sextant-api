@@ -12,17 +12,17 @@
 
 import * as k8s from '@kubernetes/client-node'
 import * as childProcess from 'child_process'
-import { existsSync, unlinkSync, writeFileSync } from 'fs'
-import * as yaml from 'js-yaml'
+import { existsSync, unlinkSync } from 'fs'
 import * as net from 'net'
 import { TmpNameOptions, tmpNameSync } from 'tmp'
 import * as util from 'util'
+import { K8S_CREDENTIALS_SECRET_NAME } from '../constants'
 import { getLogger } from '../logging'
 import { Store } from '../store'
 import { Cluster } from '../store/model/model-types'
 import * as base64 from './base64'
+import { writeYaml } from './yaml'
 import getPort = require('get-port')
-import { K8S_CREDENTIALS_SECRET_NAME } from '../constants'
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const logger = getLogger({
@@ -559,12 +559,12 @@ export class Kubectl {
   write a YAML file
   */
   private writeTempYaml(data: unknown): string {
-    const yamlText = yaml.dump(data, { schema: yaml.JSON_SCHEMA })
     const options: TmpNameOptions = { postfix: '.yaml' }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const tmpPath = tmpNameSync(options)
 
-    writeFileSync(tmpPath, yamlText, 'utf8')
+    writeYaml(tmpPath, data)
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     logger.debug({ path: tmpPath }, 'wrote temp yaml file')
     return tmpPath

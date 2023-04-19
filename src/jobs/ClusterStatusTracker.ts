@@ -1,26 +1,23 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-var-requires */
-const { date } = require('yup')
-const logger = require('../logging').getLogger({
+import { CLUSTER_STATUS } from '../config'
+import { getLogger } from '../logging'
+import { Store } from '../store'
+import { Cluster } from '../store/model/model-types'
+import { Kubectl } from '../utils/kubectl'
+
+const logger = getLogger({
   name: 'jobs/ClusterStatus',
 })
 
-const { CLUSTER_STATUS } = require('../config')
-const { Kubectl } = require('../utils/kubectl')
+export class ClusterStatusTracker {
+  private store: Store
 
-class ClusterStatusTracker {
-  constructor(store) {
+  constructor(store: Store) {
     this.store = store
-    this.clusterStore = store.cluster
   }
 
   async getAllClusters() {
     // get a list of all of the clusters in the database
-    const clusters = await this.clusterStore.list({
+    const clusters = await this.store.cluster.list({
       deleted: false,
     })
     logger.debug({
@@ -30,18 +27,17 @@ class ClusterStatusTracker {
     return clusters
   }
 
-  async ping(cluster) {
-    const clusterKubectl = await Kubectl.getKubectlForCluster(cluster, this.store)
+  async ping(cluster: Cluster) {
+    const clusterKubectl = await Kubectl.getKubectlForCluster({ cluster, store: this.store })
 
     try {
       const namespaces = await clusterKubectl.getNamespaces()
-      if (namespaces && cluster.satus === CLUSTER_STATUS.provisioned) {
+      if (namespaces && cluster.status === CLUSTER_STATUS.provisioned) {
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
-          namespaces: namespaces.length,
+          namespaces: namespaces.items.length,
           updatedStatus: CLUSTER_STATUS.provisioned,
-          timestamp: date.now(),
           note: 'Cluster status is provisioned, no need to update.',
         })
       }
@@ -51,7 +47,7 @@ class ClusterStatusTracker {
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
-          namespaces: namespaces.length,
+          namespaces: namespaces.items.length,
           updatedStatus: CLUSTER_STATUS.provisioned,
         })
       }
@@ -61,19 +57,19 @@ class ClusterStatusTracker {
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
-          namespaces: namespaces.length,
+          namespaces: 0,
           updatedStatus: CLUSTER_STATUS.error,
         })
       } else if (!namespaces) {
         logger.info({
           fn: 'ping',
           cluster: cluster.name,
-          namespaces: namespaces.length,
+          namespaces: 0,
           updatedStatus: CLUSTER_STATUS.error,
         })
         throw new Error('Cluster is not provisioned')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       logger.warn({
         fn: 'ping',
         cluster: cluster.name,
@@ -99,18 +95,20 @@ class ClusterStatusTracker {
     }
   }
 
-  async run() {
+  public async run() {
     logger.info('Running cluster status job')
     const clusters = await this.getAllClusters()
     logger.debug({
       fn: 'run',
       clusters: clusters.map((cluster) => cluster.name),
     })
-    await clusters.forEach(this.ping.bind(this))
+    for (const c of clusters) {
+      await this.ping(c)
+    }
   }
 
-  async updateClusterStatus(cluster, status) {
-    const updatedCluster = await this.clusterStore.update({
+  async updateClusterStatus(cluster: Cluster, status: string) {
+    const updatedCluster = await this.store.cluster.update({
       id: cluster.id,
       data: { status },
     })
@@ -121,5 +119,3 @@ class ClusterStatusTracker {
     return updatedCluster
   }
 }
-
-module.exports = { ClusterStatusTracker }
