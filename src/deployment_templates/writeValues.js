@@ -53,7 +53,7 @@ const writeValues = async ({ desired_state, custom_yaml }) => {
   let finalValuesYaml = data
 
   // parse string into yaml object
-  const customYaml = yaml.safeLoad(custom_yaml)
+  const customYaml = yaml.load(custom_yaml, yaml.DEFAULT_SCHEMA)
 
   if (customYaml) {
     // merge yaml from the form input with custom yaml input
