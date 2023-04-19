@@ -8,6 +8,8 @@ import { DeploymentSecretStore } from './deploymentsecret'
 import { TaskStore } from './task'
 import { SettingsStore } from './settings'
 import { DeploymentHistoryStore } from './deploymenthistory'
+import { HelmRepositoryStore } from './helmrepository'
+import { HelmChartStore } from './helmchart'
 import { Knex } from 'knex'
 
 export class Store {
@@ -21,6 +23,8 @@ export class Store {
   public settings: SettingsStore
   public task: TaskStore
   public user: UserStore
+  public helmrepository: HelmRepositoryStore
+  public helmchart: HelmChartStore
 
   private knex: Knex
 
@@ -36,6 +40,8 @@ export class Store {
     this.task = new TaskStore(knex)
     this.settings = new SettingsStore(knex)
     this.deploymenthistory = new DeploymentHistoryStore(knex)
+    this.helmrepository = new HelmRepositoryStore(knex)
+    this.helmchart = new HelmChartStore(knex)
   }
 
   public transaction<T>(handler: (trx: Knex.Transaction) => Promise<T> | void) {
