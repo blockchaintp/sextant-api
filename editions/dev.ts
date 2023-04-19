@@ -19,7 +19,7 @@ export const edition: Edition = {
   ],
   chartTable: {
     'chronicle-on-sawtooth': {
-      1.3: {
+      '1.3': {
         chart: 'btp-unstable/chronicle-on-sawtooth',
         chartVersion: '~0.1.1',
         order: 1,
@@ -27,7 +27,7 @@ export const edition: Edition = {
       },
     },
     besu: {
-      1.4: {
+      '1.4': {
         chart: 'btp-unstable/besu',
         chartVersion: '~0.0.8',
         order: 2,
@@ -35,7 +35,7 @@ export const edition: Edition = {
       },
     },
     sawtooth: {
-      1.1: {
+      '1.1': {
         chart: 'btp-unstable/sawtooth',
         chartVersion: '~0.2.0',
         order: 3,
@@ -43,7 +43,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-besu': {
-      1.3: {
+      '1.3': {
         chart: 'btp-unstable/daml-on-besu',
         chartVersion: '~0.0.32',
         order: 4,
@@ -51,7 +51,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-sawtooth': {
-      1.3: {
+      '1.3': {
         chart: 'btp-unstable/daml-on-sawtooth',
         chartVersion: '~0.2.0',
         order: 5,
@@ -59,7 +59,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-qldb': {
-      1.3: {
+      '1.3': {
         chart: 'btp-unstable/daml-on-qldb',
         chartVersion: '~0.0.9',
         order: 6,
@@ -67,7 +67,7 @@ export const edition: Edition = {
       },
     },
     'daml-on-postgres': {
-      1.3: {
+      '1.3': {
         chart: 'btp-unstable/daml-on-postgres',
         chartVersion: '~0.1.1',
         order: 7,
@@ -75,7 +75,7 @@ export const edition: Edition = {
       },
     },
     'tfs-on-sawtooth': {
-      0.1: {
+      '0.1': {
         chart: 'btp-unstable/tfs-on-sawtooth',
         chartVersion: '~0.6.0',
         order: 8,
@@ -83,7 +83,7 @@ export const edition: Edition = {
       },
     },
     sextant: {
-      2.1: {
+      '2.1': {
         chart: 'btp-unstable/sextant',
         chartVersion: '~2.1.8',
         order: 9,
@@ -91,7 +91,7 @@ export const edition: Edition = {
       },
     },
     elasticsearch: {
-      7.9: {
+      '7.9': {
         chart: 'btp-unstable/elasticsearch',
         chartVersion: '~12.6.3',
         order: 10,
@@ -99,7 +99,7 @@ export const edition: Edition = {
       },
     },
     fluentd: {
-      1.11: {
+      '1.11': {
         chart: 'btp-unstable/fluentd',
         chartVersion: '~1.3.1',
         order: 11,
@@ -107,7 +107,7 @@ export const edition: Edition = {
       },
     },
     kibana: {
-      7.8: {
+      '7.8': {
         chart: 'btp-unstable/kibana',
         chartVersion: '~5.3.9',
         order: 12,
@@ -115,7 +115,7 @@ export const edition: Edition = {
       },
     },
     influxdb: {
-      1.8: {
+      '1.8': {
         chart: 'btp-unstable/influxdb',
         chartVersion: '~0.0.2',
         order: 13,
@@ -123,7 +123,7 @@ export const edition: Edition = {
       },
     },
     grafana: {
-      7.1: {
+      '7.1': {
         chart: 'btp-unstable/grafana',
         chartVersion: '~0.0.2',
         order: 14,
@@ -131,7 +131,7 @@ export const edition: Edition = {
       },
     },
     'postgresql-ha': {
-      11.9: {
+      '11.9': {
         chart: 'btp-unstable/postgresql-ha',
         chartVersion: '~0.0.1',
         order: 15,
@@ -139,7 +139,7 @@ export const edition: Edition = {
       },
     },
     'nginx-ingress': {
-      1.8: {
+      '1.8': {
         chart: 'btp-unstable/nginx-ingress',
         chartVersion: '~0.0.1',
         order: 16,
@@ -155,7 +155,7 @@ export const edition: Edition = {
       },
     },
     vault: {
-      1.5: {
+      '1.5': {
         chart: 'btp-unstable/vault',
         chartVersion: '~0.0.2',
         order: 18,

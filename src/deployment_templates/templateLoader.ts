@@ -73,8 +73,8 @@ function replaceAll(searchString: string, replaceString: string, originalString:
 
 // pulls values from details.yaml to build an object with the same structure as the index files
 const structureYamlContent = (yamlContent: ChartDetails) => {
-  const deploymentType: ChartBundleName = yamlContent.deploymentType
-  const deploymentVersion: ChartVersion = yamlContent.deploymentVersion
+  const deploymentType: ChartBundleName = String(yamlContent.deploymentType)
+  const deploymentVersion: ChartVersion = String(yamlContent.deploymentVersion)
   const chartInfo = chartTable[deploymentType][deploymentVersion]
   const details: ChartBundleDetailsMap = {}
 
