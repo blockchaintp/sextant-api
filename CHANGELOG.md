@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* feat(store): add helmrepository and helmchart [view commit](https://github.com/catenasys/sextant-api/commit/a2f2e8d6dc5bc3656e28b9356821804b52e24aa1)
+* feat(migrations): add helmrepository and helmchart [view commit](https://github.com/catenasys/sextant-api/commit/3117c9d20674ae1d3718ada4d6d33dd641a5405a)
+* fix(editions): guarantee that chartversion is always a string [view commit](https://github.com/catenasys/sextant-api/commit/0b6061eecd1a44dfdc2f44814a43b7f147438e6a)
+* fix(utils): read and write yaml should use DEFAULT_SCHEMA [view commit](https://github.com/catenasys/sextant-api/commit/26d2b3bc35fa8ccf6617b28ff8af12a0584193c2)
+* fix(tasks): correct helm chart path resolution [view commit](https://github.com/catenasys/sextant-api/commit/321f7e64191869979538f87567bcbdd0e1362cf0)
+* fix(jobs): refactor clusterStatusJob and correct run method [view commit](https://github.com/catenasys/sextant-api/commit/6c19db73e424803b8c26d7e78808f69d232675ce)
 * fix(migrations): correct cluster migration [view commit](https://github.com/catenasys/sextant-api/commit/a92116025e354c9832e7c97e0f441e6e34e2f85d)
 * fix(npm): fix migrate and serve directives [view commit](https://github.com/catenasys/sextant-api/commit/7221b75dee9af9fd0c568c4826f0836a6b28dbd8)
 * fix(helmTool): tool is not a main so should not exit process [view commit](https://github.com/catenasys/sextant-api/commit/7af6978db7506387384f6871ea850c7ae7444fdf)
