@@ -1,16 +1,17 @@
-import { UserStore } from './user'
-import { RoleStore } from './role'
+import { Knex, knex } from 'knex'
+import { Settings } from '../settings-singleton'
 import { ClusterStore } from './cluster'
 import { ClusterFileStore } from './clusterfile'
 import { ClusterSecretStore } from './clustersecret'
 import { DeploymentStore } from './deployment'
-import { DeploymentSecretStore } from './deploymentsecret'
-import { TaskStore } from './task'
-import { SettingsStore } from './settings'
 import { DeploymentHistoryStore } from './deploymenthistory'
-import { HelmRepositoryStore } from './helmrepository'
+import { DeploymentSecretStore } from './deploymentsecret'
 import { HelmChartStore } from './helmchart'
-import { Knex } from 'knex'
+import { HelmRepositoryStore } from './helmrepository'
+import { RoleStore } from './role'
+import { SettingsStore } from './settings'
+import { TaskStore } from './task'
+import { UserStore } from './user'
 
 export class Store {
   public cluster: ClusterStore
@@ -19,12 +20,12 @@ export class Store {
   public deployment: DeploymentStore
   public deploymenthistory: DeploymentHistoryStore
   public deploymentsecret: DeploymentSecretStore
+  public helmchart: HelmChartStore
+  public helmrepository: HelmRepositoryStore
   public role: RoleStore
   public settings: SettingsStore
   public task: TaskStore
   public user: UserStore
-  public helmrepository: HelmRepositoryStore
-  public helmchart: HelmChartStore
 
   private knex: Knex
 
@@ -42,6 +43,11 @@ export class Store {
     this.deploymenthistory = new DeploymentHistoryStore(knex)
     this.helmrepository = new HelmRepositoryStore(knex)
     this.helmchart = new HelmChartStore(knex)
+  }
+
+  public static create(settings: Settings) {
+    const db = knex(settings.postgres)
+    return new Store(db)
   }
 
   public transaction<T>(handler: (trx: Knex.Transaction) => Promise<T> | void) {
