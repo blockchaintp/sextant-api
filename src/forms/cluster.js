@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable max-len */
-import builder from './builder'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const builder = require('./builder')
 
 const validators = {
   min: (num) => ['min', num, `Must be at least ${num} characters`],
