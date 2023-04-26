@@ -578,7 +578,7 @@ database.testSuiteWithDatabase((getConnection) => {
       id: cluster.id,
       user: testUser,
       data: {
-        name: 'my new name',
+        name: 'my_new_name',
       },
     })
 
@@ -593,7 +593,7 @@ database.testSuiteWithDatabase((getConnection) => {
       cluster.desired_state.apiServer,
       'the cluster api server is the same'
     )
-    t.equal(updatedNameCluster.name, 'my new name', 'the cluster name is correct')
+    t.equal(updatedNameCluster.name, 'my_new_name', 'the cluster name is correct')
     t.equal(updatedNameCluster.desired_state.token_id, token_id, 'the desired_state token id is the same')
     t.equal(updatedNameCluster.desired_state.ca_id, ca_id, 'the desired_state ca id is the same')
 
@@ -639,7 +639,7 @@ database.testSuiteWithDatabase((getConnection) => {
       id: cluster.id,
       user: testUser,
       data: {
-        name: 'my new name2',
+        name: 'my_new_name2',
       },
     })
 
@@ -649,7 +649,7 @@ database.testSuiteWithDatabase((getConnection) => {
       id: cluster.id,
     })
 
-    t.equal(updatedNameCluster2.name, 'my new name2', 'the cluster name is correct')
+    t.equal(updatedNameCluster2.name, 'my_new_name2', 'the cluster name is correct')
     t.equal(updatedNameCluster2.desired_state.token_id, token_id2, 'the desired_state token id is the same')
     t.equal(updatedNameCluster2.desired_state.ca_id, ca_id2, 'the desired_state ca id is the same')
 

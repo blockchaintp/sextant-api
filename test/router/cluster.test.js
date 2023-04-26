@@ -296,13 +296,13 @@ app.testSuiteWithAppTaskHandlers(
                     url: `${url}/clusters/${createdClusters.admin.id}`,
                     json: true,
                     body: {
-                      name: 'new cluster name',
+                      name: 'new_cluster_name',
                     },
                   },
                   (err, res) => {
                     if (err) return innerNext(err)
                     t.equal(res.statusCode, 200, 'the cluster was updated')
-                    createdClusters.admin.name = 'new cluster name'
+                    createdClusters.admin.name = 'new_cluster_name'
                     setTimeout(innerNext, TASK_CONTROLLER_LOOP_DELAY * 2)
                   }
                 )

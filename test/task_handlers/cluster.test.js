@@ -92,7 +92,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const testUser = userMap[USER_TYPES.admin]
     const clusterData = fixtures.SIMPLE_CLUSTER_DATA[1]
 
-    const insertData = { ...clusterData, name: 'error cluster' }
+    const insertData = { ...clusterData, name: 'error_cluster' }
 
     await taskProcessor.start()
 
