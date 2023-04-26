@@ -5,16 +5,31 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const builder = require('./builder')
 
-const validators = {
-  min: (num) => ['min', num, `Must be at least ${num} characters`],
-  max: (num) => ['max', num, `Must be at most ${num} characters`],
+type ValidatorFunction = (num: number) => [string, number, string]
+
+type Validator =
+  | [string, string | string[], string]
+  | [string, string[], { excludeEmptyString: boolean; message: string }]
+
+type Validators = {
+  ca: Validator
+  max: ValidatorFunction
+  min: ValidatorFunction
+  noSpaces: Validator
+  reserved: Validator
+  specialCharacters: Validator
+  url: Validator
+}
+
+const validators: Validators = {
+  min: (num: number) => ['min', num, `Must be at least ${num} characters`],
+  max: (num: number) => ['max', num, `Must be at most ${num} characters`],
   noSpaces: ['matches', '^\\S+$', 'Cannot contain spaces'],
   reserved: ['matches', '^(?!default$|all$|local$|cluster$).*', 'Cannot be reserved word'],
   specialCharacters: ['matches', '^[a-zA-Z0-9-]*$', 'Cannot contain special characters'],
   url: [
     'matches',
     [
-      // eslint-disable-next-line max-len
       '^(?:([a-z0-9+.-]+):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?$(?!([^/]))',
       'i',
     ],
@@ -76,6 +91,7 @@ const fields = {
 }
 
 const getLocalForm = (required) =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   builder({
     fields,
     schema: ['name'],
@@ -83,6 +99,7 @@ const getLocalForm = (required) =>
   })
 
 const getRemoteForm = (required) =>
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   builder({
     fields,
     schema: ['name', 'apiServer', 'token', 'ca'],
