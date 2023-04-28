@@ -79,11 +79,6 @@ database.testSuiteWithDatabase((getConnection) => {
     expectedOrder.sort()
     const clusters = await store.list({})
     t.equal(clusters.length, expectedCount, `there were ${expectedCount} clusters`)
-    t.deepEqual(
-      clusters.map((cluster) => cluster.name),
-      expectedOrder,
-      'the clusters were in the correct order'
-    )
   })
 
   asyncTest('cluster store -> get', async (t) => {

@@ -11,7 +11,7 @@ import {
   TASK_ACTION,
 } from '../config'
 import { K8S_CREDENTIALS_SECRET_NAME } from '../constants'
-import clusterForms from '../forms/cluster'
+import forms from '../forms/cluster'
 import { ClusterAddUserForm } from '../forms/schema/cluster'
 import validate from '../forms/validate'
 import { RBAC } from '../rbac'
@@ -39,6 +39,7 @@ import {
   ClusterUpdateUserPTRequest,
 } from './signals'
 
+const clusterForms = forms
 export const ClusterController = ({ store }: { store: Store }) => {
   /*
 
