@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+* fix(test-router-cluster): updates cluster name to pass validation test(cluster): renames cluster names in task_handlers and controller to pass no spaces validation [view commit](https://github.com/catenasys/sextant-api/commit/d960859f76b29919694a5a27fb1c9f8f6243915e)
+* test(store-cluster): removes cluster order test [view commit](https://github.com/catenasys/sextant-api/commit/14a04225a2759b4ed16ba9b08c9af3de7de4c83e)
+* build(dockercompose-test): bumps postgres to 11 [view commit](https://github.com/catenasys/sextant-api/commit/d12cb9b5914608077f71947fb15799a3233a96ec)
+* fix(forms-cluster): converts to ts [view commit](https://github.com/catenasys/sextant-api/commit/0c1991904a090ae9137b80988e347ea041d0907b)
+* fix(forms-cluster): changes builder import to require [view commit](https://github.com/catenasys/sextant-api/commit/803a496e65f1b002ab867733201de429e811db2d)
+* fix(controller-cluster): imports forms from from forms/cluster and sets it as clusterForms [view commit](https://github.com/catenasys/sextant-api/commit/bc6f3ffd0cbc63ac98e75e5fa3ba82cc600fb2de)
+* fix(config): imports forms from cluster form and destructures browser as clusterFormBrowser for use in ConfigBackend [view commit](https://github.com/catenasys/sextant-api/commit/4802bdf5942407c616fc935a9698ed2e8eccd26e)
+* feat(cluster-form): adds min, max no spaces, reserved word list, and special characters validation to cluster form [view commit](https://github.com/catenasys/sextant-api/commit/1b99d2074e623b9ab391ae763fee86290a2a395e)
 * feat(store): add helmrepository and helmchart [view commit](https://github.com/catenasys/sextant-api/commit/a2f2e8d6dc5bc3656e28b9356821804b52e24aa1)
 * feat(migrations): add helmrepository and helmchart [view commit](https://github.com/catenasys/sextant-api/commit/3117c9d20674ae1d3718ada4d6d33dd641a5405a)
 * fix(editions): guarantee that chartversion is always a string [view commit](https://github.com/catenasys/sextant-api/commit/0b6061eecd1a44dfdc2f44814a43b7f147438e6a)
