@@ -52,7 +52,7 @@ $(MARKERS)/test_jest: $(MARKERS)/build_docker
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		--network host \
 		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run test:jest"
-	$(BUSYBOX_ROOT) find /project -type d -exec chown -R $(UID):$(GID) {} \;
+	$(BUSYBOX_ROOT) chown -R $(UID):$(GID) /project
 	touch $@
 
 test: $(MARKERS)/test_report_merge
