@@ -38,7 +38,7 @@ const errorTest = (error: string, knownError: string) => {
   return example.test(error)
 }
 
-export const clusterCreateError = async (task: model.Task, store: ClusterStore) => {
+export const clusterCreateError = async (task: model.Task, error: string, store: ClusterStore) => {
   await store.update({
     id: task.resource_id,
     data: {

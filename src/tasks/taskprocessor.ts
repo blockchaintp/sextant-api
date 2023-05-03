@@ -96,8 +96,8 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
 
   // the store handlers for the resources we can start tasks for
   const resourceTypeStores = {
-    [RESOURCE_TYPES.cluster]: store.cluster,
-    [RESOURCE_TYPES.deployment]: store.deployment,
+    cluster: store.cluster,
+    deployment: store.deployment,
   }
 
   // get the current status of a task
@@ -170,6 +170,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     })
 
     // update the corresponding resource
+    // I think the issue is how we are accessing the resource type store here. I don't think that it is resolving to what I think it is
     const resourceTypeStore = resourceTypeStores[task.resource_type]
 
     // import the correct resource updater based on the task.action
