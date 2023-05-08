@@ -7,6 +7,10 @@ build: $(MARKERS)/build_docker
 
 test: $(MARKERS)/test_jest $(MARKERS)/test_tape
 
+jest: $(MARKERS)/test_jest
+
+tape: $(MARKERS)/test_tape
+
 analyze: analyze_fossa analyze_sonar_js
 
 clean: fix_permissions clean_container
@@ -52,7 +56,7 @@ $(MARKERS)/test_jest: $(MARKERS)/build_docker
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		--network host \
 		--entrypoint bash sextant-api:$(ISOLATION_ID) -c "npm run test:jest"
-	$(BUSYBOX_ROOT) chown -R $(UID):$(GID) /project
+	$(BUSYBOX_ROOT) chown -R $(UID):$(GID) /project || true
 	touch $@
 
 test: $(MARKERS)/test_report_merge
