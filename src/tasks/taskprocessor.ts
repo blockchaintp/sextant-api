@@ -96,8 +96,8 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
 
   // the store handlers for the resources we can start tasks for
   const resourceTypeStores = {
-    cluster: store.cluster,
-    deployment: store.deployment,
+    [RESOURCE_TYPES.cluster]: store.cluster,
+    [RESOURCE_TYPES.deployment]: store.deployment,
   }
 
   // get the current status of a task
