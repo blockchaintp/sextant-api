@@ -61,18 +61,18 @@
   }
 */
 
-const EventEmitter = require('events')
-const Promise = require('bluebird')
+import EventEmitter from 'events'
+import bluebirdPromise from 'bluebird'
 
-const logger = require('../logging').getLogger({
+import { getLogger } from '../logging'
+
+const logger = getLogger({
   name: 'taskprocessor',
 })
 
-const config = require('../config')
-const Task = require('./task')
-const resourceUpdaters = require('./resource_updaters/index')
-
-const { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } = config
+import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from '../config'
+import Task from './task'
+import resourceUpdaters from './resource_updaters/index'
 
 const TaskProcessor = ({ store, handlers, logging }) => {
   if (!store) {
@@ -233,7 +233,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
           // before each yielded step of the task - check if the database has a cancel
           // status and cancel the task if yes
           onStep: async () => {
-            const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
+            const isCancelled = await bluebirdPromise.resolve(isTaskCancelled(runningTask))
             if (isCancelled) runner.cancel()
           },
         })
@@ -261,9 +261,9 @@ const TaskProcessor = ({ store, handlers, logging }) => {
     const runTasks = tasks.filter((task) => task.restartable)
     const errorTasks = tasks.filter((task) => !task.restartable)
 
-    await Promise.all([
-      Promise.each(runTasks, runTask),
-      Promise.each(errorTasks, (task) =>
+    await bluebirdPromise.all([
+      bluebirdPromise.each(runTasks, runTask),
+      bluebirdPromise.each(errorTasks, (task) =>
         errorTask(task, 'the server restarted whilst this task was running and the task is not restartable')
       ),
     ])
@@ -274,8 +274,8 @@ const TaskProcessor = ({ store, handlers, logging }) => {
     if (!controlLoopRunning) return
     try {
       const runTasks = await loadCreatedTasks()
-      await Promise.each(runTasks, runTask)
-      await Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
+      await bluebirdPromise.each(runTasks, runTask)
+      await bluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
       controlLoop()
     } catch (err) {
       if (logging) {
@@ -314,7 +314,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
   const stop = () => {
     controlLoopRunning = false
     stopped = true
-    return Promise.delay(TASK_CONTROLLER_LOOP_DELAY)
+    return bluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
   taskProcessor.start = start
