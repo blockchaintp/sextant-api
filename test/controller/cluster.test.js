@@ -17,7 +17,7 @@ const { ClusterController } = require('../../src/controller/cluster')
 const { Store } = require('../../src/store')
 const base64 = require('../../src/utils/base64')
 
-const TaskProcessor = require('../../src/taskprocessor')
+const TaskProcessor = require('../../src/tasks/taskprocessor')
 
 const config = require('../../src/config')
 

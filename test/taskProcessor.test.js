@@ -9,7 +9,7 @@
 const Promise = require('bluebird')
 const asyncTest = require('./asyncTest')
 const { Store } = require('../src/store')
-const TaskProcessor = require('../src/taskprocessor')
+const TaskProcessor = require('../src/tasks/taskprocessor')
 const config = require('../src/config')
 
 const database = require('./database')

@@ -10,20 +10,15 @@
   to cancel a task before the next step is invoked
 */
 
-const Task = ({
-  generator,
-  params = {},
-  onStep,
-}) => {
-
+const Task = ({ generator, params = {}, onStep }) => {
   // pass an isCancelled into the generator function
   // so if it needs to run a long running promise
   // it can check for task cancellation and trigger a cancel itself
   const useParams = Object.assign({}, params, {
-    cancel: () => task.cancelled = true,
+    cancel: () => (task.cancelled = true),
     isCancelled: () => task.cancelled,
   })
-  
+
   // build a stack of generators so we can call inner generators from
   // the task and the stack will unwind
   const iterators = [generator(useParams)]
@@ -36,20 +31,20 @@ const Task = ({
   // is removed once it has complete
   const next = async () => {
     // the callback before we run a step
-    if(onStep) await onStep(task)
+    if (onStep) await onStep(task)
 
     // if we are cancelled do nothing
-    if(task.cancelled) {
+    if (task.cancelled) {
       return
     }
 
     // the stack is unwound and we are finished
-    if(iterators.length <= 0) {
+    if (iterators.length <= 0) {
       return
     }
 
     // the current generator we are running
-    const iterator = iterators[iterators.length-1]
+    const iterator = iterators[iterators.length - 1]
 
     // get the next yielded value from the generator
     let yielded = iterator.next(lastValue)
@@ -57,21 +52,20 @@ const Task = ({
 
     // if the generator has finished - remove the last function from the stack
     // if we have none left we are finished
-    if(yielded.done) {
+    if (yielded.done) {
       iterators.pop()
-      if(iterators.length > 0) {
+      if (iterators.length > 0) {
         await next()
-      }
-      else {
+      } else {
         return
       }
     }
     // the yielded value is a promise
-    else if(value && typeof(value.then) == 'function') {
+    else if (value && typeof value.then == 'function') {
       value = await value
     }
     // the yielded value is a generator
-    else if(value && typeof(value[Symbol.iterator]) === 'function' && typeof(value.next) === 'function') {
+    else if (value && typeof value[Symbol.iterator] === 'function' && typeof value.next === 'function') {
       iterators.push(value)
     }
     lastValue = value
@@ -80,9 +74,7 @@ const Task = ({
 
   const run = async () => {
     await next()
-    return task.cancelled ?
-      null :
-      lastValue
+    return task.cancelled ? null : lastValue
   }
 
   const cancel = () => {
