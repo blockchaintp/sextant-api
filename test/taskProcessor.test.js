@@ -67,7 +67,7 @@ database.testSuiteWithDatabase((getConnection) => {
       data: taskData,
     })
 
-    await new Promise((resolve) => taskProcessor.on('task.processed', resolve))
+    await new Promise((resolve) => taskProcessor.emitter.on('task.processed', resolve))
 
     await taskProcessor.stop()
 

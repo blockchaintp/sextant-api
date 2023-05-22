@@ -102,7 +102,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
       .then((task) => task.status)
 
   // get a list of tasks with the given status
-  const loadTasksWithStatus = (status) =>
+  const loadTasksWithStatus = (status: string) =>
     store.task.list({
       status,
     })
@@ -117,22 +117,30 @@ const TaskProcessor = ({ store, handlers, logging }) => {
 
   // update the status of a task
   // timestamps indicates what fields we should stamp as now
-  const updateTaskStatus = (task, status, timestamps) => {
-    const updateData = {
-      status,
+  const updateTaskStatus = (task, status: string, timestamps) => {
+    if (timestamps.started && timestamps.ended) {
+      return store.task.update({
+        id: task.id,
+        data: { status, started_at: store.knex.fn.now(), ended_at: store.knex.fn.now() },
+      })
     }
-
     if (timestamps.started) {
-      updateData.started_at = store.knex.fn.now()
+      return store.task.update({
+        id: task.id,
+        data: { status, started_at: store.knex.fn.now() },
+      })
     }
 
     if (timestamps.ended) {
-      updateData.ended_at = store.knex.fn.now()
+      return store.task.update({
+        id: task.id,
+        data: { status, ended_at: store.knex.fn.now() },
+      })
     }
 
     return store.task.update({
       id: task.id,
-      data: updateData,
+      data: { status },
     })
   }
 
@@ -317,10 +325,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
     return bluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
-  taskProcessor.start = start
-  taskProcessor.stop = stop
-
-  return taskProcessor
+  return { emitter: taskProcessor, start, stop }
 }
 
 module.exports = TaskProcessor
