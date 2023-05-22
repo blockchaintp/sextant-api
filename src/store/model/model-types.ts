@@ -45,7 +45,7 @@ export type Task = ResourceInfo & {
   error: string
   id: DatabaseIdentifier
   payload: unknown
-  resource_status: unknown
+  resource_status: { [key: string]: unknown; completed?: string; error?: string }
   restartable: boolean
   started_at: Date
   status: string
