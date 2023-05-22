@@ -78,7 +78,14 @@ import { DatabaseIdentifier } from '../store/model/scalar-types'
 import * as model from '../store/model/model-types'
 import { Knex } from 'knex'
 
-const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: unknown; logging: boolean }) => {
+type TaskHandlerParams = { testMode: boolean; cancel: () => true; isCancelled: () => boolean }
+export type TaskHandler = (useParams: TaskHandlerParams) => Generator
+
+type Handlers = {
+  [key: string]: TaskHandler
+}
+
+const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: Handlers; logging: boolean }) => {
   if (!store) {
     throw new Error('store required')
   }
@@ -175,8 +182,10 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: u
 
     // import the correct resource updater based on the task.action
     // resourceUpdaters are defined in tasks/resource_updaters
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters.default
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await resourceUpdater(task, error, resourceTypeStore)
   }
 
@@ -220,7 +229,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: u
   // run a task
   // we create a transaction and pass it as part of the params into the task
   // this means the task's database updates will get unwound on an error
-  const runTask = async (task) => {
+  const runTask = async (task: model.Task) => {
     await store
       .transaction(async (trx) => {
         // check that we have a handler for the task
@@ -256,7 +265,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: u
         await completeTask(task, trx, runner.cancelled)
         taskProcessor.emit('task.complete', task)
       })
-      .catch(async (err) => {
+      .catch(async (err: Error) => {
         await errorTask(task, err)
         taskProcessor.emit('task.error', task, err)
       })
