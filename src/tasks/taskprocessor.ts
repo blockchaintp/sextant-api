@@ -62,7 +62,7 @@
 */
 
 import EventEmitter from 'events'
-import bluebirdPromise from 'bluebird'
+import bluebird from 'bluebird'
 
 import { getLogger } from '../logging'
 
@@ -73,8 +73,12 @@ const logger = getLogger({
 import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from '../config'
 import Task from './task'
 import resourceUpdaters from './resource_updaters/index'
+import { Store } from '../store'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
+import * as model from '../store/model/model-types'
+import { Knex } from 'knex'
 
-const TaskProcessor = ({ store, handlers, logging }) => {
+const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: unknown; logging: boolean }) => {
   if (!store) {
     throw new Error('store required')
   }
@@ -94,7 +98,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
   }
 
   // get the current status of a task
-  const loadTaskStatus = (id) =>
+  const loadTaskStatus = (id: DatabaseIdentifier) =>
     store.task
       .get({
         id,
@@ -110,31 +114,31 @@ const TaskProcessor = ({ store, handlers, logging }) => {
   const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
 
   // return a function that will check a running task cancel status
-  const isTaskCancelled = async (task) => {
+  const isTaskCancelled = async (task: model.Task) => {
     const status = await loadTaskStatus(task.id)
     return status === TASK_STATUS.cancelling
   }
 
   // update the status of a task
   // timestamps indicates what fields we should stamp as now
-  const updateTaskStatus = (task, status: string, timestamps) => {
+  const updateTaskStatus = (task: model.Task, status: string, timestamps: { started?: boolean; ended?: boolean }) => {
     if (timestamps.started && timestamps.ended) {
       return store.task.update({
         id: task.id,
-        data: { status, started_at: store.knex.fn.now(), ended_at: store.knex.fn.now() },
+        data: { status, started_at: new Date(Date.now()), ended_at: new Date(Date.now()) },
       })
     }
     if (timestamps.started) {
       return store.task.update({
         id: task.id,
-        data: { status, started_at: store.knex.fn.now() },
+        data: { status, started_at: new Date(Date.now()) },
       })
     }
 
     if (timestamps.ended) {
       return store.task.update({
         id: task.id,
-        data: { status, ended_at: store.knex.fn.now() },
+        data: { status, ended_at: new Date(Date.now()) },
       })
     }
 
@@ -146,7 +150,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
 
   // mark the task as failed and update the corresponding resource with
   // the error status
-  const errorTask = async (task, error) => {
+  const errorTask = async (task: model.Task, error: Error) => {
     if (logging) {
       logger.error({
         action: 'error',
@@ -161,7 +165,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
       id: task.id,
       data: {
         status: TASK_STATUS.error,
-        ended_at: store.knex.fn.now(),
+        ended_at: new Date(Date.now()),
         error: error.toString().substring(0, 250),
       },
     })
@@ -179,7 +183,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
   // mark the task as complete and update the corresponding resource with
   // the correct status - if the task was cancelled - we don't update
   // the resource status
-  const completeTask = async (task, trx, cancelled) => {
+  const completeTask = async (task: model.Task, trx: Knex.Transaction, cancelled: boolean) => {
     // what status are we setting the task to
     const finalTaskStatus = cancelled ? TASK_STATUS.cancelled : TASK_STATUS.finished
 
@@ -241,7 +245,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
           // before each yielded step of the task - check if the database has a cancel
           // status and cancel the task if yes
           onStep: async () => {
-            const isCancelled = await bluebirdPromise.resolve(isTaskCancelled(runningTask))
+            const isCancelled = await bluebird.resolve(isTaskCancelled(runningTask))
             if (isCancelled) runner.cancel()
           },
         })
@@ -269,10 +273,10 @@ const TaskProcessor = ({ store, handlers, logging }) => {
     const runTasks = tasks.filter((task) => task.restartable)
     const errorTasks = tasks.filter((task) => !task.restartable)
 
-    await bluebirdPromise.all([
-      bluebirdPromise.each(runTasks, runTask),
-      bluebirdPromise.each(errorTasks, (task) =>
-        errorTask(task, 'the server restarted whilst this task was running and the task is not restartable')
+    await bluebird.all([
+      bluebird.each(runTasks, runTask),
+      bluebird.each(errorTasks, (task) =>
+        errorTask(task, new Error('the server restarted whilst this task was running and the task is not restartable'))
       ),
     ])
   }
@@ -282,14 +286,14 @@ const TaskProcessor = ({ store, handlers, logging }) => {
     if (!controlLoopRunning) return
     try {
       const runTasks = await loadCreatedTasks()
-      await bluebirdPromise.each(runTasks, runTask)
-      await bluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
-      controlLoop()
+      await bluebird.each(runTasks, runTask)
+      await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY)
+      void controlLoop()
     } catch (err) {
       if (logging) {
         logger.error({
           type: 'controlloop',
-          error: err.toString(),
+          error: String(err),
         })
       }
       throw err
@@ -300,7 +304,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
   const startControlLoop = () => {
     if (stopped) throw new Error('the task processor was stopped')
     controlLoopRunning = true
-    controlLoop()
+    void controlLoop()
   }
 
   const start = async () => {
@@ -312,7 +316,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
       if (logging) {
         logger.error({
           type: 'start',
-          error: err.toString(),
+          error: String(err),
         })
       }
       throw err
@@ -322,7 +326,7 @@ const TaskProcessor = ({ store, handlers, logging }) => {
   const stop = () => {
     controlLoopRunning = false
     stopped = true
-    return bluebirdPromise.delay(TASK_CONTROLLER_LOOP_DELAY)
+    return bluebird.delay(TASK_CONTROLLER_LOOP_DELAY)
   }
 
   return { emitter: taskProcessor, start, stop }
