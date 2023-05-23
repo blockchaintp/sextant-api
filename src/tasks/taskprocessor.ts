@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 /*
 
   keeps looping waiting for tasks to be in 'created' state
@@ -61,39 +60,62 @@
   }
 */
 
-import EventEmitter from 'events'
 import bluebird from 'bluebird'
-
+import EventEmitter from 'events'
+import { Knex } from 'knex'
+import { RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY, TASK_STATUS } from '../config'
 import { getLogger } from '../logging'
+import { Store } from '../store'
+import * as model from '../store/model/model-types'
+import { DatabaseIdentifier } from '../store/model/scalar-types'
+import resourceUpdaters from './resource_updaters/index'
+import Task from './task'
 
 const logger = getLogger({
   name: 'taskprocessor',
 })
 
-import { TASK_STATUS, RESOURCE_TYPES, TASK_CONTROLLER_LOOP_DELAY } from '../config'
-import Task from './task'
-import resourceUpdaters from './resource_updaters/index'
-import { Store } from '../store'
-import { DatabaseIdentifier } from '../store/model/scalar-types'
-import * as model from '../store/model/model-types'
-import { Knex } from 'knex'
-
-type TaskHandlerParams = { testMode: boolean; cancel: () => true; isCancelled: () => boolean }
+type TaskHandlerParams = { cancel: () => true; isCancelled: () => boolean; testMode: boolean }
 export type TaskHandler = (useParams: TaskHandlerParams) => Generator
 
 type Handlers = {
   [key: string]: TaskHandler
 }
 
-const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: Handlers; logging: boolean }) => {
-  if (!store) {
-    throw new Error('store required')
+// get a list of tasks with the given status
+const loadTasksWithStatus = (status: string, store: Store) =>
+  store.task.list({
+    status,
+  })
+
+// update the status of a task
+// timestamps indicates what fields we should stamp as now
+const updateTaskStatus = (
+  store: Store,
+  task: model.Task,
+  status: string,
+  timestamps: { ended?: boolean; started?: boolean }
+) => {
+  const taskData: Partial<Pick<model.Task, 'ended_at' | 'error' | 'started_at' | 'status'>> = {
+    status,
   }
 
-  if (!handlers) {
-    throw new Error('handlers required')
+  if (timestamps.started) {
+    // eslint-disable-next-line camelcase
+    taskData.started_at = new Date(Date.now())
+  }
+  if (timestamps.ended) {
+    // eslint-disable-next-line camelcase
+    taskData.ended_at = new Date(Date.now())
   }
 
+  return store.task.update({
+    id: task.id,
+    data: taskData,
+  })
+}
+
+const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers; logging: boolean; store: Store }) => {
   const taskProcessor = new EventEmitter()
   let controlLoopRunning = false
   let stopped = false
@@ -112,13 +134,8 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
       })
       .then((task) => task.status)
 
-  // get a list of tasks with the given status
-  const loadTasksWithStatus = (status: string) =>
-    store.task.list({
-      status,
-    })
-  const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running)
-  const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created)
+  const loadRunningTasks = () => loadTasksWithStatus(TASK_STATUS.running, store)
+  const loadCreatedTasks = () => loadTasksWithStatus(TASK_STATUS.created, store)
 
   // return a function that will check a running task cancel status
   const isTaskCancelled = async (task: model.Task) => {
@@ -126,54 +143,23 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     return status === TASK_STATUS.cancelling
   }
 
-  // update the status of a task
-  // timestamps indicates what fields we should stamp as now
-  const updateTaskStatus = (task: model.Task, status: string, timestamps: { started?: boolean; ended?: boolean }) => {
-    if (timestamps.started && timestamps.ended) {
-      return store.task.update({
-        id: task.id,
-        data: { status, started_at: new Date(Date.now()), ended_at: new Date(Date.now()) },
-      })
-    }
-    if (timestamps.started) {
-      return store.task.update({
-        id: task.id,
-        data: { status, started_at: new Date(Date.now()) },
-      })
-    }
-
-    if (timestamps.ended) {
-      return store.task.update({
-        id: task.id,
-        data: { status, ended_at: new Date(Date.now()) },
-      })
-    }
-
-    return store.task.update({
-      id: task.id,
-      data: { status },
-    })
-  }
-
   // mark the task as failed and update the corresponding resource with
   // the error status
-  const errorTask = async (task: model.Task, error: Error) => {
-    if (logging) {
-      logger.error({
-        action: 'error',
-        error: error.toString(),
-        stack: error.stack,
-        task,
-      })
-    }
+  const errorTask = async (task: model.Task, error: unknown) => {
+    logger.error({
+      action: 'errorTask',
+      error: error,
+      task,
+    })
 
     // update the task store to indicate the task failed
     await store.task.update({
       id: task.id,
       data: {
         status: TASK_STATUS.error,
+        // eslint-disable-next-line camelcase
         ended_at: new Date(Date.now()),
-        error: error.toString().substring(0, 250),
+        error: JSON.stringify(error),
       },
     })
 
@@ -196,24 +182,24 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     // what status are we setting the task to
     const finalTaskStatus = cancelled ? TASK_STATUS.cancelled : TASK_STATUS.finished
 
-    await updateTaskStatus(task, finalTaskStatus, { ended: true })
-
+    await updateTaskStatus(store, task, finalTaskStatus, { ended: true })
+    if (cancelled) return
     // if the task completed - we update the resource to the correct status
-    if (!cancelled) {
-      // get a reference to the store handler for the task resource
-      const resourceTypeStore = resourceTypeStores[task.resource_type]
-      if (task.resource_type === 'deployment') {
-        await resourceTypeStore.update(
-          {
-            id: task.resource_id,
-            data: {
-              status: task.resource_status.completed,
-              updated_at: new Date(),
-            },
+    // get a reference to the store handler for the task resource
+    const resourceTypeStore = resourceTypeStores[task.resource_type]
+    if (task.resource_type === 'deployment') {
+      await resourceTypeStore.update(
+        {
+          id: task.resource_id,
+          data: {
+            status: task.resource_status.completed,
+            // eslint-disable-next-line camelcase
+            updated_at: new Date(),
           },
-          trx
-        )
-      }
+        },
+        trx
+      )
+    } else {
       await resourceTypeStore.update(
         {
           id: task.resource_id,
@@ -240,7 +226,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
         }
 
         // update the task be to in running state
-        const runningTask = await updateTaskStatus(task, TASK_STATUS.running, { started: true })
+        const runningTask = await updateTaskStatus(store, task, TASK_STATUS.running, { started: true })
 
         // create the task runner
         const runner = Task({
@@ -254,7 +240,7 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
           // before each yielded step of the task - check if the database has a cancel
           // status and cancel the task if yes
           onStep: async () => {
-            const isCancelled = await bluebird.resolve(isTaskCancelled(runningTask))
+            const isCancelled = await Promise.resolve(isTaskCancelled(runningTask))
             if (isCancelled) runner.cancel()
           },
         })
@@ -295,16 +281,15 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     if (!controlLoopRunning) return
     try {
       const runTasks = await loadCreatedTasks()
+
       await bluebird.each(runTasks, runTask)
       await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY)
       void controlLoop()
-    } catch (err) {
-      if (logging) {
-        logger.error({
-          type: 'controlloop',
-          error: String(err),
-        })
-      }
+    } catch (err: unknown) {
+      logger.error({
+        type: 'controlloop',
+        error: err,
+      })
       throw err
     }
   }
@@ -321,13 +306,11 @@ const TaskProcessor = ({ store, handlers, logging }: { store: Store; handlers: H
     try {
       await restartTasks()
       startControlLoop()
-    } catch (err) {
-      if (logging) {
-        logger.error({
-          type: 'start',
-          error: String(err),
-        })
-      }
+    } catch (err: unknown) {
+      logger.error({
+        type: 'start',
+        error: err,
+      })
       throw err
     }
   }
