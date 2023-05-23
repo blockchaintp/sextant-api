@@ -117,7 +117,7 @@ const updateTaskStatus = (
 
 // mark the task as failed and update the corresponding resource with
 // the error status
-const errorTask = async (store: Store, task: model.Task, error: unknown) => {
+const errorTask = async (store: Store, task: model.Task, error: Error) => {
   logger.error({
     action: 'errorTask',
     error: error,
@@ -137,7 +137,7 @@ const errorTask = async (store: Store, task: model.Task, error: unknown) => {
       status: TASK_STATUS.error,
       // eslint-disable-next-line camelcase
       ended_at: new Date(Date.now()),
-      error: JSON.stringify(error),
+      error: error.toString().substring(0, 250),
     },
   })
 
