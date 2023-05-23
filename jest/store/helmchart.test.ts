@@ -14,7 +14,7 @@ describe('HelmChartStore', () => {
   let store: HelmChartStore
   let repo: HelmRepository
   beforeAll(async () => {
-    testDb = await setupPostgresContainers(5435)
+    testDb = await setupPostgresContainers()
     const repoStore = new HelmRepositoryStore(testDb.db)
     repo = await repoStore.create({
       data: {

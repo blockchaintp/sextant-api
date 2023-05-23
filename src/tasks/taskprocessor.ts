@@ -115,7 +115,7 @@ const updateTaskStatus = (
   })
 }
 
-const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers; logging: boolean; store: Store }) => {
+export const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers; logging: boolean; store: Store }) => {
   const taskProcessor = new EventEmitter()
   let controlLoopRunning = false
   let stopped = false
@@ -323,5 +323,3 @@ const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers; loggi
 
   return { emitter: taskProcessor, start, stop }
 }
-
-module.exports = TaskProcessor

@@ -5,7 +5,7 @@ import { Store } from '../src/store'
 import { getPasswordHash } from '../src/utils/user'
 import { acquireDatabase } from './db-config'
 
-export async function setupPostgresContainers(hostPort = 5432) {
+export async function setupPostgresContainers() {
   const c = new GenericContainer('postgres:11')
   const pgContainer = await c
     .withEnvironment({
@@ -14,8 +14,9 @@ export async function setupPostgresContainers(hostPort = 5432) {
       POSTGRES_PASSWORD: 'postgres',
       POSTGRES_PORT: '5432',
     })
-    .withExposedPorts({ container: 5432, host: hostPort })
+    .withExposedPorts(5432)
     .start()
+  const hostPort = pgContainer.getMappedPort(5432)
   const db = (await acquireDatabase(pgContainer, hostPort)) as Knex
   await db.migrate.latest()
   return {

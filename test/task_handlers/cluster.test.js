@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable max-len */
-const Promise = require('bluebird')
+const bluebird = require('bluebird')
 const database = require('../database')
 const fixtures = require('../fixtures')
 
@@ -65,7 +65,7 @@ database.testSuiteWithDatabase((getConnection) => {
       id: createTask.resource_id,
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const updatedCluster = await controller.get({
       id: testClusters.admin.id,
@@ -102,7 +102,7 @@ database.testSuiteWithDatabase((getConnection) => {
       data: insertData,
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const updatedCluster = await controller.get({
       id: errorCluster.id,

@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable max-len */
-const Promise = require('bluebird')
+const bluebird = require('bluebird')
 const asyncTest = require('../asyncTest')
 const asyncTestError = require('../asyncTestError')
 const database = require('../database')
@@ -17,7 +17,7 @@ const { ClusterController } = require('../../src/controller/cluster')
 const { Store } = require('../../src/store')
 const base64 = require('../../src/utils/base64')
 
-const TaskProcessor = require('../../src/tasks/taskprocessor')
+const { TaskProcessor } = require('../../src/tasks/taskprocessor')
 
 const config = require('../../src/config')
 
@@ -65,7 +65,7 @@ database.testSuiteWithDatabase((getConnection) => {
     const controller = getController()
     const testUser = userMap[USER_TYPES.admin]
 
-    await Promise.each(Object.keys(errorClusters), async (type) => {
+    await bluebird.each(Object.keys(errorClusters), async (type) => {
       const { values, error } = errorClusters[type]
 
       let checkError = null
@@ -464,7 +464,7 @@ database.testSuiteWithDatabase((getConnection) => {
       id: testCluster.id,
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const newClusters = await controller.list({
       user: testUser,
@@ -572,7 +572,7 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(ca.name, 'ca', 'the ca secret name is correct')
     t.equal(ca.base64data, base64.encode(CA), 'the ca secret value is correct')
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     await controller.update({
       id: cluster.id,
@@ -582,7 +582,7 @@ database.testSuiteWithDatabase((getConnection) => {
       },
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const updatedNameCluster = await store.cluster.get({
       id: cluster.id,
@@ -609,7 +609,7 @@ database.testSuiteWithDatabase((getConnection) => {
       },
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const updatedSecretsCluster = await store.cluster.get({
       id: cluster.id,
@@ -633,7 +633,7 @@ database.testSuiteWithDatabase((getConnection) => {
     t.equal(ca2.name, 'ca', 'the ca secret name is correct')
     t.equal(ca2.base64data, base64.encode(CA2), 'the ca secret value is correct')
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     await controller.update({
       id: cluster.id,
@@ -643,7 +643,7 @@ database.testSuiteWithDatabase((getConnection) => {
       },
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     const updatedNameCluster2 = await store.cluster.get({
       id: cluster.id,
@@ -692,7 +692,7 @@ database.testSuiteWithDatabase((getConnection) => {
       user: testUser,
     })
 
-    await Promise.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
+    await bluebird.delay(TASK_CONTROLLER_LOOP_DELAY * 2)
 
     await controller.deletePermanently({
       id: testCluster.id,

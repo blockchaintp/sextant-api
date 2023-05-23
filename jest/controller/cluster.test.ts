@@ -30,7 +30,7 @@ describe('ClusterController', () => {
   }
 
   beforeAll(async () => {
-    testDb = await setupPostgresContainers(5433)
+    testDb = await setupPostgresContainers()
     store = new Store(testDb.db)
   }, 300000)
 

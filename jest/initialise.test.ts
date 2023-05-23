@@ -14,7 +14,7 @@ describe('InitialUser', () => {
   let store: Store
 
   beforeAll(async () => {
-    testDb = await setupPostgresContainers(5434)
+    testDb = await setupPostgresContainers()
     store = new Store(testDb.db)
   }, 300000)
 
