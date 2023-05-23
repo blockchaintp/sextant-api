@@ -115,16 +115,91 @@ const updateTaskStatus = (
   })
 }
 
-export const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers; logging: boolean; store: Store }) => {
-  const taskProcessor = new EventEmitter()
-  let controlLoopRunning = false
-  let stopped = false
+// mark the task as failed and update the corresponding resource with
+// the error status
+const errorTask = async (store: Store, task: model.Task, error: unknown) => {
+  logger.error({
+    action: 'errorTask',
+    error: error,
+    task,
+  })
 
   // the store handlers for the resources we can start tasks for
   const resourceTypeStores = {
     [RESOURCE_TYPES.cluster]: store.cluster,
     [RESOURCE_TYPES.deployment]: store.deployment,
   }
+
+  // update the task store to indicate the task failed
+  await store.task.update({
+    id: task.id,
+    data: {
+      status: TASK_STATUS.error,
+      // eslint-disable-next-line camelcase
+      ended_at: new Date(Date.now()),
+      error: JSON.stringify(error),
+    },
+  })
+
+  // update the corresponding resource
+  const resourceTypeStore = resourceTypeStores[task.resource_type]
+
+  // import the correct resource updater based on the task.action
+  // resourceUpdaters are defined in tasks/resource_updaters
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters.default
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  await resourceUpdater(task, error, resourceTypeStore)
+}
+
+// mark the task as complete and update the corresponding resource with
+// the correct status - if the task was cancelled - we don't update
+// the resource status
+const completeTask = async (store: Store, task: model.Task, trx: Knex.Transaction, cancelled: boolean) => {
+  // what status are we setting the task to
+  const finalTaskStatus = cancelled ? TASK_STATUS.cancelled : TASK_STATUS.finished
+
+  // the store handlers for the resources we can start tasks for
+  const resourceTypeStores = {
+    [RESOURCE_TYPES.cluster]: store.cluster,
+    [RESOURCE_TYPES.deployment]: store.deployment,
+  }
+
+  await updateTaskStatus(store, task, finalTaskStatus, { ended: true })
+  if (cancelled) return
+  // if the task completed - we update the resource to the correct status
+  // get a reference to the store handler for the task resource
+  const resourceTypeStore = resourceTypeStores[task.resource_type]
+  if (task.resource_type === 'deployment') {
+    await resourceTypeStore.update(
+      {
+        id: task.resource_id,
+        data: {
+          status: task.resource_status.completed,
+          // eslint-disable-next-line camelcase
+          updated_at: new Date(),
+        },
+      },
+      trx
+    )
+  } else {
+    await resourceTypeStore.update(
+      {
+        id: task.resource_id,
+        data: {
+          status: task.resource_status.completed,
+        },
+      },
+      trx
+    )
+  }
+}
+
+export const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers; logging: boolean; store: Store }) => {
+  const taskProcessor = new EventEmitter()
+  let controlLoopRunning = false
+  let stopped = false
 
   // get the current status of a task
   const loadTaskStatus = (id: DatabaseIdentifier) =>
@@ -141,75 +216,6 @@ export const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers
   const isTaskCancelled = async (task: model.Task) => {
     const status = await loadTaskStatus(task.id)
     return status === TASK_STATUS.cancelling
-  }
-
-  // mark the task as failed and update the corresponding resource with
-  // the error status
-  const errorTask = async (task: model.Task, error: unknown) => {
-    logger.error({
-      action: 'errorTask',
-      error: error,
-      task,
-    })
-
-    // update the task store to indicate the task failed
-    await store.task.update({
-      id: task.id,
-      data: {
-        status: TASK_STATUS.error,
-        // eslint-disable-next-line camelcase
-        ended_at: new Date(Date.now()),
-        error: JSON.stringify(error),
-      },
-    })
-
-    // update the corresponding resource
-    const resourceTypeStore = resourceTypeStores[task.resource_type]
-
-    // import the correct resource updater based on the task.action
-    // resourceUpdaters are defined in tasks/resource_updaters
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const resourceUpdater = resourceUpdaters[task.action] || resourceUpdaters.default
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    await resourceUpdater(task, error, resourceTypeStore)
-  }
-
-  // mark the task as complete and update the corresponding resource with
-  // the correct status - if the task was cancelled - we don't update
-  // the resource status
-  const completeTask = async (task: model.Task, trx: Knex.Transaction, cancelled: boolean) => {
-    // what status are we setting the task to
-    const finalTaskStatus = cancelled ? TASK_STATUS.cancelled : TASK_STATUS.finished
-
-    await updateTaskStatus(store, task, finalTaskStatus, { ended: true })
-    if (cancelled) return
-    // if the task completed - we update the resource to the correct status
-    // get a reference to the store handler for the task resource
-    const resourceTypeStore = resourceTypeStores[task.resource_type]
-    if (task.resource_type === 'deployment') {
-      await resourceTypeStore.update(
-        {
-          id: task.resource_id,
-          data: {
-            status: task.resource_status.completed,
-            // eslint-disable-next-line camelcase
-            updated_at: new Date(),
-          },
-        },
-        trx
-      )
-    } else {
-      await resourceTypeStore.update(
-        {
-          id: task.resource_id,
-          data: {
-            status: task.resource_status.completed,
-          },
-        },
-        trx
-      )
-    }
   }
 
   // run a task
@@ -248,11 +254,11 @@ export const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers
         taskProcessor.emit('task.start', task)
 
         await runner.run()
-        await completeTask(task, trx, runner.cancelled)
+        await completeTask(store, task, trx, runner.cancelled)
         taskProcessor.emit('task.complete', task)
       })
       .catch(async (err: Error) => {
-        await errorTask(task, err)
+        await errorTask(store, task, err)
         taskProcessor.emit('task.error', task, err)
       })
     taskProcessor.emit('task.processed', task)
@@ -271,7 +277,11 @@ export const TaskProcessor = ({ store, handlers, logging }: { handlers: Handlers
     await bluebird.all([
       bluebird.each(runTasks, runTask),
       bluebird.each(errorTasks, (task) =>
-        errorTask(task, new Error('the server restarted whilst this task was running and the task is not restartable'))
+        errorTask(
+          store,
+          task,
+          new Error('the server restarted whilst this task was running and the task is not restartable')
+        )
       ),
     ])
   }
