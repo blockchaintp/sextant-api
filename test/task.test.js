@@ -1,7 +1,17 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable object-shorthand */
+/* eslint-disable no-shadow */
 const Promise = require('bluebird')
 const tape = require('tape')
 
-const Task = require('../src/task')
+const Task = require('../src/tasks/task')
 
 tape('task -> simple', async (t) => {
   const MESSAGE = 'hello'
@@ -181,12 +191,7 @@ tape('task -> inner generators', async (t) => {
 
   await task.run()
 
-  t.deepEqual(steps, [
-    1,
-    2,
-    3,
-    4,
-  ], 'the steps were run in the correct order')
+  t.deepEqual(steps, [1, 2, 3, 4], 'the steps were run in the correct order')
 
   t.end()
 })
@@ -219,10 +224,7 @@ tape('task -> cancel from inside an inner generator', async (t) => {
     }),
   ])
 
-  t.deepEqual(steps, [
-    1,
-    2,
-  ], 'the task was cancelled from inside an inner generator')
+  t.deepEqual(steps, [1, 2], 'the task was cancelled from inside an inner generator')
 
   t.end()
 })
@@ -251,9 +253,7 @@ tape('task -> test for long running Promise cancellation', async (t) => {
     }),
   ])
 
-  t.deepEqual(steps, [
-    1,
-  ], 'only one value was added because the task was cancelled')
+  t.deepEqual(steps, [1], 'only one value was added because the task was cancelled')
 
   t.end()
 })
@@ -275,9 +275,7 @@ tape('task -> self cancellation', async (t) => {
 
   await task.run()
 
-  t.deepEqual(steps, [
-    1,
-  ], 'only one value was added because the task was cancelled')
+  t.deepEqual(steps, [1], 'only one value was added because the task was cancelled')
 
   t.end()
 })

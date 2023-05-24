@@ -246,7 +246,7 @@ export class TaskStore {
       id,
       data: { status, error, started_at, ended_at },
     }: {
-      data: Pick<Task, 'ended_at' | 'error' | 'started_at' | 'status'>
+      data: Partial<Pick<Task, 'ended_at' | 'error' | 'started_at' | 'status'>>
       id: DatabaseIdentifier
     },
     trx?: Knex.Transaction

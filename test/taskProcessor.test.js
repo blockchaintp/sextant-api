@@ -6,10 +6,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable object-shorthand */
 /* eslint-disable no-shadow */
-const Promise = require('bluebird')
+const bluebird = require('bluebird')
 const asyncTest = require('./asyncTest')
 const { Store } = require('../src/store')
-const TaskProcessor = require('../src/taskprocessor')
+const { TaskProcessor } = require('../src/tasks/taskprocessor')
 const config = require('../src/config')
 
 const database = require('./database')
@@ -67,7 +67,7 @@ database.testSuiteWithDatabase((getConnection) => {
       data: taskData,
     })
 
-    await new Promise((resolve) => taskProcessor.on('task.processed', resolve))
+    await new bluebird((resolve) => taskProcessor.emitter.on('task.processed', resolve))
 
     await taskProcessor.stop()
 
@@ -111,7 +111,7 @@ database.testSuiteWithDatabase((getConnection) => {
 
       const handlers = {
         [TASK_ACTION['cluster.create']]: function* () {
-          yield Promise.delay(1000)
+          yield bluebird.delay(1000)
           throw new Error(ERROR_TEXT)
         },
       }
@@ -147,7 +147,7 @@ database.testSuiteWithDatabase((getConnection) => {
               status: TASK_STATUS.cancelling,
             },
           })
-          yield Promise.resolve(true)
+          yield bluebird.resolve(true)
           sawStep = true
         },
       }

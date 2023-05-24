@@ -11,7 +11,7 @@ describe('HelmRepositoryStore', () => {
   }
   let helmRepoStore: HelmRepositoryStore
   beforeAll(async () => {
-    testDb = await setupPostgresContainers(5436)
+    testDb = await setupPostgresContainers()
     helmRepoStore = new HelmRepositoryStore(testDb.db)
   }, 300000)
 
