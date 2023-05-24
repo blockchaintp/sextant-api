@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+* test(tasks): add test for task [view commit](https://github.com/catenasys/sextant-api/commit/770dc0d6d1308db373ffcfda9d3ee8a7ca929267)
+* refactor(tasks): reduce complexity of taskprocessr [view commit](https://github.com/catenasys/sextant-api/commit/913e7058ab9f4b0a6a3de233c885606e4ad5d717)
+* test(tasks): add jest test for taskprocessor [view commit](https://github.com/catenasys/sextant-api/commit/6f45441fed2fcadc923f959999b48652ddcb3a42)
+* refactor(taskprocessr): cleanup module exports and resolve test port allocation [view commit](https://github.com/catenasys/sextant-api/commit/914d7647eed78d14585f4011f222ee7e60e13b81)
+* refactor(tasks): reduce complexity of taskprocessor [view commit](https://github.com/catenasys/sextant-api/commit/6b2aced9377a2d3d21abef71b6bdb35043fffa76)
+* fix(task): disable eslint for task.js for this PR [view commit](https://github.com/catenasys/sextant-api/commit/7a7bbbe31921edd40c12c2f42612f652d53901df)
+* fix(test): add eslint ignore statements to tests [view commit](https://github.com/catenasys/sextant-api/commit/ee1656f6482d85f32418d961ead37ea63ddd6de4)
+* fix(TaskProsessor): Add Handlers type [view commit](https://github.com/catenasys/sextant-api/commit/b570f3fd7ac2d5e79d53011e18cafe5ae9494c96)
+* fix(model): Update type definitions for Task in the the store [view commit](https://github.com/catenasys/sextant-api/commit/34e0022335d34924faa99b2f9e90e5b67c9efd63)
+* fix(TaskProsessor): adress minor typing issues [view commit](https://github.com/catenasys/sextant-api/commit/5c7738b7feb7333916ff8bd86429bdae63ff7ad3)
+* fix(TaskProsessor): refactor TaskProsessor code that requires convoluted types [view commit](https://github.com/catenasys/sextant-api/commit/db1edfe7c68cc8b9fbc0f07f2081f8323789830e)
+* refactor(taskprocessor): convert to TS and switch requires to imports [view commit](https://github.com/catenasys/sextant-api/commit/1c2eca0267fb50fdd15363de32911b6cc6277b58)
+* refactor(directories): move task.js and taskProcoessor.js into tasks dir [view commit](https://github.com/catenasys/sextant-api/commit/769f258cc972676222e7498b3cb0a690a8d18398)
 * fix(test-router-cluster): updates cluster name to pass validation test(cluster): renames cluster names in task_handlers and controller to pass no spaces validation [view commit](https://github.com/catenasys/sextant-api/commit/d960859f76b29919694a5a27fb1c9f8f6243915e)
 * test(store-cluster): removes cluster order test [view commit](https://github.com/catenasys/sextant-api/commit/14a04225a2759b4ed16ba9b08c9af3de7de4c83e)
 * build(dockercompose-test): bumps postgres to 11 [view commit](https://github.com/catenasys/sextant-api/commit/d12cb9b5914608077f71947fb15799a3233a96ec)
