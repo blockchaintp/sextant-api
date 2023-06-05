@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable no-undef */
 const { saveAppliedState } = require('./utils/saveAppliedState')
+const { Kubectl } = require('../../utils/kubectl')
 
 const ClusterUpdate = ({ testMode }) =>
   function* clusterUpdateTask(params) {
@@ -19,6 +20,23 @@ const ClusterUpdate = ({ testMode }) =>
       })
       return
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const cluster = yield store.cluster.get(
+      {
+        id,
+      },
+      trx
+    )
+
+    const clusterKubectl = yield Kubectl.getKubectlForCluster({
+      cluster,
+      store,
+    })
+
+    // test we can connect to the remote cluster with the details provided
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    yield clusterKubectl.getNamespaces()
 
     yield saveAppliedState({
       id,
