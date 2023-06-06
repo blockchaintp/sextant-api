@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* fix(update-task): check for an active cluster before finishing cluster update task [view commit](https://github.com/catenasys/sextant-api/commit/40f377963fcdc58a7802ec91fb5a5e9ce123494d)
 * test(tasks): add test for task [view commit](https://github.com/catenasys/sextant-api/commit/770dc0d6d1308db373ffcfda9d3ee8a7ca929267)
 * refactor(tasks): reduce complexity of taskprocessr [view commit](https://github.com/catenasys/sextant-api/commit/913e7058ab9f4b0a6a3de233c885606e4ad5d717)
 * test(tasks): add jest test for taskprocessor [view commit](https://github.com/catenasys/sextant-api/commit/6f45441fed2fcadc923f959999b48652ddcb3a42)
