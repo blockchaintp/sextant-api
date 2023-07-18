@@ -2,7 +2,9 @@ type MeteringType = 'dev' | 'aws'
 
 export type HelmRepository = {
   name: string
+  password?: string
   url: string
+  username?: string
 }
 
 export type ChartBundleName = string
