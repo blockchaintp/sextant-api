@@ -29,7 +29,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@aws-sdk/client-marketplace-metering": "^3.350.0",
+    "@aws-sdk/client-marketplace-metering": "^3.370.0",
     "@kubernetes/client-node": "^0.15.1",
     "ajv": "^8.12.0",
     "ajv-errors": "^3.0.0",
