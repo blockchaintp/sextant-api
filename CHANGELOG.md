@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* build(deps): Bump fast-xml-parser and @aws-sdk/client-marketplace-metering [view commit](https://github.com/catenasys/sextant-api/commit/1f062e4d87cfed2f48c4a1c43f4e0fd8aa40aa3d)
 * feat(helmtool): refactor storeChartsLocally, add rerefreshDbRepos [view commit](https://github.com/catenasys/sextant-api/commit/7060c578ce802e13b320a5bd18047488e521ae8e)
 * build(deps): Bump fast-xml-parser and @aws-sdk/client-marketplace-metering [view commit](https://github.com/catenasys/sextant-api/commit/e0182a9dba3cfac93e3e3ddc8eeac16a1b7da340)
 * fix(update-task): check for an active cluster before finishing cluster update task [view commit](https://github.com/catenasys/sextant-api/commit/40f377963fcdc58a7802ec91fb5a5e9ce123494d)
