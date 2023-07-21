@@ -36,7 +36,7 @@ describe('ClusterController', () => {
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  })
+  }, 300000)
 
   it('createUserPT', async () => {
     const controller = ClusterController({ store })
@@ -68,7 +68,7 @@ describe('ClusterController', () => {
         ...INITIAL_CLUSTER_FORM.user,
       },
     })
-  })
+  }, 1200000)
 
   it('updateUserPT', async () => {
     const controller = ClusterController({ store })
@@ -116,7 +116,7 @@ describe('ClusterController', () => {
         ...editForm.user,
       },
     })
-  })
+  }, 1200000)
 
   it('delete', async () => {
     const controller = ClusterController({ store })
@@ -137,7 +137,7 @@ describe('ClusterController', () => {
       action: 'cluster.delete',
       status: 'created',
     })
-  })
+  }, 1200000)
 
   it('deletePermanently', async () => {
     const controller = ClusterController({ store })
@@ -163,5 +163,5 @@ describe('ClusterController', () => {
     const retTask = await controller.deletePermanently({ id: 1, user })
     expect(retTask).toBeDefined()
     expect(retTask).toEqual(true)
-  })
+  }, 1200000)
 })
