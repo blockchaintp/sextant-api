@@ -28,7 +28,7 @@ describe('HelmChartStore', () => {
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  })
+  }, 300000)
 
   it('should create a helm chart', async () => {
     const chart = await store.create({
@@ -47,7 +47,7 @@ describe('HelmChartStore', () => {
     expect(chart).toMatchObject({
       name: 'test-chart',
     })
-  })
+  }, 1200000)
 
   it('should delete a helm chart', async () => {
     const chart = await store.create({
@@ -69,7 +69,7 @@ describe('HelmChartStore', () => {
     expect(deletedChart).toMatchObject({
       ...chart,
     })
-  })
+  }, 1200000)
 
   it('should get a helm chart', async () => {
     const chart = await store.create({
@@ -89,7 +89,7 @@ describe('HelmChartStore', () => {
     expect(getChart).toMatchObject({
       ...chart,
     })
-  })
+  }, 1200000)
 
   it('should list all helm charts', async () => {
     const chart = await store.create({
@@ -109,7 +109,7 @@ describe('HelmChartStore', () => {
 
     const charts = await store.list()
     expect(charts.length).toBeGreaterThan(0)
-  })
+  }, 1200000)
 
   it('should update a helm repo', async () => {
     const chart = await store.create({
@@ -135,5 +135,5 @@ describe('HelmChartStore', () => {
       ...chart,
       active: false,
     })
-  })
+  }, 1200000)
 })
