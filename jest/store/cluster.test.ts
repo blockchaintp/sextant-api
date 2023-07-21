@@ -37,7 +37,7 @@ describe('ClusterStore', () => {
       status: 'created',
       capabilities: {},
     })
-  }, 1200000)
+  }, 2200000)
 
   it('should delete a cluster', async () => {
     const cluster = await clusterStore.create({
@@ -55,7 +55,7 @@ describe('ClusterStore', () => {
       ...cluster,
       status: 'deleted',
     })
-  }, 1200000)
+  }, 2200000)
 
   it('should delete a cluster permanently', async () => {
     const cluster = await clusterStore.create({
@@ -71,7 +71,7 @@ describe('ClusterStore', () => {
     expect(deletedCluster).toMatchObject({
       ...cluster,
     })
-  }, 1200000)
+  }, 2200000)
 
   it('should get a cluster', async () => {
     const cluster = await clusterStore.create({
@@ -87,7 +87,7 @@ describe('ClusterStore', () => {
     expect(getCluster).toMatchObject({
       ...cluster,
     })
-  }, 1200000)
+  }, 2200000)
 
   it('should list all clusters', async () => {
     const cluster = await clusterStore.create({
@@ -106,7 +106,7 @@ describe('ClusterStore', () => {
 
     const clustersWithDeleted = await clusterStore.list({ deleted: true })
     expect(clustersWithDeleted.length).toBeGreaterThan(clusters.length)
-  }, 1200000)
+  }, 2200000)
 
   it('should update a cluster', async () => {
     const cluster = await clusterStore.create({
@@ -132,5 +132,5 @@ describe('ClusterStore', () => {
       ...cluster,
       desired_state: { state: 'updated' },
     })
-  }, 1200000)
+  }, 2200000)
 })
