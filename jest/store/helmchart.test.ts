@@ -24,11 +24,11 @@ describe('HelmChartStore', () => {
       },
     })
     store = new HelmChartStore(testDb.db)
-  }, 300000)
+  }, 1200000)
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  }, 300000)
+  }, 1200000)
 
   it('should create a helm chart', async () => {
     const chart = await store.create({

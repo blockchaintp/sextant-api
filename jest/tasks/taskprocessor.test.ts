@@ -14,11 +14,11 @@ describe('TaskProcessor', () => {
 
   beforeAll(async () => {
     testDb = await setupPostgresContainers()
-  }, 300000)
+  }, 1200000)
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  }, 300000)
+  }, 1200000)
 
   it('constructor', async () => {
     const processor = TaskProcessor({

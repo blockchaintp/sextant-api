@@ -32,11 +32,11 @@ describe('ClusterController', () => {
   beforeAll(async () => {
     testDb = await setupPostgresContainers()
     store = new Store(testDb.db)
-  }, 300000)
+  }, 1200000)
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  }, 300000)
+  }, 1200000)
 
   it('createUserPT', async () => {
     const controller = ClusterController({ store })

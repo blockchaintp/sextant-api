@@ -13,11 +13,11 @@ describe('ClusterStore', () => {
   beforeAll(async () => {
     testDb = await setupPostgresContainers()
     clusterStore = new ClusterStore(testDb.db)
-  }, 300000)
+  }, 1200000)
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  }, 300000)
+  }, 1200000)
 
   it('should create a cluster', async () => {
     const cluster = await clusterStore.create({

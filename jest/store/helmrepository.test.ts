@@ -13,11 +13,11 @@ describe('HelmRepositoryStore', () => {
   beforeAll(async () => {
     testDb = await setupPostgresContainers()
     helmRepoStore = new HelmRepositoryStore(testDb.db)
-  }, 300000)
+  }, 1200000)
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  }, 300000)
+  }, 1200000)
 
   it('should create a helm repository', async () => {
     const repo = await helmRepoStore.create({
