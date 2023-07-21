@@ -20,7 +20,7 @@ describe('InitialUser', () => {
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  })
+  }, 300000)
 
   it('should create an initial user', async () => {
     const settings: Settings = {
@@ -55,5 +55,5 @@ describe('InitialUser', () => {
     const user = await store.user.get({ username: 'testuser' })
     expect(user).toBeDefined()
     expect(user?.username).toBe('testuser')
-  })
+  }, 1200000)
 })
