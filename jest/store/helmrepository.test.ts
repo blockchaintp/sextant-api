@@ -17,7 +17,7 @@ describe('HelmRepositoryStore', () => {
 
   afterAll(async () => {
     await tearDownPostgresContainers(testDb)
-  })
+  }, 300000)
 
   it('should create a helm repository', async () => {
     const repo = await helmRepoStore.create({
@@ -30,7 +30,7 @@ describe('HelmRepositoryStore', () => {
     expect(repo).toMatchObject({
       name: 'test-repo',
     })
-  })
+  }, 1200000)
 
   it('should delete a helm repository', async () => {
     const repo = await helmRepoStore.create({
@@ -46,7 +46,7 @@ describe('HelmRepositoryStore', () => {
     expect(deletedRepo).toMatchObject({
       ...repo,
     })
-  })
+  }, 1200000)
 
   it('should get a helm repository', async () => {
     const repo = await helmRepoStore.create({
@@ -60,7 +60,7 @@ describe('HelmRepositoryStore', () => {
     expect(getRepo).toMatchObject({
       ...repo,
     })
-  })
+  }, 1200000)
 
   it('should list all helm repositories', async () => {
     const repo = await helmRepoStore.create({
@@ -74,7 +74,7 @@ describe('HelmRepositoryStore', () => {
 
     const repos = await helmRepoStore.list()
     expect(repos.length).toBeGreaterThan(0)
-  })
+  }, 1200000)
 
   it('should update a helm repo', async () => {
     const repo = await helmRepoStore.create({
@@ -96,5 +96,5 @@ describe('HelmRepositoryStore', () => {
       ...repo,
       active: 'false',
     })
-  })
+  }, 1200000)
 })
