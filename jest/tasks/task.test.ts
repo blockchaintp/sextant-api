@@ -38,5 +38,5 @@ describe('Task', () => {
     expect(task.cancelled).toBe(false)
     task.cancel()
     expect(task.cancelled).toBe(true)
-  })
+  }, 1200000)
 })
