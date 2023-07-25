@@ -1,4 +1,4 @@
-import { Knex } from 'knex'
+import knex, { Knex } from 'knex'
 import { GenericContainer, StartedTestContainer } from 'testcontainers'
 import { USER_TYPES } from '../src/config'
 import { Store } from '../src/store'
@@ -18,6 +18,16 @@ export async function setupPostgresContainers() {
     .start()
   const hostPort = pgContainer.getMappedPort(5432)
   const db = (await acquireDatabase(pgContainer, hostPort)) as Knex
+  let dbNotReady = true
+  while (dbNotReady) {
+    try {
+      await db.raw('select 1')
+      dbNotReady = false
+    } catch (e) {
+      console.log('Waiting for postgres to start')
+      dbNotReady = true
+    }
+  }
   await db.migrate.latest()
   return {
     db,
