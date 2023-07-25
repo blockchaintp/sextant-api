@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* build(deps): update package-lock [view commit](https://github.com/catenasys/sextant-api/commit/eb9222111d9a8dea630b2f598c2fbc10e77a575b)
+* test: add a probe to wait for postgres availability [view commit](https://github.com/catenasys/sextant-api/commit/b2aa1716e2334b0e13c36362bdb3406f47d166ca)
 * build(deps): Bump fast-xml-parser and @aws-sdk/client-marketplace-metering [view commit](https://github.com/catenasys/sextant-api/commit/1f062e4d87cfed2f48c4a1c43f4e0fd8aa40aa3d)
 * feat(helmtool): refactor storeChartsLocally, add rerefreshDbRepos [view commit](https://github.com/catenasys/sextant-api/commit/7060c578ce802e13b320a5bd18047488e521ae8e)
 * build(deps): Bump fast-xml-parser and @aws-sdk/client-marketplace-metering [view commit](https://github.com/catenasys/sextant-api/commit/e0182a9dba3cfac93e3e3ddc8eeac16a1b7da340)
