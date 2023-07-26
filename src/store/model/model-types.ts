@@ -115,7 +115,6 @@ export type HelmRepository = {
 }
 
 export type HelmChart = {
-  // short name of the chart without the repo name
   active: boolean
   app_version: string
   created_at: Date
@@ -124,11 +123,17 @@ export type HelmChart = {
   icon?: string
   id: DatabaseIdentifier
   keywords?: string[]
-  kubeVersion?: string
+  kube_version?: string
   name: string
   refreshed_at?: Date
   repository_id: DatabaseIdentifier
   updated_at: Date
+  urls: string[]
   verified: boolean
   version: string
+}
+
+export type IndexYaml = {
+  apiVersion: string
+  entries: [apiVersion: string]
 }
