@@ -41,7 +41,9 @@ describe('HelmChartStore', () => {
         repository_id: repo.id,
         icon: 'https://example.com/icon.png',
         version: '1.0.0',
+        verified: false,
         keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart.tgz'],
       },
     })
     expect(chart).toMatchObject({
@@ -60,7 +62,9 @@ describe('HelmChartStore', () => {
         repository_id: repo.id,
         icon: 'https://example.com/icon.png',
         version: '1.0.0',
+        verified: false,
         keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart.tgz'],
       },
     })
 
@@ -82,13 +86,76 @@ describe('HelmChartStore', () => {
         repository_id: repo.id,
         icon: 'https://example.com/icon.png',
         version: '1.0.0',
+        verified: false,
         keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart.tgz'],
       },
     })
     const getChart = await store.get({ id: chart.id })
     expect(getChart).toMatchObject({
       ...chart,
     })
+  })
+
+  it('should get an exact helm chart', async () => {
+    const chart = await store.create({
+      data: {
+        active: true,
+        name: 'test-chart-getexact',
+        app_version: '1.0.0',
+        description: 'test chart description',
+        digest: 'test-digest',
+        repository_id: repo.id,
+        icon: 'https://example.com/icon.png',
+        version: '1.0.0',
+        verified: false,
+        keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart.tgz'],
+      },
+    })
+    const getChart = await store.getExact({
+      name: chart.name,
+      version: chart.version,
+      repository_id: chart.repository_id,
+    })
+    expect(getChart).toMatchObject({
+      ...chart,
+    })
+  })
+
+  it('should get matching helm charts', async () => {
+    const chartOne = await store.create({
+      data: {
+        active: true,
+        name: 'test-chart-getmatching',
+        app_version: '1.0.0',
+        description: 'test chart description one',
+        digest: 'test-digest',
+        repository_id: repo.id,
+        icon: 'https://example.com/icon.png',
+        version: '1.0.0',
+        verified: false,
+        keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart-100.tgz'],
+      },
+    })
+    const chartTwo = await store.create({
+      data: {
+        active: true,
+        name: 'test-chart-getmatching',
+        app_version: '2.0.0',
+        description: 'test chart description',
+        digest: 'test-digest',
+        repository_id: repo.id,
+        icon: 'https://example.com/icon.png',
+        version: '2.0.0',
+        verified: false,
+        keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart-200.tgz'],
+      },
+    })
+    const matchingCharts = await store.getMatching({ name: chartOne.name })
+    expect(matchingCharts.length).toBe(2)
   })
 
   it('should list all helm charts', async () => {
@@ -102,11 +169,11 @@ describe('HelmChartStore', () => {
         repository_id: repo.id,
         icon: 'https://example.com/icon.png',
         version: '1.0.0',
+        verified: false,
         keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart.tgz'],
       },
     })
-    await store.delete({ id: chart.id })
-
     const charts = await store.list()
     expect(charts.length).toBeGreaterThan(0)
   })
@@ -122,7 +189,9 @@ describe('HelmChartStore', () => {
         repository_id: repo.id,
         icon: 'https://example.com/icon.png',
         version: '1.0.0',
+        verified: false,
         keywords: ['test', 'chart'],
+        urls: ['https://example.com/chart.tgz'],
       },
     })
     const updatedChart = await store.update({

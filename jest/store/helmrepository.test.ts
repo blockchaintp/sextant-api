@@ -97,4 +97,17 @@ describe('HelmRepositoryStore', () => {
       active: 'false',
     })
   })
+  it('should get a helm chart by url', async () => {
+    const repo = await helmRepoStore.create({
+      data: {
+        name: 'test-repo-getbyurl',
+        active: true,
+        url: 'https://charts.example.com/url',
+      },
+    })
+    const getRepo = await helmRepoStore.getByUrl({ url: repo.url })
+    expect(getRepo).toMatchObject({
+      ...repo,
+    })
+  })
 })
