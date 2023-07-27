@@ -23,14 +23,39 @@ export class HelmChartStore {
   //     * icon
   //     * version
   //     * keywords
+  //     * urls
 
   public async create(
     {
-      data: { active, app_version, description, digest, repository_id, icon, name, version, keywords },
+      data: {
+        active,
+        app_version,
+        description,
+        digest,
+        repository_id,
+        icon,
+        name,
+        version,
+        verified,
+        keywords,
+        kube_version,
+        urls,
+      },
     }: {
       data: Pick<
         HelmChart,
-        'active' | 'app_version' | 'description' | 'digest' | 'repository_id' | 'icon' | 'name' | 'version' | 'keywords'
+        | 'active'
+        | 'app_version'
+        | 'description'
+        | 'digest'
+        | 'repository_id'
+        | 'icon'
+        | 'name'
+        | 'version'
+        | 'verified'
+        | 'keywords'
+        | 'kube_version'
+        | 'urls'
       >
     },
     trx?: Knex.Transaction
@@ -45,7 +70,10 @@ export class HelmChartStore {
         icon,
         name,
         version,
+        verified,
         keywords,
+        kube_version,
+        urls,
       })
       .returning('*')
 
@@ -79,6 +107,42 @@ export class HelmChartStore {
     return result
   }
 
+  // Get an exact helm chart
+  // Returns 0 or 1 helm charts
+  // params:
+  //  * name
+  //  * version
+  //  * repository_id
+  public async getExact(
+    { name, repository_id, version }: { name: string; repository_id: DatabaseIdentifier; version: string },
+    trx?: Knex.Transaction
+  ) {
+    const [result] = await (trx || this.knex)<HelmChart>(TABLES.helmchart)
+      .where({
+        name,
+        repository_id,
+        version,
+      })
+      .returning<HelmChart[]>('*')
+
+    return result
+  }
+
+  // Get matching helm charts
+  // Returns 0, 1 or more helm charts
+  // params:
+  //  * name
+  //  * version
+  public async getMatching({ name }: { name: string }, trx?: Knex.Transaction) {
+    const result = await (trx || this.knex)<HelmChart>(TABLES.helmchart)
+      .where({
+        name,
+      })
+      .returning<HelmChart[]>('*')
+
+    return result
+  }
+
   // List all helm charts
   // params:
   public list(trx?: Knex.Transaction) {
@@ -99,6 +163,7 @@ export class HelmChartStore {
   //    * icon
   //    * version
   //    * keywords
+  //    * urls
   public async update(
     { data, id }: { data: Partial<Omit<HelmChart, 'id'>>; id: DatabaseIdentifier },
     trx?: Knex.Transaction

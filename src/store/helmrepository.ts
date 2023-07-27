@@ -64,9 +64,21 @@ export class HelmRepositoryStore {
     return result
   }
 
+  // Get a helm repository by its url
+  // params:
+  //  * url
+  public async getByUrl({ url }: { url: string }, trx?: Knex.Transaction) {
+    const [result] = await (trx || this.knex)<HelmRepository>(TABLES.helmrepository)
+      .where({
+        url,
+      })
+      .returning<HelmRepository[]>('*')
+
+    return result
+  }
+
   // List all helm repositories
   // params:  none
-
   public list(trx?: Knex.Transaction) {
     const orderBy = LIST_ORDER_BY_FIELDS.helmrepository
     return (trx || this.knex)<HelmRepository>(TABLES.helmrepository)
