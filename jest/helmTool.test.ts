@@ -68,4 +68,24 @@ describe('helmTool', () => {
     })
     expect(cmd).toEqual('helm repo add --force-update test https://example.com --username test --password test')
   })
+
+  // test getIndexYaml
+  it('can get index.yaml', async () => {
+    const tool = new HelmTool(edition, store, tmpDir)
+    const repo = await helmRepoStore.create({
+      data: {
+        name: 'test-getindex-repo',
+        active: true,
+        url: 'https://charts.bitnami.com/bitnami',
+      },
+    })
+    const index = await tool.getIndexYaml(repo)
+    expect(index).toBeDefined()
+  }, 1200000)
+
+  // test updateDbHelmCharts
+  it('can run updateDbHelmCharts', async () => {
+    const tool = new HelmTool(edition, store, tmpDir)
+    await tool.updateDbHelmCharts()
+  }, 1200000)
 })
