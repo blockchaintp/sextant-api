@@ -4,5 +4,8 @@
   "buildCommand": "mkdocs build",
   "github": {
     "silent": true
+  },
+  "git": {
+    "deploymentEnabled": false
   }
 }

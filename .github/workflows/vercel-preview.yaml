@@ -1,0 +1,44 @@
+name: Vercel Preview Docs Deployment
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+
+jobs:
+  Deploy-Preview:
+    if: contains(github.event.pull_request.labels.*.name, 'documentation') || contains (github.label, 'documentation')
+    runs-on: ubuntu-latest
+    steps:
+      - id: step1
+        uses: actions/checkout@v2
+      - id: step2
+        name: Install Vercel CLI
+        run: npm install --global vercel@canary
+      - id: step3
+        name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+      - id: step4
+        name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+      - id: step5
+        name: Deploy Project Artifacts to Vercel and get preview URL
+        run: echo preview="$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} )" >> $GITHUB_ENV
+      - id: step6
+        name: Comment with Preview URL
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Docs preview: ${{ env.preview }}`
+            })
